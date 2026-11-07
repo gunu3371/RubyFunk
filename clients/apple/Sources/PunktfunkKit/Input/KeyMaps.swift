@@ -23,8 +23,8 @@ extension InputCapture {
         default: return vk
         }
     }
-    /// HID usage (GCKeyCode raw) → Windows VK (the host maps VK → evdev; every VK emitted
-    /// here exists in punktfunk-host/src/inject.rs::vk_to_evdev — extend the two together).
+    /// HID usage (GCKeyCode raw) → Windows VK. Windows resolves function keys through
+    /// MapVirtualKeyExW; Linux support depends on the host's vk_to_evdev table.
     nonisolated static let hidToVK: [Int: UInt32] = {
         var m: [Int: UInt32] = [:]
         // a–z: HID 0x04..0x1D → VK 'A'..'Z'.
@@ -45,6 +45,8 @@ extension InputCapture {
         m[0x39] = 0x14 // caps lock
         // F1..F12: HID 0x3A..0x45 → VK 0x70..0x7B.
         for i in 0..<12 { m[0x3A + i] = UInt32(0x70 + i) }
+        // F13..F19: HID 0x68..0x6E → VK 0x7C..0x82.
+        for i in 0..<7 { m[0x68 + i] = UInt32(0x7C + i) }
         m[0x46] = 0x2C; m[0x47] = 0x91; m[0x48] = 0x13 // printscreen scrolllock pause
         m[0x4F] = 0x27; m[0x50] = 0x25; m[0x51] = 0x28; m[0x52] = 0x26 // arrows R L D U
         m[0x49] = 0x2D; m[0x4A] = 0x24; m[0x4B] = 0x21 // insert home pageup
@@ -70,13 +72,8 @@ extension InputCapture {
     }()
 
     #if os(macOS)
-    /// NSEvent.keyCode (Carbon virtual keycode, kVK_*) → Windows VK. The macOS NSEvent key
-    /// path is keyed by keyCode (a layout-independent hardware position), NOT by HID usage,
-    /// so it needs its own table — but it emits the EXACT SAME Windows VK integers `hidToVK`
-    /// already produces for each physical key (A→0x41, Return→0x0D, KeypadEnter→0x6C, …), so
-    /// the host's vk_to_evdev (inject.rs) accepts both with zero change. Modifier keys come
-    /// via flagsChanged (handleFlagsChanged), not keyDown, so they're absent here. Keys with
-    /// no host evdev arm (F13–F20, KeypadEquals, the Fn key) are omitted → nil → swallowed.
+    /// NSEvent.keyCode (Carbon kVK_*) → the same Windows VKs as `hidToVK`.
+    /// Modifiers arrive through flagsChanged. F20, KeypadEquals and Fn are unmapped.
     nonisolated static let keyCodeToVK: [UInt16: UInt32] = {
         var m: [UInt16: UInt32] = [:]
         // Letters — kVK_ANSI_A..Z (scattered keycodes) → VK 'A'..'Z'.
@@ -107,10 +104,12 @@ extension InputCapture {
         m[0x0A] = 0xE2 // ISO 102nd key (<> next to left shift; OEM_102)
         // JIS ¥ ろ keypad-comma かな 英数: the VKs `hidToVK` sends for HID 0x89 0x87 0x85 0x90 0x91.
         m[0x5D] = 0xE1; m[0x5E] = 0xC1; m[0x5F] = 0xC2; m[0x68] = 0x15; m[0x66] = 0x19
-        // Function keys F1..F12 (scattered) → VK 0x70..0x7B. F13+ omitted (no host arm).
+        // Function keys F1..F19 (scattered) → VK 0x70..0x82.
         m[0x7A] = 0x70; m[0x78] = 0x71; m[0x63] = 0x72; m[0x76] = 0x73 // F1 F2 F3 F4
         m[0x60] = 0x74; m[0x61] = 0x75; m[0x62] = 0x76; m[0x64] = 0x77 // F5 F6 F7 F8
         m[0x65] = 0x78; m[0x6D] = 0x79; m[0x67] = 0x7A; m[0x6F] = 0x7B // F9 F10 F11 F12
+        m[0x69] = 0x7C; m[0x6B] = 0x7D; m[0x71] = 0x7E // F13 F14 F15
+        m[0x6A] = 0x7F; m[0x40] = 0x80; m[0x4F] = 0x81; m[0x50] = 0x82 // F16 F17 F18 F19
         // Arrows.
         m[0x7B] = 0x25; m[0x7C] = 0x27; m[0x7D] = 0x28; m[0x7E] = 0x26 // left right down up
         // Nav cluster (Apple keycodes; Help sits where Insert is).

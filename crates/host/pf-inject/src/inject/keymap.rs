@@ -276,6 +276,14 @@ mod tests {
     }
 
     #[test]
+    fn extended_function_scancodes_reach_keyboard_hid() {
+        for i in 0..7u16 {
+            assert_eq!(scan_to_hid_usage(0x64 + i, false), Some(0x68 + i as u8));
+            assert!(!vk_forced_extended(0x7C + i));
+        }
+    }
+
+    #[test]
     fn scancodes_map_to_the_hid_usages_a_keyboard_sends() {
         let plain = |scan| scan_to_hid_usage(scan, false);
         let e0 = |scan| scan_to_hid_usage(scan, true);

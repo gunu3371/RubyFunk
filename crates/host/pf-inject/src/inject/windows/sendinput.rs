@@ -540,6 +540,26 @@ fn foreground_hkl() -> Option<HKL> {
 mod tests {
     use super::*;
 
+    #[test]
+    fn extended_function_keys_use_windows_mapping_for_both_vk_modes() {
+        for vk in 0x7C..=0x82 {
+            assert_eq!(positional_vk_to_scan(vk), None);
+            for semantic in [false, true] {
+                assert_eq!(
+                    key_scan(vk, semantic, |mapped| {
+                        assert_eq!(mapped, vk);
+                        0x64 + u32::from(vk - 0x7C)
+                    }),
+                    Some((0x64 + vk - 0x7C, false))
+                );
+            }
+            assert_eq!(
+                crate::keymap::scan_to_hid_usage(0x64 + vk - 0x7C, false),
+                Some(0x68 + (vk - 0x7C) as u8)
+            );
+        }
+    }
+
     /// The positional table must mirror Linux `vk_to_evdev` exactly — for the typing
     /// area the evdev code IS the set-1 scancode, so a divergence lands the same wire
     /// VK on different physical keys on the two hosts. Keypad Enter and the IME keys
