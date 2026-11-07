@@ -92,20 +92,20 @@ final class ClientIdentityStore: @unchecked Sendable {
         case denied(OSStatus)
     }
 
-    /// Item coordinates. We prefer the DATA-PROTECTION keychain: with the app's
-    /// `keychain-access-groups` entitlement, items there are gated by the app's identity
-    /// (team + bundle id) instead of a per-binary ACL — so a SIGNED build reads them across
-    /// rebuilds with NO Keychain prompt (a per-binary ACL re-prompts on every resign, which
-    /// is why an ad-hoc-signed app asked every launch). An ad-hoc / unsigned build (e.g.
-    /// `swift run`) has no such entitlement — `SecItem*` returns `errSecMissingEntitlement`
-    /// there, and we fall back to the legacy file keychain (still works, with the old prompt).
+    /// Local ad-hoc builds use a separate login-keychain item. Distribution builds use
+    /// the data-protection keychain, with a legacy fallback when its entitlement is absent.
     private static func query(dataProtection: Bool) -> [String: Any] {
         var q: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: "io.unom.punktfunk",
             kSecAttrAccount as String: "client-identity",
         ]
-        if dataProtection { q[kSecUseDataProtectionKeychain as String] = true }
+        #if PUNKTFUNK_LOCAL_KEYCHAIN
+        q[kSecAttrService as String] = "io.unom.punktfunk.local"
+        q[kSecUseDataProtectionKeychain as String] = false
+        #else
+        q[kSecUseDataProtectionKeychain as String] = dataProtection
+        #endif
         return q
     }
 
@@ -116,16 +116,15 @@ final class ClientIdentityStore: @unchecked Sendable {
         if case .denied(errSecMissingEntitlement) = result {
             return read(dataProtection: false)
         }
-        // An item added before the this-device-only switch keeps the accessibility class it was
-        // added with — it would keep riding backups forever, because the identity is never
-        // regenerated. Re-stamp it on the way past (best-effort: a refusal just leaves the old
-        // class, and the identity still reads).
+        #if !PUNKTFUNK_LOCAL_KEYCHAIN
+        // Reapply device-only accessibility without replacing the paired identity.
         if case .found = result {
             SecItemUpdate(
                 Self.query(dataProtection: true) as CFDictionary,
                 [kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly]
                     as CFDictionary)
         }
+        #endif
         return result
     }
 
@@ -152,12 +151,11 @@ final class ClientIdentityStore: @unchecked Sendable {
         else { return errSecParam }
         var add = Self.query(dataProtection: true)
         add[kSecValueData as String] = data
-        // After-first-unlock so a background reconnect can still read it, THIS DEVICE ONLY so it
-        // never rides an encrypted backup or a device migration: this key is the whole credential
-        // a host pairs with, and a restored backup would silently re-pair the restoring device
-        // with every host. The access-group entitlement (not a per-binary ACL) gates it, so it
-        // still survives rebuilds prompt-free.
+        // Background reconnects need access after unlock. Distribution credentials stay
+        // on this device; login-keychain builds use that keychain's access controls.
+        #if !PUNKTFUNK_LOCAL_KEYCHAIN
         add[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        #endif
         let status = SecItemAdd(add as CFDictionary, nil)
         guard status == errSecMissingEntitlement else { return status }
         // Ad-hoc / unsigned build: persist to the legacy file keychain instead.

@@ -37,6 +37,26 @@ PUNKTFUNK_REMOTE_HOST=<ip> swift test --filter RemoteFirstLightTests
 PUNKTFUNK_AUTOCONNECT=<ip> PUNKTFUNK_MODE=1280x720x60 swift run PunktfunkClient
 ```
 
+## Local macOS signing
+
+F13–F19 use the same Windows VK codes through NSEvent and GCKeyboard. macOS sends
+keyboard events through NSEvent; GCKeyboard forwarding stays disabled to avoid duplicates.
+
+For an ad-hoc macOS build, add `PUNKTFUNK_LOCAL_KEYCHAIN` to
+`SWIFT_ACTIVE_COMPILATION_CONDITIONS` and build with `CODE_SIGNING_ALLOWED=NO`.
+Sign the finished app with the local sandbox entitlements:
+
+```sh
+codesign --force --deep --sign - --entitlements clients/apple/local-macos.entitlements /path/to/Punktfunk.app
+codesign --verify --deep --strict /path/to/Punktfunk.app
+```
+
+The build condition stores pairing credentials in the login keychain under
+`io.unom.punktfunk.local`. It keeps the identity used by the earlier local F13–F19
+build. Distribution builds keep their existing keychain service and access groups.
+Local builds require separate pairing from distribution builds. Ad-hoc signing has
+no provisioning-profile expiry; it supplies neither Developer ID trust nor notarization.
+
 ## Traps
 
 - **Entitlements.** The macOS target is App-Sandboxed and needs `network.server` — the raw-UDP plane
