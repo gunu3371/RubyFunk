@@ -92,7 +92,7 @@ pub struct SetEncodeRequest {
     /// A [`codec`] id, the same numbering
     /// [`EncodeProbeRequest`](crate::control::EncodeProbeRequest) uses.
     pub codec: u32,
-    /// `0` = 4:2:0, `1` = 4:4:4. Not the H.264/HEVC `chroma_format_idc`.
+    /// `0` = 4:2:0, `1` = native 4:4:4, `2` = packed v1. Sizes describe the source.
     pub chroma: u32,
     /// Bits per component the encoder emits: 8 or 10.
     pub bit_depth: u32,
@@ -376,6 +376,8 @@ fn parse_tenths(v: &str) -> Option<u32> {
 pub enum EncodeInput {
     /// BGRA straight into the backend, which does the RGB→YUV CSC.
     Bgra,
+    /// v1 sample packing, with the RGB source colour and depth.
+    Packed444 { depth: u8, hdr: bool, fp16: bool },
     /// Video-engine BGRA→NV12, 8-bit 4:2:0.
     Nv12,
     /// Shader FP16 scRGB→P010 PQ, 10-bit 4:2:0.

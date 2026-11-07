@@ -12,6 +12,7 @@ description = "punktfunk Windows video encode backends: NVENC/AMF/QSV/PyroWave b
 publish = false
 
 [dependencies]
+pf-packed444 = { path = "../../core/pf-packed444" }
 # The `Encoder` contract these backends implement; re-exported wholesale from `lib.rs`.
 pf-encode-core = { path = "../pf-encode-core" }
 pf-frame = { path = "../pf-frame" }

@@ -67,7 +67,7 @@ pub fn codec_to_wire(codec: Codec) -> u8 {
 /// value as [`punktfunk_core::quic::Welcome::chroma_format`].
 pub fn chroma_idc(chroma: ChromaFormat) -> u8 {
     match chroma {
-        ChromaFormat::Yuv420 => punktfunk_core::quic::CHROMA_IDC_420,
+        ChromaFormat::Yuv420 | ChromaFormat::Packed444(_) => punktfunk_core::quic::CHROMA_IDC_420,
         ChromaFormat::Yuv444 => punktfunk_core::quic::CHROMA_IDC_444,
     }
 }

@@ -5,6 +5,8 @@
 //! compiled at first use through [`compile_shader`]. [`hdr_p010_selftest_at`]
 //! checks the P010 converter on a real GPU.
 
+mod packed444;
+pub use packed444::Packed444Converter;
 mod cursor_blend;
 pub use cursor_blend::CursorBlendPass;
 mod selftest;

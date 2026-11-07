@@ -426,7 +426,7 @@
 //
 // The wire is versioned by ALPN, not by this. Pin the integer in `punktfunk-ffi`
 // (`abi_version_is_pinned`). Per-bump notes live in `CHANGELOG.md`.
-#define PUNKTFUNK_ABI_VERSION 64
+#define PUNKTFUNK_ABI_VERSION 65
 
 // This client silenced its own speakers (`client::NativeClient::set_audio_muted`). The host
 // keeps sending, so a session joined to the same sink still hears the game.
@@ -1805,6 +1805,10 @@ typedef struct {
     uint8_t prompts_unlock;
     // Always `0`. Fills what would otherwise be padding.
     uint8_t reserved6[7];
+    // Packed-video decoder limits, as the 18-byte RubyFunk capability value; zeros disable.
+    // Advertise only when the renderer restores v1 and the decoder accepts the coded size.
+    uint8_t packed444[18];
+    uint8_t reserved7[6];
 } PunktfunkConnectOpts;
 #endif
 
@@ -3286,6 +3290,15 @@ PunktfunkStatus punktfunk_connection_codec(PunktfunkConnection *c, uint8_t *out)
 // # Safety
 // `c` is a valid connection handle; `out` is NULL or writable for one `u32`.
 PunktfunkStatus punktfunk_connection_shard_payload(PunktfunkConnection *c, uint32_t *out);
+#endif
+
+#if defined(PUNKTFUNK_FEATURE_QUIC)
+// The newest AU's packed layout: version, source width/height, coded width/height, LE u32.
+// All 17 bytes are zero for ordinary video. Read after a new-format AU, with colour info.
+//
+// # Safety
+// `c` is a live connection; `out` is writable for 17 bytes.
+PunktfunkStatus punktfunk_connection_packing(PunktfunkConnection *c, uint8_t *out);
 #endif
 
 #if defined(PUNKTFUNK_FEATURE_QUIC)

@@ -276,6 +276,7 @@ fn run(stop: HANDLE, req: EncodeProbeRequest, shared: Arc<Shared>) {
 /// encoder again. Readable from the test's output, so a run needs no driver log.
 fn outcome_tag(kind: InputKind, chroma444: bool) -> [u8; 32] {
     let k = match kind {
+        InputKind::Packed444 { .. } => "packed444",
         InputKind::Bgra => "Bgra",
         InputKind::Nv12 => "Nv12",
         InputKind::P010 => "P010",

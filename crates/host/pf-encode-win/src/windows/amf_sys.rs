@@ -9,7 +9,7 @@
 //!
 //! Layout is stable on every runtime at or above [`AMF_MIN_VERSION`] (1.4.30).
 //! `const` size/offset asserts below pin the PODs and the slots `amf.rs` calls.
-//! Evidence: `design/native-amf-encoder.md`.
+//! SDK notice: `AMF-NOTICE.txt`. ABI evidence: `design/native-amf-encoder.md`.
 
 use std::ffi::c_void;
 
@@ -312,9 +312,51 @@ pub struct AmfComponentVtbl {
     pub query_output: unsafe extern "system" fn(*mut AmfComponent, *mut *mut AmfData) -> AmfResult,
     pub get_context: Slot,
     pub set_output_data_allocator_cb: Slot,
-    pub get_caps: Slot,
+    pub get_caps: unsafe extern "system" fn(*mut AmfComponent, *mut *mut AmfCaps) -> AmfResult,
     pub optimize: Slot,
 }
+
+#[repr(C)]
+pub struct AmfCaps {
+    pub vtbl: *const AmfCapsVtbl,
+}
+#[repr(C)]
+pub struct AmfCapsVtbl {
+    pub acquire: Slot,
+    pub release: unsafe extern "system" fn(*mut AmfCaps) -> i32,
+    pub query_interface: Slot,
+    pub set_property: Slot,
+    pub get_property:
+        unsafe extern "system" fn(*mut AmfCaps, *const u16, *mut AmfVariant) -> AmfResult,
+    pub storage_tail: [Slot; 8],
+    pub get_acceleration_type: Slot,
+    pub get_input_caps: unsafe extern "system" fn(*mut AmfCaps, *mut *mut AmfIoCaps) -> AmfResult,
+    pub get_output_caps: Slot,
+}
+#[repr(C)]
+pub struct AmfIoCaps {
+    pub vtbl: *const AmfIoCapsVtbl,
+}
+#[repr(C)]
+pub struct AmfIoCapsVtbl {
+    pub acquire: Slot,
+    pub release: unsafe extern "system" fn(*mut AmfIoCaps) -> i32,
+    pub query_interface: Slot,
+    pub get_width_range: unsafe extern "system" fn(*mut AmfIoCaps, *mut i32, *mut i32),
+    pub get_height_range: unsafe extern "system" fn(*mut AmfIoCaps, *mut i32, *mut i32),
+    pub tail: [Slot; 6],
+}
+const _: () = {
+    assert!(core::mem::size_of::<AmfCapsVtbl>() == 16 * core::mem::size_of::<Slot>());
+    assert!(core::mem::offset_of!(AmfCapsVtbl, get_property) == 4 * core::mem::size_of::<Slot>());
+    assert!(
+        core::mem::offset_of!(AmfCapsVtbl, get_input_caps) == 14 * core::mem::size_of::<Slot>()
+    );
+    assert!(core::mem::size_of::<AmfIoCapsVtbl>() == 11 * core::mem::size_of::<Slot>());
+    assert!(
+        core::mem::offset_of!(AmfIoCapsVtbl, get_width_range) == 3 * core::mem::size_of::<Slot>()
+    );
+};
 
 // AMFData — usable prefix of AMFSurface (same object pointer).
 #[repr(C)]
@@ -439,6 +481,7 @@ const _: () = assert!(core::mem::offset_of!(AmfComponentVtbl, drain) == slot(20)
 const _: () = assert!(core::mem::offset_of!(AmfComponentVtbl, flush) == slot(21));
 const _: () = assert!(core::mem::offset_of!(AmfComponentVtbl, submit_input) == slot(22));
 const _: () = assert!(core::mem::offset_of!(AmfComponentVtbl, query_output) == slot(23));
+const _: () = assert!(core::mem::offset_of!(AmfComponentVtbl, get_caps) == slot(26));
 
 const _: () = assert!(core::mem::size_of::<AmfDataVtbl>() == slot(23));
 const _: () = assert!(core::mem::offset_of!(AmfDataVtbl, release) == slot(1));

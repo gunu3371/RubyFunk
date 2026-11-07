@@ -58,6 +58,7 @@ pub mod provenance;
 /// cbindgen:ignore
 pub mod pyrowave;
 pub mod quic;
+pub use pf_packed444 as packed444;
 pub mod reanchor;
 pub mod reject;
 pub mod render_scale;
@@ -110,11 +111,11 @@ fn env_value_on(value: &str) -> bool {
 ///
 /// The wire is versioned by ALPN, not by this. Pin the integer in `punktfunk-ffi`
 /// (`abi_version_is_pinned`). Per-bump notes live in `CHANGELOG.md`.
-pub const ABI_VERSION: u32 = 64;
+pub const ABI_VERSION: u32 = 65;
 /// FNV-1a of the generated `include/punktfunk_core.h` without comments or the version define.
 /// `gen-headers`'s `abi_header_hash` test fails on a change; update this beside `ABI_VERSION`.
 /// cbindgen:ignore
-pub const ABI_HEADER_HASH: u64 = 0x8981_4be8_d3c1_b825;
+pub const ABI_HEADER_HASH: u64 = 0xd735622b0dbdb873;
 
 #[cfg(test)]
 mod env_tests {

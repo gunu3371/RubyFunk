@@ -1372,14 +1372,15 @@ async fn negotiate_session(
         let per_client_mode_identity = crate::vdisplay::policy::prefs()
             .configured_effective()
             .is_some_and(|e| e.identity == crate::vdisplay::policy::Identity::PerClientMode);
-        reconfig_allowed(
-            n.compositor,
-            per_client_mode_identity,
-            mirrored || join_live,
-        )
+        n.packing.is_none()
+            && reconfig_allowed(
+                n.compositor,
+                per_client_mode_identity,
+                mirrored || join_live,
+            )
     };
     // A mirror and a `join` session share another session's capture: their format stays.
-    let format_change_ok = !(mirrored || join_live);
+    let format_change_ok = !(mirrored || join_live) && n.packing.is_none();
     let codec = crate::encode::codec_from_wire(n.welcome.codec);
     tracing::info!(
         peer = %scope.conn().remote_address(),
@@ -1697,6 +1698,7 @@ fn spawn_control(
         input_tx,
         initial_mode: hello.mode,
         stream_config: v2msg::StreamConfig {
+            packing: n.packing,
             stream: 0,
             epoch: 0,
             mode: welcome.mode,
@@ -1863,7 +1865,9 @@ async fn stream_session(
         bit_depth: welcome.bit_depth,
         color: welcome.color,
         // `Yuv444` only when the handshake gate passed.
-        chroma: if welcome.chroma_format == punktfunk_core::quic::CHROMA_IDC_444 {
+        chroma: if let Some(packing) = n.packing {
+            crate::encode::ChromaFormat::Packed444(packing)
+        } else if welcome.chroma_format == punktfunk_core::quic::CHROMA_IDC_444 {
             crate::encode::ChromaFormat::Yuv444
         } else {
             crate::encode::ChromaFormat::Yuv420

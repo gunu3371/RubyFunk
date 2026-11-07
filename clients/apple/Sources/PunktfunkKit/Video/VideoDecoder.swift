@@ -11,6 +11,9 @@ import CoreMedia
 import CoreVideo
 import Foundation
 import VideoToolbox
+import os
+
+private let packedDecoderLog = ClientLog(category: "decoder")
 
 /// A decoded frame's pixels — which present path they take. VideoToolbox codecs deliver a
 /// biplanar `CVPixelBuffer` (NV12/P010/444v/x444); the PyroWave Metal decoder delivers three
@@ -78,9 +81,11 @@ public struct ReadyFrame: @unchecked Sendable {
 private final class FrameContext {
     let receivedNs: Int64
     let flags: UInt32
-    init(receivedNs: Int64, flags: UInt32) {
+    let packing: Packed444FrameInfo?
+    init(receivedNs: Int64, flags: UInt32, packing: Packed444FrameInfo?) {
         self.receivedNs = receivedNs
         self.flags = flags
+        self.packing = packing
     }
 }
 
@@ -92,10 +97,23 @@ private let decoderOutputCallback: VTDecompressionOutputCallback = {
     refcon, frameRefcon, status, infoFlags, imageBuffer, pts, _ in
     guard let refcon else { return }
     let ctx = frameRefcon.map { Unmanaged<FrameContext>.fromOpaque($0).takeRetainedValue() }
+    var acceptedStatus = status
+    var acceptedImage = imageBuffer
+    if let imageBuffer {
+        if let packing = ctx?.packing {
+            if packing.accepts(imageBuffer) { packing.attach(to: imageBuffer) }
+            else {
+                packedDecoderLog.error("Packed video didn't decode at the required size and color range. Turn off Full chroma or lower the resolution.")
+                acceptedStatus = kVTVideoDecoderBadDataErr
+                acceptedImage = nil
+            }
+        }
+        else { CVBufferRemoveAttachment(imageBuffer, Packed444FrameInfo.key) }
+    }
     Unmanaged<VideoDecoder>.fromOpaque(refcon)
         .takeUnretainedValue()
         .handleDecoded(
-            status: status, imageBuffer: imageBuffer, pts: pts,
+            status: acceptedStatus, imageBuffer: acceptedImage, pts: pts,
             receivedNs: ctx?.receivedNs ?? 0, flags: ctx?.flags ?? 0,
             dropped: infoFlags.contains(.frameDropped))
 }
@@ -119,6 +137,15 @@ public final class VideoDecoder: @unchecked Sendable {
     /// session start before any decode. Selects the 4:4:4 decode pixel format (orthogonal to bit
     /// depth / HDR). Read inside `createSessionLocked` under `lock`.
     private var chroma444 = false
+    private var packing: Packed444FrameInfo?
+
+    func setPackedFormat(_ format: PunktfunkConnection.StreamFormat) {
+        lock.lock()
+        packing = format.packing.map { Packed444FrameInfo(
+            layout: $0, depth: format.bitDepth, primaries: format.primaries,
+            transfer: format.transfer, matrix: format.matrix, fullRange: format.fullRange) }
+        lock.unlock()
+    }
 
     /// The negotiated codec (`connection.videoCodec`), set once at session start. Drives the
     /// bitstream framing (H.264/HEVC NAL parsing vs AV1 OBU repack). Read under `lock`.
@@ -206,7 +233,7 @@ public final class VideoDecoder: @unchecked Sendable {
         // receipt: both consumers — the decode-stage meter and the ABR decode signal — are
         // specified from the pull, and the receipt→pull wait is the HUD's separate client-queue
         // term (see AccessUnit.pulledNs).
-        let ctx = FrameContext(receivedNs: au.pulledNs, flags: au.flags)
+        let ctx = FrameContext(receivedNs: au.pulledNs, flags: au.flags, packing: packing)
         let refcon = Unmanaged.passRetained(ctx).toOpaque()
         let status = VTDecompressionSessionDecodeFrame(
             session,
@@ -297,7 +324,16 @@ public final class VideoDecoder: @unchecked Sendable {
         // chroma plane. Depth is its own axis: HDR is always 10-bit, and a 10-bit SDR session
         // (Main10 under BT.709) takes the same P010 / `x444` buffer without being HDR.
         let tenBit = Self.isHDRFormat(newFormat) || bitDepth >= 10
+        if let packing {
+            let dimensions = CMVideoFormatDescriptionGetDimensions(newFormat)
+            guard dimensions.width == packing.layout.codedWidth,
+                  dimensions.height == packing.layout.codedHeight else { return false }
+        }
         let pixelFormat: OSType = {
+            if packing != nil {
+                return tenBit ? kCVPixelFormatType_420YpCbCr10BiPlanarFullRange
+                    : kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+            }
             switch (chroma444, tenBit) {
             case (false, false): return kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange // NV12
             case (false, true): return kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange // P010
@@ -320,7 +356,7 @@ public final class VideoDecoder: @unchecked Sendable {
         // falling back to a software decoder far too slow for a real-time stream. 4:2:0
         // H.264/HEVC keeps the software fallback (nil spec) as a robustness net.
         let spec: CFDictionary? =
-            chroma444 || codec == .av1
+            packing != nil || chroma444 || codec == .av1
             ? [kVTVideoDecoderSpecification_RequireHardwareAcceleratedVideoDecoder: true] as CFDictionary
             : nil
         var newSession: VTDecompressionSession?

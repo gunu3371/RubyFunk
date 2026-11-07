@@ -129,9 +129,18 @@ pub enum ChromaFormat {
     #[default]
     Yuv420,
     Yuv444,
+    /// Full-size samples carried in an ordinary double-height 4:2:0 picture.
+    Packed444(pf_packed444::Packing),
 }
 
 impl ChromaFormat {
+    pub fn packing(self) -> Option<pf_packed444::Packing> {
+        match self {
+            Self::Packed444(p) => Some(p),
+            _ => None,
+        }
+    }
+
     pub fn is_444(self) -> bool {
         matches!(self, ChromaFormat::Yuv444)
     }

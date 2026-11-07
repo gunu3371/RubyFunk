@@ -32,6 +32,20 @@ pub trait FieldValue: Sized + Default {
     fn get(v: &[u8]) -> Result<Self>;
 }
 
+impl FieldValue for Option<crate::packed444::Packing> {
+    fn put(&self, f: Fields, tag: u64) -> Fields {
+        match self {
+            Some(p) => f.bytes(tag, &p.encode()),
+            None => f,
+        }
+    }
+    fn get(v: &[u8]) -> Result<Self> {
+        crate::packed444::Packing::decode(v)
+            .map(Some)
+            .ok_or(PunktfunkError::InvalidArg("bad packed video layout"))
+    }
+}
+
 impl FieldValue for u8 {
     fn put(&self, f: Fields, tag: u64) -> Fields {
         f.u8(tag, *self)
@@ -534,6 +548,7 @@ pub struct StreamConfig {
     /// CICP `[primaries, transfer, matrix, full_range]`.
     pub color: [u8; 4],
     pub chroma_format: u8,
+    pub packing: Option<crate::packed444::Packing>,
     /// `IFACE_KIND_*` of the host's interface.
     pub host_iface_kind: u8,
     pub host_link_mbps: u32,
@@ -545,9 +560,13 @@ pub struct StreamConfig {
 }
 
 v2_message!(StreamConfig = reg::MSG_STREAM_CONFIG,
-    { 1 => epoch, 2 => mode, 3 => codec, 4 => bit_depth, 5 => color, 6 => chroma_format,
-      7 => host_iface_kind, 8 => host_link_mbps, 9 => host_sndbuf_kb, 10 => host_forced_shape,
-      11 => stream });
+{ 1 => epoch, 2 => mode, 3 => codec, 4 => bit_depth, 5 => color, 6 => chroma_format,
+  7 => host_iface_kind, 8 => host_link_mbps, 9 => host_sndbuf_kb, 10 => host_forced_shape,
+  11 => stream, 128 => packing }, check |m: &StreamConfig| {
+    m.packing.is_none_or(|p| p.0.source() == (m.mode.width, m.mode.height)
+        && m.chroma_format == CHROMA_IDC_420
+        && matches!(m.codec, CODEC_HEVC | CODEC_AV1) && matches!(m.bit_depth, 8 | 10))
+});
 
 /// Screens one session carries at most, the first included.
 pub const SCREENS_MAX: usize = 4;
@@ -633,13 +652,14 @@ pub struct Screens {
 v2_message!(Screens = reg::MSG_SCREENS, { 1 => screens });
 
 impl StreamConfig {
-    /// What a decoder for this epoch is built for.
+    /// The complete epoch format, including the layout restored after decoding.
     pub fn format(&self) -> VideoFormat {
         VideoFormat {
             codec: self.codec,
             bit_depth: self.bit_depth,
             color: ColorInfo::from_cicp(self.color),
             chroma_format: self.chroma_format,
+            packing: self.packing,
         }
     }
 
@@ -648,6 +668,7 @@ impl StreamConfig {
         self.bit_depth = f.bit_depth;
         self.color = f.color.cicp();
         self.chroma_format = f.chroma_format;
+        self.packing = f.packing;
     }
 }
 
@@ -712,6 +733,52 @@ mod tests {
         let (ty, body, n) = split_frame(&wire, reg::max_body).unwrap().unwrap();
         assert_eq!(n, wire.len());
         assert_eq!(decode::<M>(ty, body).unwrap(), m);
+    }
+
+    #[test]
+    fn packed444_configs_pin_geometry_depth_and_source_colour() {
+        let packing = crate::packed444::Packing(crate::packed444::Geometry::new(65, 9).unwrap());
+        for depth in [8, 10] {
+            for color in [[1, 1, 1, 0], [1, 1, 1, 1], [9, 16, 9, 0], [9, 16, 9, 1]] {
+                let config = StreamConfig {
+                    mode: Mode {
+                        width: 65,
+                        height: 9,
+                        refresh_hz: 120,
+                    },
+                    codec: CODEC_AV1,
+                    bit_depth: depth,
+                    color,
+                    chroma_format: CHROMA_IDC_420,
+                    packing: Some(packing),
+                    ..Default::default()
+                };
+                assert_eq!(
+                    StreamConfig::from_body(&config.fields().into_body()).unwrap(),
+                    config
+                );
+                let mut copy = StreamConfig::default();
+                copy.set_format(config.format());
+                assert_eq!(copy.format(), config.format());
+                assert_eq!(copy.color, color);
+                let mut wrong = config;
+                wrong.mode.height += 1;
+                assert!(StreamConfig::from_body(&wrong.fields().into_body()).is_err());
+                wrong = config;
+                wrong.codec = CODEC_PYROWAVE;
+                assert!(StreamConfig::from_body(&wrong.fields().into_body()).is_err());
+                wrong = config;
+                wrong.chroma_format = CHROMA_IDC_444;
+                assert!(StreamConfig::from_body(&wrong.fields().into_body()).is_err());
+            }
+        }
+        let legacy = StreamConfig::default();
+        let body = legacy.fields().into_body();
+        let mut reader = FieldReader::new(&body);
+        while let Some((tag, _)) = reader.next_field().unwrap() {
+            assert_ne!(tag, 128);
+        }
+        assert!(StreamConfig::from_body(&body).unwrap().packing.is_none());
     }
 
     #[test]
@@ -871,6 +938,7 @@ mod tests {
             total_size: 1 << 40,
         });
         round_trip(StreamConfig {
+            packing: None,
             stream: 0,
             epoch: 4,
             mode,

@@ -5,6 +5,7 @@ members = [
     # other; install sits on core and host. scripts/ci/check-crate-groups.py holds the rule.
     "crates/core/punktfunk-core",
     "crates/core/pf-dmabuf",
+    "crates/core/pf-packed444",
     "crates/core/pf-update-check",
     "crates/core/pf-fluent",
     "crates/codec/pf-bitstream",

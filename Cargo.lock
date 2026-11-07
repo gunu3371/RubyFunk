@@ -3492,6 +3492,7 @@ dependencies = [
  "nvidia-video-codec-sdk",
  "pf-driver-proto",
  "pf-frame",
+ "pf-packed444",
  "pyrowave-sys",
  "serde_json",
  "tracing",
@@ -3507,6 +3508,7 @@ dependencies = [
  "pf-encode-core",
  "pf-encode-win",
  "pf-frame",
+ "pf-packed444",
  "tracing",
  "windows 0.62.2",
 ]
@@ -3521,6 +3523,7 @@ dependencies = [
  "pf-bitstream",
  "pf-encode-core",
  "pf-frame",
+ "pf-packed444",
  "pyrowave-sys",
  "tracing",
  "tracing-subscriber",
@@ -3616,6 +3619,10 @@ dependencies = [
  "rustix",
  "tracing",
 ]
+
+[[package]]
+name = "pf-packed444"
+version = "0.46.0"
 
 [[package]]
 name = "pf-paths"
@@ -4179,6 +4186,7 @@ dependencies = [
  "if-addrs",
  "libc",
  "opus",
+ "pf-packed444",
  "proptest",
  "quinn",
  "quinn-udp",

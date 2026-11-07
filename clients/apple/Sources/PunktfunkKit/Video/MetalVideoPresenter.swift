@@ -977,14 +977,19 @@ public final class MetalVideoPresenter {
     /// must leave: 120 calls is two seconds at 60 Hz, and a live one comes round in a dozen.
     private var latchCache = RecentCache<IOSurfaceID, LatchedSurface>(capacity: 48, idle: 120)
     private var latchTenBit = false
+    private var packedRestorer: Packed444Restorer?
     /// The last luma's size, for the park's fit check.
     private var latchLumaSize: CGSize?
 
-    /// The planes of `pixelBuffer` as resident textures, wrapped on first sight. nil when the
-    /// device cannot latch or the surface cannot be wrapped. RENDER THREAD.
+    /// Wrap an ordinary decoded surface for latching. Packed surfaces require a restore pass
+    /// and never enter this path. RENDER THREAD.
     private func latchTextures(
         for pixelBuffer: CVPixelBuffer, tenBit: Bool
     ) -> (luma: MTLTexture, chroma: MTLTexture)? {
+        guard Packed444FrameInfo.read(pixelBuffer) == nil else {
+            latchLumaSize = nil
+            return nil
+        }
         guard #available(iOS 18, tvOS 18, macOS 15, visionOS 2, *),
               let residency = latchResidency as? MTLResidencySet,
               let surface = CVPixelBufferGetIOSurface(pixelBuffer)?.takeUnretainedValue()
@@ -1201,6 +1206,16 @@ public final class MetalVideoPresenter {
         // expansion; recomputed per frame because the host can flip colour in-band (SDR↔HDR).
         var csc = CscRows.rows(
             CscRows.signal(of: pixelBuffer), depth: tenBit ? 10 : 8, msbPacked: tenBit)
+        let packing = Packed444FrameInfo.read(pixelBuffer)
+        if let packing {
+            guard CVPixelBufferGetPixelFormatType(pixelBuffer) == (packing.depth == 8
+                ? kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+                : kCVPixelFormatType_420YpCbCr10BiPlanarFullRange) else { return false }
+            csc = CscRows.rows(.init(matrix: packing.matrix, fullRange: packing.fullRange),
+                               depth: Int(packing.depth), msbPacked: packing.depth == 10)
+            if packedRestorer == nil { packedRestorer = try? Packed444Restorer(device: device) }
+            guard packedRestorer != nil else { return false }
+        }
         var target = hdrTarget()
         guard let textureCache,
               let luma = makeTexture(
@@ -1226,17 +1241,24 @@ public final class MetalVideoPresenter {
         #else
         let pipeline = hdrActive ? pipelineHDR : (tenBitSDRActive ? pipelineSDR10 : pipelineSDR)
         #endif
-        let decodedSize = CGSize(
-            width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer))
+        let decodedSize = Packed444FrameInfo.visibleSize(pixelBuffer)
+        var restoredChroma = CVMetalTextureGetTexture(chroma)
         return encodePresent(
             decodedSize: decodedSize, targetFromLayout: targetFromLayout, pipeline: pipeline,
             presentAtMediaTime: presentAtMediaTime, providedDrawable: drawable,
             onPresented: onPresented, luma: lumaTexture,
             // Hold the CVMetalTextures + source pixel buffer (its IOSurface) alive until the GPU
             // finishes sampling — releasing them at scope exit could free the backing mid-read.
-            keepAlive: [luma, chroma, pixelBuffer]
+            keepAlive: [luma, chroma, pixelBuffer],
+            prepare: packing.map { info in { [self] commandBuffer, carrierY in
+                guard let uv = CVMetalTextureGetTexture(chroma),
+                      let full = packedRestorer?.encode(commandBuffer, y: carrierY, uv: uv, info: info)
+                else { return nil }
+                restoredChroma = full.uv
+                return full.y
+            } }
         ) { encoder in
-            encoder.setFragmentTexture(CVMetalTextureGetTexture(chroma), index: 1)
+            encoder.setFragmentTexture(restoredChroma, index: 1)
             encoder.setFragmentBytes(&csc, length: MemoryLayout<CscUniform>.stride, index: 0)
             encoder.setFragmentBytes(&target, length: MemoryLayout<HdrTargetUniform>.stride, index: 1)
         }
@@ -1303,7 +1325,9 @@ public final class MetalVideoPresenter {
         decodedSize: CGSize, targetFromLayout: CGSize, pipeline: MTLRenderPipelineState,
         presentAtMediaTime: CFTimeInterval?, providedDrawable: CAMetalDrawable? = nil,
         onPresented: ((Int64?) -> Void)?,
-        luma: MTLTexture, keepAlive: [Any], bind: (MTLRenderCommandEncoder) -> Void
+        luma: MTLTexture, keepAlive: [Any],
+        prepare: ((MTLCommandBuffer, MTLTexture) -> MTLTexture?)? = nil,
+        bind: (MTLRenderCommandEncoder) -> Void
     ) -> Bool {
         // The drawable takes the layer's pixel size (staged by SessionPresenter.layout), so this draw
         // is the only decoded→on-screen scale; before the first layout it takes the frame size.
@@ -1322,8 +1346,13 @@ public final class MetalVideoPresenter {
         guard let target = presentTarget(provided: providedDrawable, decodedSize: decodedSize),
               let commandBuffer = queue.makeCommandBuffer()
         else { return false }
+        var sourceLuma = luma
+        if let prepare {
+            guard let restored = prepare(commandBuffer, luma) else { return false }
+            sourceLuma = restored
+        }
         let (lumaTexture, uvRects) = lumaForTarget(
-            luma, target: target.texture, commandBuffer: commandBuffer)
+            sourceLuma, target: target.texture, commandBuffer: commandBuffer)
         var rects = uvRects
 
         let pass = MTLRenderPassDescriptor()

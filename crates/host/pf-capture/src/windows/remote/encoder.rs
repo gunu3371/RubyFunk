@@ -34,6 +34,9 @@ pub struct DriverEncodeOpenError {
 
 impl std::fmt::Display for DriverEncodeOpenError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.name.starts_with("packed-") {
+            return f.write_str("open packed 4:4:4 video: the GPU or driver declined the coded size, frame rate or range");
+        }
         let tried: Vec<&str> = self
             .backends
             .iter()

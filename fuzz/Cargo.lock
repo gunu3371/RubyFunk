@@ -853,6 +853,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "pf-packed444"
+version = "0.46.0"
+
+[[package]]
 name = "pin-project-lite"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -918,11 +922,13 @@ dependencies = [
  "if-addrs",
  "libc",
  "opus",
+ "pf-packed444",
  "quinn",
  "quinn-udp",
  "rcgen",
  "reed-solomon-simd",
  "rustls",
+ "rustls-webpki",
  "sha2 0.11.0",
  "socket2",
  "spake2",

@@ -827,6 +827,7 @@ async fn handshake(
     extra: Extra,
 ) -> Result<ServerHello> {
     let hello = ClientHello {
+        packed444: None,
         hello: Hello {
             mode: args.mode,
             compositor: args.compositor,

@@ -546,7 +546,14 @@ fn summary(s: &LiveSession) -> SessionSummary {
         join: s.join,
         codec: s.codec.label().to_string(),
         bit_depth: s.bit_depth,
-        chroma: if s.chroma.is_444() { "4:4:4" } else { "4:2:0" }.to_string(),
+        chroma: if s.chroma.packing().is_some() {
+            "packed 4:4:4 v1"
+        } else if s.chroma.is_444() {
+            "4:4:4"
+        } else {
+            "4:2:0"
+        }
+        .to_string(),
         bitrate_kbps: s.bitrate_kbps.load(Ordering::Relaxed),
         bitrate: bitrate_span(&s.counters),
         input: InputCounts {

@@ -399,7 +399,7 @@ mod tests {
         assert_eq!(bytes[8..12], 2560u32.to_le_bytes());
         // v9 widened the AU slot, v8 scoped the driver to its owners, v7 replaced the video
         // transport; each makes the floor the version itself.
-        assert_eq!(PROTOCOL_VERSION, 9);
+        assert_eq!(PROTOCOL_VERSION, 10);
         assert_eq!(MIN_DRIVER_PROTOCOL_VERSION, PROTOCOL_VERSION);
     }
 

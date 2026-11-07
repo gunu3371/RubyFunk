@@ -38,6 +38,7 @@ fn suite_of(id: u8) -> Option<MediaSuite> {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ClientHello {
     pub hello: Hello,
+    pub packed444: Option<crate::packed444::Capabilities>,
     /// What the client calls itself ([`client_label`]): its build and the shell that dialled
     /// (`"android 0.38.0 console/library"`). A label for the host's log, never a fact it acts
     /// on: two sessions from one device are told apart here instead of by capture.
@@ -151,6 +152,9 @@ impl V2Message for ClientHello {
             .when(!self.screens.is_empty(), |f| self.screens.put(f, 27))
             .when(self.slices != 0, |f| f.u8(28, self.slices))
             .when(h.audio_bitstreams != 0, |f| f.u8(29, h.audio_bitstreams))
+            .when(self.packed444.is_some(), |f| {
+                f.bytes(128, &self.packed444.unwrap_or_default().encode())
+            })
     }
 
     fn from_body(body: &[u8]) -> Result<Self> {
@@ -181,6 +185,7 @@ impl V2Message for ClientHello {
         let mut features = FeatureSet::default();
         let (mut profile, mut access_only) = (None, false);
         let mut screens = Vec::new();
+        let mut packed444 = None;
         let mut seen = Vec::new();
         let mut r = FieldReader::new(body);
         while let Some((tag, v)) = r.next_field()? {
@@ -189,6 +194,7 @@ impl V2Message for ClientHello {
             }
             seen.push(tag);
             match tag {
+                128 => packed444 = Some(crate::packed444::Capabilities::decode(v).ok_or_else(bad)?),
                 1 => resume = Some(<[u8; 16]>::try_from(v).map_err(|_| bad())?),
                 2 => suites = v.iter().filter_map(|&id| suite_of(id)).collect(),
                 3 => h.mode = Mode::get(v)?,
@@ -263,6 +269,7 @@ impl V2Message for ClientHello {
             profile,
             access_only,
             screens,
+            packed444,
         })
     }
 }
@@ -280,6 +287,7 @@ fn label(v: &[u8], max: usize) -> Option<String> {
 /// `host → client`: the session.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ServerHello {
+    pub packing: Option<crate::packed444::Packing>,
     pub welcome: Welcome,
     /// Names this session for a reconnect ([`ClientHello::resume`]) and binds the media keys.
     pub session_id: [u8; 16],
@@ -291,6 +299,39 @@ pub struct ServerHello {
     pub features: FeatureSet,
     /// The profile this session resolved to. `None` from a host without profiles.
     pub profile: Option<String>,
+}
+
+impl ServerHello {
+    /// Validate the selected layout against the decoder offer before admitting the first AU.
+    pub fn video_format(
+        &self,
+        offered: Option<crate::packed444::Capabilities>,
+    ) -> Result<VideoFormat> {
+        let w = &self.welcome;
+        let mut format = VideoFormat::of_welcome(w);
+        if let Some(packing) = self.packing {
+            let mode = match (w.codec, w.bit_depth) {
+                (CODEC_HEVC, 8) => crate::packed444::HEVC8,
+                (CODEC_AV1, 8) => crate::packed444::AV1_8,
+                (CODEC_HEVC, 10) => crate::packed444::HEVC10,
+                (CODEC_AV1, 10) => crate::packed444::AV1_10,
+                _ => 0,
+            };
+            if !self.features.has(reg::FEATURE_STREAM_CONFIG)
+                || !self.features.has(reg::FEATURE_FORMAT_EPOCH)
+                || !self.features.has(reg::FEATURE_PACKED444)
+                || packing.0.source() != (w.mode.width, w.mode.height)
+                || w.chroma_format != CHROMA_IDC_420
+                || !offered.is_some_and(|c| c.accepts(packing.0, w.mode.refresh_hz, mode))
+            {
+                return Err(crate::error::PunktfunkError::InvalidArg(
+                    "unoffered packed video mode",
+                ));
+            }
+            format.packing = Some(packing);
+        }
+        Ok(format)
+    }
 }
 
 impl V2Message for ServerHello {
@@ -334,6 +375,9 @@ impl V2Message for ServerHello {
             .when(self.profile.is_some(), |f| {
                 f.str(27, self.profile.as_deref().unwrap_or(""))
             })
+            .when(self.packing.is_some(), |f| {
+                f.bytes(128, &self.packing.unwrap().encode())
+            })
     }
 
     fn from_body(body: &[u8]) -> Result<Self> {
@@ -369,6 +413,7 @@ impl V2Message for ServerHello {
         let mut features = FeatureSet::default();
         let mut profile = None;
         let mut seen = Vec::new();
+        let mut packing = None;
         let mut r = FieldReader::new(body);
         while let Some((tag, v)) = r.next_field()? {
             if seen.contains(&tag) {
@@ -376,6 +421,7 @@ impl V2Message for ServerHello {
             }
             seen.push(tag);
             match tag {
+                128 => packing = Some(crate::packed444::Packing::decode(v).ok_or_else(bad)?),
                 1 => session_id = Some(<[u8; 16]>::try_from(v).map_err(|_| bad())?),
                 2 => clock_origin_ns = u64_of(v)?,
                 // An id this build does not know cannot open the media; refuse the session.
@@ -443,6 +489,7 @@ impl V2Message for ServerHello {
             w.audio_frame_us = w.audio_frame_us.max(1_000);
         }
         Ok(ServerHello {
+            packing,
             welcome: w,
             session_id: session_id.ok_or_else(bad)?,
             clock_origin_ns,
@@ -620,6 +667,108 @@ mod tests {
             })
     }
 
+    #[test]
+    fn packed444_selection_requires_a_matching_offer_and_epoch_features() {
+        let mode = Mode {
+            width: 2304,
+            height: 1496,
+            refresh_hz: 120,
+        };
+        let packing = crate::packed444::Packing(
+            crate::packed444::Geometry::new(mode.width, mode.height).unwrap(),
+        );
+        let caps = crate::packed444::Capabilities {
+            versions: 1,
+            modes: crate::packed444::AV1_8,
+            limits: crate::packed444::Limits {
+                max_width: 2304,
+                max_height: 2992,
+                max_pixels_per_second: 827_228_160,
+            },
+        };
+        let features = FeatureSet::default()
+            .with(reg::FEATURE_PACKED444)
+            .with(reg::FEATURE_FORMAT_EPOCH)
+            .with(reg::FEATURE_STREAM_CONFIG);
+        let fields = mode
+            .put(Fields::new().bytes(1, &[0; 16]), 5)
+            .bytes(4, &features.encode())
+            .u8(14, 8)
+            .u8(16, CHROMA_IDC_420)
+            .u8(18, CODEC_AV1)
+            .bytes(128, &packing.encode());
+        let server = ServerHello::from_body(&fields.into_body()).unwrap();
+        assert_eq!(
+            server.video_format(Some(caps)).unwrap().packing,
+            Some(packing)
+        );
+        assert!(server.video_format(None).is_err());
+        assert!(server
+            .video_format(Some(crate::packed444::Capabilities {
+                modes: crate::packed444::HEVC8,
+                ..caps
+            }))
+            .is_err());
+        let mut wrong = server.clone();
+        wrong.welcome.bit_depth = 10;
+        assert!(wrong.video_format(Some(caps)).is_err());
+        wrong = server.clone();
+        wrong.welcome.mode.refresh_hz = 121;
+        assert!(wrong.video_format(Some(caps)).is_err());
+        wrong = server.clone();
+        wrong.features = FeatureSet::default();
+        assert!(wrong.video_format(Some(caps)).is_err());
+        wrong = server;
+        wrong.packing = None;
+        assert!(wrong.video_format(None).unwrap().packing.is_none());
+    }
+
+    #[test]
+    fn packed444_hello_extensions_are_optional_and_preserve_limits() {
+        let limits = crate::packed444::Capabilities {
+            versions: 1,
+            modes: crate::packed444::AV1_8,
+            limits: crate::packed444::Limits {
+                max_width: 2304,
+                max_height: 2992,
+                max_pixels_per_second: 827_228_160,
+            },
+        };
+        let empty = Fields::new().into_body();
+        assert!(ClientHello::from_body(&empty).unwrap().packed444.is_none());
+        let body = Fields::new().bytes(128, &limits.encode()).into_body();
+        let hello = ClientHello::from_body(&body).unwrap();
+        assert_eq!(hello.packed444, Some(limits));
+        assert_eq!(
+            ClientHello::from_body(&hello.fields().into_body())
+                .unwrap()
+                .packed444,
+            Some(limits)
+        );
+        assert!(ClientHello::from_body(&Fields::new().bytes(128, &[1; 17]).into_body()).is_err());
+
+        let packing =
+            crate::packed444::Packing(crate::packed444::Geometry::new(2304, 1496).unwrap());
+        let body = Fields::new()
+            .bytes(1, &[0; 16])
+            .bytes(128, &packing.encode())
+            .into_body();
+        let server = ServerHello::from_body(&body).unwrap();
+        assert_eq!(server.packing, Some(packing));
+        assert_eq!(
+            ServerHello::from_body(&server.fields().into_body())
+                .unwrap()
+                .packing,
+            Some(packing)
+        );
+        assert!(
+            ServerHello::from_body(&Fields::new().bytes(1, &[0; 16]).into_body())
+                .unwrap()
+                .packing
+                .is_none()
+        );
+    }
+
     proptest! {
         #![proptest_config(ProptestConfig::with_cases(512))]
 
@@ -627,12 +776,12 @@ mod tests {
         /// changes nothing.
         #[test]
         fn hellos_settle_after_one_trip(h in hello_strategy(), w in welcome_strategy()) {
-            let ch = ClientHello { hello: h, client_label: None, abr_features: 0, preset: None, link: LinkFacts::default(), probe_only: false, pyrowave_bpp_x100: 0, slices: 0, resume: None, suites: vec![], features: FeatureSet::default(), profile: None, access_only: false, screens: vec![] };
+            let ch = ClientHello { packed444: None, hello: h, client_label: None, abr_features: 0, preset: None, link: LinkFacts::default(), probe_only: false, pyrowave_bpp_x100: 0, slices: 0, resume: None, suites: vec![], features: FeatureSet::default(), profile: None, access_only: false, screens: vec![] };
             let once = ClientHello::from_body(&ch.fields().into_body()).unwrap();
             let twice = ClientHello::from_body(&once.fields().into_body()).unwrap();
             prop_assert_eq!(twice, once);
 
-            let sh = ServerHello { welcome: w, session_id: [7; 16], clock_origin_ns: 1, suite: None, features: FeatureSet::default(), profile: None };
+            let sh = ServerHello { packing: None, welcome: w, session_id: [7; 16], clock_origin_ns: 1, suite: None, features: FeatureSet::default(), profile: None };
             let once = ServerHello::from_body(&sh.fields().into_body()).unwrap();
             let twice = ServerHello::from_body(&once.fields().into_body()).unwrap();
             prop_assert_eq!(twice, once);
@@ -734,6 +883,7 @@ mod tests {
     #[test]
     fn start_extensions_and_session_fields_ride_along() {
         let ch = ClientHello {
+            packed444: None,
             hello: Hello {
                 mode: Mode {
                     width: 1920,
@@ -812,6 +962,7 @@ mod tests {
         assert!(ClientHello::from_body(&torn).unwrap().screens.is_empty());
 
         let sh = ServerHello {
+            packing: None,
             welcome: ServerHello::from_body(&Fields::new().bytes(1, &[0; 16]).into_body())
                 .unwrap()
                 .welcome,

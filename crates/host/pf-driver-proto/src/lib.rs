@@ -35,30 +35,10 @@ pub const fn interface_guid_fields() -> (u32, u16, u16, [u8; 8]) {
     )
 }
 
-/// Bumped on any incompatible change to either plane. Exchanged via [`control::IOCTL_GET_INFO`];
-/// host and driver assert a match at startup.
-///
-/// v9 widens [`encode::au::AuSlot`] from 32 to 48 bytes with the driver's encode-submit and
-/// publish QPC, so the host can split present → arrival into pool, encode and hand-off. A layout
-/// change, so not additive; host and driver ship in one installer.
-///
-/// v8 scopes the driver to the process that asks: a monitor, its encoder and its cursor channel
-/// answer only to the owner whose `IOCTL_ADD` created them, `IOCTL_CLEAR_ALL` departs the
-/// caller's own, and an owner's monitors depart when its last control handle closes or it goes
-/// silent for the watchdog window. `IOCTL_SET_RENDER_ADAPTER` stays adapter-wide by IddCx
-/// design. v7 replaced the pixel ring with driver-side encode into the host's section
-/// ([`encode::IOCTL_SET_ENCODE`]); `IOCTL_SET_FRAME_CHANNEL` no longer exists.
-///
-/// [`control::AddRequest`] luminance tail and [`control::AddReply::cursor_excluded`] are
-/// prefix-compatible (no bump): a short read/write sees zeros = unknown. A hardware-cursor
-/// declare is irrevocable on the adapter — DWM excludes the pointer from every later monitor
-/// until the adapter resets — so the driver blends the pointer when the client draws none.
-pub const PROTOCOL_VERSION: u32 = 9;
-
-/// Oldest driver this host still drives. Equal to [`PROTOCOL_VERSION`]: a v8 driver writes
-/// 32-byte slots into a table this host lays out at 48, v7 lets a second host reach this
-/// host's monitors, and v6 speaks a video transport that no longer exists.
-pub const MIN_DRIVER_PROTOCOL_VERSION: u32 = 9;
+/// The host and driver agree on packed-video requests before any encoder opens.
+pub const PROTOCOL_VERSION: u32 = 10;
+/// Older drivers interpret packed-video requests as ordinary 4:2:0.
+pub const MIN_DRIVER_PROTOCOL_VERSION: u32 = 10;
 
 /// `CTL_CODE(FILE_DEVICE_UNKNOWN = 0x22, func, METHOD_BUFFERED = 0, FILE_ANY_ACCESS = 0)`.
 pub const fn ctl_code(func: u32) -> u32 {

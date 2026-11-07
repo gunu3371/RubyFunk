@@ -83,7 +83,11 @@ struct AUIntake {
             frameIndex: au.frameIndex, idrFormat: idrFormat, lossAhead: arrival.gap > 0,
             flags: au.flags, concealed: concealed)
         if step.askKeyframe { connection.requestKeyframe() }
-        if let size = step.newSize { onDecodedSize?(size.width, size.height) }
+        if let size = step.newSize {
+            if let packing = connection.streamFormat.packing {
+                onDecodedSize?(packing.width, packing.height)
+            } else { onDecodedSize?(size.width, size.height) }
+        }
         if step.resumed {
             let ms = Int(Date().timeIntervalSince(awaitingSince) * 1000)
             intakeLog.notice("video: recovery IDR received — resumed after \(ms, privacy: .public) ms")

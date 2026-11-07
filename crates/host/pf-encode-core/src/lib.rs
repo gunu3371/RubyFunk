@@ -12,6 +12,7 @@ mod codec;
 /// The encoder knobs (`host.env` via the driver request, or the environment).
 pub mod knobs;
 pub use codec::*;
+pub use pf_packed444 as packed444;
 
 // `NVENCSTATUS` → cause for both direct-NVENC backends. Splits the two
 // opposite failures the driver reports as the same `INVALID_VERSION`.

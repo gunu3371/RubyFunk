@@ -560,7 +560,83 @@ unsafe impl Send for Component {}
 // Init, Flush and Terminate need `&mut self`, which no thread gets while the other holds a clone.
 unsafe impl Sync for Component {}
 
+struct Caps(*mut sys::AmfCaps);
+impl Drop for Caps {
+    fn drop(&mut self) {
+        // SAFETY: GetCaps transfers one owned reference, released exactly once here.
+        unsafe {
+            ((*(*self.0).vtbl).release)(self.0);
+        }
+    }
+}
+struct IoCaps(*mut sys::AmfIoCaps);
+impl Drop for IoCaps {
+    fn drop(&mut self) {
+        // SAFETY: GetInputCaps transfers one owned reference, released exactly once here.
+        unsafe {
+            ((*(*self.0).vtbl).release)(self.0);
+        }
+    }
+}
+
 impl Component {
+    fn check_packed_limits(&self, codec: Codec, width: u32, height: u32, fps: u32) -> Result<()> {
+        let (mut caps, mut io) = (ptr::null_mut(), ptr::null_mut());
+        // SAFETY: live component and local out-param; a successful non-null result owns a ref.
+        let status = unsafe { ((*(*self.0).vtbl).get_caps)(self.0, &mut caps) };
+        amf_ok(status, "query packed encoder limits")?;
+        anyhow::ensure!(
+            !caps.is_null(),
+            "query packed encoder limits: no capability object"
+        );
+        let caps = Caps(caps);
+        // SAFETY: the owned caps reference outlives the call and the local out-param.
+        let status = unsafe { ((*(*caps.0).vtbl).get_input_caps)(caps.0, &mut io) };
+        amf_ok(status, "query packed encoder input limits")?;
+        anyhow::ensure!(
+            !io.is_null(),
+            "query packed encoder input limits: no input object"
+        );
+        let io = IoCaps(io);
+        let (mut min_w, mut max_w, mut min_h, mut max_h) = (0, 0, 0, 0);
+        // SAFETY: the owned input caps and all scalar out-params remain live through each call.
+        unsafe {
+            ((*(*io.0).vtbl).get_width_range)(io.0, &mut min_w, &mut max_w);
+            ((*(*io.0).vtbl).get_height_range)(io.0, &mut min_h, &mut max_h);
+        }
+        anyhow::ensure!((min_w..=max_w).contains(&(width as i32))
+            && (min_h..=max_h).contains(&(height as i32)),
+            "packed encoder size {width}x{height} exceeds input limits {min_w}..{max_w} x {min_h}..{max_h}");
+        let property = match codec {
+            Codec::H265 => "HevcMaxThroughput",
+            Codec::Av1 => "Av1CapMaxThroughput",
+            _ => bail!("packed encoder codec"),
+        };
+        let name = HSTRING::from(property);
+        let mut value = AmfVariant::zeroed();
+        // SAFETY: the property name and scalar variant out-param outlive the synchronous call.
+        let status = unsafe { ((*(*caps.0).vtbl).get_property)(caps.0, name.as_ptr(), &mut value) };
+        amf_ok(status, "query packed encoder throughput")?;
+        let maximum = value
+            .as_i64()
+            .filter(|v| *v > 0)
+            .context("query packed encoder throughput: unknown limit")?
+            as u64;
+        let needed =
+            u64::from(width.div_ceil(16)) * u64::from(height.div_ceil(16)) * u64::from(fps);
+        anyhow::ensure!(needed <= maximum,
+            "packed encoder rate {needed} macroblocks/s exceeds {maximum}; reconnect with ordinary video or a lower mode");
+        tracing::info!(
+            width,
+            height,
+            fps,
+            needed,
+            maximum,
+            "packed encoder limits accepted"
+        );
+        Ok(())
+    }
+
     /// `SetProperty`, raw result.
     fn set_property(&self, name: &HSTRING, value: AmfVariant) -> sys::AmfResult {
         // SAFETY: live component (guard proof above); `name` outlives the call. AMF copies the
@@ -1059,6 +1135,7 @@ struct Live {
 }
 
 pub struct AmfEncoder {
+    packed_limits: bool,
     codec: Codec,
     props: CodecProps,
     width: u32,
@@ -1150,6 +1227,7 @@ impl AmfEncoder {
             tracing::warn!("AMF cannot encode 4:4:4 (VCN hardware limit) — encoding 4:2:0");
         }
         Ok(AmfEncoder {
+            packed_limits: false,
             codec,
             props,
             width,
@@ -1176,9 +1254,12 @@ impl AmfEncoder {
         })
     }
 
-    /// Encode and signal studio range instead of full, before the first frame. For a GPU whose
-    /// own RGB conversion writes studio samples whatever is asked ([`crate::amf_range`]): the
-    /// stream then says what it carries.
+    /// Require AMF to report a sufficient coded-size and rate limit before encoding.
+    pub fn require_packed_limits(&mut self) {
+        self.packed_limits = true;
+    }
+
+    /// Encode and signal the carrier's full or studio range.
     pub fn set_full_range(&mut self, full: bool) {
         self.full_range = full;
     }
@@ -1311,7 +1392,7 @@ impl AmfEncoder {
                 )?;
                 // 1 = NOMINAL_RANGE_FULL, 0 = studio, whichever input the ring holds.
                 let range = AmfVariant::from_i64(i64::from(self.full_range));
-                comp.set_prop(h!("HevcNominalRange"), range, false)?;
+                comp.set_prop(h!("HevcNominalRange"), range, self.packed_limits)?;
                 if self.ten_bit {
                     // Main10 + 10-bit surfaces: required — silent 8-bit HDR is worse than failing open.
                     comp.set_prop(
@@ -1344,7 +1425,7 @@ impl AmfEncoder {
                 // `AMF_VIDEO_ENCODER_AV1_OUTPUT_FULL_RANGE_COLOR`. Its false default signals
                 // studio in the sequence header, whatever the samples hold.
                 let full = AmfVariant::from_bool(self.full_range);
-                comp.set_prop(h!("Av1NominalRange"), full, false)?;
+                comp.set_prop(h!("Av1NominalRange"), full, self.packed_limits)?;
                 // Sequence header OBU on every key frame (self-contained join points).
                 comp.set_prop(
                     h!("Av1HeaderInsertionMode"),
@@ -1390,9 +1471,19 @@ impl AmfEncoder {
         } else {
             (TRANSFER_BT709, PRIMARIES_BT709)
         };
-        comp.set_prop(p.out_color_profile, AmfVariant::from_i64(profile), self.hdr)?;
+        comp.set_prop(
+            p.out_color_profile,
+            AmfVariant::from_i64(profile),
+            self.hdr || self.packed_limits,
+        )?;
         comp.set_prop(p.out_transfer, AmfVariant::from_i64(transfer), self.hdr)?;
         comp.set_prop(p.out_primaries, AmfVariant::from_i64(primaries), self.hdr)?;
+        if self.packed_limits {
+            comp.set_prop(p.in_color_profile, AmfVariant::from_i64(profile), true)?;
+            comp.set_prop(p.in_transfer, AmfVariant::from_i64(transfer), true)?;
+            comp.set_prop(p.in_primaries, AmfVariant::from_i64(primaries), true)?;
+            comp.set_prop(p.in_full_range, AmfVariant::from_bool(true), true)?;
+        }
         // BGRA in is full-range RGB, which VCN converts to the output above. The profile is
         // required: a runtime left guessing washes the picture out. A refusal fails this open
         // and the caller falls back to NV12.
@@ -1454,6 +1545,9 @@ impl AmfEncoder {
         amf_ok(r, "AMF InitDX11 (capturer device)")?;
         let mut comp = lib.create_component(&ctx, self.props.component)?;
         let live = self.apply_static_props(&comp)?;
+        if self.packed_limits {
+            comp.check_packed_limits(self.codec, self.width, self.height, self.fps)?;
+        }
         let blocking = set_query_timeout(&comp, self.props.query_timeout);
         let (fmt, _) = input_formats(self.input).context("AMF input format")?;
         amf_ok(

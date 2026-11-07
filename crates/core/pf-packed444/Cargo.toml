@@ -1,0 +1,11 @@
+[package]
+name = "pf-packed444"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license = "MIT OR Apache-2.0"
+description = "RubyFunk packed 4:4:4 geometry and conformance model"
+publish = false
+
+[lints]
+workspace = true

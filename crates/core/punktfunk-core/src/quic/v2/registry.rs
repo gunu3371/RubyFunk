@@ -267,6 +267,8 @@ pub const FEATURE_PROFILE_UNLOCK: u32 = 42;
 /// Client, on one dial: a `ProfileUnlock` follows this `ClientHello` on the control stream
 /// ([`super::hello::ClientHello::unlock_follows`]). A host never sets it.
 pub const FEATURE_UNLOCK_FOLLOWS: u32 = 43;
+/// RubyFunk packed v1; the hello also carries decoder limits.
+pub const FEATURE_PACKED444: u32 = 120;
 
 #[cfg(test)]
 mod tests {
@@ -310,6 +312,7 @@ mod tests {
         ("FEATURE_STUDIO_RANGE_HDR", FEATURE_STUDIO_RANGE_HDR),
         ("FEATURE_PROFILE_UNLOCK", FEATURE_PROFILE_UNLOCK),
         ("FEATURE_UNLOCK_FOLLOWS", FEATURE_UNLOCK_FOLLOWS),
+        ("FEATURE_PACKED444", FEATURE_PACKED444),
     ];
 
     /// Every close and stop code either wire uses: v1's live on, and v2 adds its own.

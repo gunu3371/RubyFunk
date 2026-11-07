@@ -822,6 +822,10 @@ pub struct PunktfunkConnectOpts {
     pub prompts_unlock: u8,
     /// Always `0`. Fills what would otherwise be padding.
     pub reserved6: [u8; 7],
+    /// Packed-video decoder limits, as the 18-byte RubyFunk capability value; zeros disable.
+    /// Advertise only when the renderer restores v1 and the decoder accepts the coded size.
+    pub packed444: [u8; 18],
+    pub reserved7: [u8; 6],
 }
 
 /// [`PunktfunkProfileUnlock::kind`]: the account password as typed.
@@ -960,7 +964,7 @@ const _: () = {
     use core::mem::{offset_of, size_of};
     #[cfg(target_pointer_width = "64")]
     assert!(
-        size_of::<PunktfunkConnectOpts>() == 192
+        size_of::<PunktfunkConnectOpts>() == 216
             && offset_of!(PunktfunkConnectOpts, video_fit) == 100
             && offset_of!(PunktfunkConnectOpts, delivery_flags) == 121
             && offset_of!(PunktfunkConnectOpts, profile_id) == 128
@@ -975,7 +979,7 @@ const _: () = {
     );
     #[cfg(target_pointer_width = "32")]
     assert!(
-        size_of::<PunktfunkConnectOpts>() == 136
+        size_of::<PunktfunkConnectOpts>() == 160
             && offset_of!(PunktfunkConnectOpts, video_fit) == 72
             && offset_of!(PunktfunkConnectOpts, delivery_flags) == 85
             && offset_of!(PunktfunkConnectOpts, profile_id) == 92
@@ -1038,6 +1042,8 @@ impl Default for PunktfunkConnectOpts {
             unlock: ptr::null(),
             prompts_unlock: 0,
             reserved6: [0; 7],
+            packed444: [0; 18],
+            reserved7: [0; 6],
         }
     }
 }
@@ -1321,6 +1327,8 @@ unsafe fn connect_params(
     // SAFETY: `unlock` is null or a readable struct whose buffers match their lengths.
     let unlock = unsafe { unlock_of(o.unlock) }?;
     Ok(punktfunk_core::client::ConnectParams {
+        packed444: punktfunk_core::packed444::Capabilities::decode(&o.packed444)
+            .filter(|c| c.versions != 0 && c.modes != 0),
         prompts_unlock: o.prompts_unlock != 0,
         unlock,
         compositor,

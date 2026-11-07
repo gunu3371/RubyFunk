@@ -13,7 +13,8 @@ use std::sync::{Arc, Mutex};
 
 use pf_driver_proto::encode::EncodeInput;
 use pf_encode_win::convert::{
-    BgraToYuvPlanes, CursorBlendPass, HdrP010Converter, HdrRgb10Converter, VideoConverter,
+    BgraToYuvPlanes, CursorBlendPass, HdrP010Converter, HdrRgb10Converter, Packed444Converter,
+    VideoConverter,
 };
 use pf_frame::dxgi::{D3d11Frame, PyroFrameShare};
 use pf_frame::{CapturedFrame, CursorOverlay, FramePayload, PixelFormat, Provenance};
@@ -147,10 +148,12 @@ impl SharedFence {
 /// the D3D formats behind each variant.
 pub type InputKind = EncodeInput;
 
-/// The `PixelFormat` label the frame carries into `submit`.
+/// The encoder input surface format, including the packed carrier.
 pub fn pixel_format(kind: InputKind) -> PixelFormat {
     match kind {
         InputKind::Bgra => PixelFormat::Bgra,
+        InputKind::Packed444 { depth: 8, .. } => PixelFormat::Nv12,
+        InputKind::Packed444 { .. } => PixelFormat::P010,
         InputKind::Nv12
         | InputKind::Planar {
             hdr: false,
@@ -169,11 +172,11 @@ pub fn pixel_format(kind: InputKind) -> PixelFormat {
     }
 }
 
-/// The source the pass reads: FP16 under advanced colour (HDR or SDR wide colour), BGRA
-/// otherwise.
+/// Capture stays FP16 under advanced colour and BGRA otherwise, before any packing.
 pub fn source_format(kind: InputKind) -> dxgi::DXGI_FORMAT {
     match kind {
-        InputKind::P010
+        InputKind::Packed444 { fp16: true, .. }
+        | InputKind::P010
         | InputKind::Rgb10
         | InputKind::Fp16
         | InputKind::Rgb10Wcg
@@ -185,6 +188,10 @@ pub fn source_format(kind: InputKind) -> dxgi::DXGI_FORMAT {
 }
 
 enum Planes {
+    Packed444 {
+        conv: Packed444Converter,
+        out: Vec<(Tex, Rtv, Rtv)>,
+    },
     /// BGRA or FP16: the slot holds the source's own format and the backend converts.
     Composed(Vec<Tex>),
     Nv12 {
@@ -248,9 +255,8 @@ pub struct Targets {
 }
 
 impl Targets {
-    /// `full_range` is the range the session advertised, which the YUV converters write, HDR
-    /// included. The PyroWave converters write full range, the only range the host advertises
-    /// for them.
+    /// `full_range` describes source sample codes. Packed output preserves these codes in a
+    /// full-range carrier; its encoder signalling is set separately.
     pub fn new(
         kind: InputKind,
         dev: &d3d::ID3D11Device,
@@ -265,6 +271,32 @@ impl Targets {
         };
         let rt = d3d::D3D11_BIND_RENDER_TARGET.0 as u32;
         let planes = match kind {
+            InputKind::Packed444 { depth, hdr, fp16 } => {
+                let geometry = pf_packed444::Geometry::new(w, h).ok_or((-4, "packed-size"))?;
+                let conv = Packed444Converter::new(dev, geometry, depth, hdr, fp16, full_range)
+                    .map_err(convert_err)?;
+                let (format, yf, cf) = if depth == 8 {
+                    (
+                        dxgi::DXGI_FORMAT_NV12,
+                        dxgi::DXGI_FORMAT_R8_UNORM,
+                        dxgi::DXGI_FORMAT_R8G8_UNORM,
+                    )
+                } else {
+                    (
+                        dxgi::DXGI_FORMAT_P010,
+                        dxgi::DXGI_FORMAT_R16_UNORM,
+                        dxgi::DXGI_FORMAT_R16G16_UNORM,
+                    )
+                };
+                let mut out = Vec::with_capacity(slots);
+                for _ in 0..slots {
+                    let t = make_tex(dev, geometry.coded(), format, rt, 0)?;
+                    let y = HdrP010Converter::plane_rtv(dev, &t, yf).map_err(convert_err)?;
+                    let uv = HdrP010Converter::plane_rtv(dev, &t, cf).map_err(convert_err)?;
+                    out.push((t, y, uv));
+                }
+                Planes::Packed444 { conv, out }
+            }
             InputKind::Bgra | InputKind::Fp16 => {
                 let bind = rt | d3d::D3D11_BIND_SHADER_RESOURCE.0 as u32;
                 let slots = (0..slots)
@@ -508,7 +540,7 @@ impl Targets {
         self.under = Some((i, rect));
     }
 
-    /// The converter for slot `i` from `src`; `view` is its cached SRV, else one is made.
+    /// Fill slot `i` from RGB; reuse `view` when the source already has an SRV.
     fn convert(&self, src: &Tex, view: Option<&Srv>, i: usize) -> Result<(), Fail> {
         let convert_err = |e: anyhow::Error| {
             tracing::info!("encode: convert failed: {e:#}");
@@ -519,6 +551,9 @@ impl Targets {
             None => srv(&self.dev, src),
         };
         match &self.planes {
+            Planes::Packed444 { conv, out } => {
+                conv.convert(&self.ctx, &view()?, &out[i].1, &out[i].2)
+            }
             Planes::Composed(_) => {}
             Planes::Nv12 { conv, out } => conv.convert(src, &out[i]).map_err(convert_err)?,
             Planes::P010Sdr { conv, out } => conv.convert(src, &out[i]).map_err(convert_err)?,
@@ -615,9 +650,8 @@ impl Targets {
         }
     }
 
-    /// Wrap filled slot `i` as the frame `submit` takes, after the cursor blend and the
-    /// converter a deferred pass left for this thread. The planar pair signals its fence here,
-    /// so the Vulkan wait orders after the pass however far apart the two threads ran.
+    /// Finish deferred cursor/conversion work and wrap the input at encoder dimensions.
+    /// The planar pair signals its fence after the pass, before the Vulkan consumer waits.
     pub fn frame(
         &mut self,
         i: usize,
@@ -634,6 +668,7 @@ impl Targets {
             self.convert(&t, Some(&v), i)?;
         }
         let (texture, pyro) = match &mut self.planes {
+            Planes::Packed444 { out, .. } => (out[i].0.clone(), None),
             Planes::Composed(slots) => (slots[i].clone(), None),
             Planes::Nv12 { out, .. } => (out[i].clone(), None),
             Planes::P010Sdr { out, .. } => (out[i].clone(), None),
@@ -665,9 +700,16 @@ impl Targets {
                 (y[i].0.clone(), Some(share))
             }
         };
+        let (width, height) = if matches!(self.kind, InputKind::Packed444 { .. }) {
+            pf_packed444::Geometry::new(self.width, self.height)
+                .ok_or((-4, "packed-size"))?
+                .coded()
+        } else {
+            (self.width, self.height)
+        };
         Ok(CapturedFrame {
-            width: self.width,
-            height: self.height,
+            width,
+            height,
             pts_ns,
             format: pixel_format(self.kind),
             payload: FramePayload::D3d11(D3d11Frame {
@@ -862,6 +904,90 @@ mod tests {
     /// The save-under contract: the blend changes the slot, and the restore puts back exactly
     /// what was there. A blend that never drew would leave the two reads equal and fail here
     /// first, so a build without the quad cannot pass this by doing nothing.
+    #[test]
+    #[ignore = "requires D3D11 planar render targets; run on the Windows host"]
+    fn packed444_rgb_pass_preserves_each_chroma_sample() {
+        use pf_packed444::{Geometry, Plane};
+        let (dev, ctx) = device().expect("a D3D11 device");
+        for (w, h) in [(1, 1), (3, 5), (65, 9)] {
+            let g = Geometry::new(w, h).unwrap();
+            let (cw, ch) = g.coded();
+            let pixels: Vec<u8> = (0..w * h)
+                .flat_map(|i| [(i * 71) as u8, (i * 13) as u8, (i * 197) as u8, 255])
+                .collect();
+            let source = upload(&dev, (w, h), dxgi::DXGI_FORMAT_B8G8R8A8_UNORM, &pixels);
+            for depth in [8, 10] {
+                for full_range in [false, true] {
+                    let kind = InputKind::Packed444 {
+                        depth,
+                        hdr: false,
+                        fp16: false,
+                    };
+                    let mut targets = Targets::new(kind, &dev, &ctx, (w, h), 1, full_range)
+                        .expect("packed targets");
+                    targets.pass(&source, 0, true).expect("source copy");
+                    let frame = targets.frame(0, 1, None).expect("deferred pack pass");
+                    assert_eq!((frame.width, frame.height), (cw, ch));
+                    let Planes::Packed444 { out, .. } = &targets.planes else {
+                        unreachable!()
+                    };
+                    let format = if depth == 8 {
+                        dxgi::DXGI_FORMAT_NV12
+                    } else {
+                        dxgi::DXGI_FORMAT_P010
+                    };
+                    let (bytes, pitch) = staged(&dev, &ctx, &out[0].0, (cw, ch), format);
+                    for plane in [Plane::Y, Plane::U, Plane::V] {
+                        let (pw, ph) = g.padded();
+                        for y in 0..ph {
+                            for x in 0..pw {
+                                let address = g.address(plane, x, y).unwrap();
+                                let (row, column) = match address.plane {
+                                    Plane::Y => (address.y, address.x),
+                                    Plane::U => (ch + address.y, 2 * address.x),
+                                    Plane::V => (ch + address.y, 2 * address.x + 1),
+                                };
+                                let at = row as usize * pitch
+                                    + column as usize * if depth == 8 { 1 } else { 2 };
+                                let got = if depth == 8 {
+                                    u16::from(bytes[at])
+                                } else {
+                                    u16::from_le_bytes([bytes[at], bytes[at + 1]]) >> 6
+                                };
+                                let p = ((y.min(h - 1) * w + x.min(w - 1)) * 4) as usize;
+                                let b = f64::from(pixels[p]) / 255.0;
+                                let green = f64::from(pixels[p + 1]) / 255.0;
+                                let r = f64::from(pixels[p + 2]) / 255.0;
+                                let luma = 0.2126 * r + 0.7152 * green + 0.0722 * b;
+                                let maximum = f64::from((1u16 << depth) - 1);
+                                let step = f64::from(1u16 << (depth - 8));
+                                let value = match plane {
+                                    Plane::Y if full_range => maximum * luma,
+                                    Plane::Y => 16.0 * step + 219.0 * step * luma,
+                                    _ => {
+                                        let chroma = if plane == Plane::U {
+                                            (b - luma) / 1.8556
+                                        } else {
+                                            (r - luma) / 1.5748
+                                        };
+                                        128.0 * step
+                                            + chroma
+                                                * if full_range { maximum } else { 224.0 * step }
+                                    }
+                                };
+                                let want = value.round().clamp(0.0, maximum) as u16;
+                                assert!(
+                                    got.abs_diff(want) <= 1,
+                                    "{w}x{h} depth {depth} full {full_range} {plane:?} ({x},{y}): {got} != {want}"
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     #[test]
     fn a_restored_slot_is_the_frame_the_blend_covered() {
         let Some((dev, ctx)) = device() else {

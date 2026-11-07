@@ -344,7 +344,7 @@ final class SessionPresenter {
             setting: nil, // the legacy DefaultsKey.presenter picker value is no longer read
             env: ProcessInfo.processInfo.environment["PUNKTFUNK_PRESENTER"],
             allowStage1: allowStage1)
-        let choice = explicit ?? PresenterChoice.platformDefault
+        let choice = connection.streamFormat.packing != nil ? PresenterChoice.platformDefault : (explicit ?? PresenterChoice.platformDefault)
         let selectedPacing = Self.pacing(for: choice, codec: connection.videoCodec)
         let priority = PresentPriority.resolve(
             setting: connection.settings.presentPriority,
@@ -352,7 +352,7 @@ final class SessionPresenter {
         // Direct video presentation is the zero-buffer latency path. A user who asks for a
         // smoothness buffer keeps the existing deadline engine, where FrameStore owns that buffer.
         let effective = Self.effectivePacing(
-            selectedPacing, priority: priority, videoLayerCompatible: !connection.isChroma444)
+            selectedPacing, priority: priority, videoLayerCompatible: !connection.isChroma444 && connection.streamFormat.packing == nil)
         #if os(visionOS)
         // The curve's queue vends its own drawables: frames draw on arrival.
         let pacing = curve != nil ? PresentPacing.arrival : effective
@@ -419,6 +419,8 @@ final class SessionPresenter {
             pipeline.start(
                 connection: connection, onFrame: onFrame, onSessionEnd: onSessionEnd,
                 onDecodedSize: onDecodedSize, onFrameHDR: onFrameHDR, screen: screen)
+        } else if connection.streamFormat.packing != nil {
+            onSessionEnd?()
         } else if screen == 0 {
             let pump = StreamPump()
             pump.start(

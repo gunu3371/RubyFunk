@@ -1335,9 +1335,7 @@ extension MetalVideoPresenter {
         switch image {
         case .video(let pixelBuffer, let isHDR):
             reconcileLayer(
-                decodedSize: CGSize(
-                    width: CVPixelBufferGetWidth(pixelBuffer),
-                    height: CVPixelBufferGetHeight(pixelBuffer)),
+                decodedSize: Packed444FrameInfo.visibleSize(pixelBuffer),
                 isHDR: isHDR, tenBitSDR: MetalVideoPresenter.tenBitBuffer(pixelBuffer))
         case .planar(let planes):
             reconcileLayer(
@@ -1735,6 +1733,7 @@ public final class Stage2Pipeline {
         // Configure the decoder's chroma + depth and the layer's initial colorimetry before the
         // first frame. The Welcome's HDR and depth seed the layer; a mid-session flip then
         // overrides per frame from the decoded buffer.
+        decoder.setPackedFormat(connection.streamFormat)
         decoder.setChroma444(connection.isChroma444)
         decoder.setCodec(connection.videoCodec)
         decoder.setBitDepth(connection.bitDepth)
@@ -2453,7 +2452,7 @@ public final class Stage2Pipeline {
             // Hardware-only backstop (4:4:4, AV1): 3 s in which every decode fails means this device
             // can't decode the mode at all, e.g. past a resolution ceiling. End instead of looping on
             // black. Timed, not counted: after a failure only IDRs reach the decoder.
-            var hardwareOnly = connection.isChroma444 || connection.videoCodec == .av1
+            var hardwareOnly = connection.streamFormat.packing != nil || connection.isChroma444 || connection.videoCodec == .av1
             var failingSinceNs: UInt64?
             // Every iteration drains its own autorelease pool: this thread has no runloop, so
             // autoreleased VT/CM temporaries would otherwise accumulate until session end.
@@ -2472,11 +2471,12 @@ public final class Stage2Pipeline {
                         if ready.newFormat {
                             // Built for the format the connection reads now; the session the
                             // decoder held was the old one's.
+                            decoder.setPackedFormat(connection.streamFormat)
                             decoder.setChroma444(connection.isChroma444)
                             decoder.setCodec(connection.videoCodec)
                             decoder.setBitDepth(connection.bitDepth)
                             decoder.reset()
-                            hardwareOnly = connection.isChroma444 || connection.videoCodec == .av1
+                            hardwareOnly = connection.streamFormat.packing != nil || connection.isChroma444 || connection.videoCodec == .av1
                             failingSinceNs = nil
                         }
                         // A delta between a loss and its re-anchor references the lost picture. Fed

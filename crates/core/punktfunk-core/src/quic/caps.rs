@@ -380,16 +380,18 @@ pub struct VideoFormat {
     pub color: ColorInfo,
     /// HEVC `chroma_format_idc`: [`CHROMA_IDC_420`] or [`CHROMA_IDC_444`].
     pub chroma_format: u8,
+    pub packing: Option<crate::packed444::Packing>,
 }
 
 impl VideoFormat {
-    /// The format the session opened with.
+    /// The ordinary Welcome fields; apply the ServerHello layout before admitting video.
     pub fn of_welcome(w: &super::Welcome) -> VideoFormat {
         VideoFormat {
             codec: w.codec,
             bit_depth: w.bit_depth,
             color: w.color,
             chroma_format: w.chroma_format,
+            packing: None,
         }
     }
 }
@@ -554,6 +556,7 @@ mod tests {
         };
         let round = |welcome: Welcome| {
             let sh = ServerHello {
+                packing: None,
                 welcome,
                 session_id: [0; 16],
                 clock_origin_ns: 0,

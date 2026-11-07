@@ -383,10 +383,8 @@ pub struct DriverEncodeParams {
 }
 
 impl DriverEncodeParams {
-    /// `SET_ENCODE` for a session: the resolved backend first, then Media Foundation, so a
-    /// missing `amfrt64.dll` or a declined native open does not end an H.26x session. MF only
-    /// inside its 8-bit 4:2:0 ceiling: the plan is negotiated, so a wider one would open and
-    /// then refuse every frame. PyroWave pairs only with itself; software is refused.
+    /// Build a source-sized remote request. Only ordinary eight-bit video may fall back to MF;
+    /// packed sessions keep their layout, source dimensions and AMF backend together.
     pub fn for_session(facts: SessionFacts) -> Result<Self> {
         use pf_driver_proto::encode::{backend as be, codec as cc};
         let backend = match (facts.codec, facts.backend) {
@@ -396,7 +394,23 @@ impl DriverEncodeParams {
                 "driver encode: the resolved backend is software, which the driver cannot run"
             ),
         };
-        let mf_fits = !facts.hdr && !facts.chroma.is_444() && facts.bit_depth <= 8;
+        if let Some(packing) = facts.chroma.packing() {
+            anyhow::ensure!(
+                packing.0.source() == facts.size,
+                "packed video source size changed; reconnect at the new size"
+            );
+            anyhow::ensure!(
+                !facts.hdr
+                    && facts.bit_depth == 8
+                    && backend == be::AMF
+                    && matches!(facts.codec, Codec::H265 | Codec::Av1),
+                "packed video session mode"
+            );
+        }
+        let mf_fits = !facts.hdr
+            && !facts.chroma.is_444()
+            && facts.chroma.packing().is_none()
+            && facts.bit_depth <= 8;
         let fallback =
             u32::from(!matches!(backend, be::PYROWAVE | be::MEDIA_FOUNDATION) && mf_fits)
                 * be::MEDIA_FOUNDATION;
@@ -407,7 +421,11 @@ impl DriverEncodeParams {
                 Codec::Av1 => cc::AV1,
                 Codec::PyroWave => cc::PYROWAVE,
             },
-            chroma: u32::from(facts.chroma.is_444()),
+            chroma: if facts.chroma.packing().is_some() {
+                2
+            } else {
+                u32::from(facts.chroma.is_444())
+            },
             bit_depth: u32::from(facts.bit_depth),
             width: facts.size.0,
             height: facts.size.1,
@@ -493,6 +511,34 @@ mod tests {
             wire_chunk: None,
             wire_seq_base: 7,
         }
+    }
+
+    #[test]
+    fn packed444_requests_keep_source_geometry_and_refuse_plain_fallback() {
+        let mut f = facts(Codec::Av1, Some(be::AMF), false, 8);
+        let packing = pf_encode_core::packed444::Packing(
+            pf_encode_core::packed444::Geometry::new(f.size.0, f.size.1).unwrap(),
+        );
+        f.chroma = ChromaFormat::Packed444(packing);
+        let request = DriverEncodeParams::for_session(f).unwrap();
+        assert_eq!(request.chroma, 2);
+        assert_eq!((request.width, request.height), f.size);
+        assert_eq!(request.backends, [be::AMF, 0, 0, 0]);
+        let mut wrong = f;
+        wrong.size.1 += 1;
+        assert!(DriverEncodeParams::for_session(wrong).is_err());
+        let mut wrong = f;
+        wrong.backend = Some(be::NVENC);
+        assert!(DriverEncodeParams::for_session(wrong).is_err());
+        wrong = f;
+        wrong.bit_depth = 10;
+        assert!(DriverEncodeParams::for_session(wrong).is_err());
+        wrong = f;
+        wrong.hdr = true;
+        assert!(DriverEncodeParams::for_session(wrong).is_err());
+        wrong = f;
+        wrong.codec = Codec::PyroWave;
+        assert!(DriverEncodeParams::for_session(wrong).is_err());
     }
 
     #[test]

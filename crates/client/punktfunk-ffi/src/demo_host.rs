@@ -300,6 +300,7 @@ async fn serve(
     };
     let config = welcome.session_config(Role::Host);
     let server = ServerHello {
+        packing: None,
         welcome,
         session_id,
         clock_origin_ns: clock.origin_ns(),

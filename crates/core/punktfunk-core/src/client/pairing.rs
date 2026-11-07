@@ -224,6 +224,7 @@ async fn knock_once(conn: &quinn::Connection, name: &str) -> Result<()> {
     let mut recv = v2io::FrameReader::new(recv);
     // A mode, codec and suite an older host can admit, so it reaches its `ServerHello`.
     let hello = ClientHello {
+        packed444: None,
         hello: crate::quic::Hello {
             mode: crate::config::Mode {
                 width: 1280,

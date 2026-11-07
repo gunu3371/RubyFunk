@@ -12,6 +12,7 @@ description = "punktfunk video encode contract: the Encoder trait and the policy
 publish = false
 
 [dependencies]
+pf-packed444 = { path = "../../core/pf-packed444" }
 pf-frame = { path = "../pf-frame" }
 # The `EncodeKnobs` block the host sends in SET_ENCODE; this crate reads its knobs from it.
 pf-driver-proto = { path = "../pf-driver-proto" }

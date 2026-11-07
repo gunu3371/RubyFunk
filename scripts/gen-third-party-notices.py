@@ -71,6 +71,9 @@ LICENSE_OVERRIDES = {
 # workspace-member skip in main() hides them from `cargo metadata`, so they are listed
 # here explicitly: (label, license file relative to the repo root, source URL).
 VENDORED_TREES = [
+    ("AMD AMF SDK interface declarations (pf-encode-win)",
+     "crates/host/pf-encode-win/AMF-NOTICE.txt",
+     "https://github.com/GPUOpen-LibrariesAndSDKs/AMF"),
     ("Lucide 0.462.0 (icon path data, crates/client/pf-console-ui)",
      "crates/client/pf-console-ui/LUCIDE-LICENSE",
      "https://lucide.dev"),

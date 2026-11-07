@@ -437,6 +437,7 @@ fn codec_miss_note(miss: punktfunk_core::quic::CodecMiss, preferred: &str, picke
 pub(super) struct Negotiated {
     pub(super) hello: Hello,
     pub(super) welcome: Welcome,
+    pub(super) packing: Option<punktfunk_core::packed444::Packing>,
     /// What the client calls itself; `None` from one that sent no label. Log only: two dialers
     /// from one device are told apart by that line.
     pub(super) client_label: Option<String>,
@@ -540,8 +541,7 @@ struct Terms {
     audio_plane: AudioPlane,
 }
 
-/// `ClientHello` → `ServerHello` → `Ready`. Borrows the control streams; the caller keeps them
-/// for mid-stream renegotiation.
+/// Settle source format, packed layout and control features before opening the session.
 pub(super) async fn negotiate(
     n: Negotiation<'_>,
     send: &mut super::link::CtlSend,
@@ -583,7 +583,7 @@ pub(super) async fn negotiate(
     );
 
     let studio_asked = crate::session_plan::StudioAsk::of(&n.first.features);
-    let (bit_depth, session_hdr, chroma) = negotiate_video_format(
+    let (bit_depth, session_hdr, mut chroma) = negotiate_video_format(
         FormatFacts::of(
             &hello,
             studio_asked,
@@ -596,6 +596,31 @@ pub(super) async fn negotiate(
         hello.mode,
     )
     .await?;
+
+    if pf_host_config::config().four_four_four
+        && n.first
+            .features
+            .has(punktfunk_core::quic::v2::registry::FEATURE_PACKED444)
+        && n.first
+            .features
+            .has(punktfunk_core::quic::v2::registry::FEATURE_FORMAT_EPOCH)
+        && n.first
+            .features
+            .has(punktfunk_core::quic::v2::registry::FEATURE_STREAM_CONFIG)
+        && joined.is_none()
+        && matches!(n.source, Punktfunk1Source::Virtual)
+    {
+        if let Some(packing) = packed_mode(
+            &encoder,
+            &hello,
+            codec_bit,
+            bit_depth,
+            session_hdr,
+            n.first.packed444,
+        ) {
+            chroma = crate::encode::ChromaFormat::Packed444(packing);
+        }
+    }
 
     // After depth + chroma: PyroWave Automatic is a ~bpp pin that scales with both, at the
     // client's quality when it sent one.
@@ -661,6 +686,7 @@ pub(super) async fn negotiate(
     Ok(Negotiated {
         hello: t.hello,
         welcome: server_hello.welcome,
+        packing: t.chroma.packing(),
         client_label: n.first.client_label.clone(),
         preset: n.first.preset.clone().map(Into::into),
         abr_features: n.first.abr_features,
@@ -678,6 +704,33 @@ pub(super) async fn negotiate(
         resolved: n.resolved,
         encoder: t.encoder,
     })
+}
+
+/// A packed offer is honoured only for AMD eight-bit SDR with known decoder limits.
+fn packed_mode(
+    encoder: &crate::encode::Resolved,
+    hello: &Hello,
+    codec: u8,
+    depth: u8,
+    hdr: bool,
+    caps: Option<punktfunk_core::packed444::Capabilities>,
+) -> Option<punktfunk_core::packed444::Packing> {
+    let amd = encoder.can_pack444(crate::encode::codec_from_wire(codec));
+    let caps = caps?;
+    let geometry = punktfunk_core::packed444::Geometry::new(hello.mode.width, hello.mode.height)?;
+    let mode = match codec {
+        punktfunk_core::quic::CODEC_HEVC => punktfunk_core::packed444::HEVC8,
+        punktfunk_core::quic::CODEC_AV1 => punktfunk_core::packed444::AV1_8,
+        _ => 0,
+    };
+    if amd && !hdr && depth == 8 && caps.accepts(geometry, hello.mode.refresh_hz, mode) {
+        tracing::info!(source = ?geometry.source(), coded = ?geometry.coded(),
+            fps = hello.mode.refresh_hz, "packed 4:4:4 v1 selected");
+        Some(punktfunk_core::packed444::Packing(geometry))
+    } else {
+        tracing::info!("packed 4:4:4 offer declined; ordinary video selected");
+        None
+    }
 }
 
 /// The Welcome's shard payload. Before Welcome: a path a previous session proved jumbo is given
@@ -785,8 +838,7 @@ fn welcome(n: &Negotiation<'_>, t: &Terms) -> Welcome {
     }
 }
 
-/// The `ServerHello` around `welcome`. Settles the session's media suite, which keys the media,
-/// and offers the native features this session can run.
+/// Seed the session's media keys, source format and optional packed layout before video.
 fn server_hello(n: &Negotiation<'_>, t: &Terms, welcome: Welcome) -> ServerHello {
     // A browser's media goes unsealed, inside WebTransport's own encryption.
     let suite = (!n.conn.is_web()).then_some(if t.chacha {
@@ -797,6 +849,7 @@ fn server_hello(n: &Negotiation<'_>, t: &Terms, welcome: Welcome) -> ServerHello
     let session = n.conn.v2_session();
     session.settle(suite);
     let mut offered = punktfunk_core::quic::v2::features::FeatureSet::default()
+        .with(punktfunk_core::quic::v2::registry::FEATURE_PACKED444)
         .with(punktfunk_core::quic::v2::registry::FEATURE_STREAM_CONFIG)
         .with(punktfunk_core::quic::v2::registry::FEATURE_PAD_WRITES)
         .with(punktfunk_core::quic::v2::registry::FEATURE_PROFILES)
@@ -808,7 +861,8 @@ fn server_hello(n: &Negotiation<'_>, t: &Terms, welcome: Welcome) -> ServerHello
         .with(punktfunk_core::quic::v2::registry::FEATURE_STUDIO_RANGE_HDR);
     // Further screens only where this session builds displays of its own on a compositor with
     // more than one output: not gamescope, not a joiner or a mirror.
-    if matches!(n.source, Punktfunk1Source::Virtual)
+    if t.chroma.packing().is_none()
+        && matches!(n.source, Punktfunk1Source::Virtual)
         && t.compositor
             .is_some_and(|c| c != crate::vdisplay::Compositor::Gamescope)
         && t.joined.is_none()
@@ -817,6 +871,7 @@ fn server_hello(n: &Negotiation<'_>, t: &Terms, welcome: Welcome) -> ServerHello
         offered = offered.with(punktfunk_core::quic::v2::registry::FEATURE_SCREENS);
     }
     ServerHello {
+        packing: t.chroma.packing(),
         welcome,
         session_id: session.session_id,
         clock_origin_ns: session.clock.origin_ns(),

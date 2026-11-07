@@ -77,18 +77,30 @@ pub fn hdr_meta(bytes: &[u8; 28]) -> Option<HdrMeta> {
     Some(bytemuck::pod_read_unaligned(bytes))
 }
 
-/// The request's `open` spec for backend `backend` of its list. The input comes from
-/// [`InputKind::choose`], so a 4:4:4 session gets an input that carries it (or a backend whose
-/// own caps already say 4:2:0) — never a P010 pick under a reply promising full chroma.
-/// The slice count passes through as the client asked.
+/// Choose an input at source dimensions. A packed request requires a matching GPU pack pass.
 pub fn spec_for(req: &SetEncodeRequest, backend: u32, knob: Knob<'_>) -> Result<OpenSpec, Fail> {
     let (hdr, chroma444) = (req.hdr == 1, req.chroma == 1);
     // 10-bit SDR (depth 10, HDR off) picks a BT.709 P010 input on AMF; `choose` ignores it elsewhere.
     let ten_bit = req.bit_depth >= 10;
     let sdr_fp16 = req.flags & wire::SET_ENCODE_FLAG_SDR_FP16 != 0;
     // `None`: this backend reads no FP16 SDR desktop, so it never opens on one.
-    let chosen =
-        InputKind::choose(backend, hdr, ten_bit, chroma444, sdr_fp16).ok_or((-4, "fp16"))?;
+    let chosen = if req.chroma == 2 {
+        if backend != backend::AMF
+            || !matches!(req.codec, wire::codec::HEVC | wire::codec::AV1)
+            || !matches!(req.bit_depth, 8 | 10)
+            || (hdr && !ten_bit)
+        {
+            return Err((-4, "packed-mode"));
+        }
+        pf_packed444::Geometry::new(req.width, req.height).ok_or((-4, "packed-size"))?;
+        InputKind::Packed444 {
+            depth: req.bit_depth as u8,
+            hdr,
+            fp16: hdr || sdr_fp16,
+        }
+    } else {
+        InputKind::choose(backend, hdr, ten_bit, chroma444, sdr_fp16).ok_or((-4, "fp16"))?
+    };
     // `PFVD_AMF_NV12` / `PFVD_QSV_NV12` (read per open) skip the encoder's own colour
     // conversion and open on the YUV this side converts: the A/B for an encoder whose
     // conversion looks or runs worse.
@@ -213,10 +225,8 @@ pub fn codec_from_wire(codec: u32) -> Option<Codec> {
     })
 }
 
-/// One backend open on `adapter`, signalling the range of `spec`. `Err` carries the stage tag;
-/// the backend's message is logged.
-/// `device` is the one the source's frames carry: NVENC opens its session against it here so
-/// the caller's caps read describes the hardware.
+/// Open on the capture device at coded dimensions. Packed carriers require full-range input
+/// and output; `Err` names the stage and the log retains the cause.
 pub fn open_backend(
     spec: &OpenSpec,
     adapter: &AdapterId,
@@ -226,14 +236,25 @@ pub fn open_backend(
     // NVENC is the only arm that opens against the device or reads a knob.
     #[cfg(not(feature = "nvenc"))]
     let _ = (device, knob);
-    let (w, h, fps, bps) = (spec.width, spec.height, spec.fps, spec.bitrate_bps);
+    let (w, h) = if matches!(spec.kind, InputKind::Packed444 { .. }) {
+        pf_packed444::Geometry::new(spec.width, spec.height)
+            .ok_or((-4, "packed-size"))?
+            .coded()
+    } else {
+        (spec.width, spec.height)
+    };
+    let (fps, bps) = (spec.fps, spec.bitrate_bps);
     let (depth, chroma) = (spec.bit_depth, spec.chroma);
     let format = pixel_format(spec.kind);
     // P010 serves both HDR and 10-bit SDR; the kind is the only thing that tells them apart, so
     // the backend's colour signalling follows it, not the (identical) P010 pixel label.
     let hdr = matches!(
         spec.kind,
-        InputKind::P010 | InputKind::Rgb10 | InputKind::Fp16 | InputKind::Planar { hdr: true, .. }
+        InputKind::P010
+            | InputKind::Rgb10
+            | InputKind::Fp16
+            | InputKind::Planar { hdr: true, .. }
+            | InputKind::Packed444 { hdr: true, .. }
     );
     let luid = Some(adapter.luid);
     // NVENC, QSV and PyroWave are x86-64 only: a side built without their feature refuses
@@ -269,7 +290,10 @@ pub fn open_backend(
             spec.codec, format, w, h, fps, bps, depth, chroma, hdr, luid,
         )
         .and_then(|mut e| {
-            e.set_full_range(spec.full_range);
+            e.set_full_range(spec.full_range || matches!(spec.kind, InputKind::Packed444 { .. }));
+            if matches!(spec.kind, InputKind::Packed444 { .. }) {
+                e.require_packed_limits();
+            }
             e.prepare(device)?;
             Ok(Box::new(e) as Box<dyn Encoder>)
         }),
@@ -309,7 +333,14 @@ pub fn open_backend(
     };
     opened.map_err(|e| {
         tracing::info!("encode: backend {} open FAILED: {e:#}", spec.backend);
-        (-1, "open")
+        (
+            -1,
+            if matches!(spec.kind, InputKind::Packed444 { .. }) {
+                "packed-open"
+            } else {
+                "open"
+            },
+        )
     })
 }
 

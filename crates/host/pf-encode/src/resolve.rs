@@ -193,8 +193,20 @@ impl Resolved {
         imp::advertised(self)
     }
 
-    /// Whether the backend can emit 4:4:4 for `codec`, asked before Welcome. 4:4:4 is HEVC and
-    /// PyroWave only; VAAPI/AMF/QSV must be probed, never assumed.
+    /// This backend has a packed-v1 RGB input path; open checks the coded size and rate.
+    pub fn can_pack444(&self, codec: Codec) -> bool {
+        #[cfg(target_os = "windows")]
+        {
+            self.backend() == WindowsBackend::Amf && matches!(codec, Codec::H265 | Codec::Av1)
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            let _ = (self, codec);
+            false
+        }
+    }
+
+    /// Whether this backend emits full chroma; HEVC support is probed.
     pub fn can_encode_444(&self, codec: Codec) -> bool {
         match codec {
             // Own RGB→YCbCr CSC from a full-chroma source — no GPU encode probe.

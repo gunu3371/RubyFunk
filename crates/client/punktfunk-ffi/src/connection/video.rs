@@ -339,3 +339,23 @@ pub unsafe extern "C" fn punktfunk_connection_shard_payload(
 ) -> PunktfunkStatus {
     conn_out!(c, out => u32::from(c.inner.shard_payload))
 }
+
+/// The newest AU's packed layout: version, source width/height, coded width/height, LE u32.
+/// All 17 bytes are zero for ordinary video. Read after a new-format AU, with colour info.
+///
+/// # Safety
+/// `c` is a live connection; `out` is writable for 17 bytes.
+#[cfg(feature = "quic")]
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn punktfunk_connection_packing(
+    c: *mut PunktfunkConnection,
+    out: *mut u8,
+) -> PunktfunkStatus {
+    with_conn!(c => {
+        if out.is_null() { return PunktfunkStatus::NullPointer; }
+        let bytes = c.inner.video_format().packing.map_or([0; 17], |p| p.encode());
+        // SAFETY: the caller supplies 17 writable bytes; the stack array cannot overlap it.
+        unsafe { std::ptr::copy_nonoverlapping(bytes.as_ptr(), out, bytes.len()); }
+        PunktfunkStatus::Ok
+    })
+}

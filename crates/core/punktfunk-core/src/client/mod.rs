@@ -561,6 +561,7 @@ fn advertised_client_caps(client_caps: u8, audio_rate_hz: u32, audio_bits: u8) -
 /// bitrate and PyroWave quality, 8-bit SDR, stereo Opus, HEVC only, no client caps, no
 /// launch, anonymous TOFU. Set the rest by field name.
 pub struct ConnectParams {
+    pub packed444: Option<crate::packed444::Capabilities>,
     /// IP literal or resolvable hostname.
     pub host: String,
     pub port: u16,
@@ -667,9 +668,10 @@ pub struct ConnectParams {
 pub const APPROVAL_WAIT: Duration = Duration::from_secs(10 * 60);
 
 impl ConnectParams {
-    /// A plain dial to `host:port` at (up to) `mode`, giving up after `timeout`.
+    /// An ordinary, unpacked dial to `host:port`, giving up after `timeout`.
     pub fn new(host: impl Into<String>, port: u16, mode: Mode, timeout: Duration) -> Self {
         ConnectParams {
+            packed444: None,
             host: host.into(),
             port,
             mode,
@@ -1318,7 +1320,7 @@ impl NativeClient {
         if f.color.is_hdr() {
             s.hdr = crate::hud::Hdr::Hdr;
         }
-        s.chroma_444 = f.chroma_format == crate::quic::CHROMA_IDC_444;
+        s.chroma_444 = f.packing.is_some() || f.chroma_format == crate::quic::CHROMA_IDC_444;
         s.asked_444 = self.asked_444;
         s.auto_rate = self.wants_decode;
         let a = self.audio_format();

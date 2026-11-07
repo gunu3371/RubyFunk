@@ -379,7 +379,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -663,7 +663,7 @@ version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -733,6 +733,7 @@ dependencies = [
  "nvidia-video-codec-sdk",
  "pf-driver-proto",
  "pf-frame",
+ "pf-packed444",
  "pyrowave-sys",
  "tracing",
 ]
@@ -746,6 +747,7 @@ dependencies = [
  "pf-driver-proto",
  "pf-encode-win",
  "pf-frame",
+ "pf-packed444",
  "tracing",
  "windows 0.62.2",
 ]
@@ -759,6 +761,7 @@ dependencies = [
  "nvidia-video-codec-sdk",
  "pf-encode-core",
  "pf-frame",
+ "pf-packed444",
  "pyrowave-sys",
  "tracing",
  "windows 0.62.2",
@@ -797,6 +800,10 @@ dependencies = [
  "wdk-build",
  "wdk-sys",
 ]
+
+[[package]]
+name = "pf-packed444"
+version = "0.46.0"
 
 [[package]]
 name = "pf-umdf-util"
@@ -954,7 +961,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -1124,7 +1131,7 @@ dependencies = [
  "getrandom",
  "once_cell",
  "rustix",
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

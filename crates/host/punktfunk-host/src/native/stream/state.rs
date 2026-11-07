@@ -321,8 +321,7 @@ pub(super) fn format_of(
     video_format(plan.codec, bit_depth, color, plan.chroma)
 }
 
-/// The format as a `StreamConfig` names it. `color` is `ColorInfo::for_session`'s: the HDR
-/// verdict at the plan's range.
+/// The source colour and carrier format for this session, including its packed layout.
 pub(in crate::native) fn video_format(
     codec: crate::encode::Codec,
     bit_depth: u8,
@@ -330,6 +329,7 @@ pub(in crate::native) fn video_format(
     chroma: crate::encode::ChromaFormat,
 ) -> punktfunk_core::quic::VideoFormat {
     punktfunk_core::quic::VideoFormat {
+        packing: chroma.packing(),
         codec: crate::encode::codec_to_wire(codec),
         bit_depth,
         color,

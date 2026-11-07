@@ -808,7 +808,7 @@ mod tests {
                 width: 4,
                 height: 4,
                 pts_ns: 0,
-                format: crate::capture::PixelFormat::Bgrx,
+                format: pf_frame::PixelFormat::Bgrx,
                 payload,
                 cursor: None,
                 provenance: Default::default(),

@@ -67,6 +67,9 @@ fn client_features(p: &ConnectParams) -> crate::quic::v2::features::FeatureSet {
         .with(registry::FEATURE_PROFILES)
         .with(registry::FEATURE_CLEAR_PLACEMENT)
         .with(registry::FEATURE_SCROLL_AXIS_UNITS);
+    if p.packed444.is_some() && p.rebuilds_decoder {
+        set = set.with(registry::FEATURE_PACKED444);
+    }
     if p.rebuilds_decoder {
         set = set.with(registry::FEATURE_FORMAT_EPOCH);
     }
@@ -226,6 +229,7 @@ async fn dial(
         let mut recv = CtlRecv::new(recv);
 
         let hello = ClientHello {
+            packed444: p.packed444,
             hello: Hello {
                 mode: p.mode,
                 compositor: p.compositor,
@@ -311,6 +315,7 @@ async fn dial(
                 _ => {}
             }
         };
+        let initial_format = server.video_format(p.packed444.filter(|_| p.rebuilds_decoder))?;
         let welcome = server.welcome;
         if welcome.compositor != CompositorPref::Auto {
             tracing::info!(
@@ -360,9 +365,9 @@ async fn dial(
             let mut anchor = args.shared.anchor.lock().unwrap();
             anchor.on = server.features.has(registry::FEATURE_STREAM_CONFIG);
             anchor.formats = anchor.on && server.features.has(registry::FEATURE_FORMAT_EPOCH);
-            anchor.book(0, crate::quic::VideoFormat::of_welcome(&welcome));
+            anchor.book(0, initial_format);
         }
-        *args.shared.video_format.lock().unwrap() = crate::quic::VideoFormat::of_welcome(&welcome);
+        *args.shared.video_format.lock().unwrap() = initial_format;
         {
             let mut audio = args.shared.audio_anchor.lock().unwrap();
             audio.on = server.features.has(registry::FEATURE_AUDIO_EPOCH);

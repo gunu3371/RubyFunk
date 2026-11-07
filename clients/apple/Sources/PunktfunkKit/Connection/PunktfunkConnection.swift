@@ -733,6 +733,7 @@ public final class PunktfunkConnection: @unchecked Sendable {
         public var fullRange = false
         public var bitDepth: UInt8 = 8
         public var chromaFormat: UInt8 = 1
+        public var packing: Packed444Layout?
     }
 
     /// The format the session opened with, for the getters below once the handle is gone.
@@ -749,9 +750,11 @@ public final class PunktfunkConnection: @unchecked Sendable {
         _ = punktfunk_connection_color_info(h, &prim, &trc, &mtx, &fullRange, &depth)
         var chroma: UInt8 = 1
         _ = punktfunk_connection_chroma_format(h, &chroma)
+        var packed = [UInt8](repeating: 0, count: 17)
+        _ = punktfunk_connection_packing(h, &packed)
         return StreamFormat(
             primaries: prim, transfer: trc, matrix: mtx, fullRange: fullRange != 0,
-            bitDepth: depth, chromaFormat: chroma)
+            bitDepth: depth, chromaFormat: chroma, packing: Packed444Layout(bytes: packed))
     }
 
     /// The colour signalling the host encodes with now (CICP code points): `colorPrimaries`
@@ -1236,6 +1239,13 @@ public final class PunktfunkConnection: @unchecked Sendable {
         opts.gamepad = gamepad.rawValue
         opts.bitrate_kbps = bitrateKbps
         opts.pyrowave_bpp_x100 = settings.pyrowaveBppX100
+        #if os(macOS)
+        if settings.enable444, videoCaps & Self.videoCap10Bit == 0,
+           ProcessInfo.processInfo.environment["PUNKTFUNK_PRESENTER"] != "stage1" {
+            let caps = Packed444Probe.capabilities(width: Int(width), height: Int(height), fps: Int(refreshHz))
+            withUnsafeMutableBytes(of: &opts.packed444) { $0.copyBytes(from: caps) }
+        }
+        #endif
         // The stage-2 pump rebuilds its decoder on an AU flagged `newFormat`.
         opts.reformat = UInt8(PUNKTFUNK_REFORMAT_VIDEO)
         opts.video_caps = videoCaps

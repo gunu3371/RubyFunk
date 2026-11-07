@@ -430,6 +430,7 @@ mod tests {
             audio_bitstreams: 0,
         };
         ClientHello {
+            packed444: None,
             hello,
             client_label: None,
             abr_features: 0,
