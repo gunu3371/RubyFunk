@@ -193,8 +193,8 @@ async fn diagnostics_refresh_reruns_and_returns_the_report() {
     assert!(checks.iter().all(|c| c["id"].is_string()));
 }
 
-/// GET-only: `prefs()` is a process-global `OnceLock`, so a PUT would race other tests.
-/// `keep_alive: forever` is read off the gaming-rig preset without writing.
+/// GET-only: the global policy is shared with other tests. Presets and platform gates are
+/// checked without changing the host settings.
 #[tokio::test]
 async fn display_settings_surface() {
     let app = test_app(test_state(), None);
@@ -233,6 +233,11 @@ async fn display_settings_surface() {
     // The console renders this list verbatim and hides anything absent from it
     // (design/web-console-overhaul.md D1), so a name here is a control an operator can
     // click. A build that cannot act on a field must not advertise it.
+    assert_eq!(
+        enforced.contains(&"windows_reconnect"),
+        cfg!(target_os = "windows"),
+        "monitor reconnect behavior is Windows-only"
+    );
     assert_eq!(
         enforced.contains(&"ddc_power_off"),
         cfg!(target_os = "windows"),
@@ -410,14 +415,14 @@ fn put_onto(
     crate::mgmt::display::merged(stored, body).unwrap()
 }
 
-/// A host-wide PUT is a merge: a key the body omits keeps its stored value and `null` clears it.
-/// Pure: `policy::prefs()` is bound to the config dir at its first use in this binary, so
-/// driving the route would write the developer's own `display-settings.json`.
+/// Partial writes preserve omitted fields, including the reconnect choice across preset
+/// changes. Pure merging avoids writes to the developer's host settings.
 #[test]
 fn a_host_wide_put_keeps_every_key_it_omits() {
-    use crate::vdisplay::policy::{ClientOverlay, DisplayPolicy, KeepAlive, Preset};
+    use crate::vdisplay::policy::{ClientOverlay, DisplayPolicy, KeepAlive, Preset, WindowsReconnect};
     let mut stored = DisplayPolicy {
         capture_monitor: Some("DP-1".into()),
+        windows_reconnect: WindowsReconnect::Reuse,
         keep_monitors: vec!["HDMI-A-1".into()],
         keep_alive: KeepAlive::Duration { seconds: 30 },
         ..DisplayPolicy::default()

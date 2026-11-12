@@ -1,3 +1,7 @@
 {
-	"$schema": "https://inlang.com/schema/inlang-message-format"
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"display_reconnect": "Écran à la reconnexion",
+	"display_reconnect_recreate": "Recréer (par défaut)",
+	"display_reconnect_reuse": "Conserver l’écran existant",
+	"display_reconnect_help": "Réutilise l’écran conservé pour garder les jeux ouverts. Si l’image ne revient pas, choisissez Recréer."
 }

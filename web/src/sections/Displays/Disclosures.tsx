@@ -46,7 +46,7 @@ const Field: FC<{ label: string; help?: ReactNode; children: ReactNode }> = ({
 	</fieldset>
 );
 
-/** The Windows exclusive-isolate levers render only where the host acts on one (D1). */
+/** Windows reconnect and monitor controls appear only where the host supports them. */
 export const AdvancedDisclosure: FC<{
 	policy?: DisplayPolicy;
 	effective?: EffectivePolicy;
@@ -81,6 +81,29 @@ export const AdvancedDisclosure: FC<{
 	const manual = effective?.layout.mode === "manual";
 	return (
 		<Disclosure label={m.display_advanced()}>
+			{policy && acts("display", "windows_reconnect") && (
+				<Field
+					label={m.display_reconnect()}
+					help={
+						<>
+							{m.display_reconnect_help()}{" "}
+							<DocsLink path="virtual-displays#display-on-reconnect" />
+						</>
+					}
+				>
+					<Segmented
+						busy={busy}
+						value={policy.windows_reconnect ?? "recreate"}
+						options={
+							[
+								["recreate", m.display_reconnect_recreate()],
+								["reuse", m.display_reconnect_reuse()],
+							] as const
+						}
+						onPick={(windows_reconnect) => onSet({ windows_reconnect })}
+					/>
+				</Field>
+			)}
 			{levers.map(([field, label, help, docs]) => (
 				<Field
 					key={field}

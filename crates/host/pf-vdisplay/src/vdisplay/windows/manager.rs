@@ -189,8 +189,8 @@ struct Slot {
 }
 
 /// What an acquire on this slot is, asked of the lifecycle without taking a hold: Create when
-/// empty, Join when Active, Reuse when kept. Windows answers Reuse with preempt-and-recreate:
-/// a reused IddCx swap-chain is dead.
+/// empty, Join when Active, Reuse when kept. Reconnect policy decides whether a kept monitor
+/// is recreated or reused.
 fn acquire_kind(slot: Option<&Slot>) -> Acquire {
     let mut life = slot.map_or_else(lifecycle::State::default, |s| s.life);
     life.acquire()
@@ -291,14 +291,15 @@ enum Climb {
     Retire(anyhow::Error),
 }
 
-/// The acquire's slot as the ladder reads it. A live slot is joined unless its WUDFHost died:
-/// it is a live lease (a build retry, a concurrent session), and REMOVE→ADD on it ends in
-/// 0x80070490. WUDFHost death is all-slot shared fate.
-fn found(t: &MgrInner, ask: &Ask) -> Found {
+/// Active monitors are joined. Kept monitors follow the reconnect policy; reuse checks their
+/// host and mode just like an active monitor, so driver loss still triggers recovery.
+fn found(t: &MgrInner, ask: &Ask, reconnect: crate::policy::WindowsReconnect) -> Found {
     let slot = t.slots.get(&ask.slot);
     match (acquire_kind(slot), slot) {
-        (Acquire::Reuse, _) => Found::Kept,
-        (Acquire::Join, Some(s)) => Found::Live {
+        (Acquire::Reuse, _) if reconnect == crate::policy::WindowsReconnect::Recreate => {
+            Found::Kept
+        }
+        (Acquire::Reuse | Acquire::Join, Some(s)) => Found::Live {
             host_alive: wudf_alive(s.mon.wudf_pid),
             resize: needs_resize(s.mon.requested_mode, s.mon.mode, ask.mode),
             resolved: s.mon.gdi_name.is_some(),
@@ -1174,13 +1175,9 @@ impl VirtualDisplayManager {
         Some(anyhow::anyhow!("seat adapter of {key} left the session"))
     }
 
-    /// One climb of the ladder for `ask` on the checked-out map: each [`Next`] is one act, and
-    /// what it saw picks the next. Before any reopen, an empty seat session is rebuilt
-    /// ([`rebuild_empty_seat_session`]); a rebuild that brought paths back, or a slot on a
-    /// departed seat adapter, retires the device. A reopened climb never rebuilds, so an
-    /// acquire retires for a rebuild at most once. A preempt that emptied the seat session and
-    /// disconnected it ends the climb: an ADD on the departing adapter is lost, and the next
-    /// attempt waits for the new one.
+    /// Runs one acquire transition. Reconnect policy selects reuse or recreation for a kept
+    /// monitor. A departed adapter or rebuilt seat retires the device once; a preempt that
+    /// disconnects the seat leaves the next attempt to wait for its replacement adapter.
     fn climb(
         &'static self,
         dev: &ControlDevice,
@@ -1194,9 +1191,15 @@ impl VirtualDisplayManager {
         if let Some(why) = self.forget_left_adapter(t, ask.slot) {
             return Climb::Retire(why);
         }
-        let max = crate::policy::prefs().get().effective().max_displays;
+        let policy = crate::policy::prefs().get();
+        let max = policy.effective().max_displays;
         let live = t.slots.len() as u32;
-        let (mut ladder, mut next) = Ladder::start(found(t, ask), live, max, reopened);
+        let (mut ladder, mut next) = Ladder::start(
+            found(t, ask, policy.windows_reconnect),
+            live,
+            max,
+            reopened,
+        );
         let mut r = Rungs::default();
         loop {
             let seen = match next {
@@ -1228,8 +1231,8 @@ impl VirtualDisplayManager {
         }
     }
 
-    /// Tears down the slot's kept or dead monitor and waits out its departure: a reused IddCx
-    /// swap-chain is dead, and a back-to-back REMOVE→ADD is rejected under reconnect churn.
+    /// Removes a kept monitor under the recreate policy, or one whose WUDFHost is dead.
+    /// Waiting for departure keeps the next ADD from racing the OS teardown.
     /// Generation-stamped leases on the old monitor no-op on release.
     fn preempt(&self, dev: &ControlDevice, t: &mut MgrInner, slot: u32) -> Seen {
         let Some(Slot { mon, life, .. }) = t.slots.remove(&slot) else {
@@ -3053,6 +3056,45 @@ mod tests {
         let mgr = VirtualDisplayManager::new(Box::new(FakeDriver), Box::new(ccd.clone()));
         mgr.device.lock().unwrap().current = Some(Arc::new(ControlDevice::stand_in()));
         Box::leak(Box::new(mgr))
+    }
+
+    #[test]
+    fn kept_monitors_follow_the_reconnect_policy() {
+        use crate::policy::WindowsReconnect;
+        let _turn = GENERATIONS.lock().unwrap_or_else(|e| e.into_inner());
+        let mut inner = exclusive_group(&[0]);
+        let mut ask = Ask {
+            slot: 0,
+            mode: m(1920, 1080, 60),
+            client_fp: None,
+            client_hdr: None,
+            hw_cursor: false,
+            quit: None,
+            seat_hdr: false,
+        };
+        for life in [
+            lifecycle::State::Pinned,
+            lifecycle::State::Lingering {
+                until: Instant::now() + Duration::from_secs(60),
+            },
+        ] {
+            let slot = inner.slots.get_mut(&0).unwrap();
+            slot.life = life;
+            slot.mon.gdi_name = Some("DISPLAY1".into());
+            for (mode, expected) in [
+                (WindowsReconnect::Recreate, Next::Preempt),
+                (WindowsReconnect::Reuse, Next::Commit(SlotChange::Join)),
+            ] {
+                let (_, next) = Ladder::start(found(&inner, &ask, mode), 1, 1, false);
+                assert_eq!(next, expected);
+            }
+        }
+        ask.mode = m(2560, 1440, 60);
+        let (_, next) = Ladder::start(found(&inner, &ask, WindowsReconnect::Reuse), 1, 1, false);
+        assert_eq!(next, Next::ResizeInPlace);
+        inner.slots.get_mut(&0).unwrap().mon.wudf_pid = u32::MAX;
+        let (_, next) = Ladder::start(found(&inner, &ask, WindowsReconnect::Reuse), 1, 1, false);
+        assert_eq!(next, Next::Preempt);
     }
 
     /// An acquire whose preempt isolate is held mid-ladder leaves `snapshot` and the

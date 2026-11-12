@@ -11225,6 +11225,10 @@
             "format": "int32",
             "description": "Schema version. Unknown versions load best-effort\n([`DisplayPolicyStore::load_from`] warns) and write pins current.",
             "minimum": 0
+          },
+          "windows_reconnect": {
+            "$ref": "#/components/schemas/WindowsReconnect",
+            "description": "Windows: reconnect to a kept monitor by recreating it (default) or reusing it.\nOrthogonal to presets; keep-alive still decides how long the monitor survives."
           }
         }
       },
@@ -18076,6 +18080,14 @@
             "minimum": 0
           }
         }
+      },
+      "WindowsReconnect": {
+        "type": "string",
+        "description": "Windows reconnect behavior for a monitor kept after disconnect. Presets leave this choice.",
+        "enum": [
+          "recreate",
+          "reuse"
+        ]
       },
       "WorkspacePlacement": {
         "type": "string",

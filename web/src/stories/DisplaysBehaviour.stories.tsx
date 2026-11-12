@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
+import type { DisplayPolicy } from "@/api/gen/model";
 import { Button } from "@/components/ui/button";
 import {
 	BehaviourPicker,
 	CustomiseDialog,
 } from "@/sections/Displays/Behaviour";
+import { AdvancedDisclosure } from "@/sections/Displays/Disclosures";
 import {
 	displayCustomPresets,
 	displayEffective,
@@ -99,6 +101,25 @@ export const Customise: Story = {
 						"game_session",
 					]}
 					onSetField={noop}
+				/>
+			</div>
+		);
+	},
+};
+
+/** Windows reconnect choices save independently of the display preset. */
+export const WindowsReconnect: Story = {
+	render: () => {
+		const [policy, setPolicy] = useState<DisplayPolicy>(displayPolicy);
+		return (
+			<div className="max-w-3xl">
+				<AdvancedDisclosure
+					policy={policy}
+					effective={displayEffective}
+					onSet={(patch) => setPolicy((current) => ({ ...current, ...patch }))}
+					onSetField={(patch) =>
+						setPolicy((current) => ({ ...current, ...patch }))
+					}
 				/>
 			</div>
 		);

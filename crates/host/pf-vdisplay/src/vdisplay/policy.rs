@@ -197,6 +197,17 @@ pub enum WorkspacePlacement {
     Current,
 }
 
+/// Windows reconnect behavior for a monitor kept after disconnect. Presets leave this choice.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum WindowsReconnect {
+    /// Remove the kept monitor and create a fresh capture target.
+    #[default]
+    Recreate,
+    /// Reuse a healthy monitor; mode changes and driver loss still use recovery.
+    Reuse,
+}
+
 /// Named bundle of the fields below. `Custom` uses the explicit fields;
 /// any other preset ignores them and expands ([`DisplayPolicy::effective`]).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
@@ -255,6 +266,10 @@ pub struct DisplayPolicy {
     /// physical. Best-effort; no DDC/CI → skip. Orthogonal to `preset`; default off.
     #[serde(default)]
     pub ddc_power_off: bool,
+    /// Windows: reconnect to a kept monitor by recreating it (default) or reusing it.
+    /// Orthogonal to presets; keep-alive still decides how long the monitor survives.
+    #[serde(default)]
+    pub windows_reconnect: WindowsReconnect,
     /// Windows: disable the PnP nodes of the physical monitors the isolate
     /// switched off, for the stream; re-enabled at teardown. Persistent so a
     /// re-HPD stays off. Inactive externals are [`standby_sink_neutralise`]'s.
@@ -416,9 +431,8 @@ fn saved_keep_alive() -> KeepAlive {
 
 impl Default for DisplayPolicy {
     fn default() -> Self {
-        // What a host with nothing saved reports, and the base its first save edits. Its
-        // `keep_alive` is off, as such a host tears a display down at once. The `default`
-        // preset is the one that keeps it 10 s.
+        // An unconfigured host tears displays down at once and recreates kept Windows monitors.
+        // The default preset supplies the 10 s keep-alive window.
         DisplayPolicy {
             version: CURRENT_VERSION,
             preset: Preset::Custom,
@@ -431,6 +445,7 @@ impl Default for DisplayPolicy {
             game_session: GameSession::default(),
             launch_workspace: WorkspacePlacement::default(),
             ddc_power_off: false,
+            windows_reconnect: WindowsReconnect::default(),
             pnp_disable_monitors: true,
             edid_lock: false,
             capture_monitor: None,
@@ -843,14 +858,14 @@ impl DisplayPolicyStore {
         self
     }
 
-    /// The contract with what follows a device from the box ([`ClientOverlay::seat_part`]). The
-    /// box's own second-device rule applies to a device with none, so a device the door refuses
-    /// for an occupied seat is refused here too, when it dials the seat itself.
+    /// The seat contract follows the box's reconnect choice, second-device rule and permitted
+    /// device overlays, so direct seat connections agree with the door.
     fn contract_policy(&self) -> DisplayPolicy {
         let mut policy = seat_contract();
         if let Some(b) = &self.box_overlays {
             let boxed = b.current();
             policy.mode_conflict = on_a_seat(boxed.effective().mode_conflict);
+            policy.windows_reconnect = boxed.windows_reconnect;
             policy.clients = boxed
                 .clients
                 .into_iter()
@@ -1527,6 +1542,28 @@ pub fn delete_custom_preset(id: &str) -> Result<bool> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn windows_reconnect_defaults_to_recreate_and_preserves_an_explicit_choice() {
+        let old: DisplayPolicy = serde_json::from_str("{}").unwrap();
+        assert_eq!(old.windows_reconnect, WindowsReconnect::Recreate);
+        assert_eq!(
+            DisplayPolicy::default().windows_reconnect,
+            old.windows_reconnect
+        );
+        let policy: DisplayPolicy = serde_json::from_str(
+            r#"{"preset":"gaming-rig","windows_reconnect":"reuse"}"#,
+        )
+        .unwrap();
+        assert_eq!(policy.windows_reconnect, WindowsReconnect::Reuse);
+        let saved = serde_json::to_vec(&policy).unwrap();
+        let restored: DisplayPolicy = serde_json::from_slice(&saved).unwrap();
+        assert_eq!(restored.windows_reconnect, WindowsReconnect::Reuse);
+        assert!(serde_json::from_str::<DisplayPolicy>(
+            r#"{"windows_reconnect":"unknown"}"#,
+        )
+        .is_err());
+    }
 
     /// A contract seat reads the box's overlays from its trust copy; the owner's host writes
     /// its own, which become the box's.

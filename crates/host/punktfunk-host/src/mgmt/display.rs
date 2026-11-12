@@ -153,6 +153,7 @@ pub(crate) fn display_settings_state() -> DisplaySettingsState {
     // A field this build cannot act on is not advertised — the console renders `enforced`
     // verbatim, so a name kept here is a dead control there.
     if cfg!(target_os = "windows") {
+        enforced.push("windows_reconnect".into());
         enforced.push("ddc_power_off".into());
         enforced.push("pnp_disable_monitors".into());
     }

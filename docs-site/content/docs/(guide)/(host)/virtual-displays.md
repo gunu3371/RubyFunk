@@ -200,8 +200,22 @@ Hooks can react to `game.running` and `game.exited`: see [Automation](/docs/auto
 
 ## Advanced Windows options
 
-Under **Advanced** on a Windows host. They act while your monitors are turned off for a stream,
-and each is undone when streaming ends, or at the next host start after a crash.
+Under **Advanced** on a Windows host.
+
+### Display on reconnect
+
+**Recreate (default)** keeps the existing behavior: a reconnect removes a kept virtual display
+and creates a fresh capture target. **Keep existing display** reuses a healthy display instead,
+which may keep games running when removing their screen would close them. If video does not
+return after reconnecting, choose **Recreate**.
+
+This applies only while the screen is kept after disconnect. Choose **Keep for** or **Keep until
+released** under **After a device disconnects**; this option does not extend that period. A resolution
+or refresh-rate change, a driver failure, or a prior session that does not release its screen can
+still require recreation. The choice applies to the next connection and survives preset changes.
+
+The monitor controls below act while your monitors are turned off for a stream. Each is undone
+when streaming ends, or at the next host start after a crash.
 
 ### Power monitors off (DDC/CI)
 
