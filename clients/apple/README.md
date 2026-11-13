@@ -57,6 +57,17 @@ build. Distribution builds keep their existing keychain service and access group
 Local builds require separate pairing from distribution builds. Ad-hoc signing has
 no provisioning-profile expiry; it supplies neither Developer ID trust nor notarization.
 
+For the Packed 4:4:4 local build, run from the repository root:
+
+```sh
+bash scripts/build-packed444-macos.sh
+```
+
+It rebuilds the matching XCFramework, runs `Packed444Tests`, then builds and signs
+`target/validation/mac-client/Build/Products/Debug/Punktfunk.app` with the local keychain
+condition above. A skipped Metal test is not a GPU pass. Streaming still needs a matching
+Windows AMF host and protocol-10 driver.
+
 ## Traps
 
 - **Entitlements.** The macOS target is App-Sandboxed and needs `network.server` — the raw-UDP plane
