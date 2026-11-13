@@ -73,6 +73,8 @@ here, because nothing else records them:
 
 Wizard branding assets are generated **and committed** by `branding/gen-branding.ps1` from the
 canonical brand geometry in `web/src/components/brand-mark.tsx`. Re-run it only on a brand change.
+The [brand asset guide](../../docs/branding.md) lists the RubyFunk palette, tray generator
+and platform artwork that must be kept in sync.
 
 ## Prerequisites on the target box
 

@@ -2,15 +2,14 @@
 <svg width="100%" height="100%" viewBox="0 0 579 298" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
   <style>
     /* Theme-adaptive so the logo stays readable on both light and dark README
-       backgrounds: deep violet (the brand-mark palette) on light, the original
-       light violet on dark. Evaluated by the viewer's color scheme. */
-    .pf-wm   { fill: #6c5bf3; }
-    .pf-back { fill: #a79ff8; }
-    .pf-deep { fill: #6c5bf3; }
+       backgrounds: ruby on light, the pale foreground on dark. Evaluated by the viewer's color scheme. */
+    .pf-wm   { fill: #c41242; }
+    .pf-back { fill: #ff477b; }
+    .pf-deep { fill: #c41242; }
     @media (prefers-color-scheme: dark) {
-      .pf-wm   { fill: #cec9fb; }
-      .pf-back { fill: #f2f1fe; }
-      .pf-deep { fill: #8c7ef5; }
+      .pf-wm   { fill: #ece8ec; }
+      .pf-back { fill: #ece8ec; }
+      .pf-deep { fill: #c41242; }
     }
   </style>
   <g>
@@ -26,8 +25,8 @@
   </g>
   <defs>
     <linearGradient id="_Linear1" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(31.323323,-31.323323,31.323323,31.323323,78.416832,92.870811)">
-      <stop offset="0" style="stop-color:#cec9fb;stop-opacity:0"/>
-      <stop offset="1" style="stop-color:#fcfcff;stop-opacity:1"/>
+      <stop offset="0" style="stop-color:#ece8ec;stop-opacity:0"/>
+      <stop offset="1" style="stop-color:#ffffff;stop-opacity:1"/>
     </linearGradient>
   </defs>
 </svg>

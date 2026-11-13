@@ -99,10 +99,10 @@ func matte(_ groups: [Int]) -> CGImage {
     return ctx.makeImage()!
 }
 
-// A vertical sRGB approximation of icon.json's display-p3 automatic-gradient violet.
+// The background uses Rubylight pink above its ruby base.
 func gradient(_ ctx: CGContext, _ h: Int) {
-    let top = CGColor(srgbRed: 0.49, green: 0.42, blue: 0.97, alpha: 1)
-    let bottom = CGColor(srgbRed: 0.35, green: 0.26, blue: 0.91, alpha: 1)
+    let top = CGColor(srgbRed: 1.0, green: 0.27843, blue: 0.48235, alpha: 1)
+    let bottom = CGColor(srgbRed: 0.76863, green: 0.07059, blue: 0.25882, alpha: 1)
     let g = CGGradient(colorsSpace: srgb, colors: [top, bottom] as CFArray, locations: [0, 1])!
     ctx.drawLinearGradient(g, start: CGPoint(x: 0, y: h), end: .zero, options: [])
 }

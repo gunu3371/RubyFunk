@@ -14,6 +14,10 @@ registry — canary on every `main` push that touches the client, stable on `vX.
 same layout for the installer and zip, signing the four exes individually — the MSIX only signs its
 container.
 
+App icons use the [RubyFunk palette](../../../docs/branding.md). The layout copies committed
+PNGs from `assets/`; executable icons come from `packaging/windows/branding/punktfunk.ico`
+at the repository root. Keep both sets in sync when changing colors.
+
 **Why the installer exists at all.** The MSIX install shape breaks the top user-reported flows: the
 exe lands under the ACL'd `C:\Program Files\WindowsApps`, which Steam's *Add a Non-Steam Game*
 picker cannot browse, and alias/`shell:AppsFolder` activation defeats the Steam overlay's injection

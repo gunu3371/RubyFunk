@@ -91,7 +91,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 					aria-label="Punktfunk"
 					className="mb-7 flex items-center justify-center gap-2 px-2 pt-1 lg:justify-start"
 				>
-					<BrandMark className="size-7 shrink-0 drop-shadow-[0_2px_12px_rgba(108,91,243,0.45)]" />
+					<BrandMark className="size-7 shrink-0 drop-shadow-[0_2px_12px_rgba(196,18,66,0.45)]" />
 					<Wordmark className="hidden h-4 lg:block" />
 				</Link>
 				<Sidebar />

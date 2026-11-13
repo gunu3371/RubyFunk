@@ -1,9 +1,6 @@
 import { cn } from "@/lib/utils";
 
-// The Punktfunk "funk" wordmark — the real brand typo, vectorised from the
-// marketing logo. currentColor so it recolours per surface; defaults to the
-// light-violet lens highlight that reads on the dark console chrome. Size via
-// height (e.g. `h-5`); width follows the viewBox.
+// currentColor lets callers set the wordmark color for its surface.
 export function Wordmark({ className }: { className?: string }) {
 	return (
 		<svg
@@ -12,7 +9,7 @@ export function Wordmark({ className }: { className?: string }) {
 			xmlns="http://www.w3.org/2000/svg"
 			viewBox="0 0 579 136"
 			fill="currentColor"
-			className={cn("w-auto text-highlight", className)}
+			className={cn("w-auto text-[#c41242] dark:text-[#ece8ec]", className)}
 		>
 			<title>Punktfunk</title>
 			<path d="M16.782,16.051l0,102.687l31.253,0l0,-35.563l73.436,0l0,-23.555l-73.436,0l0,-19.398l77.285,0l0,-24.171l-108.537,0Z" />

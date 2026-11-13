@@ -6,6 +6,11 @@ Based on [punktfunk](https://git.unom.io/unom/punktfunk). The initial packed pat
 Windows AMD host and macOS client, using the existing **Full chroma** preference. Other clients
 keep their existing stream format. See the [format and license review](docs/adr/0003-packed444.md)
 and [validation status](docs/packed444-validation.md) before deploying this experimental path.
+
+RubyFunk keeps the original Punktfunk logo geometry and lettering in Rubylight colors.
+Source builds include the recolored app icons. See [brand assets](docs/branding.md) for the
+palette, platform sources and regeneration commands.
+
 The upstream project information follows.
 
 <p align="center">

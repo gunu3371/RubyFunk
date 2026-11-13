@@ -36,10 +36,10 @@ BB_MAX = (C2[0] + R, C1[1] + R)
 MARK_CENTER = ((BB_MIN[0] + BB_MAX[0]) / 2, (BB_MIN[1] + BB_MAX[1]) / 2)
 MARK_SPAN = BB_MAX[0] - BB_MIN[0]  # the bbox is square
 
-COL_LIGHT = (0xA7, 0x9F, 0xF8)
-COL_DEEP = (0x6C, 0x5B, 0xF3)
-COL_HI = (0xD2, 0xC9, 0xFB)
-RING = (0x1C, 0x15, 0x30)  # dot outline, the brand tile background
+COL_LIGHT = (0xFF, 0x47, 0x7B)
+COL_DEEP = (0xC4, 0x12, 0x42)
+COL_HI = (0xEC, 0xE8, 0xEC)
+RING = (0x21, 0x0E, 0x18)  # dot outline, the brand tile background
 
 STATES = {
     "running": {"dot": (0x2E, 0xCC, 0x71), "gray": False},

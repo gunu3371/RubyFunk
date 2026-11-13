@@ -24,10 +24,10 @@ $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
 # --- brand constants (colors from brand-mark.tsx; tile background from the MSIX assets) -------
-$colLight = [System.Drawing.Color]::FromArgb(255, 0xA7, 0x9F, 0xF8)   # large circle
-$colDeep = [System.Drawing.Color]::FromArgb(255, 0x6C, 0x5B, 0xF3)   # small circle
-$colHi = [System.Drawing.Color]::FromArgb(255, 0xD2, 0xC9, 0xFB)   # lens overlap highlight
-$colTile = [System.Drawing.Color]::FromArgb(255, 0x1C, 0x15, 0x30)   # brand tile background
+$colLight = [System.Drawing.Color]::FromArgb(255, 0xFF, 0x47, 0x7B)   # large circle
+$colDeep = [System.Drawing.Color]::FromArgb(255, 0xC4, 0x12, 0x42)   # small circle
+$colHi = [System.Drawing.Color]::FromArgb(255, 0xEC, 0xE8, 0xEC)   # lens overlap highlight
+$colTile = [System.Drawing.Color]::FromArgb(255, 0x21, 0x0E, 0x18)   # brand tile background
 
 # Mark geometry in the 1000-unit viewbox of brand-mark.tsx: two r=194.41 circles at (403.04,597.26)
 # (light, behind) and (597.81,402.85) (deep, in front), their intersection filled as the highlight.
