@@ -14,7 +14,7 @@ HERE="$(cd "$(dirname "$0")/.." && pwd)"
 DECK="${DECK:?set DECK=deck@<ip>}"
 # The on-disk plugin DIR (what scripts/package.sh staged into out/), not plugin.json "name" —
 # that field is the brand-cased label Decky shows in its plugin list. See package.sh's header.
-NAME=punktfunk
+NAME=rubyfunk
 STAGE_LOCAL="$HERE/out/$NAME"
 [ -d "$STAGE_LOCAL" ] || { echo "$STAGE_LOCAL missing — run scripts/package.sh first" >&2; exit 1; }
 

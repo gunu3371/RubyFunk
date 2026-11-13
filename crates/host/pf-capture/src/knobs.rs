@@ -1,4 +1,4 @@
-//! Every `PUNKTFUNK_*` switch the crate reads. [`Knobs::from_env`] is the crate's only read of
+//! Every `RUBYFUNK_*` switch the crate reads. [`Knobs::from_env`] is the crate's only read of
 //! the environment or the settings registry, and each knob keeps its own parser.
 //!
 //! An `open_*` entry point resolves one [`Knobs`] and hands it down, so a console change
@@ -9,7 +9,7 @@
 #[derive(Clone, Debug)]
 #[cfg_attr(test, derive(Default))]
 pub(crate) struct Knobs {
-    /// `PUNKTFUNK_SYNTH_NOISE=1`: the fast synthetic source paints noise.
+    /// `RUBYFUNK_SYNTH_NOISE=1`: the fast synthetic source paints noise.
     pub synth_noise: bool,
     /// See [`direct_capture`].
     #[cfg(target_os = "linux")]
@@ -18,48 +18,48 @@ pub(crate) struct Knobs {
     /// (Mutter ≥ 49 virtual monitors) paints only in a graph cycle the consumer starts, so the
     /// encode loop's slot is the one tick: no compositor timer to beat against, no throttle to
     /// lose frames in, no extra render. Producers without it are never driven.
-    /// `PUNKTFUNK_LAZY_CAPTURE=0` restores the producer-driven stream.
+    /// `RUBYFUNK_LAZY_CAPTURE=0` restores the producer-driven stream.
     #[cfg(target_os = "linux")]
     pub lazy_capture: bool,
     /// Offer PipeWire explicit sync (`SPA_META_SyncTimeline`) on the dmabuf lane. A producer
     /// that takes it hands over a fence at each buffer's acquire point and waits on the release
     /// point this side signals, instead of finishing the GPU itself. KWin on NVIDIA
     /// `glFinish()`es its compositor thread per cast frame otherwise — ~9 ms under a game's
-    /// load, the whole 120 → 111 fps gap. `PUNKTFUNK_EXPLICIT_SYNC=0` keeps the implicit path.
+    /// load, the whole 120 → 111 fps gap. `RUBYFUNK_EXPLICIT_SYNC=0` keeps the implicit path.
     #[cfg(target_os = "linux")]
     pub explicit_sync: bool,
-    /// `PUNKTFUNK_KWIN_PACED=1` asks every KWin for the stream rate. KWin schedules each
+    /// `RUBYFUNK_KWIN_PACED=1` asks every KWin for the stream rate. KWin schedules each
     /// screencast frame on a QTimer whose wait it rounds *up* to a whole millisecond, so an
     /// 8.333 ms frame is scheduled at 9 and the cadence jitters against the real refresh.
     /// Unpaced, KWin up to 6.7 gets no ceiling and delivers on its damage signal; KWin 6.8
     /// (millihertz offer) gets the stream rate as its ceiling and paces the cast at it.
     #[cfg(target_os = "linux")]
     pub kwin_paced: bool,
-    /// `PUNKTFUNK_FORCE_SHM=1`: the race-free SHM download path, no dmabuf. SHM is 8-bit, so
+    /// `RUBYFUNK_FORCE_SHM=1`: the race-free SHM download path, no dmabuf. SHM is 8-bit, so
     /// it drops an HDR offer.
     #[cfg(target_os = "linux")]
     pub force_shm: bool,
-    /// Negotiate the producer's own NV12. `PUNKTFUNK_PIPEWIRE_NV12=0` restores packed RGB.
+    /// Negotiate the producer's own NV12. `RUBYFUNK_PIPEWIRE_NV12=0` restores packed RGB.
     #[cfg(target_os = "linux")]
     pub pipewire_nv12: bool,
     /// Keep a published buffer from the producer until encode lets go.
-    /// `PUNKTFUNK_ZEROCOPY_HOLD=0` restores the immediate requeue (racy); the raw passthrough
+    /// `RUBYFUNK_ZEROCOPY_HOLD=0` restores the immediate requeue (racy); the raw passthrough
     /// then never publishes an unheld dmabuf and takes the CPU fallback. Once per process.
     #[cfg(target_os = "linux")]
     pub zerocopy_hold: bool,
-    /// Stamp the wire from the buffer header. `PUNKTFUNK_CAPTURE_HDR_PTS=0` keeps the wire on
+    /// Stamp the wire from the buffer header. `RUBYFUNK_CAPTURE_HDR_PTS=0` keeps the wire on
     /// delivery stamps, on the portal and the direct path alike.
     #[cfg(target_os = "linux")]
     pub header_pts: bool,
-    /// `PUNKTFUNK_PW_FIXED_POD="WxH"`: one fixed format, to bisect against a producer's
+    /// `RUBYFUNK_PW_FIXED_POD="WxH"`: one fixed format, to bisect against a producer's
     /// EnumFormat.
     #[cfg(target_os = "linux")]
     pub fixed_pod: Option<(u32, u32)>,
-    /// `PUNKTFUNK_NVENC_CLOCK_BOOST=1`: hold NVIDIA's low-latency clock boost while a driver
+    /// `RUBYFUNK_NVENC_CLOCK_BOOST=1`: hold NVIDIA's low-latency clock boost while a driver
     /// NVENC session is live.
     #[cfg(target_os = "windows")]
     pub nvenc_clock_boost: bool,
-    /// `PUNKTFUNK_GPU_PRIORITY_CLASS` as the stall lines name it; `pf_frame::dxgi` applies the
+    /// `RUBYFUNK_GPU_PRIORITY_CLASS` as the stall lines name it; `pf_frame::dxgi` applies the
     /// class itself. Once per process.
     #[cfg(target_os = "windows")]
     pub gpu_priority_class: &'static str,
@@ -67,11 +67,11 @@ pub(crate) struct Knobs {
     /// same variable. Once per process.
     #[cfg(target_os = "windows")]
     pub no_rt_gpu: bool,
-    /// `PUNKTFUNK_IDD_FLOW`: the DxgKrnl ETW session alone, printing a present-flow line every
+    /// `RUBYFUNK_IDD_FLOW`: the DxgKrnl ETW session alone, printing a present-flow line every
     /// ten seconds. Once per process.
     #[cfg(target_os = "windows")]
     pub idd_flow: bool,
-    /// `PUNKTFUNK_IDD_DIAG`: the IDD capturer's full diagnostics — the micro-probe engine, the
+    /// `RUBYFUNK_IDD_DIAG`: the IDD capturer's full diagnostics — the micro-probe engine, the
     /// DxgKrnl ETW session and the access-unit dump. All three are off in a normal session,
     /// because standing fence/scanline/DWM traffic and an ETW session alter the very path a
     /// disturbance report describes. `1` puts the dump beside the driver log
@@ -86,35 +86,32 @@ impl Knobs {
     pub(crate) fn from_env() -> Self {
         use pf_host_config::env_on;
         Knobs {
-            synth_noise: env_on("PUNKTFUNK_SYNTH_NOISE") == Some(true),
+            synth_noise: env_on("RUBYFUNK_SYNTH_NOISE") == Some(true),
             #[cfg(target_os = "linux")]
-            direct_capture: pf_host_config::row_bool("PUNKTFUNK_DIRECT_CAPTURE"),
+            direct_capture: pf_host_config::row_bool("RUBYFUNK_DIRECT_CAPTURE"),
             #[cfg(target_os = "linux")]
-            lazy_capture: pf_host_config::row_bool("PUNKTFUNK_LAZY_CAPTURE"),
+            lazy_capture: pf_host_config::row_bool("RUBYFUNK_LAZY_CAPTURE"),
             #[cfg(target_os = "linux")]
-            explicit_sync: env_on("PUNKTFUNK_EXPLICIT_SYNC").unwrap_or(true),
+            explicit_sync: env_on("RUBYFUNK_EXPLICIT_SYNC").unwrap_or(true),
             #[cfg(target_os = "linux")]
-            kwin_paced: pf_host_config::row_bool("PUNKTFUNK_KWIN_PACED"),
+            kwin_paced: pf_host_config::row_bool("RUBYFUNK_KWIN_PACED"),
             #[cfg(target_os = "linux")]
-            force_shm: env_on("PUNKTFUNK_FORCE_SHM").unwrap_or(false),
+            force_shm: env_on("RUBYFUNK_FORCE_SHM").unwrap_or(false),
             #[cfg(target_os = "linux")]
-            pipewire_nv12: env_on("PUNKTFUNK_PIPEWIRE_NV12").unwrap_or(true),
+            pipewire_nv12: env_on("RUBYFUNK_PIPEWIRE_NV12").unwrap_or(true),
             #[cfg(target_os = "linux")]
-            zerocopy_hold: env_on("PUNKTFUNK_ZEROCOPY_HOLD").unwrap_or(true),
+            zerocopy_hold: env_on("RUBYFUNK_ZEROCOPY_HOLD").unwrap_or(true),
             #[cfg(target_os = "linux")]
-            header_pts: env_on("PUNKTFUNK_CAPTURE_HDR_PTS").unwrap_or(true),
+            header_pts: env_on("RUBYFUNK_CAPTURE_HDR_PTS").unwrap_or(true),
             #[cfg(target_os = "linux")]
-            fixed_pod: std::env::var("PUNKTFUNK_PW_FIXED_POD")
+            fixed_pod: std::env::var("RUBYFUNK_PW_FIXED_POD")
                 .ok()
                 .and_then(|v| v.split_once('x').map(|(w, h)| (w.parse(), h.parse())))
                 .and_then(|(w, h)| Some((w.ok()?, h.ok()?))),
             #[cfg(target_os = "windows")]
-            nvenc_clock_boost: env_on("PUNKTFUNK_NVENC_CLOCK_BOOST") == Some(true),
+            nvenc_clock_boost: env_on("RUBYFUNK_NVENC_CLOCK_BOOST") == Some(true),
             #[cfg(target_os = "windows")]
-            gpu_priority_class: match std::env::var("PUNKTFUNK_GPU_PRIORITY_CLASS")
-                .ok()
-                .as_deref()
-            {
+            gpu_priority_class: match std::env::var("RUBYFUNK_GPU_PRIORITY_CLASS").ok().as_deref() {
                 Some("off") => "off",
                 Some("normal") => "normal",
                 Some("high") => "high",
@@ -123,7 +120,7 @@ impl Knobs {
             #[cfg(target_os = "windows")]
             no_rt_gpu: std::env::var_os("PFVD_NO_RT_GPU").is_some(),
             #[cfg(target_os = "windows")]
-            idd_flow: std::env::var("PUNKTFUNK_IDD_FLOW")
+            idd_flow: std::env::var("RUBYFUNK_IDD_FLOW")
                 .is_ok_and(|v| !matches!(v.trim(), "" | "0" | "off" | "false")),
             #[cfg(target_os = "windows")]
             idd_diag: idd_diag(),
@@ -140,7 +137,7 @@ impl Knobs {
 
 #[cfg(target_os = "windows")]
 fn idd_diag() -> Option<std::path::PathBuf> {
-    let raw = std::env::var("PUNKTFUNK_IDD_DIAG").ok()?;
+    let raw = std::env::var("RUBYFUNK_IDD_DIAG").ok()?;
     match raw.trim() {
         "" | "0" | "off" | "false" => None,
         "1" | "on" | "true" => {
@@ -157,7 +154,7 @@ fn idd_diag() -> Option<std::path::PathBuf> {
 /// The portal is a second clock in the path: xdg-desktop-portal-hyprland re-requests each
 /// frame on a millisecond timer with a 6 ms floor, which halves the rate at 165 Hz and
 /// adds ~3 ms to every frame's age. Capturing the protocol ourselves removes both.
-/// `PUNKTFUNK_DIRECT_CAPTURE=0` keeps the portal.
+/// `RUBYFUNK_DIRECT_CAPTURE=0` keeps the portal.
 #[cfg(target_os = "linux")]
 pub fn direct_capture() -> bool {
     Knobs::from_env().direct_capture

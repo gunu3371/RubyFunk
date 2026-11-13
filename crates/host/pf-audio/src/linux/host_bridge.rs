@@ -7,7 +7,7 @@
 //!   sink's monitor ports to that output, channel by channel, so the host
 //!   plays what the clients hear. The links belong to this connection;
 //!   parking the capturer takes them down.
-//! * Voice chat on the host (`PUNKTFUNK_AUDIO_VOICE_CHAT=host`): pin voice
+//! * Voice chat on the host (`RUBYFUNK_AUDIO_VOICE_CHAT=host`): pin voice
 //!   apps' output streams to that output (`target.object` on the `default`
 //!   metadata, as `pactl move-sink-input` does) so the clients never hear
 //!   their own voices back. Cleared at session end; the app follows the

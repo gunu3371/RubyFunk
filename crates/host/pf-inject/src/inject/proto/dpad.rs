@@ -1,7 +1,7 @@
 //! Wire D-pad bits → the 8-way hat every HID pad reports. Each codec maps the centred
 //! `None` to its own null value.
 
-use punktfunk_core::input::gamepad as gs;
+use rubyfunk_core::input::gamepad as gs;
 
 /// Octant 0..7 clockwise from North, `None` when centred. Opposing presses cancel first, so
 /// up+down+left is West: a physical hat cannot report both.
@@ -29,7 +29,7 @@ mod tests {
     use crate::eightbitdo_proto::{EightBitDoState, Model};
     use crate::hori_proto::HoriState;
     use crate::xbox_proto::{serialize_xbox_state, XboxState};
-    use punktfunk_core::input::GamepadFrame;
+    use rubyfunk_core::input::GamepadFrame;
 
     const U: u32 = gs::BTN_DPAD_UP;
     const D: u32 = gs::BTN_DPAD_DOWN;

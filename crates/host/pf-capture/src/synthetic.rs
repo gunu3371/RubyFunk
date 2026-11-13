@@ -80,7 +80,7 @@ pub struct FastSyntheticCapturer {
     height: u32,
     frame_idx: u64,
     buf: Vec<u8>,
-    /// `PUNKTFUNK_SYNTH_NOISE=1`: high-entropy noise NVENC cannot compress, so
+    /// `RUBYFUNK_SYNTH_NOISE=1`: high-entropy noise NVENC cannot compress, so
     /// the encoder hits its CBR target. Default flat/band compresses to ~nothing.
     noise: bool,
     rng: u64,

@@ -35,5 +35,5 @@
 #
 # So 0.9 without the cfgs is not merely as fast as 0.8 with them — it is ~2.4x faster, and ~24x
 # the software fallback. Do not re-add these flags; if a future aarch64 slowdown is suspected,
-# re-run `cargo bench -p punktfunk-core --bench pipeline -- in_place` and compare against the
+# re-run `cargo bench -p rubyfunk-core --bench pipeline -- in_place` and compare against the
 # table above rather than reaching for a cfg.

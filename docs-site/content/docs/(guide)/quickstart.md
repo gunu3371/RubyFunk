@@ -32,9 +32,9 @@ warns once: continue. Sign in with the console password:
 
 | Host | Password |
 |---|---|
-| Linux | The one you typed in the guided installer, or print the generated one: `sed -n 's/^PUNKTFUNK_UI_PASSWORD=//p' ~/.config/punktfunk/web-password` |
-| SteamOS | `sed -n 's/^PUNKTFUNK_UI_PASSWORD=//p' ~/.config/punktfunk/web.env` |
-| Windows | The one you set in the installer, or from an elevated PowerShell: `punktfunk-host web password` |
+| Linux | The one you typed in the guided installer, or print the generated one: `sed -n 's/^RUBYFUNK_UI_PASSWORD=//p' ~/.config/rubyfunk/web-password` |
+| SteamOS | `sed -n 's/^RUBYFUNK_UI_PASSWORD=//p' ~/.config/rubyfunk/web.env` |
+| Windows | The one you set in the installer, or from an elevated PowerShell: `rubyfunk-host web password` |
 
 Read it before you sign in: the console then stores only a hash. Lost it?
 [Reset it](/docs/forgot-password).

@@ -46,7 +46,7 @@ pub struct PortalCapturer {
     wake: Receiver<()>,
     /// Set by [`crate::Feed::arrival_poke`]; `wait_ready` takes it and returns with no frame.
     poked: Arc<std::sync::atomic::AtomicBool>,
-    /// Arrival to take, per frame (`PUNKTFUNK_PERF`).
+    /// Arrival to take, per frame (`RUBYFUNK_PERF`).
     fence_wait: FenceWaitStats,
     shared: StreamShared,
     cursor_slot: CursorSlot,
@@ -148,7 +148,7 @@ impl PortalCapturer {
         let (quit_tx, quit_rx) = tokio::sync::oneshot::channel::<()>();
         let (done_tx, done_rx) = sync_channel::<()>(1);
         let join = thread::Builder::new()
-            .name("punktfunk-portal".into())
+            .name("rubyfunk-portal".into())
             .spawn(move || {
                 portal_thread(setup_tx, quit_rx, want_metadata_cursor, anchored);
                 // After the fn closed its portal session, so `Drop`'s
@@ -369,7 +369,7 @@ fn spawn_pipewire(
     let force_shm = opts.knobs.force_shm;
     let want_hdr = if want_hdr && force_shm {
         tracing::warn!(
-            "HDR capture requested but PUNKTFUNK_FORCE_SHM=1 — the SHM path is 8-bit only; \
+            "HDR capture requested but RUBYFUNK_FORCE_SHM=1 — the SHM path is 8-bit only; \
              offering SDR"
         );
         false
@@ -404,7 +404,7 @@ fn spawn_pipewire(
         plan,
     };
     let join = thread::Builder::new()
-        .name("punktfunk-pipewire".into())
+        .name("rubyfunk-pipewire".into())
         .spawn(move || {
             if let Err(e) = pipewire_thread(cfg, fd, ends, quit_rx) {
                 tracing::error!(error = %format!("{e:#}"), "pipewire capture thread failed");
@@ -603,7 +603,7 @@ pub(super) enum TimeoutVerdict {
 
 /// Offer a first-frame timeout implicates. Split out so the latch policy
 /// is testable. A negotiated format clears every offer; forced
-/// `PUNKTFUNK_ZEROCOPY=1` keeps both dmabuf arms erroring (operator asked).
+/// `RUBYFUNK_ZEROCOPY=1` keeps both dmabuf arms erroring (operator asked).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum TimeoutOffer {
     /// Format negotiated; compositor produced no buffers.
@@ -967,7 +967,7 @@ mod first_frame_timeout_tests {
 
     #[test]
     fn a_forced_zerocopy_keeps_both_dmabuf_arms_erroring_loudly_instead_of_implicated() {
-        // `PUNKTFUNK_ZEROCOPY=1` is the operator insisting on the path —
+        // `RUBYFUNK_ZEROCOPY=1` is the operator insisting on the path —
         // timeout falls through to the generic diagnosis and never latches.
         let offered = Negotiation {
             gpu_offer: true,

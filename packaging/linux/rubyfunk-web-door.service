@@ -1,0 +1,44 @@
+# rubyfunk management web console for the door: the user unit of the same name
+# (scripts/rubyfunk-web.service) as a system service, pointed at the door's files and port.
+#
+# The user's own console stands down while this runs: the runtime directory below is what its
+# ConditionPathExists= looks for. Same port, same certificate, same password.
+[Unit]
+Description=rubyfunk management web console (the door's)
+After=rubyfunk-door.service
+Wants=rubyfunk-door.service
+# Off without the owner record, as the door is.
+ConditionPathExists=/var/lib/rubyfunk-seats/owner
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=rubyfunk
+Group=rubyfunk-door
+RuntimeDirectory=rubyfunk-web-door
+Environment=RUBYFUNK_CONFIG_DIR=/var/lib/rubyfunk
+Environment=PORT=47992
+Environment=RUBYFUNK_UI_TLS_CERT=/var/lib/rubyfunk/cert.pem
+Environment=RUBYFUNK_UI_TLS_KEY=/var/lib/rubyfunk/key.pem
+Environment=RUBYFUNK_UI_SECURE=1
+# The door writes these on its first start; the console can't serve without them, so wait.
+ExecStartPre=/bin/sh -c 'until [ -s /var/lib/rubyfunk/mgmt-token ] && [ -s /var/lib/rubyfunk/native-key.pem ]; do sleep 1; done'
+# The owner's console bind, which door-helper copies with the ports. First, so the files below
+# win any key they share. Without it the console answers on every interface.
+EnvironmentFile=-/var/lib/rubyfunk/host.env
+EnvironmentFile=-/var/lib/rubyfunk/mgmt-token
+EnvironmentFile=-/var/lib/rubyfunk/web-password
+EnvironmentFile=-/var/lib/rubyfunk/mgmt-endpoint
+ExecStart=/usr/bin/rubyfunk-web-server
+Restart=always
+RestartSec=2
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=multi-user.target

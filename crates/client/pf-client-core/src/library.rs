@@ -234,7 +234,7 @@ pub fn agent(
     use rustls::pki_types::pem::PemObject;
     let bad =
         |what: &str, e: &dyn std::fmt::Display| LibraryError::Unreachable(format!("{what}: {e}"));
-    let builder = punktfunk_core::tls::pinned_builder(punktfunk_core::tls::PinVerify::new(pin))
+    let builder = rubyfunk_core::tls::pinned_builder(rubyfunk_core::tls::PinVerify::new(pin))
         .map_err(|e| bad("tls config", &e))?;
     let cert = rustls::pki_types::CertificateDer::from_pem_slice(identity.0.as_bytes())
         .map_err(|e| bad("client cert pem", &e))?;
@@ -245,7 +245,7 @@ pub fn agent(
         .map_err(|e| bad("client auth", &e))?;
     // ureq's `TlsConfig` has no custom-verifier hook; wrap this `ClientConfig`
     // via `tls::ureq_agent`.
-    Ok(punktfunk_core::tls::ureq_agent::agent(
+    Ok(rubyfunk_core::tls::ureq_agent::agent(
         Arc::new(cfg),
         ureq::Agent::config_builder()
             .timeout_connect(Some(Duration::from_secs(5)))
@@ -365,7 +365,7 @@ impl HostApi {
     ) -> Result<Reply, LibraryError> {
         let mut refused = None;
         if self.stream_port != 0 {
-            let req = punktfunk_core::client::mgmt::Request {
+            let req = rubyfunk_core::client::mgmt::Request {
                 method,
                 path,
                 content_type: body.map(|b| b.0),
@@ -373,7 +373,7 @@ impl HostApi {
             };
             let id = (self.identity.0.as_str(), self.identity.1.as_str());
             let (addr, port) = (&self.addr, self.stream_port);
-            match punktfunk_core::client::mgmt::request(addr, port, id, self.pin, TUNNEL_WAIT, &req)
+            match rubyfunk_core::client::mgmt::request(addr, port, id, self.pin, TUNNEL_WAIT, &req)
             {
                 Ok(r) => {
                     let reply = Reply {
@@ -385,9 +385,7 @@ impl HostApi {
                     }
                     refused = Some(reply);
                 }
-                Err(punktfunk_core::PunktfunkError::Crypto) => {
-                    return Err(LibraryError::PinMismatch)
-                }
+                Err(rubyfunk_core::RubyFunkError::Crypto) => return Err(LibraryError::PinMismatch),
                 Err(e) => {
                     tracing::debug!(error = %e, path, "stream port did not answer — asking HTTPS")
                 }
@@ -609,7 +607,7 @@ impl InstallAction {
         download: Option<&DownloadProgress>,
         grants: Option<u32>,
     ) -> Option<InstallAction> {
-        use punktfunk_core::quic::{GRANT_LAUNCH, GRANT_MANAGE_GAMES};
+        use rubyfunk_core::quic::{GRANT_LAUNCH, GRANT_MANAGE_GAMES};
         let install = install?;
         let launch = grants.is_none_or(|g| g & GRANT_LAUNCH != 0);
         let manage = grants.is_some_and(|g| g & GRANT_MANAGE_GAMES != 0);
@@ -1041,7 +1039,7 @@ impl<T: Clone + Send + 'static> FpCache<T> {
 pub const RUNNING_TTL: Duration = Duration::from_secs(20);
 
 #[cfg(desktop)]
-static RUNNING: FpCache<RunningGame> = FpCache::new(RUNNING_TTL, "punktfunk-nowplaying");
+static RUNNING: FpCache<RunningGame> = FpCache::new(RUNNING_TTL, "rubyfunk-nowplaying");
 
 /// The title to name on a host tile: what this host last said it has up.
 ///
@@ -1097,7 +1095,7 @@ pub fn fetch_art(api: &HostApi, pinned: &ureq::Agent, url: &str) -> Result<Vec<u
     }
     // Default ureq agent uses the process rustls provider. Install it here;
     // several binaries link this crate and may not have done so.
-    punktfunk_core::tls::install_default_provider();
+    rubyfunk_core::tls::install_default_provider();
     let mut resp = ureq::get(url)
         .config()
         .timeout_global(Some(Duration::from_secs(10)))
@@ -1132,7 +1130,7 @@ pub fn spawn_art_fetch(
         let tx = tx.clone();
         let api = api.clone();
         std::thread::Builder::new()
-            .name("punktfunk-lib-art".into())
+            .name("rubyfunk-lib-art".into())
             .spawn(move || {
                 let Ok(agent) = agent(&api.identity, api.pin) else {
                     return;
@@ -1255,7 +1253,7 @@ impl<H: Send + 'static> ArtPool<H> {
             let (shared, tx, api, decode) =
                 (shared.clone(), tx.clone(), api.clone(), decode.clone());
             let spawned = std::thread::Builder::new()
-                .name("punktfunk-lib-art".into())
+                .name("rubyfunk-lib-art".into())
                 .spawn(move || {
                     let Ok(agent) = agent(&api.identity, api.pin) else {
                         return;
@@ -1462,7 +1460,7 @@ mod tests {
     /// One row per title, by its files and download, and only what the device is granted.
     #[test]
     fn a_titles_menu_offers_the_one_action_its_files_allow() {
-        use punktfunk_core::quic::{GRANT_ALL, GRANT_GAMEPAD, GRANT_LAUNCH};
+        use rubyfunk_core::quic::{GRANT_ALL, GRANT_GAMEPAD, GRANT_LAUNCH};
         let missing = TitleInstall {
             state: "missing".into(),
             size_bytes: Some(26_000_000_000),

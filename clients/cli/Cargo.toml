@@ -1,6 +1,6 @@
 [package]
-name = "punktfunk-cli"
-description = "punktfunk — the headless client CLI: pair, list and edit hosts, wake, enumerate a library, start a stream, open a punktfunk:// URL"
+name = "rubyfunk-cli"
+description = "rubyfunk — the headless client CLI: pair, list and edit hosts, wake, enumerate a library, start a stream, open a rubyfunk:// URL"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -8,10 +8,10 @@ license.workspace = true
 authors.workspace = true
 repository.workspace = true
 
-# The binary is `punktfunk` — the command users and plugins type. The crate name carries the
-# `-cli` suffix only because `punktfunk` is taken by the workspace's own naming.
+# The binary is `rubyfunk` — the command users and plugins type. The crate name carries the
+# `-cli` suffix only because `rubyfunk` is taken by the workspace's own naming.
 [[bin]]
-name = "punktfunk"
+name = "rubyfunk"
 path = "src/main.rs"
 
 # Console subsystem, no GUI toolkit: this links `pf-client-core` (the brain) and nothing else
@@ -20,7 +20,7 @@ path = "src/main.rs"
 [target.'cfg(any(target_os = "linux", windows))'.dependencies]
 base64 = { version = "0.23", default-features = false, features = ["std"] }
 pf-client-core = { path = "../../crates/client/pf-client-core", default-features = false, features = ["desktop"] }
-punktfunk-core = { path = "../../crates/core/punktfunk-core", features = ["quic"] }
+rubyfunk-core = { path = "../../crates/core/rubyfunk-core", features = ["quic"] }
 serde_json = "1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 

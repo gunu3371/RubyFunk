@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Announce a stable Punktfunk release to the Discord #releases channel.
+# Announce a stable RubyFunk release to the Discord #releases channel.
 #
 # Model: release notes live in the repo at docs/releases/<tag>.md (authored during the version
 # bump, BEFORE the tag is pushed — see docs/releases/README.md). CI seeds the Gitea release body
@@ -10,7 +10,7 @@
 # Usage:   scripts/ci/discord-announce.sh <tag>       # e.g. v0.18.0
 # Env:
 #   GITHUB_SERVER_URL        https://git.unom.io                 (Gitea Actions sets it)
-#   GITHUB_REPOSITORY        unom/punktfunk                      (Gitea Actions sets it)
+#   GITHUB_REPOSITORY        unom/rubyfunk                      (Gitea Actions sets it)
 #   GITEA_TOKEN              PAT with repo write scope (from secrets.REGISTRY_TOKEN)
 #   DISCORD_RELEASE_WEBHOOK  the #releases channel webhook URL   (from secrets)
 #   ALLOW_PRERELEASE         "1" to permit announcing a -rc/pre-release tag (default: refuse)
@@ -95,10 +95,10 @@ if url:
         f"**[⬇️ Download & full release notes →]({url})**"
 
 embed = {
-    "title": f"Punktfunk {version}",
+    "title": f"RubyFunk {version}",
     "color": 0x6C5BF3,  # --pf-brand deep violet
     "description": description,
-    "footer": {"text": "Punktfunk • git.unom.io"},
+    "footer": {"text": "RubyFunk • git.unom.io"},
 }
 if url:
     embed["url"] = url
@@ -111,4 +111,4 @@ PY
 
 curl -fsS -o /dev/null -X POST "$DISCORD_RELEASE_WEBHOOK" \
   -H 'Content-Type: application/json' --data-binary @"$payload_file"
-echo "discord-announce: posted Punktfunk $TAG to #releases (release $RID)"
+echo "discord-announce: posted RubyFunk $TAG to #releases (release $RID)"

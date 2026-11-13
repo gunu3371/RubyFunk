@@ -387,7 +387,7 @@ pub(super) fn adopt(undo: &journal::Undo) -> Result<()> {
     Ok(())
 }
 
-/// A pre-journal host's crash record, `$XDG_RUNTIME_DIR/punktfunk-session-takeover.json`. Read
+/// A pre-journal host's crash record, `$XDG_RUNTIME_DIR/rubyfunk-session-takeover.json`. Read
 /// once at startup into journal steps, then deleted. Its units were masked.
 #[derive(serde::Deserialize, Default)]
 struct LegacyRecord {
@@ -427,7 +427,7 @@ impl LegacyRecord {
 
 fn legacy_record_path() -> std::path::PathBuf {
     let base = crate::session::runtime_dir();
-    std::path::Path::new(&base).join("punktfunk-session-takeover.json")
+    std::path::Path::new(&base).join("rubyfunk-session-takeover.json")
 }
 
 /// Owe what an older host's record names, then delete it. A record that does not parse is
@@ -744,13 +744,13 @@ fn dm_plan(dm: Option<&str>, any_live: bool) -> DmPlan {
 /// Helper names the DM from the `display-manager.service` symlink — this process never names a
 /// unit across the privilege boundary. Two layouts: rpm/deb `libexec`, Arch `/usr/lib/<pkg>`.
 const DM_HELPER_PATHS: &[&str] = &[
-    "/usr/libexec/punktfunk/pf-dm-helper",
-    "/usr/lib/punktfunk/pf-dm-helper",
+    "/usr/libexec/rubyfunk/pf-dm-helper",
+    "/usr/lib/rubyfunk/pf-dm-helper",
 ];
 
 /// Helper's own gate: polkit is `allow_any` (lingering user unit has no session to classify).
 /// Package creates the group and adds nobody — it also gates usbip attach.
-const DM_HELPER_GROUP: &str = "punktfunk";
+const DM_HELPER_GROUP: &str = "rubyfunk";
 
 fn installed_dm_helper() -> Option<&'static str> {
     DM_HELPER_PATHS
@@ -795,7 +795,7 @@ impl std::fmt::Display for DmHelperError {
         match self {
             Self::NotInstalled => write!(
                 f,
-                "no packaged pf-dm-helper on this box (looked in {}) — install the punktfunk \
+                "no packaged pf-dm-helper on this box (looked in {}) — install the rubyfunk \
                  package, or add a display-manager polkit rule for your user (see \
                  https://docs.punktfunk.unom.io/docs/gamescope)",
                 DM_HELPER_PATHS.join(" and ")
@@ -813,8 +813,8 @@ impl std::fmt::Display for DmHelperError {
             } => write!(
                 f,
                 "pkexec never ran {helper} (exit {code}{}) — polkit did not authorize \
-                 io.unom.punktfunk.dm-helper, so the action is missing or overridden; reinstall \
-                 the punktfunk package, or add a display-manager polkit rule for your user (see \
+                 io.github.gunu3371.rubyfunk.dm-helper, so the action is missing or overridden; reinstall \
+                 the rubyfunk package, or add a display-manager polkit rule for your user (see \
                  https://docs.punktfunk.unom.io/docs/gamescope)",
                 suffix(stderr)
             ),
@@ -887,7 +887,7 @@ fn dm_helper(verb: &str) -> std::result::Result<(), DmHelperError> {
     }
 }
 
-/// Missing `punktfunk` group is silent: takeover degrades to attach (black screen). Log it at
+/// Missing `rubyfunk` group is silent: takeover degrades to attach (black screen). Log it at
 /// startup with the `usermod` line. Gated: root / no DM / no session infra / no helper never need
 /// the group. Reads the user database (`id -nG`), not `getgroups()` — that is what the helper
 /// reads. Log-back-in is for usbip: this process's supplementary groups were frozen at start.
@@ -1214,7 +1214,7 @@ fn parse_listed_units(stdout: &str) -> Vec<(String, String)> {
         .collect()
 }
 
-/// Free Steam. Our `punktfunk-gamescope` unit is not a `@`-instance, so it is never matched.
+/// Free Steam. Our `rubyfunk-gamescope` unit is not a `@`-instance, so it is never matched.
 /// SIGKILL ([`kill_unit`]) avoids the NVIDIA GPU-context leak. A failed DM stop is `Err` (caller
 /// degrades to attach) — never mask-only; a mask while the DM is up is the relogin storm. So is
 /// a user manager that twice does not list its units.
@@ -1673,7 +1673,7 @@ fn wait_for_box_session(grace: Duration) -> HandbackWait {
 }
 
 /// After [`HANDBACK_GRACE`], if nothing is drawing: `stop` the autologin (releases the parked
-/// `--wait start`; `restart` does not), then restart the DM, then `PUNKTFUNK_RECOVER_SESSION_CMD`.
+/// `--wait start`; `restart` does not), then restart the DM, then `RUBYFUNK_RECOVER_SESSION_CMD`.
 /// Detached: a hand-back running for a minute would block every reconnect. Call once the units
 /// are settled, or the first poll reads our own finished takeover as a new one.
 fn ensure_box_session_or_escalate(units: &[String]) {
@@ -1740,7 +1740,7 @@ fn handback_watch(units: &[String]) {
     // Rung 3: operator escape hatch, then say what is left to do by hand.
     if crate::try_recover_session() {
         tracing::warn!(
-            "gamescope: fired PUNKTFUNK_RECOVER_SESSION_CMD to bring the box's session back"
+            "gamescope: fired RUBYFUNK_RECOVER_SESSION_CMD to bring the box's session back"
         );
         return;
     }
@@ -1749,7 +1749,7 @@ fn handback_watch(units: &[String]) {
         "gamescope: the box has NO session driving its panel and every automatic remedy failed — \
          its screen stays dark until someone runs `systemctl --user restart <unit>` for one of \
          these, or `sudo systemctl restart display-manager.service`. Set \
-         PUNKTFUNK_RECOVER_SESSION_CMD to let the host do this itself"
+         RUBYFUNK_RECOVER_SESSION_CMD to let the host do this itself"
     );
 }
 
@@ -1855,7 +1855,7 @@ fn do_restore_tv_session(verify: bool) {
                 %dm,
                 shape = why.shape(),
                 reason = %why,
-                "display-manager restart lost its privilege — fired PUNKTFUNK_RECOVER_SESSION_CMD \
+                "display-manager restart lost its privilege — fired RUBYFUNK_RECOVER_SESSION_CMD \
                  to bring the session back"
             ),
             // No graphical session. The helper's own reason rides along: the two root commands
@@ -1864,7 +1864,7 @@ fn do_restore_tv_session(verify: bool) {
                 %dm,
                 shape = why.shape(),
                 reason = %why,
-                "could not restart the display manager and no PUNKTFUNK_RECOVER_SESSION_CMD is \
+                "could not restart the display manager and no RUBYFUNK_RECOVER_SESSION_CMD is \
                  configured — the box has no graphical session until someone runs \
                  `systemctl reset-failed {dm} && systemctl restart {dm}` as root"
             ),
@@ -1961,7 +1961,7 @@ pub fn start_restore_worker() -> std::sync::Arc<()> {
     let handle = std::sync::Arc::new(());
     let weak = std::sync::Arc::downgrade(&handle);
     if let Err(e) = std::thread::Builder::new()
-        .name("punktfunk-restore-worker".into())
+        .name("rubyfunk-restore-worker".into())
         .spawn(move || {
             let mut watch = crate::suspend::Watch::new();
             while weak.upgrade().is_some() {
@@ -2516,10 +2516,10 @@ mod tests {
     /// one that ran and refused.
     #[test]
     fn dm_helper_failures_stay_distinguishable() {
-        let refusal = "pf-dm-helper: user 'nobara-user' is not in the 'punktfunk' group — \
-                       refusing. Grant it with: sudo usermod -aG punktfunk nobara-user";
+        let refusal = "pf-dm-helper: user 'nobara-user' is not in the 'rubyfunk' group — \
+                       refusing. Grant it with: sudo usermod -aG rubyfunk nobara-user";
         let ran = DmHelperError::Refused {
-            helper: "/usr/libexec/punktfunk/pf-dm-helper",
+            helper: "/usr/libexec/rubyfunk/pf-dm-helper",
             code: Some(1),
             stderr: refusal.to_string(),
         }
@@ -2533,11 +2533,11 @@ mod tests {
         for e in [
             DmHelperError::NotInstalled,
             DmHelperError::NotExecutable {
-                helper: "/usr/libexec/punktfunk/pf-dm-helper",
+                helper: "/usr/libexec/rubyfunk/pf-dm-helper",
                 io: "No such file or directory (os error 2)".into(),
             },
             DmHelperError::Denied {
-                helper: "/usr/libexec/punktfunk/pf-dm-helper",
+                helper: "/usr/libexec/rubyfunk/pf-dm-helper",
                 code: 127,
                 stderr: "Error executing command as another user: Not authorized".into(),
             },

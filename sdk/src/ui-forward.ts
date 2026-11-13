@@ -4,7 +4,7 @@
 import * as net from "node:net";
 
 /** Where the sandbox sees the runner's UI dir. */
-export const UI_DIR = "/run/punktfunk/ui";
+export const UI_DIR = "/run/rubyfunk/ui";
 export const UI_SOCKET = `${UI_DIR}/ui.sock`;
 
 export interface UiForward {
@@ -100,7 +100,7 @@ export const redirectUiServeToChannel = (pipe: string, id: string): void => {
 	}) as Serve;
 };
 
-const warn = (m: string) => console.warn(`[punktfunk] UI channel: ${m}`);
+const warn = (m: string) => console.warn(`[rubyfunk] UI channel: ${m}`);
 
 /** Connections a plugin keeps parked at the host; each one used is dialed again. */
 const PARKED = 4;
@@ -128,8 +128,8 @@ export const attachOverPipe = (
 		let attached = false;
 		socket.on("connect", () => {
 			socket.write(
-				`GET /api/v1/plugins/${id}/ui/attach HTTP/1.1\r\nhost: punktfunk.host\r\n` +
-					"connection: Upgrade\r\nupgrade: punktfunk-ui\r\n\r\n",
+				`GET /api/v1/plugins/${id}/ui/attach HTTP/1.1\r\nhost: rubyfunk.host\r\n` +
+					"connection: Upgrade\r\nupgrade: rubyfunk-ui\r\n\r\n",
 			);
 		});
 		const onHead = (chunk: Buffer): void => {

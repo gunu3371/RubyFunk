@@ -8,9 +8,9 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
-use punktfunk_core::audio::pad_mix::{PadDecode, QuadMixer, MAX_FRAME_SAMPLES};
-use punktfunk_core::audio::plane::{PlaneDecoder, PlaneFormat};
-use punktfunk_core::quic::PadAudioFrame;
+use rubyfunk_core::audio::pad_mix::{PadDecode, QuadMixer, MAX_FRAME_SAMPLES};
+use rubyfunk_core::audio::plane::{PlaneDecoder, PlaneFormat};
+use rubyfunk_core::quic::PadAudioFrame;
 use std::time::Instant;
 
 /// Rates libopus takes, the PCM ladder's, and three a host must not send.

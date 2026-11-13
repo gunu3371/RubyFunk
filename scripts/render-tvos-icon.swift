@@ -1,4 +1,4 @@
-// Usage: swift scripts/render-tvos-icon.swift clients/apple/App/punktfunk_Logo.icon
+// Usage: swift scripts/render-tvos-icon.swift clients/apple/App/rubyfunk_Logo.icon
 //        "clients/apple/App/Assets.xcassets/App Icon & Top Shelf Image.brandassets"
 // Icon Composer has no tvOS target, so this bakes its Liquid Glass render into the tvOS
 // parallax layers. ICTOOL overrides the renderer; Icon Composer 2 gives the tvOS 27 look.

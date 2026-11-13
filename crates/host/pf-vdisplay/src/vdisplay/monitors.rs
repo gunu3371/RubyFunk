@@ -2,7 +2,7 @@
 //!
 //! Read-only. Everything else in this crate creates and owns virtual outputs;
 //! this module only reports existing heads so an operator can pin capture
-//! (`PUNKTFUNK_CAPTURE_MONITOR`) and the console can render a picker.
+//! (`RUBYFUNK_CAPTURE_MONITOR`) and the console can render a picker.
 //! See `design/per-monitor-portal-capture.md`.
 //!
 //! Lives here because enumeration is per-compositor and this crate already
@@ -29,7 +29,7 @@ use anyhow::bail;
 /// way to compare a size against `x`/`y`. Mixing the two spaces is a trap.
 #[derive(Clone, Debug, PartialEq)]
 pub struct PhysicalMonitor {
-    /// Connector name (`DP-1`, `HDMI-A-2`). The id `PUNKTFUNK_CAPTURE_MONITOR` names.
+    /// Connector name (`DP-1`, `HDMI-A-2`). The id `RUBYFUNK_CAPTURE_MONITOR` names.
     pub connector: String,
     /// Human label for a picker (`make model`, else the connector). Never used for matching.
     pub description: String,
@@ -572,7 +572,7 @@ mod tests {
             "not the operator line: {said}"
         );
         assert!(
-            said.len() <= punktfunk_core::quic::REFUSED_REASON_MAX,
+            said.len() <= rubyfunk_core::quic::REFUSED_REASON_MAX,
             "fits one close frame uncut: {} bytes",
             said.len()
         );
@@ -593,7 +593,7 @@ mod tests {
             "keeps the move: {said}"
         );
         assert!(
-            said.len() <= punktfunk_core::quic::REFUSED_REASON_MAX,
+            said.len() <= rubyfunk_core::quic::REFUSED_REASON_MAX,
             "fits one close frame uncut: {} bytes",
             said.len()
         );

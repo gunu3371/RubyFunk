@@ -1,4 +1,4 @@
-# Single source of truth for punktfunk release/canary version numbers (Windows runners).
+# Single source of truth for rubyfunk release/canary version numbers (Windows runners).
 #
 # The pwsh twin of scripts/ci/pf-version.sh — see that file for the full rationale. Same rule:
 #   * stable (vX.Y.Z tag) -> PF_BASE = X.Y.Z (minus any -rc/+meta suffix)

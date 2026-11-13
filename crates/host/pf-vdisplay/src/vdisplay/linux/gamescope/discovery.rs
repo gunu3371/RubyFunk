@@ -484,27 +484,27 @@ pub(crate) fn is_available() -> bool {
 }
 
 /// Absolute path: the session-plus wrapper and the SteamOS PATH shim run outside this `PATH`.
-/// Rungs: `PUNKTFUNK_GAMESCOPE_BIN` → `punktfunk-gamescope` on `PATH`, then beside the host →
+/// Rungs: `RUBYFUNK_GAMESCOPE_BIN` → `rubyfunk-gamescope` on `PATH`, then beside the host →
 /// stock `gamescope`. A SteamOS seat's host finds the owner's build only beside itself.
 pub(crate) fn gamescope_bin() -> &'static str {
     static BIN: std::sync::OnceLock<String> = std::sync::OnceLock::new();
     BIN.get_or_init(|| {
         // Shared env lock: a concurrent session `set_var` must not race this read.
-        let over = crate::with_env_lock(|| std::env::var("PUNKTFUNK_GAMESCOPE_BIN").ok())
+        let over = crate::with_env_lock(|| std::env::var("RUBYFUNK_GAMESCOPE_BIN").ok())
             .filter(|s| !s.trim().is_empty());
         if let Some(path) = over {
-            tracing::info!(bin = %path, "gamescope: PUNKTFUNK_GAMESCOPE_BIN override");
+            tracing::info!(bin = %path, "gamescope: RUBYFUNK_GAMESCOPE_BIN override");
             return path;
         }
         let host_dir = std::env::current_exe()
             .ok()
             .and_then(|exe| Some(exe.parent()?.to_string_lossy().into_owned()));
-        if let Some(path) = which_in_path("punktfunk-gamescope")
-            .or_else(|| which_in(host_dir.as_deref()?, "punktfunk-gamescope"))
+        if let Some(path) = which_in_path("rubyfunk-gamescope")
+            .or_else(|| which_in(host_dir.as_deref()?, "rubyfunk-gamescope"))
         {
             tracing::info!(
                 bin = %path,
-                "gamescope: using the punktfunk build (10-bit HDR capture available)"
+                "gamescope: using the rubyfunk build (10-bit HDR capture available)"
             );
             return path;
         }
@@ -515,7 +515,7 @@ pub(crate) fn gamescope_bin() -> &'static str {
 
 /// Where our packages put `gamescopereaper`, which gamescope `execvp`s for every child it starts.
 /// The distro's gamescope owns `/usr/bin/gamescopereaper`, so ours stays out of `/usr/bin`.
-pub(super) const REAPER_DIR: &str = "/usr/lib/punktfunk/gamescope";
+pub(super) const REAPER_DIR: &str = "/usr/lib/rubyfunk/gamescope";
 
 /// `PATH` for a gamescope we start, [`REAPER_DIR`] first; `None` when no package installed it.
 pub(super) fn reaper_path_env() -> Option<String> {
@@ -605,7 +605,7 @@ fn gamescope_patch_level() -> u32 {
                 tracing::info!(
                     bin = %gamescope_bin(),
                     level,
-                    "gamescope carries the punktfunk patch set — HDR capture, and (level 2+) the \
+                    "gamescope carries the rubyfunk patch set — HDR capture, and (level 2+) the \
                      cursor composited into the capture stream"
                 );
             } else {
@@ -613,7 +613,7 @@ fn gamescope_patch_level() -> u32 {
                 tracing::info!(
                     bin = %gamescope_bin(),
                     "gamescope has no {PFHDR_MARKER} marker — sessions on this backend stay 8-bit SDR \
-                     with a host-composited cursor (install punktfunk-gamescope for HDR)"
+                     with a host-composited cursor (install rubyfunk-gamescope for HDR)"
                 );
             }
             Some(level)
@@ -837,7 +837,7 @@ fn check_gamescope_version_now() -> Option<(u32, u32, u32)> {
             min = %format!("{}.{}.{}", MIN_GAMESCOPE.0, MIN_GAMESCOPE.1, MIN_GAMESCOPE.2),
             "gamescope is older than the minimum for reliable headless capture — expect a \
              capture deadlock against PipeWire ≥ 1.6 (a wedged link head-blocks the daemon); \
-             upgrade gamescope or use PUNKTFUNK_COMPOSITOR=kwin|mutter"
+             upgrade gamescope or use RUBYFUNK_COMPOSITOR=kwin|mutter"
         );
     } else if ver < MIN_GAMESCOPE_OVERLAY {
         tracing::warn!(
@@ -1092,7 +1092,7 @@ mod tests {
     #[test]
     fn game_mode_units_are_ours_steamos_and_session_plus() {
         assert!(in_game_mode_unit(&format!(
-            "{SLICE}punktfunk-gamescope.service"
+            "{SLICE}rubyfunk-gamescope.service"
         )));
         assert!(in_game_mode_unit(&format!(
             "{SLICE}gamescope-session.service"
@@ -1101,9 +1101,7 @@ mod tests {
             "{SLICE}gamescope-session-plus@steam.service"
         )));
         // A seat's gamescope runs in the host's own unit.
-        assert!(!in_game_mode_unit(&format!(
-            "{SLICE}punktfunk-host.service"
-        )));
+        assert!(!in_game_mode_unit(&format!("{SLICE}rubyfunk-host.service")));
         assert!(!in_game_mode_unit(&format!(
             "{SLICE}app-gnome-gamescope-4242.scope"
         )));

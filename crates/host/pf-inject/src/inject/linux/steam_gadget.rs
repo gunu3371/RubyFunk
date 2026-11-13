@@ -575,9 +575,9 @@ pub fn ensure_modules() {
 }
 
 /// Auto is on for SteamOS (ships the modules and runs Steam Input) and off elsewhere;
-/// `PUNKTFUNK_STEAM_GADGET` on/off forces it. A host that *is* a Deck never reaches
+/// `RUBYFUNK_STEAM_GADGET` on/off forces it. A host that *is* a Deck never reaches
 /// here: `resolve_gamepad` degrades `SteamDeck` → DualSense before the manager is built.
 pub fn gadget_preferred() -> bool {
-    pf_host_config::row_tri("PUNKTFUNK_STEAM_GADGET")
+    pf_host_config::row_tri("RUBYFUNK_STEAM_GADGET")
         .unwrap_or_else(|| pf_host_config::os_release::os_release().is("steamos"))
 }

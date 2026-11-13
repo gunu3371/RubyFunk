@@ -125,7 +125,7 @@ const PROBLEMS: HostCheck[] = [
 		id: "takeover_privilege",
 		status: "fail",
 		severity: "critical",
-		summary: "User “enrico” is not in the “punktfunk” group",
+		summary: "User “enrico” is not in the “rubyfunk” group",
 		impact: "Every takeover degrades to mirroring this machine's own session.",
 		params: {},
 		source: "startup",

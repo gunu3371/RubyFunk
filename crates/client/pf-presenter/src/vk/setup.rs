@@ -142,14 +142,14 @@ fn device_rank(props: &vk::PhysicalDeviceProperties) -> u8 {
 }
 
 /// One physical device's Vulkan Video decode capability: no logical device, no
-/// surface. What `punktfunk-session --probe-decode` prints.
+/// surface. What `rubyfunk-session --probe-decode` prints.
 #[derive(Debug, Clone)]
 pub struct AdapterDecode {
-    /// Raw `vkEnumeratePhysicalDevices` index: the value `PUNKTFUNK_VK_DEVICE` takes.
+    /// Raw `vkEnumeratePhysicalDevices` index: the value `RUBYFUNK_VK_DEVICE` takes.
     /// `pick_device` uses that unsorted index. This report is discrete-first, so the
     /// display row is not that number — hybrids enumerate the iGPU first.
     pub index: usize,
-    /// Marketing name, also the `PUNKTFUNK_VK_ADAPTER` match key. Not unique: a hybrid
+    /// Marketing name, also the `RUBYFUNK_VK_ADAPTER` match key. Not unique: a hybrid
     /// can expose the same iGPU twice, and a match takes whoever enumerates first.
     pub name: String,
     /// Discrete-first, matching `pick_device`: row 0 is the default present device.
@@ -201,7 +201,7 @@ impl AdapterDecode {
             (0x1, "H.264"),
             (0x2, "H.265"),
             (0x4, "AV1"),
-            (0x8, "VP9 (no punktfunk rung)"),
+            (0x8, "VP9 (no rubyfunk rung)"),
         ];
         let mut names: Vec<String> = OPS
             .iter()
@@ -1066,7 +1066,7 @@ fn create_instance(
     entry: &ash::Entry,
     instance_extensions: &[String],
 ) -> Result<(ash::Instance, Vec<String>, bool, bool)> {
-    let app_name = CString::new("punktfunk-session").unwrap();
+    let app_name = CString::new("rubyfunk-session").unwrap();
     // 1.3: Video decode and PyroWave both need it. The instance version caps
     // what the device can report; `SharedDevice::api_version` is this same constant.
     let app_info = vk::ApplicationInfo::default()
@@ -1536,15 +1536,15 @@ impl Drop for Bringup {
 }
 
 /// Every physical device's Vulkan Video decode capability
-/// (`punktfunk-session --probe-decode`). No surface, no logical device, no session.
+/// (`rubyfunk-session --probe-decode`). No surface, no logical device, no session.
 ///
 /// Ordered like [`list_adapters`] (discrete first). Row 0 is the default present
-/// (and decode) device. `PUNKTFUNK_VK_DEVICE=<index>` moves both; probing the
+/// (and decode) device. `RUBYFUNK_VK_DEVICE=<index>` moves both; probing the
 /// iGPU while the dGPU presents reports the wrong GPU.
 pub fn probe_decode() -> Result<Vec<AdapterDecode>> {
     // SAFETY: dlopens libvulkan; no instance exists yet.
     let entry = unsafe { ash::Entry::load() }.context("libvulkan not loadable")?;
-    let app_name = CString::new("punktfunk-session").unwrap();
+    let app_name = CString::new("rubyfunk-session").unwrap();
     let app_info = vk::ApplicationInfo::default()
         .application_name(&app_name)
         .api_version(super::INSTANCE_API_VERSION);
@@ -1619,13 +1619,13 @@ fn names(exts: &[&std::ffi::CStr]) -> Vec<String> {
 }
 
 /// Physical-device marketing names for the shells' GPU picker
-/// (`punktfunk-session --list-adapters`). No surface, no logical device. Discrete
+/// (`rubyfunk-session --list-adapters`). No surface, no logical device. Discrete
 /// first (same tie-break as `pick_device`); duplicate names collapsed because the
-/// name is the whole `PUNKTFUNK_VK_ADAPTER` key. Same 1.3 instance the presenter creates.
+/// name is the whole `RUBYFUNK_VK_ADAPTER` key. Same 1.3 instance the presenter creates.
 pub fn list_adapters() -> Result<Vec<String>> {
     // SAFETY: dlopens libvulkan; no instance exists yet.
     let entry = unsafe { ash::Entry::load() }.context("libvulkan not loadable")?;
-    let app_name = CString::new("punktfunk-session").unwrap();
+    let app_name = CString::new("rubyfunk-session").unwrap();
     let app_info = vk::ApplicationInfo::default()
         .application_name(&app_name)
         .api_version(super::INSTANCE_API_VERSION);
@@ -1941,7 +1941,7 @@ pub(super) fn pick_present_mode(
         Some(other) => {
             tracing::warn!(
                 value = other,
-                "unknown PUNKTFUNK_PRESENT_MODE (expected fifo|mailbox|immediate|fifo_relaxed) — following the settings"
+                "unknown RUBYFUNK_PRESENT_MODE (expected fifo|mailbox|immediate|fifo_relaxed) — following the settings"
             );
             None
         }
@@ -1952,7 +1952,7 @@ pub(super) fn pick_present_mode(
         }
         tracing::warn!(
             ?want,
-            "PUNKTFUNK_PRESENT_MODE not offered by this surface — falling back"
+            "RUBYFUNK_PRESENT_MODE not offered by this surface — falling back"
         );
     }
     // Present modes are a (surface, device, fullscreen) property; log the set so a
@@ -2035,7 +2035,7 @@ mod tests {
         assert_eq!(ops(0x3).codec_names(), ["H.264", "H.265"]);
         assert_eq!(
             ops(0x4 | 0x8 | 0x10).codec_names(),
-            ["AV1", "VP9 (no punktfunk rung)", "unrecognised bits 0x10"]
+            ["AV1", "VP9 (no rubyfunk rung)", "unrecognised bits 0x10"]
         );
     }
 

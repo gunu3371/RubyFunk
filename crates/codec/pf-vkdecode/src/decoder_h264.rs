@@ -319,7 +319,7 @@ impl VkDecoder<H264> {
     }
 }
 
-/// `STD_VIDEO_H264_PROFILE_IDC_HIGH`: the profile every punktfunk host encodes.
+/// `STD_VIDEO_H264_PROFILE_IDC_HIGH`: the profile every rubyfunk host encodes.
 const H264_PROFILE_HIGH: hh::StdVideoH264ProfileIdc = 100;
 
 /// Map `profile_idc` to the Std code point. Identity for the four

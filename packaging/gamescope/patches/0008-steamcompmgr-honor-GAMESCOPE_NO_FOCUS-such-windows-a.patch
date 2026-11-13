@@ -14,7 +14,7 @@ The show/hide protocol for these clients is STEAM_OVERLAY / STEAM_INPUT_FOCUS �
 never meant to win focus selection on its own.
 
 Nothing consumed the atom: neither this tree nor Bazzite's fork (checked ba148) interns it, so a
-mapped-but-unpainted hhd-ui window — it crash-loops under a headless punktfunk takeover and
+mapped-but-unpainted hhd-ui window — it crash-loops under a headless rubyfunk takeover and
 remaps on every respawn, stamping Steam's appid 769 — was a perfectly ordinary focus candidate.
 steamcompmgr picked it over Big Picture, and the composite (and the stream fed from it) went
 black while every other health signal stayed green (observed on Bazzite .41, 2026-08-11:

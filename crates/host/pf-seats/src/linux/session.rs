@@ -1,7 +1,7 @@
 //! A seat's systemd unit: its environment file, its bind-mount drop-in and its state.
 //!
-//! `punktfunk-seat@<user>.service` runs the seat's user in a logind session. The supervisor
-//! writes its files under `/run` before each start: `punktfunk/seats/<user>.env`, the seat
+//! `rubyfunk-seat@<user>.service` runs the seat's user in a logind session. The supervisor
+//! writes its files under `/run` before each start: `rubyfunk/seats/<user>.env`, the seat
 //! contract the host reads plus its management token; a drop-in that binds the seat's private
 //! `compatdata`, `shadercache` and `downloading` over the shared games folder's, shows it the
 //! owner's libraries, hides the box's mounted drives and binds the supervisor's uinput proxy
@@ -17,7 +17,7 @@ use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
 /// Where each seat's environment file lives.
-pub(super) const ENV_DIR: &str = "/run/punktfunk/seats";
+pub(super) const ENV_DIR: &str = "/run/rubyfunk/seats";
 /// Where the supervisor's transient unit drop-ins live.
 pub(super) const DROPIN_ROOT: &str = "/run/systemd/system";
 
@@ -27,9 +27,9 @@ pub(super) const PRIVATE_DIRS: [&str; 3] = ["compatdata", "shadercache", "downlo
 /// What a seat's Steam runs in place of [`UPDATE_HELPERS`]. They escalate through pkexec, which
 /// a seat's session is refused, and Steam's first-run setup stops on that failure. A seat never
 /// updates the box, so each answers "nothing to do": 7 from `steamos-update`, else 0.
-pub(super) const NO_UPDATE: &str = "/run/punktfunk/seat-no-update";
+pub(super) const NO_UPDATE: &str = "/run/rubyfunk/seat-no-update";
 const NO_UPDATE_SCRIPT: &str = "#!/bin/sh\n\
-# A punktfunk seat never updates the box's OS or firmware.\n\
+# A rubyfunk seat never updates the box's OS or firmware.\n\
 if [ \"${0##*/}\" = steamos-update ]; then\n\
     case \" $* \" in *\" --supports-duplicate-detection \"*) exit 0 ;; esac\n\
     exit 7\n\
@@ -44,7 +44,7 @@ const UPDATE_HELPERS: [&str; 3] = [
 ];
 
 pub(super) fn unit(account: &str) -> String {
-    format!("punktfunk-seat@{account}.service")
+    format!("rubyfunk-seat@{account}.service")
 }
 
 pub(super) fn env_path(account: &str) -> PathBuf {
@@ -54,7 +54,7 @@ pub(super) fn env_path(account: &str) -> PathBuf {
 /// The unit's `RuntimeDirectory=`: the runner records its session id here, and the owner's runner
 /// marks `ready` once the host in the headless session serves.
 pub(super) fn runtime_dir(account: &str) -> PathBuf {
-    PathBuf::from(format!("/run/punktfunk-seat-{account}"))
+    PathBuf::from(format!("/run/rubyfunk-seat-{account}"))
 }
 
 pub(super) fn ready_path(account: &str) -> PathBuf {
@@ -72,7 +72,7 @@ fn quoted(key: &str, value: &str) -> String {
     format!("{key}=\"{escaped}\"\n")
 }
 
-const TOKEN_KEY: &str = "PUNKTFUNK_MGMT_TOKEN=";
+const TOKEN_KEY: &str = "RUBYFUNK_MGMT_TOKEN=";
 
 /// The management token as the one `KEY=value` line the box's client and `EnvironmentFile=` both
 /// read. Hex, so it needs no quoting.
@@ -104,9 +104,9 @@ pub(super) fn mint_token() -> String {
 /// the management token the box's client presents. Only the door advertises, so no seat does.
 ///
 /// The owner's row keeps the owner's own config directory, library, host name and GameStream
-/// setting: it is the owner's host, behind the door. `PUNKTFUNK_SEAT_OWNER` tells the runner and
+/// setting: it is the owner's host, behind the door. `RUBYFUNK_SEAT_OWNER` tells the runner and
 /// the host so. Every other seat plays the box's library, from its trust copy. A person's row
-/// is such a seat on an account that is theirs: `PUNKTFUNK_SEAT_OWN_ACCOUNT` tells the runner
+/// is such a seat on an account that is theirs: `RUBYFUNK_SEAT_OWN_ACCOUNT` tells the runner
 /// alone, and its host keeps its identity in the row's directory, not in their home.
 pub(super) fn render_env(
     seat: &Seat,
@@ -119,53 +119,50 @@ pub(super) fn render_env(
         .to_string_lossy()
         .into_owned();
     let mut rows = vec![
-        ("PUNKTFUNK_SEAT_SESSION", "1".to_owned()),
-        ("PUNKTFUNK_SEAT_ID", seat.id.to_string()),
+        ("RUBYFUNK_SEAT_SESSION", "1".to_owned()),
+        ("RUBYFUNK_SEAT_ID", seat.id.to_string()),
     ];
     if seat.owner {
-        rows.push(("PUNKTFUNK_SEAT_OWNER", "1".to_owned()));
+        rows.push(("RUBYFUNK_SEAT_OWNER", "1".to_owned()));
     } else {
         let config = if seat.adopted_uid.is_some() {
-            rows.push(("PUNKTFUNK_SEAT_OWN_ACCOUNT", "1".to_owned()));
+            rows.push(("RUBYFUNK_SEAT_OWN_ACCOUNT", "1".to_owned()));
             shared::person_config_dir(state, &seat.id)
         } else {
-            home.join(".config/punktfunk")
+            home.join(".config/rubyfunk")
         };
-        rows.push((
-            "PUNKTFUNK_CONFIG_DIR",
-            config.to_string_lossy().into_owned(),
-        ));
+        rows.push(("RUBYFUNK_CONFIG_DIR", config.to_string_lossy().into_owned()));
     }
     rows.extend([
-        ("PUNKTFUNK_TRUST_DIR", trust.clone()),
-        ("PUNKTFUNK_PAIRING", "refused".to_owned()),
+        ("RUBYFUNK_TRUST_DIR", trust.clone()),
+        ("RUBYFUNK_PAIRING", "refused".to_owned()),
     ]);
     if !seat.owner {
-        rows.push(("PUNKTFUNK_LIBRARY_DIR", trust));
+        rows.push(("RUBYFUNK_LIBRARY_DIR", trust));
     }
     rows.extend([
-        ("PUNKTFUNK_NATIVE_PORT", seat.native_port.to_string()),
+        ("RUBYFUNK_NATIVE_PORT", seat.native_port.to_string()),
         (
-            "PUNKTFUNK_MGMT_BIND",
+            "RUBYFUNK_MGMT_BIND",
             format!("127.0.0.1:{}", seat.mgmt_port),
         ),
     ]);
     if !seat.owner {
-        rows.push(("PUNKTFUNK_HOST_NAME", seat.name.clone()));
-        rows.push(("PUNKTFUNK_GAMESTREAM", "0".to_owned()));
+        rows.push(("RUBYFUNK_HOST_NAME", seat.name.clone()));
+        rows.push(("RUBYFUNK_GAMESTREAM", "0".to_owned()));
     }
-    rows.push(("PUNKTFUNK_MDNS", "0".to_owned()));
+    rows.push(("RUBYFUNK_MDNS", "0".to_owned()));
     // Off unless the box streams to browsers: an owner whose own setting has it on would
     // otherwise bind the door's port.
     let port = seat.browser_port().filter(|_| browser.on);
     rows.push((
-        "PUNKTFUNK_WEBTRANSPORT",
+        "RUBYFUNK_WEBTRANSPORT",
         if port.is_some() { "1" } else { "0" }.to_owned(),
     ));
     if let Some(port) = port {
-        rows.push(("PUNKTFUNK_WEBTRANSPORT_PORT", port.to_string()));
+        rows.push(("RUBYFUNK_WEBTRANSPORT_PORT", port.to_string()));
         if !browser.origins.is_empty() {
-            rows.push(("PUNKTFUNK_WEBTRANSPORT_ORIGINS", browser.origins.join(",")));
+            rows.push(("RUBYFUNK_WEBTRANSPORT_ORIGINS", browser.origins.join(",")));
         }
     }
     let mut out: String = rows.iter().map(|(key, value)| quoted(key, value)).collect();
@@ -219,7 +216,7 @@ pub(super) fn render_updates(present: impl Fn(&Path) -> bool) -> Option<String> 
 pub(super) fn manager_dropin(uid: u32) -> PathBuf {
     Path::new(DROPIN_ROOT)
         .join(format!("user@{uid}.service.d"))
-        .join("punktfunk-seat.conf")
+        .join("rubyfunk-seat.conf")
 }
 
 /// The seat unit's `dropins` as its user's manager takes them: every bind, so an app it starts
@@ -645,22 +642,22 @@ mod tests {
         let text = render_env(
             &owner(),
             Path::new("/home/enrico"),
-            Path::new("/var/lib/punktfunk-seats"),
+            Path::new("/var/lib/rubyfunk-seats"),
             "ab12",
             &Browser::default(),
         );
         assert_eq!(
             text,
-            "PUNKTFUNK_SEAT_SESSION=\"1\"\n\
-             PUNKTFUNK_SEAT_ID=\"0123456789abcdef0123456789abcdef\"\n\
-             PUNKTFUNK_SEAT_OWNER=\"1\"\n\
-             PUNKTFUNK_TRUST_DIR=\"/var/lib/punktfunk-seats/trust/0123456789abcdef0123456789abcdef\"\n\
-             PUNKTFUNK_PAIRING=\"refused\"\n\
-             PUNKTFUNK_NATIVE_PORT=\"9779\"\n\
-             PUNKTFUNK_MGMT_BIND=\"127.0.0.1:47995\"\n\
-             PUNKTFUNK_MDNS=\"0\"\n\
-             PUNKTFUNK_WEBTRANSPORT=\"0\"\n\
-             PUNKTFUNK_MGMT_TOKEN=ab12\n"
+            "RUBYFUNK_SEAT_SESSION=\"1\"\n\
+             RUBYFUNK_SEAT_ID=\"0123456789abcdef0123456789abcdef\"\n\
+             RUBYFUNK_SEAT_OWNER=\"1\"\n\
+             RUBYFUNK_TRUST_DIR=\"/var/lib/rubyfunk-seats/trust/0123456789abcdef0123456789abcdef\"\n\
+             RUBYFUNK_PAIRING=\"refused\"\n\
+             RUBYFUNK_NATIVE_PORT=\"9779\"\n\
+             RUBYFUNK_MGMT_BIND=\"127.0.0.1:47995\"\n\
+             RUBYFUNK_MDNS=\"0\"\n\
+             RUBYFUNK_WEBTRANSPORT=\"0\"\n\
+             RUBYFUNK_MGMT_TOKEN=ab12\n"
         );
         assert!(!text.contains("CONFIG_DIR"));
         assert!(!text.contains("LIBRARY_DIR"));
@@ -672,7 +669,7 @@ mod tests {
     /// left from an earlier start is removed.
     #[test]
     fn each_row_kind_gets_its_own_drop_ins_and_no_other() {
-        let state = Path::new("/var/lib/punktfunk-seats");
+        let state = Path::new("/var/lib/rubyfunk-seats");
         let person = Seat {
             account: "jdoe".into(),
             adopted_uid: Some(1500),
@@ -701,7 +698,7 @@ mod tests {
     /// a person's manager get nothing, even when their uid is known.
     #[test]
     fn only_a_made_seat_s_user_manager_gets_the_seat_s_binds() {
-        let state = Path::new("/var/lib/punktfunk-seats");
+        let state = Path::new("/var/lib/rubyfunk-seats");
         let person = Seat {
             account: "jdoe".into(),
             adopted_uid: Some(1500),
@@ -733,27 +730,27 @@ mod tests {
         let text = render_env(
             &person,
             Path::new("/home/jdoe"),
-            Path::new("/var/lib/punktfunk-seats"),
+            Path::new("/var/lib/rubyfunk-seats"),
             "ab12",
             &Browser::default(),
         );
         assert_eq!(
             text,
             format!(
-                "PUNKTFUNK_SEAT_SESSION=\"1\"\n\
-                 PUNKTFUNK_SEAT_ID=\"{id}\"\n\
-                 PUNKTFUNK_SEAT_OWN_ACCOUNT=\"1\"\n\
-                 PUNKTFUNK_CONFIG_DIR=\"/var/lib/punktfunk-seats/seats/{id}/config\"\n\
-                 PUNKTFUNK_TRUST_DIR=\"/var/lib/punktfunk-seats/trust/{id}\"\n\
-                 PUNKTFUNK_PAIRING=\"refused\"\n\
-                 PUNKTFUNK_LIBRARY_DIR=\"/var/lib/punktfunk-seats/trust/{id}\"\n\
-                 PUNKTFUNK_NATIVE_PORT=\"9779\"\n\
-                 PUNKTFUNK_MGMT_BIND=\"127.0.0.1:47995\"\n\
-                 PUNKTFUNK_HOST_NAME=\"Jane\"\n\
-                 PUNKTFUNK_GAMESTREAM=\"0\"\n\
-                 PUNKTFUNK_MDNS=\"0\"\n\
-                 PUNKTFUNK_WEBTRANSPORT=\"0\"\n\
-                 PUNKTFUNK_MGMT_TOKEN=ab12\n"
+                "RUBYFUNK_SEAT_SESSION=\"1\"\n\
+                 RUBYFUNK_SEAT_ID=\"{id}\"\n\
+                 RUBYFUNK_SEAT_OWN_ACCOUNT=\"1\"\n\
+                 RUBYFUNK_CONFIG_DIR=\"/var/lib/rubyfunk-seats/seats/{id}/config\"\n\
+                 RUBYFUNK_TRUST_DIR=\"/var/lib/rubyfunk-seats/trust/{id}\"\n\
+                 RUBYFUNK_PAIRING=\"refused\"\n\
+                 RUBYFUNK_LIBRARY_DIR=\"/var/lib/rubyfunk-seats/trust/{id}\"\n\
+                 RUBYFUNK_NATIVE_PORT=\"9779\"\n\
+                 RUBYFUNK_MGMT_BIND=\"127.0.0.1:47995\"\n\
+                 RUBYFUNK_HOST_NAME=\"Jane\"\n\
+                 RUBYFUNK_GAMESTREAM=\"0\"\n\
+                 RUBYFUNK_MDNS=\"0\"\n\
+                 RUBYFUNK_WEBTRANSPORT=\"0\"\n\
+                 RUBYFUNK_MGMT_TOKEN=ab12\n"
             )
         );
         assert!(!text.contains("/home/jdoe") && !text.contains("SEAT_OWNER"));
@@ -764,26 +761,26 @@ mod tests {
     fn the_env_file_carries_the_seat_contract() {
         let text = render_env(
             &seat("Mara"),
-            Path::new("/var/lib/punktfunk-seats/seats/0123456789abcdef0123456789abcdef/home"),
-            Path::new("/var/lib/punktfunk-seats"),
+            Path::new("/var/lib/rubyfunk-seats/seats/0123456789abcdef0123456789abcdef/home"),
+            Path::new("/var/lib/rubyfunk-seats"),
             "ab12",
             &Browser::default(),
         );
         assert_eq!(
             text,
-            "PUNKTFUNK_SEAT_SESSION=\"1\"\n\
-             PUNKTFUNK_SEAT_ID=\"0123456789abcdef0123456789abcdef\"\n\
-             PUNKTFUNK_CONFIG_DIR=\"/var/lib/punktfunk-seats/seats/0123456789abcdef0123456789abcdef/home/.config/punktfunk\"\n\
-             PUNKTFUNK_TRUST_DIR=\"/var/lib/punktfunk-seats/trust/0123456789abcdef0123456789abcdef\"\n\
-             PUNKTFUNK_PAIRING=\"refused\"\n\
-             PUNKTFUNK_LIBRARY_DIR=\"/var/lib/punktfunk-seats/trust/0123456789abcdef0123456789abcdef\"\n\
-             PUNKTFUNK_NATIVE_PORT=\"9779\"\n\
-             PUNKTFUNK_MGMT_BIND=\"127.0.0.1:47995\"\n\
-             PUNKTFUNK_HOST_NAME=\"Mara\"\n\
-             PUNKTFUNK_GAMESTREAM=\"0\"\n\
-             PUNKTFUNK_MDNS=\"0\"\n\
-             PUNKTFUNK_WEBTRANSPORT=\"0\"\n\
-             PUNKTFUNK_MGMT_TOKEN=ab12\n"
+            "RUBYFUNK_SEAT_SESSION=\"1\"\n\
+             RUBYFUNK_SEAT_ID=\"0123456789abcdef0123456789abcdef\"\n\
+             RUBYFUNK_CONFIG_DIR=\"/var/lib/rubyfunk-seats/seats/0123456789abcdef0123456789abcdef/home/.config/rubyfunk\"\n\
+             RUBYFUNK_TRUST_DIR=\"/var/lib/rubyfunk-seats/trust/0123456789abcdef0123456789abcdef\"\n\
+             RUBYFUNK_PAIRING=\"refused\"\n\
+             RUBYFUNK_LIBRARY_DIR=\"/var/lib/rubyfunk-seats/trust/0123456789abcdef0123456789abcdef\"\n\
+             RUBYFUNK_NATIVE_PORT=\"9779\"\n\
+             RUBYFUNK_MGMT_BIND=\"127.0.0.1:47995\"\n\
+             RUBYFUNK_HOST_NAME=\"Mara\"\n\
+             RUBYFUNK_GAMESTREAM=\"0\"\n\
+             RUBYFUNK_MDNS=\"0\"\n\
+             RUBYFUNK_WEBTRANSPORT=\"0\"\n\
+             RUBYFUNK_MGMT_TOKEN=ab12\n"
         );
     }
 
@@ -802,11 +799,10 @@ mod tests {
             "ab12",
             &browser,
         );
-        assert!(text.contains("PUNKTFUNK_WEBTRANSPORT=\"1\"\n"));
-        assert!(text.contains("PUNKTFUNK_WEBTRANSPORT_PORT=\"9783\"\n"));
-        assert!(text.contains(
-            "PUNKTFUNK_WEBTRANSPORT_ORIGINS=\"https://box:47992,https://web.example\"\n"
-        ));
+        assert!(text.contains("RUBYFUNK_WEBTRANSPORT=\"1\"\n"));
+        assert!(text.contains("RUBYFUNK_WEBTRANSPORT_PORT=\"9783\"\n"));
+        assert!(text
+            .contains("RUBYFUNK_WEBTRANSPORT_ORIGINS=\"https://box:47992,https://web.example\"\n"));
         let off = render_env(
             &seat("Mara"),
             Path::new("/h"),
@@ -814,8 +810,8 @@ mod tests {
             "ab12",
             &Browser::default(),
         );
-        assert!(off.contains("PUNKTFUNK_WEBTRANSPORT=\"0\"\n"));
-        assert!(!off.contains("PUNKTFUNK_WEBTRANSPORT_PORT"));
+        assert!(off.contains("RUBYFUNK_WEBTRANSPORT=\"0\"\n"));
+        assert!(!off.contains("RUBYFUNK_WEBTRANSPORT_PORT"));
     }
 
     /// A minted token reads back from the file it was rendered into; any other doesn't.
@@ -830,10 +826,10 @@ mod tests {
             &Browser::default(),
         );
         assert_eq!(token_in(&text), Some(token.as_str()));
-        assert_eq!(token_in("PUNKTFUNK_MGMT_TOKEN=ab12\n"), None);
-        let not_hex = format!("PUNKTFUNK_MGMT_TOKEN={}\n", "z".repeat(64));
+        assert_eq!(token_in("RUBYFUNK_MGMT_TOKEN=ab12\n"), None);
+        let not_hex = format!("RUBYFUNK_MGMT_TOKEN={}\n", "z".repeat(64));
         assert_eq!(token_in(&not_hex), None);
-        assert_eq!(token_in("PUNKTFUNK_SEAT_ID=\"x\"\n"), None);
+        assert_eq!(token_in("RUBYFUNK_SEAT_ID=\"x\"\n"), None);
     }
 
     /// The box's Seat defaults name its browser plane; a box that wrote none streams to none.
@@ -877,16 +873,16 @@ mod tests {
         );
         let line = text
             .lines()
-            .find(|l| l.starts_with("PUNKTFUNK_HOST_NAME="))
+            .find(|l| l.starts_with("RUBYFUNK_HOST_NAME="))
             .unwrap();
-        assert_eq!(line, r#"PUNKTFUNK_HOST_NAME="A \"B\" \\ $HOME 100%""#);
+        assert_eq!(line, r#"RUBYFUNK_HOST_NAME="A \"B\" \\ $HOME 100%""#);
         assert_eq!(text.lines().count(), 13);
     }
 
     /// The token line is the exact form the box's client parses, and every mint differs.
     #[test]
     fn the_token_line_and_a_minted_token_have_the_shape_the_client_reads() {
-        assert_eq!(token_line("deadbeef"), "PUNKTFUNK_MGMT_TOKEN=deadbeef\n");
+        assert_eq!(token_line("deadbeef"), "RUBYFUNK_MGMT_TOKEN=deadbeef\n");
         let (a, b) = (mint_token(), mint_token());
         assert_eq!(a.len(), 64);
         assert!(a.bytes().all(|c| c.is_ascii_hexdigit()));
@@ -897,13 +893,13 @@ mod tests {
     fn the_binds_drop_in_maps_each_private_dir_and_the_uinput_proxy() {
         let id = SeatId::parse("0123456789abcdef0123456789abcdef").unwrap();
         assert_eq!(
-            render_binds(Path::new("/var/lib/punktfunk-seats"), &id, "pf-seat-1", None),
+            render_binds(Path::new("/var/lib/rubyfunk-seats"), &id, "pf-seat-1", None),
             "[Service]\n\
              TemporaryFileSystem=/run/media:ro\n\
-             BindPaths=/var/lib/punktfunk-seats/seats/0123456789abcdef0123456789abcdef/compatdata:/var/lib/punktfunk-seats/games/steamapps/compatdata\n\
-             BindPaths=/var/lib/punktfunk-seats/seats/0123456789abcdef0123456789abcdef/shadercache:/var/lib/punktfunk-seats/games/steamapps/shadercache\n\
-             BindPaths=/var/lib/punktfunk-seats/seats/0123456789abcdef0123456789abcdef/downloading:/var/lib/punktfunk-seats/games/steamapps/downloading\n\
-             BindPaths=-/dev/punktfunk/uinput-pf-seat-1:/dev/uinput\n"
+             BindPaths=/var/lib/rubyfunk-seats/seats/0123456789abcdef0123456789abcdef/compatdata:/var/lib/rubyfunk-seats/games/steamapps/compatdata\n\
+             BindPaths=/var/lib/rubyfunk-seats/seats/0123456789abcdef0123456789abcdef/shadercache:/var/lib/rubyfunk-seats/games/steamapps/shadercache\n\
+             BindPaths=/var/lib/rubyfunk-seats/seats/0123456789abcdef0123456789abcdef/downloading:/var/lib/rubyfunk-seats/games/steamapps/downloading\n\
+             BindPaths=-/dev/rubyfunk/uinput-pf-seat-1:/dev/uinput\n"
         );
     }
 
@@ -917,18 +913,18 @@ mod tests {
             ExecStopPost=-+/usr/bin/nsenter -t 1 -m -- /usr/bin/umount -l /stage\n\
             InaccessiblePaths=\"-/a\"\n\
             BindPaths=/stage:/seat/libraries/k/steamapps\n";
-        let updates = "[Service]\nBindReadOnlyPaths=/run/punktfunk/seat-no-update:/usr/bin/x\n";
+        let updates = "[Service]\nBindReadOnlyPaths=/run/rubyfunk/seat-no-update:/usr/bin/x\n";
         assert_eq!(
             render_manager(&[binds, updates]),
             "[Service]\n\
              TemporaryFileSystem=/run/media:ro\n\
              InaccessiblePaths=\"-/a\"\n\
              BindPaths=/stage:/seat/libraries/k/steamapps\n\
-             BindReadOnlyPaths=/run/punktfunk/seat-no-update:/usr/bin/x\n"
+             BindReadOnlyPaths=/run/rubyfunk/seat-no-update:/usr/bin/x\n"
         );
         assert_eq!(
             manager_dropin(951),
-            Path::new("/run/systemd/system/user@951.service.d/punktfunk-seat.conf")
+            Path::new("/run/systemd/system/user@951.service.d/rubyfunk-seat.conf")
         );
     }
 
@@ -938,8 +934,8 @@ mod tests {
         assert_eq!(
             render_updates(|p| p.starts_with("/usr/bin/steamos-polkit-helpers")).unwrap(),
             "[Service]\n\
-             BindReadOnlyPaths=/run/punktfunk/seat-no-update:/usr/bin/steamos-polkit-helpers/steamos-update\n\
-             BindReadOnlyPaths=/run/punktfunk/seat-no-update:/usr/bin/steamos-polkit-helpers/jupiter-biosupdate\n"
+             BindReadOnlyPaths=/run/rubyfunk/seat-no-update:/usr/bin/steamos-polkit-helpers/steamos-update\n\
+             BindReadOnlyPaths=/run/rubyfunk/seat-no-update:/usr/bin/steamos-polkit-helpers/jupiter-biosupdate\n"
         );
     }
 

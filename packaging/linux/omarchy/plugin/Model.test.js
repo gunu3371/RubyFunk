@@ -32,8 +32,8 @@ test("hero phrases rotate and wrap", () => {
 
 test("hero title names the client only while streaming", () => {
   assert.equal(Model.heroTitle("streaming", "iPad"), "iPad")
-  assert.equal(Model.heroTitle("idle", "iPad"), "Punktfunk")
-  assert.equal(Model.heroTitle("stopped"), "Punktfunk")
+  assert.equal(Model.heroTitle("idle", "iPad"), "RubyFunk")
+  assert.equal(Model.heroTitle("stopped"), "RubyFunk")
 })
 
 test("hero meta is the phrase while streaming", () => {

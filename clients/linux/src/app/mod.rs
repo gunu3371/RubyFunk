@@ -2,7 +2,7 @@
 //! [`Store`], navigation, and the spawned session children's lives. Hosts and Library are
 //! child components, the two destinations of one view stack (design §2.1); dialogs are plain
 //! GTK invoked from `update`. The connect flow is in `connect.rs`, host requests beside a
-//! stream in `host_ops.rs`. Every stream runs in the `punktfunk-session` Vulkan binary —
+//! stream in `host_ops.rs`. Every stream runs in the `rubyfunk-session` Vulkan binary —
 //! the shell never touches video.
 
 mod connect;
@@ -33,7 +33,7 @@ use std::rc::Rc;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 
-pub const APP_ID: &str = "io.unom.punktfunk";
+pub const APP_ID: &str = "io.github.gunu3371.rubyfunk";
 
 /// How long a session asked to quit gets to close the host before it is killed.
 const DISCONNECT_GRACE: std::time::Duration = std::time::Duration::from_secs(2);
@@ -48,7 +48,7 @@ pub struct AppModel {
     /// App-lifetime SDL gamepad service (Settings' controller list + pinning). Streams
     /// run in the session binary, which has its own.
     pub gamepad: crate::gamepad::GamepadService,
-    /// Device lists for the settings pickers (GPUs via `punktfunk-session
+    /// Device lists for the settings pickers (GPUs via `rubyfunk-session
     /// --list-adapters` — the shell deliberately links no Vulkan itself — and audio
     /// endpoints via the PipeWire registry), probed once at startup on a worker thread.
     /// Empty until the probe lands — empty lists simply hide their pickers.
@@ -69,7 +69,7 @@ pub struct AppModel {
 
 #[derive(Debug)]
 pub enum AppMsg {
-    /// A `punktfunk://` URL arrived (scheme handler, a shortcut, or a second invocation
+    /// A `rubyfunk://` URL arrived (scheme handler, a shortcut, or a second invocation
     /// forwarded to this instance by GApplication) — design/client-deep-links.md §4.1.
     DeepLink(String),
     /// The trust gate in front of every connect (see `AppModel::connect`).
@@ -159,7 +159,7 @@ pub enum AppMsg {
         error: Option<pf_client_core::orchestrate::SessionError>,
         ended: Option<String>,
     },
-    /// Hand over to the gamepad console (`punktfunk-session --browse`) — the couch UI's
+    /// Hand over to the gamepad console (`rubyfunk-session --browse`) — the couch UI's
     /// door from the desktop shell.
     OpenConsole,
     /// The attached controller count changed (a 1 s poll).
@@ -213,7 +213,7 @@ impl SimpleComponent for AppModel {
     fn init_root() -> Self::Root {
         // The minimum size is what the narrow breakpoint is checked against.
         adw::ApplicationWindow::builder()
-            .title("Punktfunk")
+            .title("RubyFunk")
             .default_width(1200)
             .default_height(780)
             .width_request(360)
@@ -367,7 +367,7 @@ impl SimpleComponent for AppModel {
         });
         nav.add(
             &adw::NavigationPage::builder()
-                .title("Punktfunk")
+                .title("RubyFunk")
                 .tag("main")
                 .child(&views)
                 .build(),
@@ -750,7 +750,7 @@ pub fn run() -> glib::ExitCode {
     // real devices (same rationale as the session binary).
     clear_steam_sdl_device_filter();
     // Headless paths (no GTK window). Pairing, wake, host listing and reset live in the
-    // `punktfunk` CLI, which ships in the same package.
+    // `rubyfunk` CLI, which ships in the same package.
     if let Some(target) = crate::cli::arg_value("--library") {
         return crate::cli::headless_library(&target);
     }
@@ -771,10 +771,10 @@ pub fn run() -> glib::ExitCode {
         return crate::cli::exec_session();
     }
 
-    // HANDLES_OPEN is what makes `Exec=punktfunk-client %u` work: GApplication turns the URI
+    // HANDLES_OPEN is what makes `Exec=rubyfunk-client %u` work: GApplication turns the URI
     // into an `open` call, and — this is the part that matters — a SECOND invocation forwards
     // its URI to the already-running instance over D-Bus and exits, so clicking a link with
-    // Punktfunk open reuses the window instead of racing a new one.
+    // RubyFunk open reuses the window instead of racing a new one.
     let mut builder = adw::Application::builder()
         .application_id(APP_ID)
         .flags(gio::ApplicationFlags::HANDLES_OPEN);
@@ -802,7 +802,7 @@ pub fn run() -> glib::ExitCode {
         Some(url) => vec![
             std::env::args()
                 .next()
-                .unwrap_or_else(|| "punktfunk-client".into()),
+                .unwrap_or_else(|| "rubyfunk-client".into()),
             url,
         ],
         None => Vec::new(),
@@ -822,19 +822,20 @@ pub fn run() -> glib::ExitCode {
 /// OS and launcher marks) and point the icon theme at it, so the `pf-os-*-symbolic` marks
 /// resolve — and recolour — like any themed icon.
 fn install_resources() {
-    if let Err(e) = gio::resources_register_include!("punktfunk-client.gresource") {
+    if let Err(e) = gio::resources_register_include!("rubyfunk-client.gresource") {
         tracing::warn!(error = %e, "gresource did not register — no stylesheet, no OS marks");
         return;
     }
     if let Some(display) = gdk::Display::default() {
-        gtk::IconTheme::for_display(&display).add_resource_path("/io/unom/punktfunk/icons");
+        gtk::IconTheme::for_display(&display)
+            .add_resource_path("/io/github/gunu3371/rubyfunk/icons");
     }
 }
 
 fn load_css() {
     let provider = gtk::CssProvider::new();
     // Registered with the icons just before.
-    provider.load_from_resource("/io/unom/punktfunk/style.css");
+    provider.load_from_resource("/io/github/gunu3371/rubyfunk/style.css");
     if let Some(display) = gdk::Display::default() {
         gtk::style_context_add_provider_for_display(
             &display,
@@ -959,7 +960,7 @@ fn store_health_banner(pages: &[adw::ToolbarView], store: &Store) {
     let banners = Banners::new(pages, || {});
     let check = move || match pf_client_core::trust::store_health::last_error() {
         Some(_) => banners.show(
-            "Your changes aren\u{2019}t being saved \u{2014} Punktfunk can\u{2019}t write to its \
+            "Your changes aren\u{2019}t being saved \u{2014} RubyFunk can\u{2019}t write to its \
              settings folder.",
             None,
         ),
@@ -1027,7 +1028,7 @@ fn shortcut_sections() -> Vec<adw::ShortcutsSection> {
 mod shortcuts_tests {
     /// Every section of the dialog holds items, and the controller chords are in it.
     /// Needs a display and its own process:
-    /// `cargo test -p punktfunk-client-linux -- --ignored shortcuts_dialog_lists`.
+    /// `cargo test -p rubyfunk-client-linux -- --ignored shortcuts_dialog_lists`.
     #[test]
     #[ignore = "needs a Wayland/X display"]
     fn shortcuts_dialog_lists_the_controller_chords() {

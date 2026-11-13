@@ -1,4 +1,4 @@
-//! Worker half of `punktfunk-encode-worker` and the host↔worker vocabulary
+//! Worker half of `rubyfunk-encode-worker` and the host↔worker vocabulary
 //! (design: `design/gpu-priority-capability-worker.md`). Host half:
 //! [`super::pyrowave_remote`].
 //!
@@ -153,7 +153,7 @@ pub(crate) enum ToWorker {
     Hello {
         proto: u32,
         workspace_version: String,
-        /// Host `PUNKTFUNK_RENDER_NODE` (`None` = unset). Log-only: device
+        /// Host `RUBYFUNK_RENDER_NODE` (`None` = unset). Log-only: device
         /// selection ignores every node anchor (`pyrowave.rs::select_physical_device`).
         drm_node: Option<String>,
         width: u32,
@@ -331,7 +331,7 @@ pub fn run_from_args(args: &[String]) -> Result<()> {
 /// leaves the worker with no GPU (NixOS). Strip the priority intent (it arrives
 /// in `Hello`) and the worker path (nothing here spawns a worker).
 fn sanitize_env() {
-    for k in ["PYROWAVE_QUEUE_PRIORITY", "PUNKTFUNK_ENCODE_WORKER"] {
+    for k in ["PYROWAVE_QUEUE_PRIORITY", "RUBYFUNK_ENCODE_WORKER"] {
         // SAFETY: single-threaded — this runs before anything in this process creates a thread,
         // which is the one situation where mutating the environment is sound (the `getenv` race
         // `remove_var`'s contract is about needs a second thread).
@@ -413,7 +413,7 @@ fn run(sock: OwnedFd) -> Result<()> {
         device = %enc.device_name(),
         priority = ?enc.priority_outcome(),
         host_render_node = ?drm_node,
-        "punktfunk-encode-worker ready"
+        "rubyfunk-encode-worker ready"
     );
     serve(&sock, enc, &au_buf)
 }

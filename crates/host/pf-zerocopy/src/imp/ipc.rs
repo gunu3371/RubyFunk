@@ -1,4 +1,4 @@
-//! Worker-IPC rails shared by every punktfunk worker subprocess
+//! Worker-IPC rails shared by every rubyfunk worker subprocess
 //! (`design/zerocopy-worker-isolation.md`). Two halves, both free of any
 //! worker's vocabulary — message enums live with the worker and stay
 //! independently versioned:
@@ -250,20 +250,20 @@ pub fn self_exe() -> Option<&'static PinnedExe> {
 }
 
 /// Installed name. The only file that may carry `cap_sys_nice=ep`. Never a hardlink of
-/// `punktfunk-host`: a shared inode shares the file capability, KWin cannot identify the host,
+/// `rubyfunk-host`: a shared inode shares the file capability, KWin cannot identify the host,
 /// and the desktop session dies.
-pub const ENCODE_WORKER_BIN: &str = "punktfunk-encode-worker";
+pub const ENCODE_WORKER_BIN: &str = "rubyfunk-encode-worker";
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum WorkerPath {
-    /// `PUNKTFUNK_ENCODE_WORKER=off` — debug hatch so worker vs in-process is a one-line change.
+    /// `RUBYFUNK_ENCODE_WORKER=off` — debug hatch so worker vs in-process is a one-line change.
     Off,
     Found(PathBuf),
     /// Not beside the host binary and not on `PATH`.
     Missing,
 }
 
-/// Resolve [`ENCODE_WORKER_BIN`]: `PUNKTFUNK_ENCODE_WORKER` → alongside `/proc/self/exe` → `PATH`.
+/// Resolve [`ENCODE_WORKER_BIN`]: `RUBYFUNK_ENCODE_WORKER` → alongside `/proc/self/exe` → `PATH`.
 ///
 /// The env override is load-bearing on NixOS: a file capability cannot live on a read-only store
 /// path, so the module exposes the worker through `security.wrappers` and points this variable at
@@ -308,7 +308,7 @@ pub fn resolve_worker_path() -> WorkerPath {
     let exe_dir = std::env::current_exe().ok();
     let path_var = std::env::var("PATH").ok();
     resolve_worker_path_in(
-        std::env::var("PUNKTFUNK_ENCODE_WORKER").ok().as_deref(),
+        std::env::var("RUBYFUNK_ENCODE_WORKER").ok().as_deref(),
         exe_dir.as_deref().and_then(Path::parent),
         path_var.as_deref(),
         &|p| p.is_file(),
@@ -384,7 +384,7 @@ pub fn adopt_spawned_socket(args: &[String]) -> anyhow::Result<OwnedFd> {
     };
     anyhow::ensure!(
         is_socket,
-        "--fd {fd} is not an open socket (workers are spawned by punktfunk-host, not run by hand)"
+        "--fd {fd} is not an open socket (workers are spawned by rubyfunk-host, not run by hand)"
     );
     // SAFETY: the spawning host `dup2`'d its socketpair end onto exactly this fd number before
     // exec (the worker's contract, just verified to be an open socket ≥ 3) and nothing else in
@@ -714,7 +714,7 @@ mod tests {
 
     #[test]
     fn path_resolution_table() {
-        let here = Path::new("/opt/punktfunk/bin");
+        let here = Path::new("/opt/rubyfunk/bin");
         let installed = here.join(ENCODE_WORKER_BIN);
         let on_path = Path::new("/usr/bin").join(ENCODE_WORKER_BIN);
         let exists = {
@@ -732,12 +732,12 @@ mod tests {
         // An explicit path wins over both discoveries — the NixOS wrapper case.
         assert_eq!(
             resolve_worker_path_in(
-                Some("/run/wrappers/bin/punktfunk-encode-worker"),
+                Some("/run/wrappers/bin/rubyfunk-encode-worker"),
                 Some(here),
                 Some("/usr/bin"),
                 &exists
             ),
-            WorkerPath::Found("/run/wrappers/bin/punktfunk-encode-worker".into())
+            WorkerPath::Found("/run/wrappers/bin/rubyfunk-encode-worker".into())
         );
         // Not existence-checked, so a typo surfaces as a spawn failure naming the path.
         assert_eq!(

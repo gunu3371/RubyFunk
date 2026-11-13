@@ -1,4 +1,4 @@
-// Custom Nitro server entry for the punktfunk web console.
+// Custom Nitro server entry for the rubyfunk web console.
 //
 // It is the stock Nitro `bun` preset entry
 // (node_modules/nitropack/dist/presets/bun/runtime/bun.mjs) plus **TLS**, so the console is served
@@ -18,11 +18,11 @@
 // TWO LISTENERS, on purpose — see `PLUGIN ORIGIN` below.
 //
 // Env (set by the launchers / the systemd unit — see web.env.example):
-//   PUNKTFUNK_UI_TLS_CERT / _KEY   PEM file paths (the host's cert.pem / key.pem — the native
+//   RUBYFUNK_UI_TLS_CERT / _KEY   PEM file paths (the host's cert.pem / key.pem — the native
 //                                  sibling pair is preferred when present, see tls-paths.mjs).
 //                                  BOTH set ⇒ HTTPS. Unset ⇒ plain HTTP (local dev only).
 //   PORT / HOST                    standard Nitro bind (3000 / 0.0.0.0).
-//   PUNKTFUNK_UI_PLUGIN_PORT       the plugin-UI origin's port (default: console port + 1).
+//   RUBYFUNK_UI_PLUGIN_PORT       the plugin-UI origin's port (default: console port + 1).
 import "#nitro-internal-pollyfills";
 import wsAdapter from "crossws/adapters/bun";
 import { useNitroApp } from "nitropack/runtime";
@@ -85,8 +85,8 @@ const LISTENER_HEADER = "x-pf-listener";
 // pair is the right one to serve (SANs a browser accepts; the cert the tray and native clients
 // already pin).
 const { cert: certPath, key: keyPath } = resolveUiTlsPaths(
-	process.env.PUNKTFUNK_UI_TLS_CERT,
-	process.env.PUNKTFUNK_UI_TLS_KEY,
+	process.env.RUBYFUNK_UI_TLS_CERT,
+	process.env.RUBYFUNK_UI_TLS_KEY,
 );
 const tls =
 	certPath && keyPath
@@ -97,42 +97,42 @@ const tls =
 //
 // Two silent failures hide here, and both end with the operator staring at a console that looks
 // fine. One path set and the other missing drops to plain HTTP — the login password then crosses
-// the LAN in the clear on a server the operator believes is TLS. And PUNKTFUNK_UI_SECURE without
+// the LAN in the clear on a server the operator believes is TLS. And RUBYFUNK_UI_SECURE without
 // TLS marks the session cookie Secure, which a browser refuses to store over http://, so login
 // "succeeds" and every request after it is unauthenticated, forever.
 //
 // Neither state can serve a working console, so exiting is strictly better than serving a broken
 // one: a supervisor logs the reason and the operator sees a stopped service instead of a subtly
 // wrong one.
-const secureFlag = /^(1|true)$/i.test(process.env.PUNKTFUNK_UI_SECURE ?? "");
+const secureFlag = /^(1|true)$/i.test(process.env.RUBYFUNK_UI_SECURE ?? "");
 if (Boolean(certPath) !== Boolean(keyPath)) {
 	console.error(
-		`punktfunk web console: only ${certPath ? "PUNKTFUNK_UI_TLS_CERT" : "PUNKTFUNK_UI_TLS_KEY"} is set — ` +
+		`rubyfunk web console: only ${certPath ? "RUBYFUNK_UI_TLS_CERT" : "RUBYFUNK_UI_TLS_KEY"} is set — ` +
 			"TLS needs BOTH. Refusing to start rather than serve the login password in the clear.",
 	);
 	process.exit(1);
 }
 if (!tls && secureFlag) {
 	console.error(
-		"punktfunk web console: PUNKTFUNK_UI_SECURE is set but TLS is not configured. The session " +
+		"rubyfunk web console: RUBYFUNK_UI_SECURE is set but TLS is not configured. The session " +
 			"cookie would be marked Secure and dropped by the browser over http://, so login could " +
-			"never stick. Refusing to start — set PUNKTFUNK_UI_TLS_CERT/_KEY, or unset PUNKTFUNK_UI_SECURE.",
+			"never stick. Refusing to start — set RUBYFUNK_UI_TLS_CERT/_KEY, or unset RUBYFUNK_UI_SECURE.",
 	);
 	process.exit(1);
 }
 
-// Where BOTH listeners bind. `PUNKTFUNK_UI_BIND` (host.env, the file every other host setting
+// Where BOTH listeners bind. `RUBYFUNK_UI_BIND` (host.env, the file every other host setting
 // lives in) first, then whatever a launcher set, then every interface. `fetch` refuses any peer
 // off the local network, so a wide bind is the LAN, never the internet. The plugin-UI origin
 // inherits both through `listenerOptions`, so 47993 is never wider than 47992.
 const bind =
-	process.env.PUNKTFUNK_UI_BIND?.trim() ||
+	process.env.RUBYFUNK_UI_BIND?.trim() ||
 	process.env.NITRO_HOST ||
 	process.env.HOST ||
 	"0.0.0.0";
 // Read back by the app (server/routes/_auth/ui-config.get.ts) so Settings can say when the console
 // is reachable from the network. Set here, never trusted from the environment we started with.
-process.env.PUNKTFUNK_UI_BIND_ACTIVE = bind;
+process.env.RUBYFUNK_UI_BIND_ACTIVE = bind;
 
 /** The shared `Bun.serve` options both listeners use — only the port and the stamped lane differ. */
 const listenerOptions = (lane) => ({
@@ -192,7 +192,7 @@ const listenerOptions = (lane) => ({
 const consolePort = Number(process.env.NITRO_PORT || process.env.PORT || 3000);
 const server = Bun.serve({ ...listenerOptions("console"), port: consolePort });
 console.log(
-	`punktfunk web console listening on ${server.url} (tls=${!!tls}, bind=${bind})`,
+	`rubyfunk web console listening on ${server.url} (tls=${!!tls}, bind=${bind})`,
 );
 // Name the bind out loud on a loopback listener. A console that answers only here looks exactly
 // like one that is down when you try it from another device, and this line is the difference
@@ -200,8 +200,8 @@ console.log(
 // (server/util/pluginOrigin.ts), which decides whether Settings shows the network notice.
 if (/^(127\.|::1$|localhost$)/.test(bind)) {
 	console.log(
-		"punktfunk web console: this machine only. To reach it from your network, put " +
-			"PUNKTFUNK_UI_BIND=0.0.0.0 in host.env and restart the console.",
+		"rubyfunk web console: this machine only. To reach it from your network, put " +
+			"RUBYFUNK_UI_BIND=0.0.0.0 in host.env and restart the console.",
 	);
 }
 
@@ -212,7 +212,7 @@ if (/^(127\.|::1$|localhost$)/.test(bind)) {
 // degrades to "plugin UIs unavailable": the console reads the state below and renders an
 // explanation instead of a frame, and everything else about the console keeps working.
 const pluginPort = Number(
-	process.env.PUNKTFUNK_UI_PLUGIN_PORT || consolePort + 1,
+	process.env.RUBYFUNK_UI_PLUGIN_PORT || consolePort + 1,
 );
 let pluginServer;
 try {
@@ -220,24 +220,24 @@ try {
 	// Read back by the app (server/util/pluginOrigin.ts) — same process, so process.env is the
 	// simplest channel, and it is only ever SET here, never trusted from the environment we started
 	// with (a stale inherited value would otherwise advertise a port nothing is listening on).
-	process.env.PUNKTFUNK_UI_PLUGIN_PORT_ACTIVE = String(pluginPort);
-	process.env.PUNKTFUNK_UI_CONSOLE_PORT_ACTIVE = String(consolePort);
+	process.env.RUBYFUNK_UI_PLUGIN_PORT_ACTIVE = String(pluginPort);
+	process.env.RUBYFUNK_UI_CONSOLE_PORT_ACTIVE = String(consolePort);
 	// …and the SCHEME, which the app cannot recover from a request: `localFetch` synthesises one with
 	// no TLS socket, so h3 reports `http:` on an HTTPS listener. `frame-ancestors` needs the scheme
 	// the operator's address bar actually shows, or the browser refuses to frame the plugin at all
 	// (see consoleOriginScheme() in server/util/pluginOrigin.ts). Both listeners share this `tls`
 	// object, so one stamp is correct for both.
-	process.env.PUNKTFUNK_UI_SCHEME_ACTIVE = tls ? "https" : "http";
+	process.env.RUBYFUNK_UI_SCHEME_ACTIVE = tls ? "https" : "http";
 	console.log(
-		`punktfunk plugin-UI origin listening on ${pluginServer.url} (tls=${!!tls})`,
+		`rubyfunk plugin-UI origin listening on ${pluginServer.url} (tls=${!!tls})`,
 	);
 } catch (e) {
-	delete process.env.PUNKTFUNK_UI_PLUGIN_PORT_ACTIVE;
+	delete process.env.RUBYFUNK_UI_PLUGIN_PORT_ACTIVE;
 	console.error(
-		`punktfunk web console: could not bind the plugin-UI origin on port ${pluginPort} ` +
+		`rubyfunk web console: could not bind the plugin-UI origin on port ${pluginPort} ` +
 			`(${e?.message ?? e}). Plugin UIs are DISABLED until this is resolved — they are ` +
 			"deliberately not served on the console's own origin, because a plugin sharing that " +
-			"origin can act as the logged-in operator. Set PUNKTFUNK_UI_PLUGIN_PORT to a free port.",
+			"origin can act as the logged-in operator. Set RUBYFUNK_UI_PLUGIN_PORT to a free port.",
 	);
 }
 

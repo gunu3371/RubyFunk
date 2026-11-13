@@ -7,7 +7,7 @@
 .DESCRIPTION
   Two legs, one log, no session and no display write:
 
-    1. HDR P010 converter. `punktfunk-host hdr-p010-selftest` at 1920x1080 and
+    1. HDR P010 converter. `rubyfunk-host hdr-p010-selftest` at 1920x1080 and
        2560x1440 drives pf_encode_win::convert::HdrP010Converter - the same type
        the driver's P010 pool slot builds. The eight per-colour 10-bit codes are
        compared here against the pre-cutover table, so the log says MATCH or DIFF
@@ -41,7 +41,7 @@ param(
 
 $ErrorActionPreference = 'Continue'
 $stage = $Stage
-$hostExe = Join-Path $stage 'punktfunk-host.exe'
+$hostExe = Join-Path $stage 'rubyfunk-host.exe'
 $testExe = Join-Path $stage 'pf_encode_win-tests.exe'
 $outDir = 'C:\Users\Public\parity-post'
 $probeDir = 'C:\Users\Public'
@@ -49,7 +49,7 @@ $log = Join-Path 'C:\Users\Public' "live-$Tag.log"
 
 # The staged build first, then an installed host. ffprobe below still comes from the
 # runner's FFmpeg tree, which is a test tool here, not a dependency of the host.
-foreach ($d in @($stage, 'C:\Users\Public\ffmpeg\bin', 'C:\Program Files\Punktfunk')) {
+foreach ($d in @($stage, 'C:\Users\Public\ffmpeg\bin', 'C:\Program Files\RubyFunk')) {
     if (Test-Path $d) { $env:PATH = "$d;$env:PATH" }
 }
 

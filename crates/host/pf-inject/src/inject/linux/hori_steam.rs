@@ -8,8 +8,8 @@ use crate::sensor_clock::SensorClock;
 use crate::uhid_abi::{UhidDevice, UhidEvent, BUS_USB};
 use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
-use punktfunk_core::input::GamepadFrame;
-use punktfunk_core::quic::RichInput;
+use rubyfunk_core::input::GamepadFrame;
+use rubyfunk_core::quic::RichInput;
 use std::time::{Duration, Instant};
 
 /// The `CREATE2` identity of pad `index`: what this host opens, and what the seat broker
@@ -18,8 +18,8 @@ pub(crate) fn identity(index: u8) -> crate::uhid_abi::Identity {
     crate::uhid_abi::Identity {
         bus: BUS_USB,
         name: NAME.to_owned(),
-        phys: format!("punktfunk/horipad/{index}"),
-        uniq: format!("punktfunk-horipad-{index}"),
+        phys: format!("rubyfunk/horipad/{index}"),
+        uniq: format!("rubyfunk-horipad-{index}"),
         rdesc: &RDESC,
         vendor: VENDOR as u32,
         product: PRODUCT as u32,

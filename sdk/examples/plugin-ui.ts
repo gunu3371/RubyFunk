@@ -1,5 +1,5 @@
 // ── Example · console-hosted plugin UI ────────────────────────────────────────────────────────
-// A plugin that surfaces a UI inside the punktfunk web console (plugin-ui-surface design). It
+// A plugin that surfaces a UI inside the rubyfunk web console (plugin-ui-surface design). It
 // serves a page + a live SSE feed on a loopback port behind a per-boot secret; `servePluginUi`
 // registers it, and the console proxies to it and adds a "Demo UI" nav entry — no second password,
 // no second port for the operator to learn. This also exercises the streaming path end-to-end (the
@@ -9,7 +9,7 @@
 import {
 	connect,
 	definePlugin,
-	type Punktfunk,
+	type RubyFunk,
 	servePluginUi,
 } from "../src/index.js";
 
@@ -17,7 +17,7 @@ import {
 // EventSource URL is RELATIVE (`./events`) so it resolves under the console proxy prefix.
 const PAGE = `<!doctype html><meta charset=utf-8><title>Demo UI</title>
 <style>body{font:15px system-ui;margin:2rem;color:#e5e7eb;background:#0b0b0f}li{opacity:.9}</style>
-<h1>punktfunk plugin UI demo</h1><p>Live ticks (proxied SSE):</p><ul id=log></ul>
+<h1>rubyfunk plugin UI demo</h1><p>Live ticks (proxied SSE):</p><ul id=log></ul>
 <script>
 const log = document.getElementById("log");
 new EventSource("./events").onmessage = (e) => {
@@ -80,6 +80,6 @@ export default plugin;
 // Allow a direct `bun examples/plugin-ui.ts` run outside the managed runner.
 if (import.meta.main) {
 	const pf = await connect();
-	await (plugin.main as (pf: Punktfunk) => Promise<void>)(pf);
+	await (plugin.main as (pf: RubyFunk) => Promise<void>)(pf);
 	pf.close();
 }

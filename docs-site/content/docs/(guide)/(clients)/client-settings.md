@@ -1,9 +1,9 @@
 ---
 title: Client settings
-description: Every setting a Punktfunk client stores — what it does, what it defaults to, and which of them the host can overrule.
+description: Every setting a RubyFunk client stores — what it does, what it defaults to, and which of them the host can overrule.
 ---
 
-Every setting a Punktfunk app keeps, with its default and the apps that offer it. The host's own
+Every setting a RubyFunk app keeps, with its default and the apps that offer it. The host's own
 settings are on [Configuration](/docs/configuration).
 
 ## Where the settings live
@@ -12,7 +12,7 @@ The apps group settings as **General**, **Display**, **Input**, **Audio** and **
 **Preferences** on Linux and **Settings** elsewhere. Apple TV has no **Input** and gives **Quick
 Actions** its own category. The controller interface (the console) has its own **Settings**, with
 the same five plus **Presets** and **About**. On a Steam Deck the console is the only settings
-screen: **Open Punktfunk** in the [Decky panel](/docs/steam-deck).
+screen: **Open RubyFunk** in the [Decky panel](/docs/steam-deck).
 
 ## Advanced settings
 
@@ -28,8 +28,8 @@ compositor**, **Video decoder**, **GPU**, **Low-latency mode**, **Keep screen aw
 **Use controller**, **Guide button**, **Hold Select for guide**, **Controller haptics**,
 **Controller speaker**, **Steam Controller 2 passthrough** and **DualSense over USB**.
 
-Linux stores settings in `~/.config/punktfunk/client-gtk-settings.json`, shared with the console;
-Windows in `%APPDATA%\punktfunk\client-windows-settings.json`. Changes apply to the next session.
+Linux stores settings in `~/.config/rubyfunk/client-gtk-settings.json`, shared with the console;
+Windows in `%APPDATA%\rubyfunk\client-windows-settings.json`. Changes apply to the next session.
 
 Names below are the Linux app's. **All** means Linux, Windows, Mac, iPhone, iPad, Apple TV and
 Android. Most settings can differ per [preset](/docs/presets-and-links); the exceptions are
@@ -57,7 +57,7 @@ Android. Most settings can differ per [preset](/docs/presets-and-links); the exc
 | **V-Sync** | On (Mac: off) | Off shows each frame as soon as it's ready, with tearing. A driver without a tearing mode stays tear-free. | Linux, Windows, Mac |
 | **Follow variable refresh** | On | Prefers the driver's variable-refresh present mode where it offers one. Whether a VRR, FreeSync or G-Sync screen then follows the stream is the compositor's call: Linux desktops want the window fullscreen and focused. | Linux, Windows, Mac, iPhone, iPad |
 | **Host compositor** | Automatic | Which backend a Linux host uses for the virtual display. A host without it picks its own. | All |
-| **Video decoder**, **GPU** | Automatic | The decoder and graphics card this device uses. Change them only to debug; `PUNKTFUNK_DECODER` [overrides](/docs/configuration#client-side-native-clients) the decoder. | Linux, Windows. **GPU**: Windows, and Linux with more than one GPU. |
+| **Video decoder**, **GPU** | Automatic | The decoder and graphics card this device uses. Change them only to debug; `RUBYFUNK_DECODER` [overrides](/docs/configuration#client-side-native-clients) the decoder. | Linux, Windows. **GPU**: Windows, and Linux with more than one GPU. |
 | **Low-latency mode** | On | Asks the decoder and system for their low-latency paths. Turn it off if a device misbehaves. | Android |
 | **Keep screen awake** | On | Off, a stream keeps the screen awake only while you play: five minutes after your last key, touch or controller input, this device's own screen saver or sleep takes over. | Linux, Windows, Android, Apple |
 | **Screen** | Flat | Flat, or bent like a curved monitor: the radius in millimetres, 800R the tightest. | Apple Vision Pro |
@@ -133,7 +133,7 @@ shortcuts. It's on every app and in the console (which edits your defaults only)
 
 | Setting | Default | What it does | Where |
 |---|---|---|---|
-| **Start in** | Host list | **Library** opens the default host's games; **Stream** connects to its desktop. With several paired hosts, set one with **Make default host** in its menu (Apple: **Default host** on the host page) or `punktfunk default-host`. | All |
+| **Start in** | Host list | **Library** opens the default host's games; **Stream** connects to its desktop. With several paired hosts, set one with **Make default host** in its menu (Apple: **Default host** on the host page) or `rubyfunk default-host`. | All |
 | **Auto-wake on connect** | On | Wakes a sleeping saved host with [Wake-on-LAN](/docs/wake-on-lan) and waits. Turn it off for hosts over a VPN. | All |
 | **Start streams fullscreen** | On | F11 or Alt+Enter leaves fullscreen. On Linux and a Mac, **Always** also keeps the app fullscreen. | Linux, Windows, Mac (Linux and Mac: **Fullscreen**: **Off**, **While streaming**, **Always**) |
 | **Keep streaming in background** | Off | Audio and the connection stay live while you switch apps, for 10 minutes unless you pick another limit. | iPhone, iPad, Apple TV, Android phones (**Keep streaming in the background**) |
@@ -155,7 +155,7 @@ shortcuts. It's on every app and in the console (which edits your defaults only)
 | Setting | Default | What it does | Where |
 |---|---|---|---|
 | **Statistics overlay** | Normal | **Off**, **Compact**, **Normal** or **Detailed**: the level a stream starts at. Change it live in-stream; see [Stats](/docs/stats). | All |
-| **Advanced statistics** | Off | Off shows the figures Moonlight's overlay also shows. On shows Punktfunk's capture-to-screen timings. | All |
+| **Advanced statistics** | Off | Off shows the figures Moonlight's overlay also shows. On shows RubyFunk's capture-to-screen timings. | All |
 | **Statistics position** | Top left (Apple: top right) | The overlay's corner. | All |
 | **Statistics size** | 100 % | 75 % to 200 %, on top of your display's scaling. The overlay only. | All |
 | **Exit hint** | On | Shows how to leave for a few seconds when a stream starts. | All |

@@ -1,10 +1,10 @@
 # Issue tracker: Gitea (`git.unom.io`)
 
 Issues and specs for this repo live as **Gitea issues** on the self-hosted instance at
-`git.unom.io`, in the repo **`unom/punktfunk`** (owner `unom`, repo `punktfunk`).
+`git.unom.io`, in the repo **`unom/rubyfunk`** (owner `unom`, repo `rubyfunk`).
 
 Confirm with `git remote -v` if in doubt — but note that a worktree of this repo has the same
-remote, so `unom/punktfunk` holds regardless of which checkout you are in.
+remote, so `unom/rubyfunk` holds regardless of which checkout you are in.
 
 ## Use the `gitea` MCP server — not `gh`, `glab`, or `tea`
 
@@ -21,7 +21,7 @@ ToolSearch("select:mcp__gitea__issue_write,mcp__gitea__issue_read,mcp__gitea__li
 
 ## Conventions
 
-Every call takes `owner: "unom"`, `repo: "punktfunk"`.
+Every call takes `owner: "unom"`, `repo: "rubyfunk"`.
 
 - **Create an issue**: `mcp__gitea__issue_write` with `method: "create"`, `title`, `body`.
 - **Read an issue**: `mcp__gitea__issue_read` with `method: "get"` (details), `"get_comments"`
@@ -43,7 +43,7 @@ single `label_id`. It will not accept label names. `list_issues`, by contrast, f
 **names**. So before applying a label, resolve the name to its ID:
 
 ```
-mcp__gitea__label_read { method: "list_repo_labels", owner: "unom", repo: "punktfunk", per_page: 100 }
+mcp__gitea__label_read { method: "list_repo_labels", owner: "unom", repo: "rubyfunk", per_page: 100 }
 ```
 
 and match on `.name` to get `.id`. If the label does not come back, it does not exist yet — see
@@ -85,7 +85,7 @@ shares one number space across issues and PRs, so a bare `#42` may be either —
 
 ## When a skill says "publish to the issue tracker"
 
-Create a Gitea issue in `unom/punktfunk` — after asking (see above).
+Create a Gitea issue in `unom/rubyfunk` — after asking (see above).
 
 ## When a skill says "fetch the relevant ticket"
 

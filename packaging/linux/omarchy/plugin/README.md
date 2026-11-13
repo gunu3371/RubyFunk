@@ -1,6 +1,6 @@
-# punktfunk — an Omarchy shell plugin
+# rubyfunk — an Omarchy shell plugin
 
-Pair devices, watch sessions and control your [Punktfunk](https://punktfunk.com) host from the
+Pair devices, watch sessions and control your [RubyFunk](https://punktfunk.com) host from the
 Omarchy bar, without opening a browser. Tabs like Nexthop; pairing like OmaConnect; display
 layout like hyprmoncfg.
 
@@ -12,7 +12,7 @@ layout like hyprmoncfg.
   - *Pair* — incoming request banner with Accept / Reject, the pairing PIN to verify, Moonlight PIN
     field, and the pairing-window toggle.
   - *Devices* — both planes; Unpair asks Confirm / Cancel (`y` / `c`).
-  - *Display* — Dedicated / This screen as layout cards (`punktfunk-omarchy mode`), policy, presets.
+  - *Display* — Dedicated / This screen as layout cards (`rubyfunk-omarchy mode`), policy, presets.
   - *Stats* — the same pillars, encoder detail, and capture charts.
 - **service** — one long-lived event stream that drives both of the above. The pairing toast is
   the `pairing-pending` hook's (it carries Approve / Deny); the panel only updates its badge.
@@ -22,21 +22,21 @@ closes, Tab switches panels. A waiting pair opens the Pair tab.
 
 ## Install
 
-The host package ships these files at `/usr/share/punktfunk/omarchy/plugin/`, and
-[`punktfunk-omarchy setup`](https://punktfunk.com/docs/omarchy) offers to install them into
-`~/.config/omarchy/plugins/punktfunk` and enable the widget; `punktfunk-omarchy remove` reverses
-both. Requires a Punktfunk host on the same machine — `punktfunk-host` on `PATH`. Omarchy 4.0 or
+The host package ships these files at `/usr/share/rubyfunk/omarchy/plugin/`, and
+[`rubyfunk-omarchy setup`](https://punktfunk.com/docs/omarchy) offers to install them into
+`~/.config/omarchy/plugins/rubyfunk` and enable the widget; `rubyfunk-omarchy remove` reverses
+both. Requires a RubyFunk host on the same machine — `rubyfunk-host` on `PATH`. Omarchy 4.0 or
 newer.
 
 ## How it talks to the host
 
-Every call is `punktfunk-host ctl <verb> --json`, spawned as a process. **The QML never speaks
+Every call is `rubyfunk-host ctl <verb> --json`, spawned as a process. **The QML never speaks
 HTTPS, never holds the operator token, and never sees the host's certificate.**
 
 That is a deliberate boundary, not an implementation detail. A shell plugin runs *unsandboxed
 inside `omarchy-shell`*, and the management API's admin surface — the pending queue, the PIN,
 unpair, session control — is exactly the surface worth protecting. So the credential stays where it
-already lives: `punktfunk-host ctl` reads the operator token and the host's certificate from the
+already lives: `rubyfunk-host ctl` reads the operator token and the host's certificate from the
 0700 config directory in its own process, pins the certificate **before** sending the token, and
 prints JSON on stdout. If something that is not your host answers on the management port, `ctl`
 exits 4 with no credential transmitted, and this plugin shows that state instead of a plausible
@@ -74,9 +74,9 @@ Every one of these cost a debugging session, and none of them logs anything usef
 
 ### Displays: Dedicated, This screen, then presets
 
-Dedicated and This screen call `punktfunk-omarchy mode`. The rows below pick the virtual-display
+Dedicated and This screen call `rubyfunk-omarchy mode`. The rows below pick the virtual-display
 preset and show the policy it puts in force. The section deliberately does **not** list live or
-lingered heads; `punktfunk-host ctl display` is the diagnostic and release surface for those.
+lingered heads; `rubyfunk-host ctl display` is the diagnostic and release surface for those.
 
 Hyprland gives each virtual display a name. With named-head keep-alive support, a disconnect closes
 the portal capture but leaves that head for the keep-alive window, and a matching reconnect recasts
@@ -102,7 +102,7 @@ ever matters.
 ## Reversing it
 
 ```sh
-omarchy plugin remove punktfunk
+omarchy plugin remove rubyfunk
 ```
 
 The plugin owns no state — it stores nothing, and removing it changes nothing about your host, your
@@ -110,4 +110,4 @@ pairings or your firewall.
 
 ## Licence
 
-MIT OR Apache-2.0, same as Punktfunk.
+MIT OR Apache-2.0, same as RubyFunk.

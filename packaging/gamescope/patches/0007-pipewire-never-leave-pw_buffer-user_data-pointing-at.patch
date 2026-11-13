@@ -51,7 +51,7 @@ default: case is genuinely unreachable - so it logs and returns instead of
 aborting, since losing a capture buffer should not take the session down.
 
 Upstream: yes - a plain use-after-free in the PipeWire buffer lifecycle, with
-nothing punktfunk-specific about it.
+nothing rubyfunk-specific about it.
 ---
  src/pipewire.cpp | 33 +++++++++++++++++++++++++++++----
  1 file changed, 29 insertions(+), 4 deletions(-)

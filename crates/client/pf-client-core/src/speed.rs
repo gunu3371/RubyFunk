@@ -4,19 +4,19 @@
 //! page and its `--headless --speed-test`, and the console shell's host menu through the
 //! session binary. The measurement runs over the REAL data plane, which is why it is a
 //! connect and not a synthetic socket: a path that carries QUIC video is the path worth
-//! measuring. What it measures is [`punktfunk_core::client::health::speed_test`]'s: the
+//! measuring. What it measures is [`rubyfunk_core::client::health::speed_test`]'s: the
 //! ceiling the bring-up ramp proved, then one clean round under it.
 //!
 //! Where the answer goes is the caller's decision, not this module's — a measured bitrate
 //! belongs in the layer the tested host resolves bitrate from
 //! (`design/client-settings-profiles.md` §5.3).
 
-use punktfunk_core::client::health::{self, SpeedError};
-use punktfunk_core::client::{ConnectParams, NativeClient};
-use punktfunk_core::config::Mode;
+use rubyfunk_core::client::health::{self, SpeedError};
+use rubyfunk_core::client::{ConnectParams, NativeClient};
+use rubyfunk_core::config::Mode;
 use std::time::Duration;
 
-pub use punktfunk_core::client::health::{
+pub use rubyfunk_core::client::health::{
     recommended_kbps, CleanRound, Finding, HealthReport, SpeedReport,
 };
 
@@ -48,7 +48,7 @@ pub fn run_speed_probe_with(
     health::speed_test(&c, progress).map_err(speed_error)
 }
 
-/// The whole network check ([`punktfunk_core::client::health::health_check`]) over a
+/// The whole network check ([`rubyfunk_core::client::health::health_check`]) over a
 /// diagnostic session: probes only.
 pub fn run_network_check_with(
     addr: &str,
@@ -84,7 +84,7 @@ fn connect_for_probe(
         video_codecs: crate::video::decodable_codecs(),
         // Same label a real session sends — a speed test against a host that doesn't know us
         // yet should knock under this device's name, not a fingerprint placeholder.
-        name: Some(punktfunk_core::client::device_name()),
+        name: Some(rubyfunk_core::client::device_name()),
         pin,
         identity: Some(identity),
         probe_only,

@@ -9,7 +9,7 @@
 //! runtime never gives back what creating one cost, and sets the flag only while a session
 //! holds a [`ClockBoost`]. `nvapi64.dll` resolves at runtime.
 //!
-//! Off unless `PUNKTFUNK_NVENC_CLOCK_BOOST=1`: full clocks draw power for as long as someone
+//! Off unless `RUBYFUNK_NVENC_CLOCK_BOOST=1`: full clocks draw power for as long as someone
 //! is connected, and that is the host owner's choice to make.
 
 use std::ffi::c_void;

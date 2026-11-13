@@ -1,11 +1,11 @@
 //! Decode-latency bookkeeping: realtime clock + decoded-pts / user-flags stat recording.
 
-use punktfunk_core::client::NativeClient;
-use punktfunk_core::session::Frame;
+use rubyfunk_core::client::NativeClient;
+use rubyfunk_core::session::Frame;
 use std::collections::VecDeque;
 use std::time::Duration;
 
-pub(crate) use punktfunk_core::client::now_realtime_ns;
+pub(crate) use rubyfunk_core::client::now_realtime_ns;
 
 /// HUD `decoded` point for one dequeued output frame, keyed by the echoed `presentationTimeUs`:
 /// hand the frame and its `decode` span (received→decoded, single-clock local, ≥ 0) to

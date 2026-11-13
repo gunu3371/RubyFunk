@@ -1,4 +1,4 @@
-//! Headless PyroWave decode bench: the client decoder over a `PUNKTFUNK_DUMP_VIDEO`
+//! Headless PyroWave decode bench: the client decoder over a `RUBYFUNK_DUMP_VIDEO`
 //! capture, with no window and no network.
 //!
 //! `cargo run --release -p pf-client-video --example pyrowave_bench -- <capture> [WxH] [bits] [secs]`

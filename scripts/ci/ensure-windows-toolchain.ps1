@@ -1,4 +1,4 @@
-# Idempotent pre-flight for punktfunk's Windows CI dependencies: WDK + cargo-wdk (driver builds)
+# Idempotent pre-flight for rubyfunk's Windows CI dependencies: WDK + cargo-wdk (driver builds)
 # and the aarch64-pc-windows-msvc rustup target. Run at the
 # start of every Windows CI job so ANY runner - freshly built from unom/infra's windows-runner/
 # template, rebuilt, or a new one added later - self-provisions on first real use, instead of
@@ -44,7 +44,7 @@ catch { Write-Warning "disk reclaim step failed (non-fatal): $_" }
 
 $ciDir = $PSScriptRoot
 & "$ciDir\provision-windows-wdk.ps1"
-& "$ciDir\provision-windows-punktfunk-extras.ps1"
+& "$ciDir\provision-windows-rubyfunk-extras.ps1"
 
 # --- sccache: shared compile cache (RustFS S3 over the LAN). The Windows workflows set
 # RUSTC_WRAPPER=sccache, so the binary must exist on any runner regardless of when the

@@ -1,11 +1,11 @@
 #!/bin/sh
-# Privileged display-manager verbs for the punktfunk managed gamescope takeover.
+# Privileged display-manager verbs for the rubyfunk managed gamescope takeover.
 #
 # On DM-autologin boxes whose display manager does not survive a masked session unit (Nobara's
 # plasmalogin, unknown DMs), taking the Gaming Mode session over means stopping the display
 # manager for the length of the stream and restarting it afterwards — root-only operations. The
 # host invokes this helper via pkexec under its own polkit action
-# (io.unom.punktfunk.dm-helper.policy, installed by the packages), the same mechanism these
+# (io.github.gunu3371.rubyfunk.dm-helper.policy, installed by the packages), the same mechanism these
 # distros use for their own session switching (Nobara's os-session-select).
 #
 # The unit is NEVER caller-controlled: it is derived here from the display-manager.service alias
@@ -20,7 +20,7 @@ set -eu
 # account — to run this as root (2026-08-05 review L-14).
 #
 # So the authorization decision is made HERE instead, where the caller is knowable: pkexec sets
-# PKEXEC_UID from the authenticated caller, and only a member of the `punktfunk` group (created by
+# PKEXEC_UID from the authenticated caller, and only a member of the `rubyfunk` group (created by
 # the packages) may proceed. That keeps the sessionless host working while making membership of one
 # explicit group — not merely "has a local uid" — the thing that grants these verbs.
 require_authorized_caller() {
@@ -34,12 +34,12 @@ require_authorized_caller() {
     echo "pf-dm-helper: PKEXEC_UID $uid resolves to no local user — refusing" >&2
     exit 1
   }
-  # `id -nG` lists the primary group too, so a user whose primary group IS punktfunk also passes.
+  # `id -nG` lists the primary group too, so a user whose primary group IS rubyfunk also passes.
   for g in $(id -nG "$user" 2>/dev/null); do
-    [ "$g" = punktfunk ] && return 0
+    [ "$g" = rubyfunk ] && return 0
   done
-  echo "pf-dm-helper: user '$user' is not in the 'punktfunk' group — refusing." >&2
-  echo "  Grant it with: sudo usermod -aG punktfunk $user   (then re-login)" >&2
+  echo "pf-dm-helper: user '$user' is not in the 'rubyfunk' group — refusing." >&2
+  echo "  Grant it with: sudo usermod -aG rubyfunk $user   (then re-login)" >&2
   exit 1
 }
 
@@ -73,7 +73,7 @@ case "${1-}" in
     #
     # The user is NEVER caller-named: PKEXEC_UID is set by pkexec from the authenticated caller,
     # so this grant enables lingering for that caller alone. (Its presence is already checked by
-    # `require_authorized_caller` above, which also proved the caller is in the punktfunk group.)
+    # `require_authorized_caller` above, which also proved the caller is in the rubyfunk group.)
     exec loginctl enable-linger "${PKEXEC_UID}"
     ;;
   *)

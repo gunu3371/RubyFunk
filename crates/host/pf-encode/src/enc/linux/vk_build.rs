@@ -35,7 +35,7 @@ pub(super) fn av1_coded_frame(w: u32, h: u32, align: vk::Extent2D) -> vk::Extent
 }
 
 /// The session's rate control as `(mode, (vbv_window_ms, vbv_initial_ms), bitrate)`. VBR
-/// (average == max) when the driver advertises it and `rc_env` (`PUNKTFUNK_VULKAN_RC`) is not
+/// (average == max) when the driver advertises it and `rc_env` (`RUBYFUNK_VULKAN_RC`) is not
 /// `cbr`: Vulkan cannot suppress CBR's filler, so the mode is the only lever. CBR keeps the loose
 /// (1000, 500) window, since a tighter one starts stuffing earlier. `bitrate` is clamped to the
 /// driver's `hw_max`.
@@ -70,7 +70,7 @@ pub(super) fn rc_plan(
         fps,
         hw_max_bitrate = hw_max,
         "vulkan-encode: rate control (VBR when the driver offers it — CBR must stuff filler \
-         on calm content; PUNKTFUNK_VULKAN_RC overrides, PUNKTFUNK_VBV_FRAMES scales the VBR \
+         on calm content; RUBYFUNK_VULKAN_RC overrides, RUBYFUNK_VBV_FRAMES scales the VBR \
          window)"
     );
     if bitrate > hw_max {
@@ -249,7 +249,7 @@ const DIRECT_PLANES_USAGE: vk::ImageUsageFlags = vk::ImageUsageFlags::from_raw(
 
 /// Can the compute CSC write the encode source's planes directly? True when this profile
 /// lists `pic` for [`DIRECT_PLANES_USAGE`] with the create flags a plane view needs. A driver
-/// that lists it and still misrenders is what `PUNKTFUNK_VULKAN_DIRECT_PLANES=0` is for.
+/// that lists it and still misrenders is what `RUBYFUNK_VULKAN_DIRECT_PLANES=0` is for.
 pub(super) unsafe fn probe_yuv_storage_planes(
     vq_inst: &ash::khr::video_queue::Instance,
     pd: vk::PhysicalDevice,

@@ -3,7 +3,7 @@
 // and atomic (temp + rename, 0600) file writes. All IO is node:fs, wrapped in Effect.
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { pluginIngestDir, pluginStateDir } from "@punktfunk/host";
+import { pluginIngestDir, pluginStateDir } from "@rubyfunk/host";
 import { Effect } from "effect";
 import { ConfigWriteError } from "./errors.js";
 

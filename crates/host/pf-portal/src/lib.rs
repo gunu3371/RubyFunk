@@ -59,7 +59,7 @@ pub fn portal_runtime() -> Result<&'static Runtime, String> {
     match PORTAL_RT.get_or_init(|| {
         tokio::runtime::Builder::new_multi_thread()
             .worker_threads(2)
-            .thread_name("punktfunk-portal-rt")
+            .thread_name("rubyfunk-portal-rt")
             .enable_all()
             .build()
     }) {

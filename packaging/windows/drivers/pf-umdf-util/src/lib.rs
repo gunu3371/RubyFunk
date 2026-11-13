@@ -1,4 +1,4 @@
-//! The audited unsafe-primitive layer under the punktfunk UMDF drivers.
+//! The audited unsafe-primitive layer under the rubyfunk UMDF drivers.
 //!
 //! A UMDF driver cannot be literally free of `unsafe` — WDF dispatch, Win32 section mapping and
 //! cross-process shared memory are FFI by nature. What Rust buys is confining every raw operation

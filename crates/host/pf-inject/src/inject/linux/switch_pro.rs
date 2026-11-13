@@ -21,7 +21,7 @@ use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
 use pf_driver_proto::gamepad::DEVTYPE_SWITCH_PRO;
 use pf_driver_proto::switch as wire;
-use punktfunk_core::quic::{HidOutput, RichInput};
+use rubyfunk_core::quic::{HidOutput, RichInput};
 
 /// The `CREATE2` identity of pad `index`, a Pro (`None`) or one Joy-Con half: what this host
 /// opens, and what the seat broker builds for a seat. A Pro is a USB pad, so `hid-nintendo`
@@ -49,9 +49,9 @@ pub(crate) fn identity(index: u8, half: Option<Half>) -> crate::uhid_abi::Identi
     };
     crate::uhid_abi::Identity {
         bus,
-        name: format!("Punktfunk {name} {index}"),
-        phys: format!("punktfunk/{tag}/{index}"),
-        uniq: format!("punktfunk-{tag}-{index}"),
+        name: format!("RubyFunk {name} {index}"),
+        phys: format!("rubyfunk/{tag}/{index}"),
+        uniq: format!("rubyfunk-{tag}-{index}"),
         rdesc: &wire::RDESC,
         vendor: SWITCH_VENDOR,
         product,
@@ -155,7 +155,7 @@ impl SwitchPad {
 /// Switch Pro [`PadProto`]: UHID open, [`SwitchState`] mappers, probe `service`.
 /// Slot table / unplug / heartbeat / dedup live in [`UhidManager`].
 pub struct SwitchProProto {
-    /// Steam back-grip fold. A Pro Controller has no paddle slot; `PUNKTFUNK_STEAM_REMAP=paddles=…`, default drop.
+    /// Steam back-grip fold. A Pro Controller has no paddle slot; `RUBYFUNK_STEAM_REMAP=paddles=…`, default drop.
     remap: crate::steam_remap::RemapConfig,
 }
 
@@ -190,7 +190,7 @@ impl PadProto for SwitchProProto {
     fn merge_frame(
         &self,
         prev: &SwitchState,
-        f: &punktfunk_core::input::GamepadFrame,
+        f: &rubyfunk_core::input::GamepadFrame,
     ) -> SwitchState {
         let buttons = crate::steam_remap::fold_paddles(f.buttons, self.remap.paddles);
         SwitchState::merge_frame(prev, f, buttons)
@@ -215,7 +215,7 @@ impl PadProto for SwitchProProto {
     }
 }
 
-/// Session Switch Pro pads (`PUNKTFUNK_GAMEPAD=switchpro`, or a Nintendo-family per-pad kind).
+/// Session Switch Pro pads (`RUBYFUNK_GAMEPAD=switchpro`, or a Nintendo-family per-pad kind).
 pub type SwitchProManager = UhidManager<SwitchProProto>;
 
 /// A Joy-Con pair: both halves of one pad slot. The left half drives the low motor, the right
@@ -255,7 +255,7 @@ impl PadProto for JoyConPairProto {
     fn merge_frame(
         &self,
         prev: &SwitchState,
-        f: &punktfunk_core::input::GamepadFrame,
+        f: &rubyfunk_core::input::GamepadFrame,
     ) -> SwitchState {
         SwitchState::merge_joycon_frame(prev, f)
     }
@@ -286,14 +286,14 @@ impl PadProto for JoyConPairProto {
     }
 }
 
-/// Session Joy-Con pairs (a Joy-Con pair client, or `PUNKTFUNK_GAMEPAD=joyconpair`).
+/// Session Joy-Con pairs (a Joy-Con pair client, or `RUBYFUNK_GAMEPAD=joyconpair`).
 pub type JoyConPairManager = UhidManager<JoyConPairProto>;
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use punktfunk_core::input::gamepad as gs;
-    use punktfunk_core::input::{GamepadEvent, GamepadFrame};
+    use rubyfunk_core::input::gamepad as gs;
+    use rubyfunk_core::input::{GamepadEvent, GamepadFrame};
     use std::time::{Duration, Instant};
 
     /// Holds a Joy-Con pair live for `PF_PAD_HOLD_SECS` (default 3) so an SDL probe can read it:

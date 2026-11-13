@@ -26,7 +26,7 @@ function withTheme<T>(content: string | null, fn: () => T): T {
 	if (content !== null) {
 		const d = join(dir, "omarchy", "current", "theme");
 		mkdirSync(d, { recursive: true });
-		writeFileSync(join(d, "punktfunk.json"), content);
+		writeFileSync(join(d, "rubyfunk.json"), content);
 	}
 	const prev = process.env.XDG_STATE_HOME;
 	process.env.XDG_STATE_HOME = dir;

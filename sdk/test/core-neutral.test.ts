@@ -1,4 +1,4 @@
-// `@punktfunk/host/core` must be importable from a browser, which means nothing reachable from
+// `@rubyfunk/host/core` must be importable from a browser, which means nothing reachable from
 // it may name a `node:` module or a Bun global. A bundler would tell you this at the consumer's
 // build — after publishing. This tells you here.
 //
@@ -44,7 +44,7 @@ const walk = (entry: string): { files: Set<string>; bare: Set<string> } => {
 	return { files, bare };
 };
 
-describe("@punktfunk/host/core", () => {
+describe("@rubyfunk/host/core", () => {
 	it("reaches no node: or bun: module", () => {
 		const { bare, files } = walk(path.join(SRC, "core.ts"));
 		const platform = [...bare].filter((s) => /^(node:|bun:|bun$)/.test(s));
@@ -59,7 +59,7 @@ describe("@punktfunk/host/core", () => {
 	it("still reaches the generated client, the service and the credential kinds", () => {
 		const { files } = walk(path.join(SRC, "core.ts"));
 		const names = [...files].map((f) => path.basename(f));
-		for (const wanted of ["punktfunk.ts", "client.ts", "credential.ts", "api.ts", "http.ts", "sse.ts", "wire.ts"]) {
+		for (const wanted of ["rubyfunk.ts", "client.ts", "credential.ts", "api.ts", "http.ts", "sse.ts", "wire.ts"]) {
 			expect(names).toContain(wanted);
 		}
 	});

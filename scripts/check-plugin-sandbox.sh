@@ -13,7 +13,7 @@
 #
 # Needs bubblewrap and unprivileged user namespaces, so it runs on Linux only.
 set -u
-W=${PUNKTFUNK_REPO:-/w}
+W=${RUBYFUNK_REPO:-/w}
 apt-get update -qq >/dev/null 2>&1
 apt-get install -y -qq bubblewrap iproute2 >/dev/null 2>&1 || { echo "FAIL: no bubblewrap"; exit 1; }
 
@@ -23,8 +23,8 @@ bun install --ignore-scripts >/dev/null 2>&1
 bun build src/runner-cli.ts --target=bun --outfile /runner.js >/dev/null || { echo "FAIL: bundle"; exit 1; }
 
 export HOME=/root
-CFG=$HOME/.config/punktfunk
-P=$CFG/plugins/node_modules/punktfunk-plugin-probe
+CFG=$HOME/.config/rubyfunk
+P=$CFG/plugins/node_modules/rubyfunk-plugin-probe
 mkdir -p "$P" "$CFG/plugin-run" "$HOME/.ssh" "$HOME/steamlike" "$HOME/granted" "$HOME/dynamic"
 echo "secret-admin-token"  > "$CFG/mgmt-token"
 echo "private key"         > "$HOME/.ssh/id_ed25519"
@@ -33,8 +33,8 @@ echo "granted-data"        > "$HOME/granted/marker"
 echo "dynamic-data"        > "$HOME/dynamic/marker"
 echo '{"probe":"testtoken"}' > "$CFG/plugin-run/plugin-tokens.json"
 printf '{"probe":["/root/granted"]}' > "$CFG/plugin-run/plugin-grants.json"
-printf '{"dependencies":{"punktfunk-plugin-probe":"*"}}' > "$CFG/plugins/package.json"
-printf '{"name":"punktfunk-plugin-probe","version":"1.0.0","main":"index.js","punktfunk":{"schema":1,"id":"probe","reads":["~/steamlike"]}}' > "$P/package.json"
+printf '{"dependencies":{"rubyfunk-plugin-probe":"*"}}' > "$CFG/plugins/package.json"
+printf '{"name":"rubyfunk-plugin-probe","version":"1.0.0","main":"index.js","rubyfunk":{"schema":1,"id":"probe","reads":["~/steamlike"]}}' > "$P/package.json"
 
 cat > "$P/index.js" <<'JS'
 import fs from "node:fs";
@@ -44,21 +44,21 @@ let home = "UNSET";
 try { home = (await import("node:os")).homedir(); } catch (e) { home = "THREW"; }
 o.push(say("homedir", home));
 const gone = (f) => { try { f(); return "READABLE"; } catch { return "blocked"; } };
-o.push(say("mgmt", gone(() => fs.readFileSync("/root/.config/punktfunk/mgmt-token", "utf8"))));
+o.push(say("mgmt", gone(() => fs.readFileSync("/root/.config/rubyfunk/mgmt-token", "utf8"))));
 o.push(say("ssh", gone(() => fs.readFileSync("/root/.ssh/id_ed25519", "utf8"))));
 o.push(say("declared", (() => { try { return fs.readFileSync(home + "/steamlike/marker", "utf8").trim(); } catch { return "UNREACHABLE"; } })()));
 o.push(say("declared_ro", (() => { try { fs.writeFileSync(home + "/steamlike/w", "x"); return "WRITABLE"; } catch { return "readonly"; } })()));
 o.push(say("granted", (() => { try { return fs.readFileSync(home + "/granted/marker", "utf8").trim(); } catch { return "UNREACHABLE"; } })()));
 o.push(say("granted_write", (() => { try { fs.writeFileSync(home + "/granted/w", "x"); return "WRITABLE"; } catch (e) { return e.code; } })()));
 o.push(say("dynamic", (() => { try { return fs.readFileSync(home + "/dynamic/marker", "utf8").trim(); } catch { return "UNREACHABLE"; } })()));
-o.push(say("state", (() => { try { fs.writeFileSync("/run/punktfunk/plugin-state/probe/w", "x"); return "writable"; } catch { return "UNWRITABLE"; } })()));
-o.push(say("owntoken", (() => { try { fs.readFileSync("/run/punktfunk/plugin-token", "utf8"); return "present"; } catch { return "MISSING"; } })()));
+o.push(say("state", (() => { try { fs.writeFileSync("/run/rubyfunk/plugin-state/probe/w", "x"); return "writable"; } catch { return "UNWRITABLE"; } })()));
+o.push(say("owntoken", (() => { try { fs.readFileSync("/run/rubyfunk/plugin-token", "utf8"); return "present"; } catch { return "MISSING"; } })()));
 o.push(say("procs", fs.readdirSync("/proc").filter((d) => /^\d+$/.test(d)).length));
 const ip = (await import("node:child_process")).spawnSync("ip", ["-o", "link"]);
 o.push(say("netlink", ip.error ? "NO_IP" : ip.status === 0 ? "OPEN" : "refused"));
 o.push(say("tunables", (() => { try { fs.writeFileSync("/proc/sys/kernel/sysrq", "1"); return "WRITABLE"; } catch (e) { return e.code; } })()));
-o.push(say("cfgdir", process.env.PUNKTFUNK_CONFIG_DIR ?? "UNSET"));
-o.push(say("sock", process.env.PUNKTFUNK_MGMT_UNIX ?? "UNSET"));
+o.push(say("cfgdir", process.env.RUBYFUNK_CONFIG_DIR ?? "UNSET"));
+o.push(say("sock", process.env.RUBYFUNK_MGMT_UNIX ?? "UNSET"));
 console.log("PROBE " + o.join(" "));
 JS
 
@@ -123,8 +123,8 @@ if [ -f "$CFG/plugin-state/probe/w" ]; then echo "  ok   state lands in plugin-s
 else echo "  FAIL state did not land in plugin-state/probe"; fail=$((fail+1)); fi
 want "its own token IS there"            owntoken    present
 want "HOME is the real home"             homedir     /root
-want "the config dir is set"             cfgdir      /run/punktfunk
-want "the host socket is set"            sock        /run/punktfunk/host.sock
+want "the config dir is set"             cfgdir      /run/rubyfunk
+want "the host socket is set"            sock        /run/rubyfunk/host.sock
 echo "== the namespace holds"
 # Exactly two: bwrap's own init as pid 1, the plugin as pid 2. The point is the count does not
 # grow with the host's process list — a shared /proc here would be hundreds.

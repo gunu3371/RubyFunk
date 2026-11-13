@@ -1,7 +1,7 @@
 //! Raw FFI bindings to the vendored PyroWave C API (`pyrowave.h`).
 //!
 //! Empty outside Linux/Windows/64-bit Android — see build.rs. The safe wrapper
-//! lives with its consumer (`punktfunk-host`'s encoder backend, and later the
+//! lives with its consumer (`rubyfunk-host`'s encoder backend, and later the
 //! Rust clients' decoder backend); this crate is bindings only.
 
 #![allow(non_upper_case_globals)]

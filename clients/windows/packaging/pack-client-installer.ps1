@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Pack + sign the punktfunk Windows client as a punktfunk-setup-client exe (the default download)
+  Pack + sign the rubyfunk Windows client as a rubyfunk-setup-client exe (the default download)
   and a portable .zip, from the layout pack-msix.ps1 already assembled.
 
 .DESCRIPTION
@@ -8,7 +8,7 @@
   three artifacts (.msix, setup.exe, portable .zip). Why the installer exists at all: the MSIX
   install shape (WindowsApps ACLs + alias-only activation) breaks Steam's non-Steam-game picker,
   the Steam overlay's injection, and Big Picture launching; the installer's stable
-  %LOCALAPPDATA%\Programs\Punktfunk path is what fixes all three.
+  %LOCALAPPDATA%\Programs\RubyFunk path is what fixes all three.
 
   Steps:
     1. stage the runtime file set from -LayoutDir (drops AppxManifest.xml + the tile Assets),
@@ -65,7 +65,7 @@ $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 # The ONE Assets\ file that does matter unpackaged is the Lucide icon font: the shell loads it
 # via ms-appx:///Assets/lucide.ttf (app/lucide.rs), and unpackaged that URI resolves to the exe
 # directory — without Assets\lucide.ttf every icon in the shell renders as a private-use box.
-$required = @('punktfunk-client.exe', 'punktfunk-session.exe', 'punktfunk-console.exe', 'punktfunk.exe',
+$required = @('rubyfunk-client.exe', 'rubyfunk-session.exe', 'rubyfunk-console.exe', 'rubyfunk.exe',
               'SDL3.dll', 'Assets\lucide.ttf')
 $stage = Join-Path $OutDir 'portable'
 if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
@@ -81,7 +81,7 @@ Copy-Item $licSrc (Join-Path $stage 'licenses') -Recurse -Force
 
 # --- signing backend (signing.ps1: Azure, then MSIX_CERT_PFX_B64, then ephemeral) -------------
 $signing = Resolve-SigningMode -OutDir $OutDir -Publisher $Publisher `
-    -FriendlyName 'punktfunk client installer (self-signed)' `
+    -FriendlyName 'rubyfunk client installer (self-signed)' `
     -PfxBase64 $PfxBase64 -PfxPassword $PfxPassword -AzureEndpoint $AzureEndpoint -AzureAccount $AzureAccount `
     -AzureProfile $AzureProfile -AzureDlib $AzureDlib -RequireSignedCert $RequireSignedCert -NoSign:$NoSign
 
@@ -91,18 +91,18 @@ foreach ($f in $required | Where-Object { $_ -like '*.exe' -or $_ -eq 'SDL3.dll'
     Sign-File $signing (Join-Path $stage $f)
 }
 
-$zip = Join-Path $OutDir "punktfunk-client-windows_${Version}_${Arch}-portable.zip"
+$zip = Join-Path $OutDir "rubyfunk-client-windows_${Version}_${Arch}-portable.zip"
 if (Test-Path $zip) { Remove-Item $zip -Force }
 Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $zip
 Write-Host "==> portable zip: $zip"
 
-$setup = Join-Path $OutDir "punktfunk-client-setup-${Version}_${Arch}.exe"
+$setup = Join-Path $OutDir "rubyfunk-client-setup-${Version}_${Arch}.exe"
 # The wizard crate builds for this arch into a target dir of its own; the packer takes the
 # self-contained runtime staged there and the CLIENT twin (asInvoker - never elevates).
 $triple = if ($Arch -eq 'arm64') { 'aarch64-pc-windows-msvc' } else { 'x86_64-pc-windows-msvc' }
 $repoRoot = (Resolve-Path (Join-Path $here '..\..\..')).Path
 $wizTarget = Join-Path $OutDir 'wizard-target'
-Write-Host "==> building punktfunk-setup-client ($triple) -> $wizTarget"
+Write-Host "==> building rubyfunk-setup-client ($triple) -> $wizTarget"
 $prevTarget = $env:CARGO_TARGET_DIR
 $env:CARGO_TARGET_DIR = $wizTarget
 Push-Location $repoRoot
@@ -111,20 +111,20 @@ Push-Location $repoRoot
 # build stages. A cross-built wizard therefore gets a cache of its own.
 $prevLocal = $env:LOCALAPPDATA
 if ($Arch -ne 'x64') { $env:LOCALAPPDATA = Join-Path $OutDir "reactor-cache-$Arch" }
-& cargo build --release -p punktfunk-setup-win --target $triple
+& cargo build --release -p rubyfunk-setup-win --target $triple
 $wizExit = $LASTEXITCODE
 $env:LOCALAPPDATA = $prevLocal
 if ($wizExit -eq 0 -and $triple -ne 'x86_64-pc-windows-msvc') {
     # The packer itself runs on the (x64) runner, whatever arch it packs for.
-    & cargo build --release -p punktfunk-setup-win --bin punktfunk-setup-pack --target x86_64-pc-windows-msvc
+    & cargo build --release -p rubyfunk-setup-win --bin rubyfunk-setup-pack --target x86_64-pc-windows-msvc
     $wizExit = $LASTEXITCODE
 }
 Pop-Location
 if ($prevTarget) { $env:CARGO_TARGET_DIR = $prevTarget } else { Remove-Item Env:\CARGO_TARGET_DIR -ErrorAction SilentlyContinue }
-if ($wizExit -ne 0) { throw "punktfunk-setup-win build failed ($wizExit)" }
+if ($wizExit -ne 0) { throw "rubyfunk-setup-win build failed ($wizExit)" }
 $wizRel = Join-Path $wizTarget "$triple\release"
-$wizExe = Join-Path $wizRel 'punktfunk-setup-client.exe'
-$packer = Join-Path $wizTarget 'x86_64-pc-windows-msvc\release\punktfunk-setup-pack.exe'
+$wizExe = Join-Path $wizRel 'rubyfunk-setup-client.exe'
+$packer = Join-Path $wizTarget 'x86_64-pc-windows-msvc\release\rubyfunk-setup-pack.exe'
 # D6: the payload-less uninstaller lands in {app} (the stage IS the {app} tree; the portable
 # zip above was cut before it arrived), signed before it is packed.
 $unins = Join-Path $stage 'unins000.exe'

@@ -74,7 +74,7 @@ const DXGI_PRESENT_ID: u16 = 42;
 const DXGI_PRESENT_MPO_ID: u16 = 55;
 
 /// Machine-global real-time session name. Stopped-if-stale at start: a crashed host leaves it behind.
-const SESSION: &str = "punktfunk-stallwatch-dxgkrnl";
+const SESSION: &str = "rubyfunk-stallwatch-dxgkrnl";
 
 /// Consumer callback destination, capped. 16384 ≈ 15–60 s at 90–240 Hz under a game + DWM,
 /// more than any single stall window (a deeper hole's counts read as floors). DxgKrnl and DXGI

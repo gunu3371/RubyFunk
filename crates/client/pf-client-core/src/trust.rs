@@ -1,8 +1,8 @@
 //! Client identity, known-hosts (pinned fingerprints), and the store they share.
 //!
-//! Identity PEMs live in `$XDG_CONFIG_HOME/punktfunk/` (Linux) or `%APPDATA%\punktfunk`
-//! (Windows). A non-empty `PUNKTFUNK_CONFIG_DIR` overrides that directory; an
-//! empty value does not. `punktfunk-probe` reads this same directory, so a box
+//! Identity PEMs live in `$XDG_CONFIG_HOME/rubyfunk/` (Linux) or `%APPDATA%\rubyfunk`
+//! (Windows). A non-empty `RUBYFUNK_CONFIG_DIR` overrides that directory; an
+//! empty value does not. `rubyfunk-probe` reads this same directory, so a box
 //! pairs once. On Windows the WinUI shell re-exports this module
 //! (`clients/windows/src/trust.rs`) and is the settings file's only writer; the
 //! session binary reads the same stores.
@@ -15,7 +15,7 @@ use anyhow::{Context as _, Result};
 use std::path::{Path, PathBuf};
 
 mod hosts;
-// The `quic` half of the store. wasm takes punktfunk-core WITHOUT `quic` — WebTransport is
+// The `quic` half of the store. wasm takes rubyfunk-core WITHOUT `quic` — WebTransport is
 // the QUIC layer in a browser, so quinn never builds for that target.
 #[cfg(not(target_family = "wasm"))]
 mod identity;
@@ -43,7 +43,7 @@ pub use messages::{
 };
 #[cfg(not(target_family = "wasm"))]
 pub use probe::{probe_known, probe_one, probe_reachable_many, PROBE_INTERVAL, PROBE_TIMEOUT};
-pub use punktfunk_core::fp::{hex, parse_hex32};
+pub use rubyfunk_core::fp::{hex, parse_hex32};
 
 /// Load a client JSON file, or `T::default()`.
 ///
@@ -87,12 +87,12 @@ pub(crate) fn load_json<T: serde::de::DeserializeOwned>(path: &Path) -> Option<T
 
 /// Directory for the client identity, known hosts, and settings.
 ///
-/// A non-empty `PUNKTFUNK_CONFIG_DIR` wins over the OS default: Linux takes
-/// `$XDG_CONFIG_HOME/punktfunk` (`~/.config/punktfunk` when unset), so a Flatpak
-/// lands in its own `~/.var/app` dir; other Unix `~/.config/punktfunk`; Windows
-/// `%APPDATA%\punktfunk`. An empty override is ignored.
+/// A non-empty `RUBYFUNK_CONFIG_DIR` wins over the OS default: Linux takes
+/// `$XDG_CONFIG_HOME/rubyfunk` (`~/.config/rubyfunk` when unset), so a Flatpak
+/// lands in its own `~/.var/app` dir; other Unix `~/.config/rubyfunk`; Windows
+/// `%APPDATA%\rubyfunk`. An empty override is ignored.
 pub fn config_dir() -> Result<PathBuf> {
-    let env = std::env::var_os("PUNKTFUNK_CONFIG_DIR");
+    let env = std::env::var_os("RUBYFUNK_CONFIG_DIR");
     if let Some(dir) = resolve_config_dir(env.as_deref()) {
         return Ok(dir);
     }
@@ -101,22 +101,22 @@ pub fn config_dir() -> Result<PathBuf> {
 
 /// OS default for [`config_dir`]. Missing `HOME` or `APPDATA` keeps its context
 /// string. Not called when an override already won. The first Linux call adopts
-/// the client files of a legacy `~/.config/punktfunk` the XDG dir lacks.
+/// the client files of a legacy `~/.config/rubyfunk` the XDG dir lacks.
 fn os_config_base() -> Result<PathBuf> {
     #[cfg(windows)]
     {
         let appdata = std::env::var("APPDATA").context("APPDATA unset")?;
-        Ok(PathBuf::from(appdata).join("punktfunk"))
+        Ok(PathBuf::from(appdata).join("rubyfunk"))
     }
     #[cfg(target_os = "linux")]
     {
         let dir = crate::paths::xdg_home("XDG_CONFIG_HOME", ".config")
             .context("HOME unset")?
-            .join("punktfunk");
+            .join("rubyfunk");
         static ADOPTED: std::sync::Once = std::sync::Once::new();
         ADOPTED.call_once(|| {
             if let Some(home) = std::env::var_os("HOME") {
-                adopt_legacy(&PathBuf::from(home).join(".config/punktfunk"), &dir);
+                adopt_legacy(&PathBuf::from(home).join(".config/rubyfunk"), &dir);
             }
         });
         Ok(dir)
@@ -124,12 +124,12 @@ fn os_config_base() -> Result<PathBuf> {
     #[cfg(not(any(windows, target_os = "linux")))]
     {
         let home = std::env::var("HOME").context("HOME unset")?;
-        Ok(PathBuf::from(home).join(".config/punktfunk"))
+        Ok(PathBuf::from(home).join(".config/rubyfunk"))
     }
 }
 
 /// Copy the `client-*` files of `legacy` that `dir` lacks. A Flatpak used to share
-/// the host's `~/.config/punktfunk`, and a native box may set `XDG_CONFIG_HOME`
+/// the host's `~/.config/rubyfunk`, and a native box may set `XDG_CONFIG_HOME`
 /// after pairing; either way the identity and pins carry over. Copies, so the
 /// legacy dir stays usable by an older build. Lock and temp files stay behind.
 #[cfg(any(target_os = "linux", all(test, unix)))]
@@ -168,7 +168,7 @@ fn adopt_one(from: &Path, dir: &Path, to: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
-/// A non-empty `PUNKTFUNK_CONFIG_DIR`, or `None` when the OS default applies.
+/// A non-empty `RUBYFUNK_CONFIG_DIR`, or `None` when the OS default applies.
 ///
 /// An empty value is `None`. The caller then reads `HOME` or `APPDATA`, so an
 /// override never builds that error and never requires the variable to be set.
@@ -321,7 +321,7 @@ mod tests {
     fn adopting_the_legacy_dir_copies_only_missing_client_files() {
         use std::os::unix::fs::PermissionsExt;
         let root = crate::presets::tests::scratch_dir("adopt-legacy");
-        let (legacy, dir) = (root.join("legacy"), root.join("xdg/punktfunk"));
+        let (legacy, dir) = (root.join("legacy"), root.join("xdg/rubyfunk"));
         std::fs::create_dir_all(&legacy).unwrap();
         for (name, body) in [
             ("client-cert.pem", "cert"),

@@ -59,10 +59,10 @@ const save = (url: string, roms: string, password?: string) =>
 	);
 
 beforeEach(async () => {
-	process.env.PUNKTFUNK_MGMT_URL = `http://127.0.0.1:${host.port}`;
-	process.env.PUNKTFUNK_MGMT_TOKEN = "t0k";
-	delete process.env.PUNKTFUNK_UI_PASSWORD;
-	process.env.PUNKTFUNK_UI_PASSWORD_HASH = await Bun.password.hash("typed", {
+	process.env.RUBYFUNK_MGMT_URL = `http://127.0.0.1:${host.port}`;
+	process.env.RUBYFUNK_MGMT_TOKEN = "t0k";
+	delete process.env.RUBYFUNK_UI_PASSWORD;
+	process.env.RUBYFUNK_UI_PASSWORD_HASH = await Bun.password.hash("typed", {
 		algorithm: "argon2id",
 	});
 	bustCredential("demo");
@@ -70,9 +70,9 @@ beforeEach(async () => {
 afterEach(() => {
 	saves.length = 0;
 	access.length = 0;
-	delete process.env.PUNKTFUNK_MGMT_URL;
-	delete process.env.PUNKTFUNK_MGMT_TOKEN;
-	delete process.env.PUNKTFUNK_UI_PASSWORD_HASH;
+	delete process.env.RUBYFUNK_MGMT_URL;
+	delete process.env.RUBYFUNK_MGMT_TOKEN;
+	delete process.env.RUBYFUNK_UI_PASSWORD_HASH;
 });
 afterAll(() => {
 	plugin.stop(true);

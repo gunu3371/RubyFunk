@@ -9,10 +9,10 @@
 //! cannot see.
 
 use anyhow::{Context, Result};
-use punktfunk_core::abr::metrics;
-use punktfunk_core::abr::WindowRecord;
-use punktfunk_core::client::{ConnectParams, NativeClient};
-use punktfunk_core::Mode;
+use rubyfunk_core::abr::metrics;
+use rubyfunk_core::abr::WindowRecord;
+use rubyfunk_core::client::{ConnectParams, NativeClient};
+use rubyfunk_core::Mode;
 use std::io::Write;
 
 /// What the shaped link is, for the metrics the client cannot measure from
@@ -38,10 +38,10 @@ impl Link {
     }
 }
 
-/// One ask per this, while the picture is held. `punktfunk-webos`
+/// One ask per this, while the picture is held. `rubyfunk-webos`
 /// `KEYFRAME_REQUEST_MIN_INTERVAL`.
 const KEYFRAME_REQUEST_MIN_INTERVAL: std::time::Duration = std::time::Duration::from_millis(100);
-/// Resume without a clean re-anchor after this. `punktfunk-webos` `HOLD_GIVE_UP`:
+/// Resume without a clean re-anchor after this. `rubyfunk-webos` `HOLD_GIVE_UP`:
 /// a permanent freeze is worse than a broken picture.
 const HOLD_GIVE_UP: std::time::Duration = std::time::Duration::from_secs(2);
 
@@ -81,8 +81,8 @@ impl Hold {
         if ask {
             self.last_ask = Some(now);
         }
-        let re_anchor = flags & u32::from(punktfunk_core::packet::FLAG_SOF) != 0
-            || flags & punktfunk_core::packet::USER_FLAG_RECOVERY_ANCHOR != 0;
+        let re_anchor = flags & u32::from(rubyfunk_core::packet::FLAG_SOF) != 0
+            || flags & rubyfunk_core::packet::USER_FLAG_RECOVERY_ANCHOR != 0;
         let gave_up = self
             .since
             .is_some_and(|t| now.duration_since(t) >= HOLD_GIVE_UP);
@@ -152,7 +152,7 @@ fn window_json(w: &WindowRecord, held_ms: u64) -> String {
 ///
 /// Written before the window lines, because that is the order it happened in:
 /// the ramp measures the link before a frame exists.
-fn ramp_json(r: &punktfunk_core::abr::RampRecord) -> String {
+fn ramp_json(r: &rubyfunk_core::abr::RampRecord) -> String {
     let mut out = String::new();
     for s in &r.steps {
         out.push_str(&format!(
@@ -242,7 +242,7 @@ pub fn summary(
 
 /// Whether the negotiated session runs at a pin rather than under AIMD.
 fn rate_pinned(requested_kbps: u32, codec: u8) -> bool {
-    requested_kbps > 0 || (requested_kbps == 0 && codec == punktfunk_core::quic::CODEC_PYROWAVE)
+    requested_kbps > 0 || (requested_kbps == 0 && codec == rubyfunk_core::quic::CODEC_PYROWAVE)
 }
 
 /// Stream for `seconds`, recording every closed window, then write the file.
@@ -272,11 +272,11 @@ pub fn run(
     let port: u16 = port.parse().context("--connect port")?;
     let client = NativeClient::connect(ConnectParams {
         bitrate_kbps,
-        video_codecs: punktfunk_core::quic::CODEC_H264
-            | punktfunk_core::quic::CODEC_HEVC
-            | punktfunk_core::quic::CODEC_AV1
-            | if preferred_codec == punktfunk_core::quic::CODEC_PYROWAVE {
-                punktfunk_core::quic::CODEC_PYROWAVE
+        video_codecs: rubyfunk_core::quic::CODEC_H264
+            | rubyfunk_core::quic::CODEC_HEVC
+            | rubyfunk_core::quic::CODEC_AV1
+            | if preferred_codec == rubyfunk_core::quic::CODEC_PYROWAVE {
+                rubyfunk_core::quic::CODEC_PYROWAVE
             } else {
                 0
             },
@@ -365,7 +365,7 @@ pub fn run(
 #[allow(clippy::too_many_arguments)]
 fn write_trajectory(
     mut out: impl Write,
-    ramp: Option<&punktfunk_core::abr::RampRecord>,
+    ramp: Option<&rubyfunk_core::abr::RampRecord>,
     windows: &[WindowRecord],
     held: &[u64],
     profile: &str,
@@ -409,7 +409,7 @@ fn write_trajectory(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use punktfunk_core::abr::{Reason, WindowSample};
+    use rubyfunk_core::abr::{Reason, WindowSample};
 
     fn rec(t_ms: u64, rate_kbps: u32, request_kbps: Option<u32>, dropped: u64) -> WindowRecord {
         let now = std::time::Instant::now();
@@ -430,7 +430,7 @@ mod tests {
                 backlog: false,
                 recovery_kf: 0,
                 starved_kf: 0,
-                activity: punktfunk_core::abr::WindowActivity::Active(30),
+                activity: rubyfunk_core::abr::WindowActivity::Active(30),
                 head: 0,
                 mid: 0,
                 tail: 0,
@@ -534,7 +534,7 @@ mod tests {
         w.reason = Reason::Owd;
         // The three delay columns are distinct numbers here: a recorder that
         // wired the slope into the mean would read the same either way.
-        w.sample.delay = Some(punktfunk_core::abr::DelayTrend {
+        w.sample.delay = Some(rubyfunk_core::abr::DelayTrend {
             samples: 30,
             mean_us: 41_000,
             rise_us: 7_000,
@@ -567,7 +567,7 @@ mod tests {
     #[test]
     fn a_held_picture_thaws_on_a_keyframe_and_not_on_p_frames() {
         const PIC: u32 = 0x1;
-        const IDR: u32 = PIC | (punktfunk_core::packet::FLAG_SOF as u32);
+        const IDR: u32 = PIC | (rubyfunk_core::packet::FLAG_SOF as u32);
         let t0 = std::time::Instant::now();
         let at = |ms: u64| t0 + std::time::Duration::from_millis(ms);
         let mut h = Hold::default();
@@ -616,9 +616,9 @@ mod tests {
     /// Automatic PyroWave negotiation are both pins.
     #[test]
     fn trajectory_names_both_kinds_of_pinned_session() {
-        assert!(!rate_pinned(0, punktfunk_core::quic::CODEC_HEVC));
-        assert!(rate_pinned(20_000, punktfunk_core::quic::CODEC_HEVC));
-        assert!(rate_pinned(0, punktfunk_core::quic::CODEC_PYROWAVE));
+        assert!(!rate_pinned(0, rubyfunk_core::quic::CODEC_HEVC));
+        assert!(rate_pinned(20_000, rubyfunk_core::quic::CODEC_HEVC));
+        assert!(rate_pinned(0, rubyfunk_core::quic::CODEC_PYROWAVE));
     }
 
     #[test]

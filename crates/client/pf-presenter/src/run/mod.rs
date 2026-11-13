@@ -36,11 +36,11 @@ use pf_client_core::session::{self, DecodeFacts, SessionEvent, SessionHandle, Se
 use pf_client_core::trust::{MouseMode, PresentPriority, StatsVerbosity, TouchMode};
 use pf_client_core::video::VulkanDecodeDevice;
 use pf_client_core::video::{DecodeHealth, DecodedFrame, DecodedImage};
-use punktfunk_core::client::{NativeClient, PunktfunkEndReason};
-use punktfunk_core::config::{CompositorPref, Mode};
-use punktfunk_core::hud::{self, HudLine, StatsSnapshot};
-use punktfunk_core::quic::HdrMeta;
-use punktfunk_core::video_fit::{self, VideoFit};
+use rubyfunk_core::client::{NativeClient, RubyFunkEndReason};
+use rubyfunk_core::config::{CompositorPref, Mode};
+use rubyfunk_core::hud::{self, HudLine, StatsSnapshot};
+use rubyfunk_core::quic::HdrMeta;
+use rubyfunk_core::video_fit::{self, VideoFit};
 use sdl3::event::{DisplayEvent, Event, WindowEvent};
 use sdl3::keyboard::Mod;
 use std::ops::ControlFlow;
@@ -86,7 +86,7 @@ pub struct SessionOpts {
     /// is the way back. See [`apply_capture`](shell::apply_capture).
     pub inhibit_shortcuts: bool,
     /// `Latency` = newest-wins arrival pacing; `Smooth { buffer }` = FIFO one frame per latch
-    /// slot. `PUNKTFUNK_PRESENTER=arrival` forces the latency drain without a rebuild.
+    /// slot. `RUBYFUNK_PRESENTER=arrival` forces the latency drain without a rebuild.
     pub present_priority: PresentPriority,
     /// Tear-free present (default on). Off asks for a tearing mode; the mode that took is
     /// named in the stats line.
@@ -110,7 +110,7 @@ pub struct SessionOpts {
     /// Gets the logical size at each Match-window resize-end, for persist.
     pub on_window_size: Box<dyn FnMut(u32, u32)>,
     /// Multiplier on the window pixel size under Match-window. `> 1` supersamples; `1.0` is
-    /// native pixels. See [`punktfunk_core::render_scale`].
+    /// native pixels. See [`rubyfunk_core::render_scale`].
     pub render_scale: f64,
     /// Codec per-axis ceiling for the render-scale clamp (4096 for H.264, else 8192).
     pub render_scale_max_dim: u32,
@@ -191,7 +191,7 @@ pub enum Outcome {
         msg: String,
         trust_rejected: bool,
         /// The host's typed refusal, when it answered with one.
-        refused: Option<punktfunk_core::reject::RejectReason>,
+        refused: Option<rubyfunk_core::reject::RejectReason>,
     },
 }
 
@@ -660,11 +660,11 @@ mod tests {
         // Survives the even-floor `validate_dimensions` forces (1707×1067 lost its odd
         // pixel and became 1706×1066).
         assert_eq!(
-            punktfunk_core::render_scale::apply(m.width, m.height, 1.0, 8192),
+            rubyfunk_core::render_scale::apply(m.width, m.height, 1.0, 8192),
             (2560, 1600)
         );
         assert_eq!(
-            punktfunk_core::render_scale::apply(1707, 1067, 1.0, 8192),
+            rubyfunk_core::render_scale::apply(1707, 1067, 1.0, 8192),
             (1706, 1066),
             "the pre-fix mode, kept here so the regression is legible"
         );

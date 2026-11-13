@@ -179,7 +179,7 @@ pub struct OpenParams {
     /// Backends whose fast path can't blend (Vulkan EFC) key off it.
     pub cursor_blend: bool,
     /// H.264/HEVC slices per frame the client takes. 1 = single-slice (some TVs wedge on
-    /// multi-slice AUs). Only NVENC slices; `PUNKTFUNK_NVENC_SLICES` overrides.
+    /// multi-slice AUs). Only NVENC slices; `RUBYFUNK_NVENC_SLICES` overrides.
     pub slices: u32,
     /// The range the session advertised: every conversion this encoder runs writes it and the
     /// bitstream signals it. `false` is studio.

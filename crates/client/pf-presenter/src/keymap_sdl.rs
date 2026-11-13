@@ -1,4 +1,4 @@
-//! SDL scancodes / mouse buttons → the punktfunk input wire contract.
+//! SDL scancodes / mouse buttons → the rubyfunk input wire contract.
 //!
 //! Same Windows VK codes as `pf_client_core::keymap` (GameStream wire). Keyed on
 //! SDL scancodes, not evdev: SDL maps the platform keycode onto its USB-HID

@@ -2,7 +2,7 @@
 
 Existing, unchanged:
 
-- **Name:** Punktfunk
+- **Name:** RubyFunk
 - **Subtitle (DE):** Schnell, lokal & offen.
 
 Only the Promotional Text is new here. It is the one field that can be changed **without** a new

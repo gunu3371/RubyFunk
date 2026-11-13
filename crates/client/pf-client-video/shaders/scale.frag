@@ -1,4 +1,4 @@
-// One axis of the video scale (punktfunk_core::video_fit's filter ladder). Two passes:
+// One axis of the video scale (rubyfunk_core::video_fit's filter ladder). Two passes:
 // x from the frame into an intermediate, then y into the destination rect. The other
 // axis passes through texel for texel.
 //

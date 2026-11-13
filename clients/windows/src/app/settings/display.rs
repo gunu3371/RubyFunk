@@ -11,11 +11,11 @@ use windows_reactor::*;
 
 /// Sizes by family; the Resolution combo lists one family at a time behind the Aspect combo.
 /// `(0, 0)` = the native size of the display the window is on, resolved at connect.
-use punktfunk_core::resolutions::{aspect_of, nearest, ASPECTS};
+use rubyfunk_core::resolutions::{aspect_of, nearest, ASPECTS};
 /// `0` = the display's native refresh, resolved at connect.
 const REFRESH: &[u32] = &[0, 30, 60, 90, 120, 144, 165, 240];
 /// Render-scale multipliers. `1.0` = Native; applied at connect and each match-window resize.
-use punktfunk_core::render_scale::PRESETS as RENDER_SCALES;
+use rubyfunk_core::render_scale::PRESETS as RENDER_SCALES;
 
 /// A compact label for a render-scale multiplier: "Native" / "1.5×" / "2× (supersample)".
 fn render_scale_label(scale: f64) -> String {
@@ -172,7 +172,7 @@ pub(super) fn display_section(cx: &Cx) -> Vec<View> {
                         } else {
                             (s.width, typed)
                         };
-                        (s.width, s.height) = punktfunk_core::resolutions::custom(w, h, &s.codec);
+                        (s.width, s.height) = rubyfunk_core::resolutions::custom(w, h, &s.codec);
                         s.match_window = false;
                     },
                 );
@@ -182,11 +182,11 @@ pub(super) fn display_section(cx: &Cx) -> Vec<View> {
         vstack((
             View::from(res_combo),
             hstack((
-                size_box(s.width, punktfunk_core::resolutions::MIN_WIDTH, true)
+                size_box(s.width, rubyfunk_core::resolutions::MIN_WIDTH, true)
                     .header("Width")
                     .width(120.0),
                 text("\u{00D7}").vertical_alignment(VerticalAlignment::Bottom),
-                size_box(s.height, punktfunk_core::resolutions::MIN_HEIGHT, false)
+                size_box(s.height, rubyfunk_core::resolutions::MIN_HEIGHT, false)
                     .header("Height")
                     .width(120.0),
             ))
@@ -216,7 +216,7 @@ pub(super) fn display_section(cx: &Cx) -> Vec<View> {
     });
     // The stops, then Custom…, which shows a percent box. A scale that is no stop (typed
     // here or on another client) is Custom whatever the flag says.
-    let scale_stop = punktfunk_core::render_scale::preset_index(s.render_scale);
+    let scale_stop = rubyfunk_core::render_scale::preset_index(s.render_scale);
     let custom_scale_i = RENDER_SCALES.len();
     let custom_scale = cx.custom_scale || scale_stop.is_none();
     let scale_names: Vec<String> = RENDER_SCALES
@@ -248,7 +248,7 @@ pub(super) fn display_section(cx: &Cx) -> Vec<View> {
     let scale_control: View = if custom_scale {
         let (ctx, scope) = (ctx.clone(), scope.to_string());
         let (set_rev, set_status) = (set_rev.clone(), set_status.clone());
-        let percent = punktfunk_core::render_scale::percent(s.render_scale);
+        let percent = rubyfunk_core::render_scale::percent(s.render_scale);
         vstack((
             View::from(scale_combo),
             NumberBox::new()
@@ -270,7 +270,7 @@ pub(super) fn display_section(cx: &Cx) -> Vec<View> {
                         &set_status,
                         |s| {
                             let typed = v.clamp(1.0, 400.0) as u32;
-                            s.render_scale = punktfunk_core::render_scale::from_percent(typed);
+                            s.render_scale = rubyfunk_core::render_scale::from_percent(typed);
                         },
                     );
                 }),
@@ -347,7 +347,7 @@ pub(super) fn display_section(cx: &Cx) -> Vec<View> {
     let pyrowave = s.codec == "pyrowave";
     let (quality_caption, quality_warning) = {
         let probes = ctx.probes.lock().unwrap();
-        let native = probes.native.unwrap_or(punktfunk_core::Mode {
+        let native = probes.native.unwrap_or(rubyfunk_core::Mode {
             width: 1920,
             height: 1080,
             refresh_hz: 60,
@@ -355,7 +355,7 @@ pub(super) fn display_section(cx: &Cx) -> Vec<View> {
         s.pyrowave_quality_lines(native, probes.link)
     };
     let quality_control = {
-        use punktfunk_core::pyrowave::{BPP_FLOOR, BPP_MAX};
+        use rubyfunk_core::pyrowave::{BPP_FLOOR, BPP_MAX};
         let (ctx, scope) = (ctx.clone(), scope.to_string());
         let (set_rev, set_status) = (set_rev.clone(), set_status.clone());
         let slider = Slider::new()

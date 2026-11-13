@@ -266,15 +266,15 @@ pub(crate) fn fake_home() {
     HOME.get_or_init(|| {
         let dir = std::env::temp_dir().join(format!("pf-settings-test-{}", std::process::id()));
         let cfg = if cfg!(windows) {
-            dir.join("punktfunk")
+            dir.join("rubyfunk")
         } else {
-            dir.join(".config/punktfunk")
+            dir.join(".config/rubyfunk")
         };
         std::fs::create_dir_all(&cfg).unwrap();
         // SAFETY: runs at most once, inside `get_or_init` — concurrent `fake_home`
         // callers block until it returns, and nothing else in this binary mutates
         // this variable.
-        unsafe { std::env::set_var("PUNKTFUNK_CONFIG_DIR", &cfg) };
+        unsafe { std::env::set_var("RUBYFUNK_CONFIG_DIR", &cfg) };
         dir
     });
 }
@@ -1924,24 +1924,24 @@ fn palette_row_names_the_pick_and_opens_the_cards() {
     let mut settings = Settings::default();
     let library = crate::library::LibraryShared::default();
     let mut ctx = Ctx::test(&mut settings, &library);
-    assert_eq!(ctx.settings.ui_palette, "violet", "the brand default ships");
+    assert_eq!(ctx.settings.ui_palette, "ruby", "the brand default ships");
     assert_eq!(
         row_spec(RowId::Palette, &ctx, &[], &Default::default())
             .value
             .as_deref(),
-        Some("Violet")
+        Some("Ruby")
     );
     assert!(
         !adjust(RowId::Palette, 1, true, &mut ctx),
         "a button, not a stepper"
     );
-    assert_eq!(ctx.settings.ui_palette, "violet");
+    assert_eq!(ctx.settings.ui_palette, "ruby");
     ctx.settings.ui_palette = "chartreuse".into();
     assert_eq!(
         row_spec(RowId::Palette, &ctx, &[], &Default::default())
             .value
             .as_deref(),
-        Some("Violet"),
+        Some("Ruby"),
         "an unknown palette reads as the default it actually draws"
     );
     // Confirm on the row pushes the picker, opened on the palette in force.

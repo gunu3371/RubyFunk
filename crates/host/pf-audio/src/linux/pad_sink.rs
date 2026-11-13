@@ -16,7 +16,7 @@
 //! election. Do not set `api.alsa.split.position` (WirePlumber's split trigger)
 //! or `api.alsa.path` (wine's raw-ALSA leg needs a real card; we have none).
 //!
-//! Env: `PUNKTFUNK_PAD_SINK_NAME` / `_DESC` / `_SPLIT_NAME` / `_PARENT_CLASS`.
+//! Env: `RUBYFUNK_PAD_SINK_NAME` / `_DESC` / `_SPLIT_NAME` / `_PARENT_CLASS`.
 //! Channel map: [`PadNode::channel_map`].
 
 use super::pw_setup::{f32_format_pod, pw_connect};
@@ -31,10 +31,10 @@ struct Terminate;
 /// Hardware quad every node mixes onto.
 const PAD_CHANNELS: u32 = 4;
 
-/// How many pads get a sink (`PUNKTFUNK_PAD_AUDIO_SLOTS`). Default 4: a PipeWire
+/// How many pads get a sink (`RUBYFUNK_PAD_AUDIO_SLOTS`). Default 4: a PipeWire
 /// stream node is cheap; the Windows mint defaults to 1.
 pub fn pad_audio_slots() -> u8 {
-    std::env::var("PUNKTFUNK_PAD_AUDIO_SLOTS")
+    std::env::var("RUBYFUNK_PAD_AUDIO_SLOTS")
         .ok()
         .and_then(|s| s.parse::<u8>().ok())
         .unwrap_or(4)
@@ -106,12 +106,12 @@ struct PadSinkIdentity {
 /// node as `pipewire:NODE=<name>` with `aux_channels=1`. The key must name the
 /// hidden 4-ch parent: four channels at the public 1-ch `Speaker__sink` lose
 /// the coil pair. The parent's own copy is self-referential, as on hardware.
-/// `PUNKTFUNK_PAD_SINK_SPLIT_NAME`: `0`/`false`/`off` drops the key (GE takes
+/// `RUBYFUNK_PAD_SINK_SPLIT_NAME`: `0`/`false`/`off` drops the key (GE takes
 /// Pulse, whose AUX0..AUX3 map already matches); any other value overrides.
 fn split_target(parent_name: &str) -> String {
     resolve_split_target(
         parent_name,
-        std::env::var("PUNKTFUNK_PAD_SINK_SPLIT_NAME").ok(),
+        std::env::var("RUBYFUNK_PAD_SINK_SPLIT_NAME").ok(),
     )
 }
 
@@ -156,21 +156,21 @@ impl PadSinkIdentity {
         // `…Speaker__sink` is load-bearing: GE's `is_dualsense_speaker_sink()` is
         // a substring test. `SpeakerHaptic__sink` must not contain it (the
         // `Haptic` infix is what keeps the mono stream off the quad).
-        let speaker_name = match std::env::var("PUNKTFUNK_PAD_SINK_NAME") {
+        let speaker_name = match std::env::var("RUBYFUNK_PAD_SINK_NAME") {
             Ok(t) if !t.trim().is_empty() => expand(&t, pad, &mac_bare),
             _ => format!("alsa_output.usb-{serial}-{card_index}.HiFi__Speaker__sink"),
         };
         let haptic_name =
             format!("alsa_output.usb-{serial}-{card_index}.HiFi__SpeakerHaptic__sink");
-        let parent_name = format!("alsa_output.hw_punktfunkpad{pad}_0");
-        let description = match std::env::var("PUNKTFUNK_PAD_SINK_DESC") {
+        let parent_name = format!("alsa_output.hw_rubyfunkpad{pad}_0");
+        let description = match std::env::var("RUBYFUNK_PAD_SINK_DESC") {
             Ok(t) if !t.trim().is_empty() => expand(&t, pad, &mac),
             _ => "Wireless Controller".to_string(),
         };
         let split_name = split_target(&parent_name);
         PadSinkIdentity {
             long_card_name: format!(
-                "Sony Interactive Entertainment {card_name} at usb-punktfunk-pad{pad}, full speed"
+                "Sony Interactive Entertainment {card_name} at usb-rubyfunk-pad{pad}, full speed"
             ),
             speaker_name,
             haptic_name,
@@ -327,7 +327,7 @@ impl PadSinkCapturer {
         // A missing PipeWire fails `open`; the caller owns backoff. The thread keeps no
         // handle: it exits on Terminate.
         crate::ready::spawn_ready(
-            &format!("punktfunk-pw-pad{pad}"),
+            &format!("rubyfunk-pw-pad{pad}"),
             Duration::from_secs(5),
             move |ready| {
                 if let Err(e) = pad_sink_thread(tx, quit_rx, identity, ready) {
@@ -540,9 +540,9 @@ fn pad_sink_thread(
         };
 
         // Hidden AUX parent (`Audio/Sink/Internal`): off pactl/pulse lists,
-        // still openable by name. `PUNKTFUNK_PAD_SINK_PARENT_CLASS` flips it if
+        // still openable by name. `RUBYFUNK_PAD_SINK_PARENT_CLASS` flips it if
         // a session manager refuses Internal clients.
-        let parent_class = std::env::var("PUNKTFUNK_PAD_SINK_PARENT_CLASS")
+        let parent_class = std::env::var("RUBYFUNK_PAD_SINK_PARENT_CLASS")
             .ok()
             .filter(|s| !s.trim().is_empty())
             .unwrap_or_else(|| "Audio/Sink/Internal".to_string());
@@ -557,7 +557,7 @@ fn pad_sink_thread(
             *pw::keys::NODE_NICK,
             "Internal Mono Speaker + Haptic Feedback",
         );
-        let parent = pw::stream::StreamBox::new(&core, "punktfunk-pad-audio", parent_props)
+        let parent = pw::stream::StreamBox::new(&core, "rubyfunk-pad-audio", parent_props)
             .context("pw pad-sink parent Stream")?;
         let _parent_listener = parent
             .add_local_listener_with_user_data(PadUd {
@@ -602,7 +602,7 @@ fn pad_sink_thread(
             *pw::keys::NODE_NICK,
             "Internal Mono Speaker + Haptic Feedback",
         );
-        let haptic = pw::stream::StreamBox::new(&core, "punktfunk-pad-audio", haptic_props)
+        let haptic = pw::stream::StreamBox::new(&core, "rubyfunk-pad-audio", haptic_props)
             .context("pw pad-sink haptic Stream")?;
         let _haptic_listener = haptic
             .add_local_listener_with_user_data(PadUd {
@@ -617,7 +617,7 @@ fn pad_sink_thread(
         speaker_props.insert("device.profile.name", "HiFi: Speaker: sink");
         speaker_props.insert("device.profile.description", "Internal Mono Speaker");
         speaker_props.insert(*pw::keys::NODE_NICK, "Internal Mono Speaker");
-        let speaker = pw::stream::StreamBox::new(&core, "punktfunk-pad-audio", speaker_props)
+        let speaker = pw::stream::StreamBox::new(&core, "rubyfunk-pad-audio", speaker_props)
             .context("pw pad-sink speaker Stream")?;
         let _speaker_listener = speaker
             .add_local_listener_with_user_data(PadUd {

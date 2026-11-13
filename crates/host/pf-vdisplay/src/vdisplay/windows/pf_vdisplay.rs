@@ -1,4 +1,4 @@
-//! Windows virtual-display backend for **pf-vdisplay**, punktfunk's IddCx Indirect Display Driver.
+//! Windows virtual-display backend for **pf-vdisplay**, rubyfunk's IddCx Indirect Display Driver.
 //!
 //! [`create`](VirtualDisplay::create) adds a virtual monitor at the client's `WxH@Hz` (mode baked
 //! into the ADD IOCTL; no EDID seeding), starts the watchdog ping, and the returned
@@ -136,8 +136,8 @@ enum AdapterCycle {
 /// reads `OK` after a refused disable. 3010 = reboot.
 const CYCLE_PS: &str = "$ErrorActionPreference='SilentlyContinue'; \
         $all = @(); if ($pin) { $all = @(Get-PnpDevice -InstanceId $pin | Where-Object { $_ }) }; \
-        if ($all.Count -eq 0 -and $seat) { $all = @(Get-PnpDevice -Class Display | Where-Object { $_.InstanceId -like ('SWD\\REMOTEDISPLAYENUM\\*' + $seat) -and $_.FriendlyName -match 'punktfunk Virtual Display' }) } \
-        elseif ($all.Count -eq 0) { $all = @(Get-PnpDevice -Class Display | Where-Object { $_.FriendlyName -match 'punktfunk Virtual Display' -and $_.InstanceId -notlike 'SWD\\REMOTEDISPLAYENUM\\*' }) }; \
+        if ($all.Count -eq 0 -and $seat) { $all = @(Get-PnpDevice -Class Display | Where-Object { $_.InstanceId -like ('SWD\\REMOTEDISPLAYENUM\\*' + $seat) -and $_.FriendlyName -match 'rubyfunk Virtual Display' }) } \
+        elseif ($all.Count -eq 0) { $all = @(Get-PnpDevice -Class Display | Where-Object { $_.FriendlyName -match 'rubyfunk Virtual Display' -and $_.InstanceId -notlike 'SWD\\REMOTEDISPLAYENUM\\*' }) }; \
         if ($all.Count -eq 0) { Write-Output 'ABSENT'; exit }; \
         $live = @($all | Where-Object { $_.Present -or $_.Status -ne 'Unknown' } | Sort-Object { $_.Status -ne 'OK' }); \
         if ($live.Count -eq 0) { Write-Output ('REFUSED only phantom (not-present) adapter devnodes remain (' + $all.Count + ') - the device node itself is gone and no reload can revive it; reinstalling the host re-creates it'); exit }; \
@@ -1295,7 +1295,7 @@ fn wait_for_interface(
                 // No adapter at all — waiting cannot conjure a driver.
                 AdapterCycle::NotInstalled => {
                     let e = Err(probe.into_error()).context(
-                        "no punktfunk virtual-display adapter devnode exists — the driver is not \
+                        "no rubyfunk virtual-display adapter devnode exists — the driver is not \
                          installed",
                     );
                     return (e, reloaded);
@@ -1798,7 +1798,7 @@ mod tests {
             Ok(v) => v,
             Err(_) => panic!(
                 "{what} did not finish within {budget:?} — failing rather than hanging, so the \
-                 harness can exit and the driver can reap. Check for a leaked punktfunk monitor \
+                 harness can exit and the driver can reap. Check for a leaked rubyfunk monitor \
                  before the next run."
             ),
         }
@@ -1820,8 +1820,8 @@ mod tests {
         // has no subscriber.
         init_test_tracing();
         assert!(
-            pf_host_config::env_on("PUNKTFUNK_NO_ISOLATE") != Some(true),
-            "PUNKTFUNK_NO_ISOLATE forces Topology::Extend — this case needs Exclusive"
+            pf_host_config::env_on("RUBYFUNK_NO_ISOLATE") != Some(true),
+            "RUBYFUNK_NO_ISOLATE forces Topology::Extend — this case needs Exclusive"
         );
         let _topology = ExclusiveTopology::force();
         let physicals_before = active_physicals();

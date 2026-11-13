@@ -2,7 +2,7 @@
 //! time the seat's session is up. [`crate::steam`] says why a seat needs its own.
 //!
 //! Every usual way of opening Steam on a seat starts that copy under the seat's IPC name. The
-//! box's shared Desktop and Start menu shortcuts go through `punktfunk-tray --steam`, which reads
+//! box's shared Desktop and Start menu shortcuts go through `rubyfunk-tray --steam`, which reads
 //! the seat's `SeatSteam` key; the seat's `steam://` handler and autostart line name the copy.
 //! The seat can read those keys but not change them. Steam started any other way is the box's,
 //! whose start under the default name closes the Steam already running.
@@ -38,12 +38,12 @@ use winreg::enums::{HKEY_LOCAL_MACHINE, HKEY_USERS, KEY_ALL_ACCESS, KEY_READ, KE
 use winreg::RegKey;
 
 /// Marks the `steam://` handler this module wrote, under the seat's classes key.
-const HANDLER_MARKER: &str = "PunktfunkSeat";
-/// The seat's copy and IPC name for `punktfunk-tray --steam`, under the seat's own hive.
-const SEAT_STEAM_KEY: &str = r"Software\Punktfunk\SeatSteam";
+const HANDLER_MARKER: &str = "RubyFunkSeat";
+/// The seat's copy and IPC name for `rubyfunk-tray --steam`, under the seat's own hive.
+const SEAT_STEAM_KEY: &str = r"Software\RubyFunk\SeatSteam";
 /// The Seats key value keeping what the box's shared Steam shortcuts pointed at.
 const KEPT_LINKS: &str = "SteamLinks";
-const TRAY_EXE: &str = "punktfunk-tray.exe";
+const TRAY_EXE: &str = "rubyfunk-tray.exe";
 
 /// Accounts a copy is running for, so a seat restarting mid-copy doesn't start a second.
 static COPYING: Mutex<Option<HashSet<String>>> = Mutex::new(None);
@@ -331,8 +331,8 @@ fn ensure_launchers(account: &str, seat_id: &str, exe: &Path) {
     }
 }
 
-/// `HKU\<sid>\Software\Punktfunk\SeatSteam`: the copy and its IPC name, which
-/// `punktfunk-tray --steam` starts when the seat opens one of the box's Steam shortcuts.
+/// `HKU\<sid>\Software\RubyFunk\SeatSteam`: the copy and its IPC name, which
+/// `rubyfunk-tray --steam` starts when the seat opens one of the box's Steam shortcuts.
 fn seat_steam_key(sid: &str, exe: &str, ipc: &str) -> std::io::Result<()> {
     let users = RegKey::predef(HKEY_USERS);
     let path = format!(r"{sid}\{SEAT_STEAM_KEY}");
@@ -345,7 +345,7 @@ fn seat_steam_key(sid: &str, exe: &str, ipc: &str) -> std::io::Result<()> {
         Err(error) if error.kind() != std::io::ErrorKind::NotFound => return Err(error),
         _ => {}
     }
-    users.create_subkey(format!(r"{sid}\Software\Punktfunk"))?;
+    users.create_subkey(format!(r"{sid}\Software\RubyFunk"))?;
     create_read_only_key(&path, sid)?;
     let key = users.open_subkey_with_flags(&path, KEY_ALL_ACCESS)?;
     key.set_value("Exe", &exe)?;
@@ -476,7 +476,7 @@ struct Link {
     icon: (String, i32),
 }
 
-/// Point the box's shared Steam shortcuts at `punktfunk-tray --steam <their steam.exe>`, which
+/// Point the box's shared Steam shortcuts at `rubyfunk-tray --steam <their steam.exe>`, which
 /// starts a seat's own copy on a seat and the box's Steam everywhere else. What each pointed at
 /// is kept under the Seats key for [`unwrap_box_shortcuts`]. `temp` is a SYSTEM-only folder.
 pub(super) fn wrap_box_shortcuts(host_path: &Path, temp: &Path) {

@@ -11,23 +11,23 @@ pub(super) static SPAWN_SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::A
 /// not clobber each other's `stream available on node ID:` line, and `/tmp` is world-writable.
 pub(super) fn spawn_log_path(inst: u64) -> std::path::PathBuf {
     let base = crate::session::runtime_dir();
-    std::path::Path::new(&base).join(format!("punktfunk-gamescope-{inst}.log"))
+    std::path::Path::new(&base).join(format!("rubyfunk-gamescope-{inst}.log"))
 }
 
 /// This spawn's runtime dir for a nested Steam ([`steam_runtime_dir_script`]), beside its log.
 pub(super) fn steam_runtime_dir(inst: u64) -> std::path::PathBuf {
     let base = crate::session::runtime_dir();
-    std::path::Path::new(&base).join(format!("punktfunk-steam-{inst}"))
+    std::path::Path::new(&base).join(format!("rubyfunk-steam-{inst}"))
 }
 
-/// Nested refresh: client's rate, capped by `PUNKTFUNK_MAX_FPS` (off by default). This is the
+/// Nested refresh: client's rate, capped by `RUBYFUNK_MAX_FPS` (off by default). This is the
 /// game's clamp, not the session — encode still repeats the held frame at the client's rate.
 pub(super) fn game_hz(session_hz: u32) -> u32 {
     pf_host_config::config().game_fps(session_hz).max(1)
 }
 
 /// Add the compositor-side arguments shared by every bare gamescope spawn. `steam_mode` belongs
-/// before the `--` terminator; [`PUNKTFUNK_GAMESCOPE_APP`](spawn()) configures the nested command
+/// before the `--` terminator; [`RUBYFUNK_GAMESCOPE_APP`](spawn()) configures the nested command
 /// after it and therefore cannot enable gamescope's Steam integration itself.
 ///
 /// `-r` is the rate the GAME sees and is clamped to, which is why the frame limiter lives here
@@ -105,7 +105,7 @@ fn cursor_args() -> Vec<String> {
 
 /// Paint-on-commit + `--framerate-limit` at the same rate as `-r`. The two travel together: VRR
 /// stops pacing to the refresh grid, so a FIFO game would otherwise run unbounded. Gated on the
-/// probe so argv means what it says. `PUNKTFUNK_GAMESCOPE_VRR=0` opts out.
+/// probe so argv means what it says. `RUBYFUNK_GAMESCOPE_VRR=0` opts out.
 fn adaptive_sync_args(game_hz: u32) -> Vec<String> {
     if !pf_host_config::config().gamescope_vrr || !gamescope_paints_on_commit() {
         return Vec::new();
@@ -122,9 +122,9 @@ pub(super) fn game_cap(game_hz: u32) -> String {
     if !adaptive_sync_args(game_hz).is_empty() {
         format!("{game_hz} fps")
     } else if !pf_host_config::config().gamescope_vrr {
-        "off (PUNKTFUNK_GAMESCOPE_VRR=0)".to_string()
+        "off (RUBYFUNK_GAMESCOPE_VRR=0)".to_string()
     } else {
-        "off (needs punktfunk-gamescope +pfhdr10)".to_string()
+        "off (needs rubyfunk-gamescope +pfhdr10)".to_string()
     }
 }
 
@@ -146,7 +146,7 @@ fn xkb_env() -> Vec<(&'static str, String)> {
         tracing::warn!(
             layout = %resolved.names.describe(),
             source = %resolved.source,
-            "gamescope session: this build ignores XKB_DEFAULT_* (needs punktfunk-gamescope \
+            "gamescope session: this build ignores XKB_DEFAULT_* (needs rubyfunk-gamescope \
              +pfhdr8) — the session will type US characters whatever the box is configured for"
         );
     }
@@ -211,7 +211,7 @@ pub(super) fn resolved_spawn_app(cmd: Option<&str>) -> Option<String> {
         .filter(|s| !s.trim().is_empty())
         // Read the env fallback under the shared env lock so it can't race a concurrent session's
         // `set_var` of the same key.
-        .or_else(|| crate::with_env_lock(|| std::env::var("PUNKTFUNK_GAMESCOPE_APP").ok()))
+        .or_else(|| crate::with_env_lock(|| std::env::var("RUBYFUNK_GAMESCOPE_APP").ok()))
         .filter(|s| !s.trim().is_empty())
 }
 
@@ -270,7 +270,7 @@ pub(super) fn spawn(
             hdr,
             "gamescope: this box's VkLayer_FROG_gamescope_wsi was built for a different gamescope \
              than the one we run, so it is disabled for this session and no nested game can get \
-             an HDR10 swapchain. The punktfunk-gamescope package ships a matching layer."
+             an HDR10 swapchain. The rubyfunk-gamescope package ships a matching layer."
         );
     }
     let mut nested_env = wsi.env(hdr);
@@ -368,7 +368,7 @@ fn cap_log(log: &std::path::Path) {
 /// [`cap_log`] every [`LOG_CAP_POLL`] until the log is gone: [`GamescopeProc`]'s drop removes it.
 fn cap_log_while_it_exists(log: std::path::PathBuf) {
     let watch = std::thread::Builder::new()
-        .name("punktfunk-gamescope-log".into())
+        .name("rubyfunk-gamescope-log".into())
         .spawn(move || {
             while log.exists() {
                 cap_log(&log);
@@ -429,7 +429,7 @@ fn steam_runtime_dir_script(dir: &std::path::Path) -> String {
          if [ -d \"$real\" ] && mkdir -m 0700 \"$rt\"; then \
          mkdir -p \"$real/.flatpak\" \"$real/app\"; \
          for e in \"$real\"/* \"$real\"/.[!.]*; do n=${{e##*/}}; \
-         case $n in wayland-*|.dbus-proxy|punktfunk-steam-*) continue;; esac; \
+         case $n in wayland-*|.dbus-proxy|rubyfunk-steam-*) continue;; esac; \
          if [ -e \"$e\" ] || [ -L \"$e\" ]; then ln -s \"$e\" \"$rt/$n\"; fi; done; \
          for i in 0 1 2 3 4 5 6 7 8 9; do l=\"$rt/discord-ipc-$i\"; \
          [ -e \"$l\" ] || [ -L \"$l\" ] || ln -s \"$real/discord-ipc-$i\" \"$l\"; done; \
@@ -530,12 +530,12 @@ mod tests {
     /// wrapper must still find a splash binary to exec.
     #[test]
     fn the_splash_exe_survives_an_upgrade_under_the_running_host() {
-        let gone = std::path::PathBuf::from("/usr/bin/punktfunk-host (deleted)");
+        let gone = std::path::PathBuf::from("/usr/bin/rubyfunk-host (deleted)");
         assert_eq!(
             exe_for_children(gone),
-            std::path::PathBuf::from("/usr/bin/punktfunk-host")
+            std::path::PathBuf::from("/usr/bin/rubyfunk-host")
         );
-        let live = std::path::PathBuf::from("/usr/bin/punktfunk-host");
+        let live = std::path::PathBuf::from("/usr/bin/rubyfunk-host");
         assert_eq!(exe_for_children(live.clone()), live);
     }
 
@@ -652,10 +652,10 @@ mod tests {
         let wsi = nested_wrapper_script(
             relay,
             false,
-            &[("PUNKTFUNK_GAMESCOPE_WSI", "1".to_string())],
+            &[("RUBYFUNK_GAMESCOPE_WSI", "1".to_string())],
             None,
         );
-        assert!(wsi.contains("exec env 'PUNKTFUNK_GAMESCOPE_WSI=1' sh -c \"$1\""));
+        assert!(wsi.contains("exec env 'RUBYFUNK_GAMESCOPE_WSI=1' sh -c \"$1\""));
         assert_eq!(shell_word("a b'c;$HOME"), "'a b'\"'\"'c;$HOME'");
 
         let env = [("GDK_BACKEND", "x11".to_string())];
@@ -670,13 +670,11 @@ mod tests {
             relay,
             true,
             &env,
-            Some(std::path::Path::new("/run/user/1000/punktfunk-steam-7")),
+            Some(std::path::Path::new("/run/user/1000/rubyfunk-steam-7")),
         );
         let (session, launch) = steam.split_once("shift; ").unwrap();
         assert!(session.ends_with("env 'GDK_BACKEND=x11' \"$1\" gamescope-splash & "));
-        assert!(
-            launch.starts_with("real=$XDG_RUNTIME_DIR; rt='/run/user/1000/punktfunk-steam-7'; ")
-        );
+        assert!(launch.starts_with("real=$XDG_RUNTIME_DIR; rt='/run/user/1000/rubyfunk-steam-7'; "));
         assert!(launch.ends_with(
             "export XDG_RUNTIME_DIR=\"$rt\"; fi; exec env 'GDK_BACKEND=x11' sh -c \"$1\""
         ));
@@ -700,7 +698,7 @@ mod tests {
     fn steam_runtime_dir_hides_wayland_and_links_the_rest() {
         let real = std::env::temp_dir().join(format!("pf-steam-rt-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&real);
-        for d in ["pulse", ".dbus-proxy", "punktfunk-steam-1"] {
+        for d in ["pulse", ".dbus-proxy", "rubyfunk-steam-1"] {
             std::fs::create_dir_all(real.join(d)).unwrap();
         }
         for f in [
@@ -713,7 +711,7 @@ mod tests {
         ] {
             std::fs::write(real.join(f), "").unwrap();
         }
-        let dir = real.join("punktfunk-steam-2");
+        let dir = real.join("rubyfunk-steam-2");
         let run = |runtime: &std::path::Path| {
             let script =
                 nested_wrapper_script(std::path::Path::new("/dev/null"), false, &[], Some(&dir));
@@ -752,7 +750,7 @@ mod tests {
             "wayland-0",
             "wayland-0.lock",
             ".dbus-proxy",
-            "punktfunk-steam-1",
+            "rubyfunk-steam-1",
         ] {
             assert!(!names.contains(hidden), "{hidden} leaked into {names:?}");
         }

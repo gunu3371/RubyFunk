@@ -58,7 +58,7 @@ pub struct Device {
     pub screen: Option<crate::shell::DeviceScreen>,
     /// The mode a Native stream asks for here: the display the window is on, which the
     /// desktop overlay corrects each frame. `None` where nothing has said.
-    pub native_mode: Option<punktfunk_core::Mode>,
+    pub native_mode: Option<rubyfunk_core::Mode>,
     /// The device's own keyboard types into an open field: Steam's on a Steam Deck, tvOS's
     /// on an Apple TV ([`crate::shell::ConsoleOptions::system_keyboard`]).
     pub system_keyboard: bool,
@@ -402,7 +402,7 @@ pub(crate) struct Outbox {
     pub nav: Option<Nav>,
     pub connect: Option<ConnectIntent>,
     /// The password prompt's unlock: `connect` dials with it, past the profile and seat checks.
-    pub unlock: Option<punktfunk_core::quic::v2::msg::ProfileUnlock>,
+    pub unlock: Option<rubyfunk_core::quic::v2::msg::ProfileUnlock>,
     pub cmds: Vec<ConsoleCmd>,
     pub toast: Option<String>,
     /// Clipboard text. Rides the run loop, not the command bus: SDL owns the clipboard.
@@ -440,7 +440,7 @@ impl Outbox {
     }
 }
 
-/// A saved host's `punktfunk://` link from the store (fingerprint + stable id a
+/// A saved host's `rubyfunk://` link from the store (fingerprint + stable id a
 /// screen does not hold). `launch` makes a game's link. `None` if the host has
 /// left the store since the menu opened. The row's pin names the record; an unpinned
 /// row is the placeholder at its address, never a host pinned there.

@@ -1,14 +1,14 @@
-# Builder for the `punktfunk-gamescope` .deb — Debian 13 (trixie).
+# Builder for the `rubyfunk-gamescope` .deb — Debian 13 (trixie).
 #
 # Debian 13 is the oldest apt distro the tree builds on, so one .deb built here installs on Debian 13
 # and Ubuntu 26.04. Ubuntu 24.04 cannot build it: no libxcb-errors-dev, libdisplay-info 0.1 only.
 # Debian 13 is below the vendored wlroots 0.20's floors (wayland 1.24, libdrm 2.4.129, xkbcommon 1.8,
-# pixman 0.46); build-punktfunk-gamescope.sh then links pinned copies into the compositor statically.
+# pixman 0.46); build-rubyfunk-gamescope.sh then links pinned copies into the compositor statically.
 #
-# Rebuilt+pushed by .gitea/workflows/docker.yml (matrix: punktfunk-gamescope-trixie); consumed by
+# Rebuilt+pushed by .gitea/workflows/docker.yml (matrix: rubyfunk-gamescope-trixie); consumed by
 # the `build-publish-gamescope` job in .gitea/workflows/deb.yml. Bootstrap: like rust-ci-noble, the
 # first deb.yml run after this image is added needs the image to already exist — seed it once by
-# hand (docker build -f ci/gamescope-trixie.Dockerfile -t <registry>/punktfunk-gamescope-trixie:latest ci
+# hand (docker build -f ci/gamescope-trixie.Dockerfile -t <registry>/rubyfunk-gamescope-trixie:latest ci
 # && docker push …) before that job can run.
 FROM debian:trixie
 ENV DEBIAN_FRONTEND=noninteractive

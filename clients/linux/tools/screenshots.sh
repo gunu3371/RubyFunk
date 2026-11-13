@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Capture host-free UI screenshots of the native Linux client. Mirrors the iOS harness
-# (clients/apple/tools/screenshots.sh): one app launch per scene (PUNKTFUNK_SHOT_SCENE),
+# (clients/apple/tools/screenshots.sh): one app launch per scene (RUBYFUNK_SHOT_SCENE),
 # the app renders a mock-populated REAL view and — when the binary supports it — CAPTURES
-# ITSELF (PUNKTFUNK_SHOT_OUT: widget snapshot → gsk render → PNG) before printing
+# ITSELF (RUBYFUNK_SHOT_OUT: widget snapshot → gsk render → PNG) before printing
 # `PF_SHOT_READY`. Self-capture needs no Xvfb/ImageMagick and runs under a live Wayland
 # session too; the X11 root-grab path is kept as a fallback for old binaries. No host,
 # GPU, or live stream — only the chrome scenes (the stream page needs a live connector).
 #
-#   cargo build --release -p punktfunk-client-linux
+#   cargo build --release -p rubyfunk-client-linux
 #   bash clients/linux/tools/screenshots.sh            # → clients/linux/screenshots/<scene>.png
 #   bash clients/linux/tools/screenshots.sh hosts pair # a subset
 #
@@ -18,7 +18,7 @@
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)" # clients/linux
-BIN="${BIN:-$here/../../target/release/punktfunk-client}"
+BIN="${BIN:-$here/../../target/release/rubyfunk-client}"
 OUT="${OUT:-$here/screenshots}"
 # X11 fallback only: the client window maps at its 1200x780 default; with no WM under
 # Xvfb it lands at the top-left, so keep the root just larger so the full window (incl.
@@ -30,7 +30,7 @@ SHOT_DISPLAY="${SHOT_DISPLAY:-:99}"
 if [ "$#" -gt 0 ]; then SCENES=("$@"); else SCENES=(hosts settings trust pair addhost shortcuts library); fi
 
 [ -x "$BIN" ] || {
-	echo "client binary not found: $BIN (build it first: cargo build --release -p punktfunk-client-linux)" >&2
+	echo "client binary not found: $BIN (build it first: cargo build --release -p rubyfunk-client-linux)" >&2
 	exit 1
 }
 
@@ -40,8 +40,8 @@ if [ "$#" -gt 0 ]; then SCENES=("$@"); else SCENES=(hosts settings trust pair ad
 # on the first entry renders the most-recent accent bar.
 WORK="$(mktemp -d)"
 export HOME="$WORK"
-mkdir -p "$HOME/.config/punktfunk"
-cat >"$HOME/.config/punktfunk/client-known-hosts.json" <<'JSON'
+mkdir -p "$HOME/.config/rubyfunk"
+cat >"$HOME/.config/rubyfunk/client-known-hosts.json" <<'JSON'
 {
   "hosts": [
     { "name": "Living Room PC", "addr": "192.168.1.42", "port": 9777,
@@ -109,7 +109,7 @@ rc=0
 for scene in "${SCENES[@]}"; do
 	: >"$WORK/log"
 	rm -f "$OUT/$scene.png"
-	PUNKTFUNK_SHOT_SCENE="$scene" PUNKTFUNK_SHOT_OUT="$OUT/$scene.png" \
+	RUBYFUNK_SHOT_SCENE="$scene" RUBYFUNK_SHOT_OUT="$OUT/$scene.png" \
 		"$BIN" >"$WORK/log" 2>&1 &
 	pid=$!
 	ready=0
@@ -134,7 +134,7 @@ for scene in "${SCENES[@]}"; do
 		if [ -f "$OUT/$scene.png" ]; then
 			echo "✓ $scene → $OUT/$scene.png (self-capture)"
 		elif [ "$MODE" = x11 ]; then
-			# Old binary (no PUNKTFUNK_SHOT_OUT support) — grab the X root instead.
+			# Old binary (no RUBYFUNK_SHOT_OUT support) — grab the X root instead.
 			sleep "$SETTLE"
 			if capture_x11 "$OUT/$scene.png"; then
 				echo "✓ $scene → $OUT/$scene.png (x11 grab)"

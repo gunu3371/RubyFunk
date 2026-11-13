@@ -1,14 +1,14 @@
 //! Linux client update check and apply routing.
 //!
-//! Counterpart to `punktfunk-host::update`. Trust — per-channel Ed25519-signed
+//! Counterpart to `rubyfunk-host::update`. Trust — per-channel Ed25519-signed
 //! manifest, validation, "is this newer?" — lives in [`pf_update_check`] so host
 //! and client cannot disagree about who may announce a release.
 //!
-//! This crate is the engine. Decky, GTK About, and `punktfunk-client --check-update`
+//! This crate is the engine. Decky, GTK About, and `rubyfunk-client --check-update`
 //! call it; the plugin cannot verify a signature (unprivileged Python, no crypto).
 //!
 //! Nothing here is privileged. Flatpak updates through flatpak. A packaged client
-//! starts the parameterless `pf-update` oneshot (polkit, group `punktfunk-update`).
+//! starts the parameterless `pf-update` oneshot (polkit, group `rubyfunk-update`).
 //! Everything else returns the command. The helper request carries no version, URL,
 //! or package name — it derives those from root-owned state.
 
@@ -22,18 +22,18 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// The unit the polkit rule scopes to. Its presence is the "helper is installed" probe.
-const HELPER_UNIT: &str = "punktfunk-client-update.service";
-const HELPER_UNIT_PATH: &str = "/usr/lib/systemd/system/punktfunk-client-update.service";
+const HELPER_UNIT: &str = "rubyfunk-client-update.service";
+const HELPER_UNIT_PATH: &str = "/usr/lib/systemd/system/rubyfunk-client-update.service";
 
 /// Outcome of `apply-client`. Separate from the host's record so a dual-product box cannot
 /// read the other run.
-const HELPER_RESULT: &str = "/var/lib/punktfunk/client-update-result.json";
+const HELPER_RESULT: &str = "/var/lib/rubyfunk/client-update-result.json";
 
 /// Pacman full-sysupgrade hatch (root-owned). Shared with the host: one box, one answer.
-const PACMAN_OPTIN_CONF: &str = "/etc/punktfunk/update.conf";
+const PACMAN_OPTIN_CONF: &str = "/etc/rubyfunk/update.conf";
 
-/// Mirrors `packaging/linux/49-punktfunk-client-update.rules`.
-const OPT_IN_GROUP: &str = "punktfunk-update";
+/// Mirrors `packaging/linux/49-rubyfunk-client-update.rules`.
+const OPT_IN_GROUP: &str = "rubyfunk-update";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -50,9 +50,9 @@ pub enum Apply {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Applier {
-    /// The caller runs `flatpak update --user io.unom.punktfunk`.
+    /// The caller runs `flatpak update --user io.github.gunu3371.rubyfunk`.
     Flatpak,
-    /// `punktfunk-client --apply-update` drives the packaged root helper.
+    /// `rubyfunk-client --apply-update` drives the packaged root helper.
     Helper,
     None,
 }
@@ -81,25 +81,25 @@ pub struct Status {
     /// Feed answered, but this channel has no release. Not a malfunction.
     /// Unlike the host's `UpdateStatus`, `error` stays set and `--check-update` exits 1:
     /// an empty channel is not evidence this build is current, and a mistyped
-    /// `PUNKTFUNK_UPDATE_FEED` is indistinguishable from here.
+    /// `RUBYFUNK_UPDATE_FEED` is indistinguishable from here.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub not_published: bool,
 }
 
 /// Operator kill switch for checks. Same env name the host honours.
 pub fn check_disabled() -> bool {
-    crate::env_on("PUNKTFUNK_UPDATE_CHECK") == Some(false)
+    crate::env_on("RUBYFUNK_UPDATE_CHECK") == Some(false)
 }
 
 /// Operator kill switch for apply. Status still reports what is available and the hand command.
 pub fn apply_disabled() -> bool {
-    crate::env_on("PUNKTFUNK_UPDATE_APPLY") == Some(false)
+    crate::env_on("RUBYFUNK_UPDATE_APPLY") == Some(false)
 }
 
 /// Client install kind + channel (marker files are per-[`Product`], not shared with the host).
 ///
 /// `current` is a parameter, not `env!`: only the binary is version-stamped
-/// (`clients/linux/build.rs` / `PUNKTFUNK_BUILD_VERSION`, including canary `~ciN`).
+/// (`clients/linux/build.rs` / `RUBYFUNK_BUILD_VERSION`, including canary `~ciN`).
 /// A library `env!` would report the workspace version.
 pub fn detect_install(current: &str) -> (InstallKind, Channel) {
     detect::classify(&detect::gather(Product::Client, current), Product::Client)
@@ -229,7 +229,7 @@ pub fn check(current: &str) -> Status {
     status.applier = applier;
 
     if check_disabled() {
-        status.error = Some("update checks are disabled (PUNKTFUNK_UPDATE_CHECK=0)".into());
+        status.error = Some("update checks are disabled (RUBYFUNK_UPDATE_CHECK=0)".into());
         return status;
     }
 
@@ -237,7 +237,7 @@ pub fn check(current: &str) -> Status {
         &pf_update_check::feed::feed_base(),
         channel.as_str(),
         &pf_update_check::pinned_keys(),
-        &format!("punktfunk-client/{current} (update-check)"),
+        &format!("rubyfunk-client/{current} (update-check)"),
     ) {
         Ok(m) => m,
         Err(e) => {
@@ -331,7 +331,7 @@ pub fn apply(current: &str) -> ApplyOutcome {
         Applier::Flatpak => {
             return ApplyOutcome::failed(
                 "a flatpak client updates from outside its sandbox — run `flatpak update --user \
-                 io.unom.punktfunk` (the Decky plugin does this for you)",
+                 io.github.gunu3371.rubyfunk` (the Decky plugin does this for you)",
             )
         }
         Applier::None => {

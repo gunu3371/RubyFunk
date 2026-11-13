@@ -11,7 +11,7 @@ edition.workspace = true
 # `manual_is_multiple_of` fires on code the host crate compiles clean).
 rust-version.workspace = true
 license = "MIT OR Apache-2.0"
-description = "punktfunk host Linux zero-copy GPU plumbing: CUDA context/buffers, EGL/Vulkan dmabuf import, and the isolated import worker."
+description = "rubyfunk host Linux zero-copy GPU plumbing: CUDA context/buffers, EGL/Vulkan dmabuf import, and the isolated import worker."
 publish = false
 
 [target.'cfg(target_os = "linux")'.dependencies]

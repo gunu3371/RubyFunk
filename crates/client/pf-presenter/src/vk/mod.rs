@@ -1,5 +1,5 @@
 //! Swapchain presenter: every decode lane writes one device-local [`VIDEO_FORMAT`] image,
-//! then a `vkCmdBlitImage` composite placed by `punktfunk_core::video_fit`.
+//! then a `vkCmdBlitImage` composite placed by `rubyfunk_core::video_fit`.
 //!
 //! CPU frames stage tightly-packed I420 into three R8 images (`CpuPlanes`) and share
 //! the planar CSC pass (`csc.rs`, `csc_rows`) with PyroWave. Linux dmabuf imports NV12
@@ -306,7 +306,7 @@ pub struct Presenter {
     hdr_metadata_d: Option<ash::ext::hdr_metadata::Device>,
     /// Latest ST.2086/CLL metadata (0xCE plane). Pushed while HDR10 is live; until the
     /// first datagram, a generic HDR10 baseline is pushed instead.
-    hdr_meta: Option<punktfunk_core::quic::HdrMeta>,
+    hdr_meta: Option<rubyfunk_core::quic::HdrMeta>,
     /// The intent `present_mode` was picked from, device facts resolved.
     pref: PresentPref,
     present_mode: vk::PresentModeKHR,
@@ -330,7 +330,7 @@ pub struct Presenter {
     /// Exclusive fullscreen, opt-in: the swapchain owns the monitor's flips.
     #[cfg(windows)]
     fse: Option<FullScreenExclusive>,
-    video_fit: punktfunk_core::video_fit::VideoFit,
+    video_fit: rubyfunk_core::video_fit::VideoFit,
     /// Extent, frame size and draw path of the last logged placement.
     placement_logged: Option<(vk::Extent2D, u32, u32, &'static str)>,
     /// Wayland lane that hands a dma-buf to the compositor as the window's own buffer.

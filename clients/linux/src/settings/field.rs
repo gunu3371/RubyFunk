@@ -218,7 +218,7 @@ impl Binder {
         if failed && !self.warned.replace(true) {
             if let Some(d) = self.dialog.upgrade() {
                 d.add_toast(adw::Toast::new(
-                    "Your changes aren\u{2019}t being saved \u{2014} Punktfunk can\u{2019}t \
+                    "Your changes aren\u{2019}t being saved \u{2014} RubyFunk can\u{2019}t \
                      write to its settings folder.",
                 ));
             }
@@ -302,14 +302,14 @@ mod tests {
 
     /// A row writes its own field when it changes, over what another writer saved meanwhile,
     /// and in preset scope it pins the preset and leaves the defaults. Writes the stores, so
-    /// it refuses to run without a scratch `PUNKTFUNK_CONFIG_DIR`. Needs a display.
+    /// it refuses to run without a scratch `RUBYFUNK_CONFIG_DIR`. Needs a display.
     #[test]
     #[ignore = "needs a Wayland/X display"]
     fn a_row_writes_its_field_to_the_layer_in_scope() {
-        let scratch = std::env::var("PUNKTFUNK_CONFIG_DIR").unwrap_or_default();
+        let scratch = std::env::var("RUBYFUNK_CONFIG_DIR").unwrap_or_default();
         assert!(
             !scratch.is_empty(),
-            "set PUNKTFUNK_CONFIG_DIR to a scratch dir"
+            "set RUBYFUNK_CONFIG_DIR to a scratch dir"
         );
         assert!(gtk::init().is_ok() && adw::init().is_ok(), "no display");
         Settings::default().save();

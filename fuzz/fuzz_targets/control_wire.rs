@@ -2,13 +2,13 @@
 //! session key: the scheme sweep that opens a first packet, the lock that reopens it, and
 //! the loss-recovery parsers on what it yields and on raw bytes.
 //!
-//! punktfunk-host is a binary crate, so nothing links it: the std-and-aes-gcm half of its
+//! rubyfunk-host is a binary crate, so nothing links it: the std-and-aes-gcm half of its
 //! control module is included by path. A finding is a panic on the control thread.
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
 
-#[path = "../../crates/host/punktfunk-host/src/gamestream/control_wire.rs"]
+#[path = "../../crates/host/rubyfunk-host/src/gamestream/control_wire.rs"]
 #[allow(dead_code)]
 mod control_wire;
 

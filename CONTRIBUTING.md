@@ -1,4 +1,4 @@
-# Contributing to Punktfunk
+# Contributing to RubyFunk
 
 Thanks for your interest in contributing! Building, testing and sending a change are in the
 [developer docs](https://docs.punktfunk.unom.io/docs/developers). The short version:
@@ -27,7 +27,7 @@ Thanks for your interest in contributing! Building, testing and sending a change
 
 ## Licensing of contributions (inbound = outbound)
 
-Punktfunk is dual-licensed under **MIT OR Apache-2.0**.
+RubyFunk is dual-licensed under **MIT OR Apache-2.0**.
 
 > Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in
 > the work by you, as defined in the Apache-2.0 license, shall be dual licensed as **MIT OR

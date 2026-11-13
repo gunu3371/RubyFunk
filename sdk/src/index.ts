@@ -1,9 +1,9 @@
-// `@punktfunk/host` — the Promise facade, the package's front door (RFC §7): `connect()`,
+// `@rubyfunk/host` — the Promise facade, the package's front door (RFC §7): `connect()`,
 // `await`, `.on()` — a thin veneer over the same core the Effect surface uses (config
 // resolution, one HTTP implementation, one reconnecting SSE source). Effect is the substrate
-// and the power surface (`@punktfunk/host/effect`), never a prerequisite:
+// and the power surface (`@rubyfunk/host/effect`), never a prerequisite:
 //
-//   import { connect } from "@punktfunk/host";
+//   import { connect } from "@rubyfunk/host";
 //
 //   const pf = await connect();
 //   pf.events.on("pairing.pending", async (e) => {
@@ -11,7 +11,7 @@
 //   });
 import type { Effect } from "effect";
 import { type HostApi, makeHostApi } from "./api.js";
-import type { PunktfunkHost } from "./client.js";
+import type { RubyFunkHost } from "./client.js";
 import {
 	type ConnectOptions,
 	type ResolvedConfig,
@@ -59,7 +59,7 @@ interface Listener {
 	cb: (ev: never) => unknown;
 }
 
-export interface PunktfunkEvents {
+export interface RubyFunkEvents {
 	/**
 	 * Subscribe to lifecycle events. `pattern` is an exact kind (`"stream.started"` — the
 	 * callback is typed to it), a `domain.*` prefix, `"*"` (every known event), `"dropped"`
@@ -74,7 +74,7 @@ export interface PunktfunkEvents {
 	on(pattern: SpecialPattern, cb: (ev: HostEvent) => unknown): () => void;
 }
 
-export interface Punktfunk {
+export interface RubyFunk {
 	/** Resolved connection (URL/token/CA). */
 	readonly config: ResolvedConfig;
 	/**
@@ -86,7 +86,7 @@ export interface Punktfunk {
 	/** Untyped escape hatch: one raw `/api/v1` request (`request("GET", "/status")`). */
 	request(method: string, path: string, body?: unknown): Promise<unknown>;
 	/** The lifecycle-event subscription surface. */
-	readonly events: PunktfunkEvents;
+	readonly events: RubyFunkEvents;
 	/** Stop the event stream and release the connection. */
 	close(): void;
 }
@@ -96,7 +96,7 @@ export interface Punktfunk {
  * self-signed identity cert from the environment/host files (zero config on the host box),
  * verifies the credentials with a `/health`-adjacent probe, and returns the client.
  */
-export const connect = async (options?: ConnectOptions): Promise<Punktfunk> => {
+export const connect = async (options?: ConnectOptions): Promise<RubyFunk> => {
 	const cfg = await resolveConfig(options);
 	// Fail fast on bad credentials/URL: one cheap authenticated probe.
 	await httpRequest(cfg, "GET", "/host");
@@ -107,7 +107,7 @@ export const connect = async (options?: ConnectOptions): Promise<Punktfunk> => {
 	let closed = false;
 	const stop = new AbortController();
 
-	const warn = (m: string) => console.warn(`[punktfunk] ${m}`);
+	const warn = (m: string) => console.warn(`[rubyfunk] ${m}`);
 	const dispatch = (pattern: string, ev: unknown) => {
 		for (const l of listeners) {
 			if (l.pattern === pattern || (pattern !== "dropped" && pattern !== "unknown" && (l.pattern === "*" || kindMatches(l.pattern, pattern)))) {
@@ -149,7 +149,7 @@ export const connect = async (options?: ConnectOptions): Promise<Punktfunk> => {
 				startPump();
 				return () => listeners.delete(l);
 			},
-		} as PunktfunkEvents,
+		} as RubyFunkEvents,
 		close() {
 			closed = true;
 			stop.abort();
@@ -162,22 +162,22 @@ export const connect = async (options?: ConnectOptions): Promise<Punktfunk> => {
 
 /**
  * A plugin's `main`: either a plain async function receiving the connected client, or an
- * Effect requiring the `PunktfunkHost` service (`@punktfunk/host/effect`) — the shape that
+ * Effect requiring the `RubyFunkHost` service (`@rubyfunk/host/effect`) — the shape that
  * makes it well-behaved under the managed runner's supervision (structured interruption,
  * scoped finalizers).
  */
 export type PluginMain =
-	| ((pf: Punktfunk) => Promise<unknown> | unknown)
-	| Effect.Effect<unknown, unknown, PunktfunkHost>;
+	| ((pf: RubyFunk) => Promise<unknown> | unknown)
+	| Effect.Effect<unknown, unknown, RubyFunkHost>;
 
 export interface PluginDef {
-	/** Package-convention name (`punktfunk-plugin-*` drops the prefix): kebab-case. */
+	/** Package-convention name (`rubyfunk-plugin-*` drops the prefix): kebab-case. */
 	name: string;
 	main: PluginMain;
 }
 
 /**
- * Declare a plugin (the `punktfunk-plugin-*` convention, RFC §8). In v1 a plugin is a script
+ * Declare a plugin (the `rubyfunk-plugin-*` convention, RFC §8). In v1 a plugin is a script
  * the operator runs; the managed runner (a later, optional package) discovers this default
  * export and supervises `main`.
  */

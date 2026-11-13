@@ -10,7 +10,7 @@ use adw::prelude::*;
 use pf_client_core::settings::GamepadUi;
 use pf_client_core::start::{self, StartIn};
 use pf_client_core::trust::{HudCorner, StatsVerbosity};
-use punktfunk_core::hud::STATS_SCALE_PCTS;
+use rubyfunk_core::hud::STATS_SCALE_PCTS;
 
 pub fn general(b: &mut Build, switcher: adw::PreferencesGroup) {
     let mut p = b.page(Page::General, "preferences-system-symbolic");

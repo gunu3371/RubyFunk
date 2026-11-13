@@ -1,4 +1,4 @@
-# Unified in-tree workspace for punktfunk's all-Rust UMDF drivers, on microsoft/windows-drivers-rs
+# Unified in-tree workspace for rubyfunk's all-Rust UMDF drivers, on microsoft/windows-drivers-rs
 # (crates.io wdk/wdk-sys/wdk-build — NOT the dev-box ../../crates/wdk* path-deps). Part of the
 # Windows-host rewrite (design/windows-host-rewrite.md, M1). pf-vdisplay + the gamepad drivers move here.
 #

@@ -1,5 +1,5 @@
 {
-  "$comment": "2015 Steam Controller byte bookkeeping, hand-written. buttons: a state-report button bit (the 24-bit word at bytes 8..11, SDL controller_constants.h) and the punktfunk wire bit it means (punktfunk_core::input gamepad BTN_*); the host fallback (steam_proto::sc_from_gamepad), Swift Sc1Device and Kotlin Sc1Device replay it. Grips are PADDLE2 (left) and PADDLE1 (right); the right-pad click is TOUCHPAD.",
+  "$comment": "2015 Steam Controller byte bookkeeping, hand-written. buttons: a state-report button bit (the 24-bit word at bytes 8..11, SDL controller_constants.h) and the rubyfunk wire bit it means (rubyfunk_core::input gamepad BTN_*); the host fallback (steam_proto::sc_from_gamepad), Swift Sc1Device and Kotlin Sc1Device replay it. Grips are PADDLE2 (left) and PADDLE1 (right); the right-pad click is TOUCHPAD.",
   "buttons": [
     {"name": "rb", "sc1": 4, "wire": 512},
     {"name": "lb", "sc1": 8, "wire": 256},

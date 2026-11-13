@@ -15,8 +15,8 @@ import {
 	connect,
 	definePlugin,
 	type PluginDef,
-	type Punktfunk,
-} from "@punktfunk/host";
+	type RubyFunk,
+} from "@rubyfunk/host";
 import {
 	Cause,
 	Effect,
@@ -58,7 +58,7 @@ const sleep = (ms: number): Promise<"timeout"> =>
 
 const runWithFacade = async <E, R>(
 	def: PluginKitDef<E, R>,
-	pf: Punktfunk,
+	pf: RubyFunk,
 ): Promise<void> => {
 	const base = Layer.mergeAll(
 		hostClientFromFacade(pf),
@@ -118,7 +118,7 @@ const runWithFacade = async <E, R>(
 export const definePluginKit = <E, R>(def: PluginKitDef<E, R>): PluginDef =>
 	definePlugin({
 		name: def.name,
-		main: (pf: Punktfunk) => runWithFacade(def, pf),
+		main: (pf: RubyFunk) => runWithFacade(def, pf),
 	});
 
 /** Dev/CLI entry: `connect()` a facade ourselves and run the same program. */

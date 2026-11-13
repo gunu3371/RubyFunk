@@ -12,8 +12,8 @@ use jni::errors::LogErrorAndDefault;
 use jni::objects::{JByteBuffer, JObject};
 use jni::sys::{jint, jlong};
 use jni::EnvUnowned;
-use punktfunk_core::error::PunktfunkError;
-use punktfunk_core::quic::HidOutput;
+use rubyfunk_core::error::RubyFunkError;
+use rubyfunk_core::quic::HidOutput;
 use std::time::Duration;
 
 /// Short blocking timeout: long enough not to busy-spin, short enough that the Kotlin poll thread
@@ -33,7 +33,7 @@ const PAD_BITS: u32 = 4;
 /// a comment before; growing `MAX_PADS` past 16 would have silently aliased pad 16 onto pad 0
 /// rather than failing the build.
 const _: () = assert!(
-    punktfunk_core::input::MAX_PADS <= 1usize << PAD_BITS,
+    rubyfunk_core::input::MAX_PADS <= 1usize << PAD_BITS,
     "MAX_PADS no longer fits the 4-bit pad field in the packed rumble long"
 );
 
@@ -71,7 +71,7 @@ const TAG_MIC_LED: u8 = 0x07;
 /// back to the controller holding that wire `pad` index (multi-pad rumble). Run from a Kotlin
 /// poll thread.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeNextRumble(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeNextRumble(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -91,7 +91,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeNextRumble(
             // Dropping it here rather than in Kotlin keeps the rule next to the reason.
             Ok(cmd) if crate::pad_audio::haptics_owns_coils((cmd.pad & 0xF) as u8) => -1,
             Ok(cmd) => pack_rumble(cmd.pad, cmd.low, cmd.high, cmd.backstop_ms),
-            Err(PunktfunkError::Closed) => idle_pull(-1),
+            Err(RubyFunkError::Closed) => idle_pull(-1),
             Err(_) => -1, // timeout — Kotlin loops on its running flag
         }
     })
@@ -108,7 +108,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeNextRumble(
 /// Returns the byte count written, or `-1` on timeout / session closed / an event with no
 /// Android replay (dropped). A buffer too small for the event is logged.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeNextHidout(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeNextHidout(
     mut env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -128,7 +128,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeNextHidout(
             };
             let ev = match h.client.next_hidout(PULL_TIMEOUT) {
                 Ok(ev) => ev,
-                Err(PunktfunkError::Closed) => return Ok(idle_pull(-1)),
+                Err(RubyFunkError::Closed) => return Ok(idle_pull(-1)),
                 Err(_) => return Ok(-1), // timeout — Kotlin loops
             };
             // `[pad][tag][head…][tail…]` — the two slices spare a concat per event.
@@ -178,7 +178,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeNextHidout(
 #[cfg(test)]
 mod pack_rumble_tests {
     use super::*;
-    use punktfunk_core::input::MAX_PADS;
+    use rubyfunk_core::input::MAX_PADS;
 
     /// Kotlin's `unpackRumbleEvent`, transcribed — if these two ever disagree the boundary is
     /// broken, and nothing else in the build would say so.

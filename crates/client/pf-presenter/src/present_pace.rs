@@ -11,9 +11,9 @@
 //! Arithmetic is `CLOCK_REALTIME` ns (`pf_client_core::session::now_ns`, including
 //! `DecodedFrame::decoded_ns`) so the cadence clock needs no domain conversion. The
 //! run loop owns Vulkan and the clocks; this module is state plus arithmetic. Tests
-//! pin the contracts; [`punktfunk_core::phase`] owns the shared grid and cadence math.
+//! pin the contracts; [`rubyfunk_core::phase`] owns the shared grid and cadence math.
 
-use punktfunk_core::phase::{CadenceClock, CadenceHealth, CadenceTuning};
+use rubyfunk_core::phase::{CadenceClock, CadenceHealth, CadenceTuning};
 use std::collections::VecDeque;
 
 /// 100 ms: an occluded or wedged present is lost; the gate force-opens.
@@ -155,7 +155,7 @@ impl<T> FrameStore<T> {
 
 /// Panel latch grid: last on-glass instant plus the learned period, for slot targeting.
 ///
-/// Period is the shared [`punktfunk_core::phase::PanelGrid`], fed the median of each
+/// Period is the shared [`rubyfunk_core::phase::PanelGrid`], fed the median of each
 /// [`GRID_OBSERVE_EVERY`] spacings, snapped onto the learned period — the mode claim
 /// until one is learned — when it lies within [`grid_snap_ns`] of it. Present-wait
 /// stamps carry milliseconds of wake jitter; the min of a run reads that as a faster
@@ -169,11 +169,11 @@ pub(crate) struct LatchClock {
     last_ns: u64,
     /// Spacings since the last grid handoff.
     pending: Vec<u64>,
-    grid: punktfunk_core::phase::PanelGrid,
+    grid: rubyfunk_core::phase::PanelGrid,
     fallback_period_ns: u64,
 }
 
-/// Spacings per [`PanelGrid`](punktfunk_core::phase::PanelGrid) handoff. 16 ≈ a
+/// Spacings per [`PanelGrid`](rubyfunk_core::phase::PanelGrid) handoff. 16 ≈ a
 /// mode change within a second at 16+ fps.
 const GRID_OBSERVE_EVERY: usize = 16;
 
@@ -193,7 +193,7 @@ impl LatchClock {
             anchor_ns: 0,
             last_ns: 0,
             pending: Vec::with_capacity(GRID_OBSERVE_EVERY),
-            grid: punktfunk_core::phase::PanelGrid::seeded(0),
+            grid: rubyfunk_core::phase::PanelGrid::seeded(0),
             fallback_period_ns: 1_000_000_000 / u64::from(refresh_hz.max(1)),
         }
     }

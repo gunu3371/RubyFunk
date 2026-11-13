@@ -1,7 +1,7 @@
 // /api/plugin-metadata/<id>/<route> — an Art & Metadata source's `/__metadata/<route>` (status,
 // match, search, images), read server-side over loopback like `plugin-game`, so no plugin markup or
 // secret reaches the console origin. A pick is stored by the host, not through here.
-import type { METADATA_ROUTES } from "@punktfunk/plugin-kit/wire";
+import type { METADATA_ROUTES } from "@rubyfunk/plugin-kit/wire";
 import {
 	defineEventHandler,
 	getQuery,

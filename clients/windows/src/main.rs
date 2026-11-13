@@ -1,17 +1,17 @@
-//! `punktfunk-client` — the native Windows punktfunk/1 client.
+//! `rubyfunk-client` — the native Windows punktfunk/1 client.
 //!
 //! Pure Rust: `NativeClient` linked as a crate (no C ABI, like the GTK Linux client) · SDL3
 //! gamepads · a **WinUI 3** shell (windows-reactor). Streaming (decode + present + audio) runs in
-//! the spawned `punktfunk-session` Vulkan binary; the shell owns host selection, trust and
+//! the spawned `rubyfunk-session` Vulkan binary; the shell owns host selection, trust and
 //! pairing. The trust surface mirrors the
 //! other native clients: persistent identity, trust-on-first-use, SPAKE2 PIN pairing — all in-app
-//! (host list, settings, pairing). Streaming runs in the spawned `punktfunk-session` binary;
+//! (host list, settings, pairing). Streaming runs in the spawned `rubyfunk-session` binary;
 //! `--headless --speed-test` keeps a decode-less CLI measurement path.
 //!
 //! Usage:
-//!   punktfunk-client                          (open the WinUI 3 window: host list, settings, pairing)
-//!   punktfunk-client --discover               (list punktfunk hosts on the LAN)
-//!   punktfunk-client --headless --speed-test --connect host[:port]
+//!   rubyfunk-client                          (open the WinUI 3 window: host list, settings, pairing)
+//!   rubyfunk-client --discover               (list rubyfunk hosts on the LAN)
+//!   rubyfunk-client --headless --speed-test --connect host[:port]
 //!                    (measure the path: probe burst → goodput / loss / recommended bitrate)
 
 // Link as a GUI (windows) subsystem binary so the default windowed launch (MSIX / double-click)
@@ -21,10 +21,10 @@
 
 #[cfg(windows)]
 mod app;
-// The `--console` couch hand-off, shared verbatim with `punktfunk-console.exe`.
+// The `--console` couch hand-off, shared verbatim with `rubyfunk-console.exe`.
 #[cfg(windows)]
 mod couch;
-// `punktfunk://` activation: single instance, hand-off, and the positional URL parse
+// `rubyfunk://` activation: single instance, hand-off, and the positional URL parse
 // (design/client-deep-links.md §4.2).
 #[cfg(windows)]
 mod deeplink;
@@ -60,7 +60,7 @@ fn main() {
         let _ = AttachConsole(ATTACH_PARENT_PROCESS);
     }
     set_app_user_model_id();
-    punktfunk_core::tls::install_default_provider();
+    rubyfunk_core::tls::install_default_provider();
 
     // Logs go to stderr, the client log file (a GUI launch has no console; ANSI off, users send
     // it) and the DEBUG+ ring "Send logs to host" uploads; the env filter scopes stderr and file
@@ -71,12 +71,12 @@ fn main() {
         tracing::info!(path = %p.display(), "client log file (rotated at 10 MB, one .old kept)");
     }
     // SEH last-resort: a native crash in the shell otherwise ends the log mid-sentence.
-    punktfunk_core::crash::install();
+    rubyfunk_core::crash::install();
 
     let args: Vec<String> = std::env::args().collect();
     let flag = |name: &str| args.iter().any(|a| a == name);
 
-    // A `punktfunk://` link — from protocol activation, `start`, or a shortcut. If a shell is
+    // A `rubyfunk://` link — from protocol activation, `start`, or a shortcut. If a shell is
     // already running, hand it over and get out of the way: one window, and the link opens
     // where the user's hosts already are. A hand-off that finds nobody falls through and this
     // process becomes the shell that opens it, so the link is never simply lost.
@@ -119,7 +119,7 @@ fn main() {
     // resolves the installed Windows App Runtime itself and offers its download when missing.
 
     // The shared SDL gamepad service (pf-client-core). The shell only enumerates pads (Settings
-    // list) and persists the pin; the spawned punktfunk-session runs the SAME service and does the
+    // list) and persists the pin; the spawned rubyfunk-session runs the SAME service and does the
     // actual forwarding — so, unlike the old shell fork, we never `attach()` here. Idle it stays
     // hands-off the hardware (id-getter metadata, no device open, the Deck HIDAPI driver off).
     let gamepad = pf_client_core::gamepad::GamepadService::start();
@@ -157,13 +157,14 @@ fn set_app_user_model_id() {
     // SAFETY: `SetCurrentProcessExplicitAppUserModelID` takes a static wide literal.
     unsafe {
         // Must stay in sync with pf-presenter's win32.rs, or the windows stop grouping.
-        let _ =
-            SetCurrentProcessExplicitAppUserModelID(windows::core::w!("io.unom.punktfunk.client"));
+        let _ = SetCurrentProcessExplicitAppUserModelID(windows::core::w!(
+            "io.github.gunu3371.rubyfunk.client"
+        ));
     }
 }
 
 /// `--headless --speed-test --connect host[:port]`: measure the path over the real data plane and
-/// print the outcome — the Windows analogue of `punktfunk-probe`. The former in-process
+/// print the outcome — the Windows analogue of `rubyfunk-probe`. The former in-process
 /// frame-count connect path went with the legacy builtin stream; real streaming is windowed-only.
 #[cfg(windows)]
 fn run_headless_cli(args: &[String], identity: (String, String)) {
@@ -216,16 +217,16 @@ fn run_headless_cli(args: &[String], identity: (String, String)) {
         return;
     }
     // Only --speed-test remains headless: real streaming runs in the windowed app's spawned
-    // punktfunk-session binary, which the deleted in-process frame-count path was replaced by.
+    // rubyfunk-session binary, which the deleted in-process frame-count path was replaced by.
     eprintln!("--headless supports only --speed-test now \u{2014} run the windowed app to stream");
     std::process::exit(2);
 }
 
-/// `--discover`: browse the LAN for punktfunk hosts (mDNS) and print them, then exit.
+/// `--discover`: browse the LAN for rubyfunk hosts (mDNS) and print them, then exit.
 #[cfg(windows)]
 fn discover_and_print() {
     use std::time::{Duration, Instant};
-    println!("Browsing the LAN for Punktfunk hosts (~5 s)…");
+    println!("Browsing the LAN for RubyFunk hosts (~5 s)…");
     let (rx, _rescan) = pf_client_core::discovery::browse();
     let deadline = Instant::now() + Duration::from_secs(5);
     let mut seen = std::collections::HashSet::new();
@@ -252,7 +253,7 @@ fn discover_and_print() {
         std::thread::sleep(Duration::from_millis(100));
     }
     if seen.is_empty() {
-        println!("  (none found — is a host running with --native / punktfunk1-host?)");
+        println!("  (none found — is a host running with --native / rubyfunk1-host?)");
     }
 }
 
@@ -262,7 +263,7 @@ fn discover_and_print() {
 #[cfg(not(windows))]
 fn main() {
     eprintln!(
-        "punktfunk-client-windows is Windows-only — the Linux client lives in \
+        "rubyfunk-client-windows is Windows-only — the Linux client lives in \
          clients/linux, the macOS client in clients/apple"
     );
     std::process::exit(2);

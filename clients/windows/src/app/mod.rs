@@ -137,7 +137,7 @@ pub(crate) struct Shared {
     pub(crate) session: Mutex<pf_client_core::orchestrate::CancelHandle>,
     /// Latest stats window from the session child (spawn mode); mirrored into the HUD
     /// sample for the session status page.
-    pub(crate) stats: Mutex<Option<punktfunk_core::hud::StatsSnapshot>>,
+    pub(crate) stats: Mutex<Option<rubyfunk_core::hud::StatsSnapshot>>,
     /// Cancel flag for the in-flight "request access" connect. A FRESH flag is installed per
     /// request: the waiting screen's Cancel button reads it back from here and sets it, and that
     /// request's event loop (which captured the same `Arc` at spawn) then tears down silently when
@@ -283,7 +283,7 @@ pub(crate) enum Msg {
     Picker(Option<profiles::PickerAsk>),
     Seat(Option<profiles::SeatWait>),
     Unlock(Option<unlock::UnlockAsk>),
-    /// A `punktfunk://` link, from argv or a later instance.
+    /// A `rubyfunk://` link, from argv or a later instance.
     Link(String),
     LinkConfirm(Option<Box<orchestrate::ConnectPlan>>),
     Pads(usize),
@@ -569,7 +569,7 @@ impl Component for Shell {
     }
 
     fn view(&self, _input: &ShellInput, cx: &mut ViewContext<'_, Self>) -> View {
-        cx.window_title("Punktfunk");
+        cx.window_title("RubyFunk");
         // A floor under every layout: below it the header and cards would clip rather than
         // reflow (the pages adapt down to it).
         cx.window_visuals(
@@ -632,14 +632,14 @@ impl Component for Shell {
             )
             .into(),
             Screen::Library => library::library_page(self),
-            // The stream runs in the punktfunk-session child's own window; this screen is
+            // The stream runs in the rubyfunk-session child's own window; this screen is
             // its status card.
             Screen::Stream => stream::session_page(pal, &self.ctx, &self.hud),
         };
         // The caption, which Settings' back arrow rides on: NavigationView's own back button
         // raises no event here, and the WinUI pattern puts it in the title bar.
         let caption = TitleBar::new()
-            .title("Punktfunk")
+            .title("RubyFunk")
             .icon(Icon::image_data(EncodedImage::from_static(APP_ICON)))
             .is_back_button_visible(self.screen == Screen::Settings)
             .is_back_button_enabled(true)
@@ -700,7 +700,7 @@ pub fn run(identity: (String, String), gamepad: GamepadService) -> windows::core
     App::run_component_with_policy::<Shell>(
         ShellInput(ctx),
         WindowPolicy::new()
-            .title("Punktfunk")
+            .title("RubyFunk")
             .client_size(WINDOW_W, WINDOW_H),
     )
 }
@@ -760,7 +760,7 @@ fn entrance(body: View, screen: &Screen, progress: f64) -> View {
         .into()
 }
 
-/// `punktfunk://` links: the receiver thread queues them (from this launch's argv, or from a
+/// `rubyfunk://` links: the receiver thread queues them (from this launch's argv, or from a
 /// later instance over WM_COPYDATA), and this poll posts each one to the shell.
 fn poll_links(set_link: AsyncSetState<String>) {
     std::thread::Builder::new()
@@ -990,7 +990,7 @@ fn route_link(
             set_screen.call(Screen::Pair);
         }
         Ok(PlanOutcome::Unsupported(route)) => refuse(format!(
-            "Punktfunk can't open \u{201c}{}\u{201d} links yet.",
+            "RubyFunk can't open \u{201c}{}\u{201d} links yet.",
             route.as_str()
         )),
         Err(e) => refuse(e.message()),

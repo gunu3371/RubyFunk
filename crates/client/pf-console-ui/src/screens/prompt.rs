@@ -46,7 +46,7 @@ impl PromptScreen {
             ..PromptScreen::new(Prompt {
                 id: String::new(),
                 title: "Exit".into(),
-                message: "Exit punktfunk?".into(),
+                message: "Exit rubyfunk?".into(),
                 choices: vec!["Exit".into(), "Cancel".into()],
             })
         }

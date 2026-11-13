@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@punktfunk/host",
+      "name": "@rubyfunk/host",
       "devDependencies": {
         "@effect/openapi-generator": "4.0.1",
         "@effect/platform-node": "4.0.1",

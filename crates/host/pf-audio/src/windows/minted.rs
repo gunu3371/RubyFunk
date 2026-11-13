@@ -1,4 +1,4 @@
-//! Minted punktfunk-owned audio endpoints — own instances of Valve's streaming-audio
+//! Minted rubyfunk-owned audio endpoints — own instances of Valve's streaming-audio
 //! drivers, not Steam's primaries and not a bundled VB-Cable.
 //!
 //! * Speakers (`SteamStreamingSpeakers.inf`): silent host sink; WASAPI loopback feeds the encoder.
@@ -6,15 +6,15 @@
 //!   is the mic host apps record.
 //!
 //! A background worker mints one `ROOT\MEDIA` devnode per role and process audio identity.
-//! `PunktfunkAudioRole` owns the node; seat hosts also match `PunktfunkAudioSeat` from a
-//! validated `PUNKTFUNK_SEAT_ID`. [`minted_ids`] publishes the endpoint ids for the wiring
-//! plan. Missing Steam drivers, a denied install, or `PUNKTFUNK_NO_AUDIO_MINT` leaves the ids
+//! `RubyFunkAudioRole` owns the node; seat hosts also match `RubyFunkAudioSeat` from a
+//! validated `RUBYFUNK_SEAT_ID`. [`minted_ids`] publishes the endpoint ids for the wiring
+//! plan. Missing Steam drivers, a denied install, or `RUBYFUNK_NO_AUDIO_MINT` leaves the ids
 //! empty and keeps the name-based ladder.
 //!
 //! Endpoints persist across host restarts and re-resolve by marker. The console Speakers hide
 //! (`DEVICE_STATE_DISABLED`) while no capture binds them, so Windows never picks the silent
 //! sink as the box's default by itself; a seat's stay visible. Evidence:
-//! `design/windows-audio-endpoints-and-vbcable.md`. Probe: `punktfunk-host audio-probe mint`.
+//! `design/windows-audio-endpoints-and-vbcable.md`. Probe: `rubyfunk-host audio-probe mint`.
 
 use super::devnode_api as da;
 use super::pad_endpoint as pe;
@@ -27,10 +27,10 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 /// Durable ownership marker. The uninstall sweep matches every minted role on it.
-pub const ROLE_MARKER: &str = "PunktfunkAudioRole";
+pub const ROLE_MARKER: &str = "RubyFunkAudioRole";
 /// Secondary marker that partitions minted roles between validated seat hosts.
-pub const SEAT_MARKER: &str = "PunktfunkAudioSeat";
-const SEAT_MARKER_DOMAIN: &[u8] = b"punktfunk/audio-seat/v1\0";
+pub const SEAT_MARKER: &str = "RubyFunkAudioSeat";
+const SEAT_MARKER_DOMAIN: &[u8] = b"rubyfunk/audio-seat/v1\0";
 /// Audiosrv can take this long to register a freshly minted endpoint.
 const ENDPOINT_WAIT: Duration = Duration::from_secs(15);
 /// Floor between retries. [`ensure_provisioned`] is called from wiring passes, which recur freely.
@@ -57,8 +57,8 @@ impl Role {
     }
     fn desc(self) -> &'static str {
         match self {
-            Role::Speakers => "Punktfunk Speakers",
-            Role::Mic => "Punktfunk Microphone",
+            Role::Speakers => "RubyFunk Speakers",
+            Role::Mic => "RubyFunk Microphone",
         }
     }
     fn needle(self) -> &'static str {
@@ -104,8 +104,8 @@ impl AudioIdentity {
             });
         let role_descs = match seat.as_ref() {
             Some(seat) => [
-                format!("Punktfunk Speakers [seat {}]", seat.id),
-                format!("Punktfunk Microphone [seat {}]", seat.id),
+                format!("RubyFunk Speakers [seat {}]", seat.id),
+                format!("RubyFunk Microphone [seat {}]", seat.id),
             ],
             None => [
                 Role::Speakers.desc().to_string(),
@@ -132,8 +132,8 @@ impl AudioIdentity {
 
     fn thread_name(&self) -> String {
         match self.seat.as_ref() {
-            Some(seat) => format!("punktfunk-audio-mint-{}", seat.id),
-            None => "punktfunk-audio-mint".into(),
+            Some(seat) => format!("rubyfunk-audio-mint-{}", seat.id),
+            None => "rubyfunk-audio-mint".into(),
         }
     }
 }
@@ -226,9 +226,9 @@ fn gave_up() -> bool {
     true
 }
 
-/// `PUNKTFUNK_NO_AUDIO_MINT=1`: keep the name-based ladder; `=0` mints as if unset.
+/// `RUBYFUNK_NO_AUDIO_MINT=1`: keep the name-based ladder; `=0` mints as if unset.
 fn mint_opted_out() -> bool {
-    pf_host_config::env_on("PUNKTFUNK_NO_AUDIO_MINT") == Some(true)
+    pf_host_config::env_on("RUBYFUNK_NO_AUDIO_MINT") == Some(true)
 }
 
 /// Wiring-plan tier-0: minted endpoint ids, or all-empty while nothing is provisioned.
@@ -284,12 +284,12 @@ fn set_speakers_visible(visible: bool) -> bool {
         Ok(()) => {
             tracing::info!(endpoint = %id,
                 state = if visible { "shown (a capture binds it)" } else { "hidden (no capture)" },
-                "Punktfunk Speakers visibility");
+                "RubyFunk Speakers visibility");
             true
         }
         Err(e) => {
             tracing::warn!(endpoint = %id, visible, error = %format!("{e:#}"),
-                "Punktfunk Speakers visibility change failed — the sink stays as it is");
+                "RubyFunk Speakers visibility change failed — the sink stays as it is");
             false
         }
     }
@@ -632,7 +632,7 @@ fn stamp_identity(endpoint_id: &str, identity: &'static AudioIdentity, role: Rol
         pe::Stamp {
             label: "device-name",
             key: pe::PKEY_ENDPOINT_DEVICE_NAME,
-            value: pe::StampValue::Str("Punktfunk"),
+            value: pe::StampValue::Str("RubyFunk"),
         },
     ];
     // Both mic pins are stereo 48 kHz, and every mix-format copy a pin carries must agree with
@@ -719,7 +719,7 @@ fn find_role_devnode(identity: &AudioIdentity, role: Role) -> Result<Option<Stri
 }
 
 /// Recovers a console `ROOT\MEDIA\NNNN` with this hwid and no ownership marker.
-/// Steam's own nodes use another instance prefix; any marked Punktfunk family stays untouched.
+/// Steam's own nodes use another instance prefix; any marked RubyFunk family stays untouched.
 fn adopt_console_orphan_devnode(role: Role, hwid: &str) -> Result<Option<String>> {
     use windows::Win32::Devices::DeviceAndDriverInstallation::SPDRP_HARDWAREID;
     let set = da::media_class_devs()?;
@@ -797,7 +797,7 @@ pub fn discover_driver(needle: &str, inf_name: &str) -> Result<(String, String)>
 
 /// Runs the mic pump's first resolve without racing the startup worker.
 ///
-/// A latched result or `PUNKTFUNK_NO_AUDIO_MINT=1` returns immediately. Otherwise an in-flight
+/// A latched result or `RUBYFUNK_NO_AUDIO_MINT=1` returns immediately. Otherwise an in-flight
 /// pass wins, failed passes respect [`RETRY_COOLDOWN`], and the process attempt cap still applies.
 pub fn ensure_blocking() {
     if mint_opted_out() || PROVISIONED.get().is_some() || gave_up() {
@@ -883,7 +883,7 @@ mod seat_tests {
         assert_ne!(first.seat_marker(), other.seat_marker());
         assert_eq!(
             first.role_desc(Role::Speakers),
-            "Punktfunk Speakers [seat 550e8400e29b41d4a716446655440000]"
+            "RubyFunk Speakers [seat 550e8400e29b41d4a716446655440000]"
         );
     }
 

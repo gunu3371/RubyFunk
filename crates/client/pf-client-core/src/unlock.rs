@@ -7,7 +7,7 @@
 //! `orchestrate::spawn_child_with_unlock` and nowhere else.
 
 use crate::profiles::{UnlockChallenge, UnlockNeed};
-use punktfunk_core::quic::v2::msg::{self, ProfileUnlock, Zeroizing};
+use rubyfunk_core::quic::v2::msg::{self, ProfileUnlock, Zeroizing};
 
 /// What a shell does before it dials a profile.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -45,7 +45,7 @@ pub fn after_key_failure() -> Gate {
 /// session's stand-in for an empty one, means "enter the password": no line.
 pub fn refusal_line(said: &str) -> Option<String> {
     let stand_in =
-        crate::trust::connect_reject_message(punktfunk_core::reject::RejectReason::ProfileLocked);
+        crate::trust::connect_reject_message(rubyfunk_core::reject::RejectReason::ProfileLocked);
     (!said.trim().is_empty() && said != stand_in).then(|| said.to_string())
 }
 
@@ -110,10 +110,7 @@ impl<'a> DeviceKey<'a> {
     pub fn new(keys: &'a dyn DeviceKeys, box_fp: &[u8; 32], profile_id: &str) -> Option<Self> {
         is_profile_id(profile_id).then(|| DeviceKey {
             keys,
-            name: format!(
-                "punktfunk-unlock-{}-{profile_id}",
-                crate::trust::hex(box_fp)
-            ),
+            name: format!("rubyfunk-unlock-{}-{profile_id}", crate::trust::hex(box_fp)),
         })
     }
 
@@ -150,7 +147,7 @@ pub fn password_problem(password: &[u8]) -> Option<&'static str> {
     } else if password.len() > msg::UNLOCK_PASSWORD_MAX {
         Some("That password is too long.")
     } else if password.contains(&0) || std::str::from_utf8(password).is_err() {
-        Some("That password has a character Punktfunk can't send.")
+        Some("That password has a character RubyFunk can't send.")
     } else {
         None
     }
@@ -184,7 +181,7 @@ pub fn prompt_unlock(
         None => (msg::ENROLL_NONE, Vec::new()),
     };
     ProfileUnlock::new(msg::UNLOCK_PASSWORD, password, stay, alg, public)
-        .map_err(|_| "That password has a character Punktfunk can't send.")
+        .map_err(|_| "That password has a character RubyFunk can't send.")
 }
 
 /// The kind-2 unlock for `challenge`: the signed message of the profile-unlock contract,
@@ -219,7 +216,7 @@ pub fn key_unlock(
     key: &DeviceKey,
 ) -> Option<ProfileUnlock> {
     let box_fp = api.pin?;
-    let device_fp = punktfunk_core::quic::endpoint::fingerprint_of_pem(&api.identity.0).ok()?;
+    let device_fp = rubyfunk_core::quic::endpoint::fingerprint_of_pem(&api.identity.0).ok()?;
     let challenge = crate::profiles::unlock_challenge(api, profile_id)
         .map_err(|e| tracing::info!(error = %e, "unlock challenge unavailable"))
         .ok()?;
@@ -300,7 +297,7 @@ mod tests {
     }
 
     fn calls(keys: &Fake) -> Vec<String> {
-        let name = format!("punktfunk-unlock-{}-9a3f1c2b7e40", "bb".repeat(32));
+        let name = format!("rubyfunk-unlock-{}-9a3f1c2b7e40", "bb".repeat(32));
         keys.calls
             .borrow()
             .iter()
@@ -507,10 +504,7 @@ mod tests {
         for (bad, line) in [
             ("", "Enter the password."),
             (long.as_str(), "That password is too long."),
-            (
-                "a\0b",
-                "That password has a character Punktfunk can't send.",
-            ),
+            ("a\0b", "That password has a character RubyFunk can't send."),
         ] {
             let got = prompt_unlock(pw(bad), true, Some(&key(&keys)));
             assert_eq!(got.err(), Some(line));
@@ -536,7 +530,7 @@ mod tests {
         assert_eq!(proof.secret.as_slice(), &[7; 256][..]);
         let signed = keys.signed.borrow();
         assert_eq!(
-            crate::trust::hex(&punktfunk_core::tls::cert_fingerprint(&signed)),
+            crate::trust::hex(&rubyfunk_core::tls::cert_fingerprint(&signed)),
             "31de46821f3058729b14c3585ad13159085ecb0d18c87194a34b1bddc8ddc31a"
         );
         assert_eq!(calls(&keys), ["sign K"]);
@@ -555,7 +549,7 @@ mod tests {
         let keys = Fake::default();
         assert_eq!(
             key(&keys).name(),
-            format!("punktfunk-unlock-{}-9a3f1c2b7e40", "bb".repeat(32))
+            format!("rubyfunk-unlock-{}-9a3f1c2b7e40", "bb".repeat(32))
         );
         let long = "a".repeat(65);
         for bad in ["", "../x", "kid desk", "k\u{e4}", long.as_str()] {

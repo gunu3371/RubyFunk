@@ -109,7 +109,7 @@ impl SettingsScreen {
             }
             Typing::Scale => {
                 ctx.write(|c| {
-                    c.settings.render_scale = punktfunk_core::render_scale::from_percent(n);
+                    c.settings.render_scale = rubyfunk_core::render_scale::from_percent(n);
                     true
                 });
             }
@@ -117,7 +117,7 @@ impl SettingsScreen {
             Typing::Height(w) => {
                 ctx.write(|c| {
                     let s = &mut *c.settings;
-                    (s.width, s.height) = punktfunk_core::resolutions::custom(w, n, &s.codec);
+                    (s.width, s.height) = rubyfunk_core::resolutions::custom(w, n, &s.codec);
                     s.match_window = false;
                     if c.device.platform == crate::platform::Platform::Android {
                         set_extra_bool(s, device_keys::SAFE_AREA_MODE, false);

@@ -7,7 +7,7 @@
 //! `--pin HEX` pins the host certificate. `--pair -` reads a SPAKE2 PIN from stdin and prints the
 //! verified fingerprint; literal PIN arguments are refused. `--discover` lists native mDNS hosts.
 //!
-//! Usage: `punktfunk-probe [--connect HOST:PORT] [--mode WxHxFPS] [--out FILE]
+//! Usage: `rubyfunk-probe [--connect HOST:PORT] [--mode WxHxFPS] [--out FILE]
 //! [--bitrate KBPS] [--codec auto|h264|hevc|av1]
 //! [--input-test|--mic-test|--touch-test|--pad-audio-test [--pads N]]
 //! [--pin HEX|--pair -] [--compositor NAME] [--gamepad NAME] [--trajectory FILE] |
@@ -17,21 +17,21 @@
 mod trajectory;
 
 use anyhow::{anyhow, Context, Result};
-use punktfunk_core::config::GamepadPref;
-use punktfunk_core::config::Role;
-use punktfunk_core::fp::{hex, parse_hex32};
-use punktfunk_core::input::{InputEvent, InputKind};
-use punktfunk_core::packet::FLAG_PROBE;
-use punktfunk_core::quic::v2::dgram::Feedback;
-use punktfunk_core::quic::v2::hello::{ClientHello, Ready, ServerHello};
-use punktfunk_core::quic::v2::io as v2io;
-use punktfunk_core::quic::v2::msg::{decode, V2Message};
-use punktfunk_core::quic::{
+use rubyfunk_core::config::GamepadPref;
+use rubyfunk_core::config::Role;
+use rubyfunk_core::fp::{hex, parse_hex32};
+use rubyfunk_core::input::{InputEvent, InputKind};
+use rubyfunk_core::packet::FLAG_PROBE;
+use rubyfunk_core::quic::v2::dgram::Feedback;
+use rubyfunk_core::quic::v2::hello::{ClientHello, Ready, ServerHello};
+use rubyfunk_core::quic::v2::io as v2io;
+use rubyfunk_core::quic::v2::msg::{decode, V2Message};
+use rubyfunk_core::quic::{
     endpoint, window_report_ppm, BitrateChanged, CursorRenderMode, CursorShape, Hello,
     ProbeRequest, ProbeResult, Reconfigure, Reconfigured, SetBitrate, Welcome,
 };
-use punktfunk_core::session::test_frame;
-use punktfunk_core::{CompositorPref, Mode, PunktfunkError, Session};
+use rubyfunk_core::session::test_frame;
+use rubyfunk_core::{CompositorPref, Mode, RubyFunkError, Session};
 use std::io::Write;
 use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64};
 use std::sync::Arc;
@@ -49,7 +49,7 @@ struct Args {
     /// `--touch-test` — drag a synthetic finger in a circle (proves the touch path).
     touch_test: bool,
     /// `--rich-input-test` — drive the DualSense touchpad + motion over 0xCC (host needs
-    /// `PUNKTFUNK_GAMEPAD=dualsense`); also logs the 0xCD HID-output feedback that comes back.
+    /// `RUBYFUNK_GAMEPAD=dualsense`); also logs the 0xCD HID-output feedback that comes back.
     rich_input_test: bool,
     /// `--pad-audio-test` — declare pads DualSenses that render haptics and speaker, and count
     /// the `0xD1` pad-audio datagrams the host streams back, per pad and lane.
@@ -96,7 +96,7 @@ struct Args {
     /// `--audio-format opus|lossless48|lossless96|<rate>/<bits>` — what to ask the host for on the
     /// audio plane. `opus` (default) sends the UNSPECIFIED sentinel and keeps the legacy `0xC9`
     /// wire; anything else asks for the lossless `0xD3` plane at that rate and depth. The rate set
-    /// is [`punktfunk_core::audio::pcm::rate_is_supported`] — the probe does not restate it.
+    /// is [`rubyfunk_core::audio::pcm::rate_is_supported`] — the probe does not restate it.
     audio_format: Option<(u32, u8)>,
     /// `--audio-out FILE` — write the DECODED audio to `FILE` as raw interleaved `f32` little-endian
     /// at the resolved rate and channel count, for offline analysis.
@@ -114,7 +114,7 @@ struct Args {
     /// id from the host's `GET /api/v1/library`, e.g. `steam:570`). Host resolves it; `None` = none.
     launch: Option<String>,
     /// `--preset ID:NAME` — the settings preset this session names, as a client does.
-    preset: Option<punktfunk_core::quic::SessionPreset>,
+    preset: Option<rubyfunk_core::quic::SessionPreset>,
     /// `--speed-test KBPS:MS` — after the stream starts, ask the host for a `MS`-millisecond
     /// bandwidth probe burst at `KBPS`, then report measured throughput + loss.
     speed_test: Option<(u32, u32)>,
@@ -135,7 +135,7 @@ struct Args {
     /// client), flip to the capture model at 15 s and back at 35 s, wiggling throughout. The
     /// host's encoder must follow each flip.
     cursor_channel: bool,
-    /// `--discover [SECS]` — browse the LAN for native (`_punktfunk._udp`) hosts for `SECS`
+    /// `--discover [SECS]` — browse the LAN for native (`_rubyfunk._udp`) hosts for `SECS`
     /// seconds (default 4), print what's found, and exit. No connection is made.
     discover: Option<u64>,
     /// `--trajectory FILE` — stream on the shared client pump (the one the desktop and TV
@@ -169,12 +169,12 @@ struct Args {
 }
 
 /// The screens `--screens` asks for: `--mode` each, left to right; empty for one.
-fn screens_ask(args: &Args) -> Vec<punktfunk_core::quic::v2::msg::Screen> {
+fn screens_ask(args: &Args) -> Vec<rubyfunk_core::quic::v2::msg::Screen> {
     if args.screens < 2 {
         return Vec::new();
     }
     (0..args.screens)
-        .map(|i| punktfunk_core::quic::v2::msg::Screen {
+        .map(|i| rubyfunk_core::quic::v2::msg::Screen {
             index: i,
             mode: args.mode,
             x: i32::from(i) * args.mode.width as i32,
@@ -196,7 +196,7 @@ struct Wire {
 
 impl Wire {
     fn send_datagram(&self, d: Vec<u8>) -> Result<(), quinn::SendDatagramError> {
-        match punktfunk_core::quic::v2::dgram::wrap(&d) {
+        match rubyfunk_core::quic::v2::dgram::wrap(&d) {
             Some(w) => self.conn.send_datagram(w.into()),
             None => Ok(()),
         }
@@ -206,7 +206,7 @@ impl Wire {
     async fn read_datagram(&self) -> Result<Vec<u8>, quinn::ConnectionError> {
         loop {
             let b = self.conn.read_datagram().await?;
-            if let Some(p) = punktfunk_core::quic::v2::dgram::client_payload(&b) {
+            if let Some(p) = rubyfunk_core::quic::v2::dgram::client_payload(&b) {
                 return Ok(p.to_vec());
             }
         }
@@ -230,7 +230,7 @@ fn parse_mode(m: &str) -> Option<Mode> {
 }
 
 /// This probe's identity. The same files as the desktop client, including
-/// `PUNKTFUNK_CONFIG_DIR`.
+/// `RUBYFUNK_CONFIG_DIR`.
 fn load_or_create_identity() -> Result<(String, String)> {
     pf_client_core::trust::load_or_create_identity()
 }
@@ -329,25 +329,25 @@ fn parse_argv(argv: Vec<String>) -> Args {
             }
             value.to_string()
         }),
-        name: get("--name").unwrap_or("punktfunk-probe").to_string(),
+        name: get("--name").unwrap_or("rubyfunk-probe").to_string(),
         compositor,
         gamepad,
         bitrate_kbps: get("--bitrate").and_then(|s| s.parse().ok()).unwrap_or(0),
-        audio_channels: punktfunk_core::audio::normalize_channels(
+        audio_channels: rubyfunk_core::audio::normalize_channels(
             get("--audio-channels")
                 .and_then(|s| s.parse().ok())
                 .unwrap_or(2),
         ),
         audio_format: match get("--audio-format").unwrap_or("opus") {
             "opus" => None,
-            "lossless48" => Some((punktfunk_core::audio::SAMPLE_RATE_HZ, 24)),
+            "lossless48" => Some((rubyfunk_core::audio::SAMPLE_RATE_HZ, 24)),
             "lossless96" => Some((96_000, 24)),
             spec => {
                 let (r, b) = spec.split_once('/').unwrap_or((spec, "24"));
                 match (r.parse::<u32>(), b.parse::<u8>()) {
                     (Ok(r), Ok(b))
-                        if punktfunk_core::audio::pcm::rate_is_supported(r)
-                            && punktfunk_core::audio::pcm::depth_is_supported(b) =>
+                        if rubyfunk_core::audio::pcm::rate_is_supported(r)
+                            && rubyfunk_core::audio::pcm::depth_is_supported(b) =>
                     {
                         Some((r, b))
                     }
@@ -363,16 +363,16 @@ fn parse_argv(argv: Vec<String>) -> Args {
         },
         audio_out: get("--audio-out").map(String::from),
         preferred_codec: match get("--codec").unwrap_or("auto") {
-            "h264" | "avc" => punktfunk_core::quic::CODEC_H264,
-            "hevc" | "h265" => punktfunk_core::quic::CODEC_HEVC,
-            "av1" => punktfunk_core::quic::CODEC_AV1,
-            "pyrowave" => punktfunk_core::quic::CODEC_PYROWAVE,
+            "h264" | "avc" => rubyfunk_core::quic::CODEC_H264,
+            "hevc" | "h265" => rubyfunk_core::quic::CODEC_HEVC,
+            "av1" => rubyfunk_core::quic::CODEC_AV1,
+            "pyrowave" => rubyfunk_core::quic::CODEC_PYROWAVE,
             _ => 0, // auto — no preference
         },
         launch: get("--launch").map(str::to_string),
         preset: get("--preset").and_then(|s| {
             let (id, name) = s.split_once(':').unwrap_or((s, ""));
-            punktfunk_core::quic::SessionPreset::new(id, name)
+            rubyfunk_core::quic::SessionPreset::new(id, name)
         }),
         speed_test: get("--speed-test").and_then(|s| {
             let (kbps, ms) = s.split_once(':')?;
@@ -406,7 +406,7 @@ fn parse_argv(argv: Vec<String>) -> Args {
         screens: get("--screens")
             .and_then(|s| s.parse::<u8>().ok())
             .unwrap_or(1)
-            .clamp(1, punktfunk_core::quic::v2::msg::SCREENS_MAX as u8),
+            .clamp(1, rubyfunk_core::quic::v2::msg::SCREENS_MAX as u8),
     }
 }
 
@@ -414,9 +414,9 @@ fn parse_argv(argv: Vec<String>) -> Args {
 /// bitstream is dumped verbatim, so an H.264 software-host session should be saved as `.h264`.
 fn codec_ext(codec: u8) -> &'static str {
     match codec {
-        punktfunk_core::quic::CODEC_H264 => "h264",
-        punktfunk_core::quic::CODEC_AV1 => "av1",
-        punktfunk_core::quic::CODEC_PYROWAVE => "pyrowave",
+        rubyfunk_core::quic::CODEC_H264 => "h264",
+        rubyfunk_core::quic::CODEC_AV1 => "av1",
+        rubyfunk_core::quic::CODEC_PYROWAVE => "pyrowave",
         _ => "h265",
     }
 }
@@ -450,7 +450,7 @@ fn run(args: Args) -> Result<()> {
         let pin = pin.trim();
         anyhow::ensure!(!pin.is_empty(), "no PIN on stdin");
         let identity = load_or_create_identity()?;
-        let fp = punktfunk_core::client::NativeClient::pair(
+        let fp = rubyfunk_core::client::NativeClient::pair(
             host,
             port.parse().context("port")?,
             (&identity.0, &identity.1),
@@ -490,7 +490,7 @@ fn run(args: Args) -> Result<()> {
     rt.block_on(session(args))
 }
 
-/// Browse the LAN for native (`_punktfunk._udp`) hosts for `secs` seconds and print them, then
+/// Browse the LAN for native (`_rubyfunk._udp`) hosts for `secs` seconds and print them, then
 /// exit — the discovery side of the host's mDNS advert (host crate `discovery.rs`). TXT keys:
 /// `fp` (host cert fingerprint to pin), `pair` (required|optional), `id` (stable host id),
 /// `wire` (the protocols the host answers).
@@ -501,11 +501,11 @@ fn discover(secs: u64) -> Result<()> {
 
     let daemon = ServiceDaemon::new().context("create mDNS daemon")?;
     let receiver = daemon
-        .browse("_punktfunk._udp.local.")
-        .context("browse _punktfunk._udp")?;
+        .browse("_rubyfunk._udp.local.")
+        .context("browse _rubyfunk._udp")?;
     tracing::info!(
         secs,
-        "browsing for native punktfunk/1 hosts (_punktfunk._udp)…"
+        "browsing for native punktfunk/1 hosts (_rubyfunk._udp)…"
     );
     // One row per host, keyed by the stable uniqueid (falls back to the fullname) so the same
     // host re-advertising or answering on several interfaces collapses to a single entry.
@@ -562,7 +562,7 @@ fn discover(secs: u64) -> Result<()> {
         for row in hosts.values() {
             println!("{row}");
         }
-        println!("\nconnect with: punktfunk-probe --connect <addr:port> [--pin <fp> | --pair -]");
+        println!("\nconnect with: rubyfunk-probe --connect <addr:port> [--pin <fp> | --pair -]");
     }
     Ok(())
 }
@@ -594,7 +594,7 @@ struct Counters {
     pad_audio_pkts: [[AtomicU64; 2]; PAD_AUDIO_PADS],
     pad_audio_voiced: AtomicU64,
     /// A self-terminating v2 rumble envelope (0xCA with the seq+ttl tail) arrived. Asserted at
-    /// report time under `PUNKTFUNK_TEST_FEEDBACK`; a legacy v1 datagram leaves it false.
+    /// report time under `RUBYFUNK_TEST_FEEDBACK`; a legacy v1 datagram leaves it false.
     saw_v2_rumble: AtomicBool,
     /// The connection closed; the blocking receive loop stops once the tail has drained.
     closed: AtomicBool,
@@ -602,7 +602,7 @@ struct Counters {
 
 /// The host placed this profile on another host of the box.
 #[derive(Debug)]
-struct Redirected(punktfunk_core::quic::v2::msg::Redirect);
+struct Redirected(rubyfunk_core::quic::v2::msg::Redirect);
 
 impl std::fmt::Display for Redirected {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -613,7 +613,7 @@ impl std::fmt::Display for Redirected {
 impl std::error::Error for Redirected {}
 
 /// Points `args` at the host a `Redirect` names, once per connect.
-fn follow(args: &mut Args, to: &punktfunk_core::quic::v2::msg::Redirect) -> Result<()> {
+fn follow(args: &mut Args, to: &rubyfunk_core::quic::v2::msg::Redirect) -> Result<()> {
     anyhow::ensure!(!args.redirected, "redirected twice on one connect");
     let mut remote: std::net::SocketAddr = args.connect.parse().context("--connect host:port")?;
     if !to.addr.is_empty() {
@@ -622,7 +622,7 @@ fn follow(args: &mut Args, to: &punktfunk_core::quic::v2::msg::Redirect) -> Resu
     remote.set_port(to.port);
     args.connect = remote.to_string();
     if !to.pin.is_empty() {
-        args.pin = punktfunk_core::fp::parse_hex32(&to.pin);
+        args.pin = rubyfunk_core::fp::parse_hex32(&to.pin);
     }
     args.redirected = true;
     Ok(())
@@ -635,21 +635,17 @@ async fn session(mut args: Args) -> Result<()> {
     // Frame every read on the control stream through the resumable reader, exactly as the client
     // pump does: `clock_sync` bounds each read with a timeout, and a frame straddling two wakeups
     // would otherwise leave the stream permanently misaligned for the rest of the run.
-    v2io::write_stream_type(
-        &mut send,
-        punktfunk_core::quic::v2::registry::STREAM_CONTROL,
-    )
-    .await?;
+    v2io::write_stream_type(&mut send, rubyfunk_core::quic::v2::registry::STREAM_CONTROL).await?;
     let mut recv: CtlRx = v2io::FrameReader::new(recv);
     let extra = Extra {
         resume: None,
-        suites: if std::env::var_os("PUNKTFUNK_CLIENT_CHACHA20").is_some() {
+        suites: if std::env::var_os("RUBYFUNK_CLIENT_CHACHA20").is_some() {
             vec![
-                punktfunk_core::crypto::MediaSuite::ChaCha20Poly1305,
-                punktfunk_core::crypto::MediaSuite::Aes128Gcm,
+                rubyfunk_core::crypto::MediaSuite::ChaCha20Poly1305,
+                rubyfunk_core::crypto::MediaSuite::Aes128Gcm,
             ]
         } else {
-            vec![punktfunk_core::crypto::MediaSuite::Aes128Gcm]
+            vec![rubyfunk_core::crypto::MediaSuite::Aes128Gcm]
         },
     };
     let server = match handshake(&mut send, &mut recv, &args, extra).await {
@@ -666,7 +662,7 @@ async fn session(mut args: Args) -> Result<()> {
     // Screens past the first: their keyframe asks leave on this connection.
     let screen_asks = server
         .features
-        .has(punktfunk_core::quic::v2::registry::FEATURE_SCREENS)
+        .has(rubyfunk_core::quic::v2::registry::FEATURE_SCREENS)
         .then(|| quic.clone());
     let welcome = server.welcome;
     // Media on the dialing socket, under keys from the connection's exporter.
@@ -676,7 +672,7 @@ async fn session(mut args: Args) -> Result<()> {
     shared.set_host(quic.remote_address());
     let media = (
         shared,
-        punktfunk_core::session::MediaV2 {
+        rubyfunk_core::session::MediaV2 {
             clock_origin_ns: server.clock_origin_ns,
             keys: Some(keys),
             clock: None,
@@ -721,7 +717,7 @@ async fn session(mut args: Args) -> Result<()> {
     // Per-AU host timings (0xCF) → the stream loop, which matches them to received AUs by pts
     // and reports the host/network split. try_send: overflow drops samples, never blocks QUIC.
     let (host_timing_tx, host_timing_rx) =
-        std::sync::mpsc::sync_channel::<punktfunk_core::quic::HostTiming>(512);
+        std::sync::mpsc::sync_channel::<rubyfunk_core::quic::HostTiming>(512);
     spawn_datagram_rx(
         &conn,
         &welcome,
@@ -746,17 +742,17 @@ async fn session(mut args: Args) -> Result<()> {
     .await?;
     report_side_planes(&counters);
 
-    // Under PUNKTFUNK_TEST_FEEDBACK (a loopback harness scripts a feedback burst), a run with no
+    // Under RUBYFUNK_TEST_FEEDBACK (a loopback harness scripts a feedback burst), a run with no
     // v2 rumble tail (seq + TTL) fails: a host back on v1 level datagrams bumps the rumble counter
     // identically. Only tightens an otherwise-OK run; a video failure stays the primary error.
-    let result = if std::env::var("PUNKTFUNK_TEST_FEEDBACK").as_deref() == Ok("1")
+    let result = if std::env::var("RUBYFUNK_TEST_FEEDBACK").as_deref() == Ok("1")
         && result.is_ok()
         && !counters
             .saw_v2_rumble
             .load(std::sync::atomic::Ordering::Relaxed)
     {
         Err(anyhow::anyhow!(
-            "PUNKTFUNK_TEST_FEEDBACK: expected a v2 rumble envelope (0xCA seq+ttl tail), received none"
+            "RUBYFUNK_TEST_FEEDBACK: expected a v2 rumble envelope (0xCA seq+ttl tail), received none"
         ))
     } else {
         result
@@ -765,7 +761,7 @@ async fn session(mut args: Args) -> Result<()> {
     // `--quit` closes with the deliberate-quit code so the host skips the keep-alive linger; a normal
     // exit uses code 0 (an unwanted-disconnect close → the host lingers for a reconnect).
     let close_code = if args.quit {
-        punktfunk_core::quic::QUIT_CLOSE_CODE
+        rubyfunk_core::quic::QUIT_CLOSE_CODE
     } else {
         0
     };
@@ -783,7 +779,7 @@ async fn connect(
 ) -> Result<(
     quinn::Endpoint,
     quinn::Connection,
-    punktfunk_core::transport::shared::ClientMedia,
+    rubyfunk_core::transport::shared::ClientMedia,
 )> {
     let remote: std::net::SocketAddr = args.connect.parse().context("--connect host:port")?;
     let identity = load_or_create_identity()?;
@@ -792,12 +788,12 @@ async fn connect(
     let (r, observed) = endpoint::client_shared(
         args.pin,
         identity,
-        &[punktfunk_core::quic::v2::registry::ALPN],
+        &[rubyfunk_core::quic::v2::registry::ALPN],
         Some(remote.ip()),
     );
     let (ep, media) = r.map_err(|e| anyhow!("QUIC client endpoint: {e}"))?;
     let conn = ep
-        .connect(remote, "punktfunk")
+        .connect(remote, "rubyfunk")
         .context("connect")?
         .await
         .context("QUIC handshake (a pin mismatch fails here)")?;
@@ -816,7 +812,7 @@ async fn connect(
 /// What the `ClientHello` carries beyond the `Hello`.
 struct Extra {
     resume: Option<[u8; 16]>,
-    suites: Vec<punktfunk_core::crypto::MediaSuite>,
+    suites: Vec<rubyfunk_core::crypto::MediaSuite>,
 }
 
 /// `ClientHello` out and `ServerHello` back, then `Ready`.
@@ -840,8 +836,8 @@ async fn handshake(
             launch: args.launch.clone(),
             // This headless tool just dumps the bitstream (no decode), so it can always claim
             // 10-bit / 4:4:4 support. Gated by env so latency runs stay on the 8-bit 4:2:0 baseline:
-            // PUNKTFUNK_CLIENT_10BIT=1 advertises VIDEO_CAP_10BIT (host Main10 path);
-            // PUNKTFUNK_CLIENT_444=1 advertises VIDEO_CAP_444 (host HEVC 4:4:4 path) — verify the
+            // RUBYFUNK_CLIENT_10BIT=1 advertises VIDEO_CAP_10BIT (host Main10 path);
+            // RUBYFUNK_CLIENT_444=1 advertises VIDEO_CAP_444 (host HEVC 4:4:4 path) — verify the
             // resulting chroma with `ffprobe` on the `--out` .h265.
             video_caps: {
                 // Always ask for per-AU host timings (0xCF) — this is a measurement tool, and the
@@ -850,28 +846,28 @@ async fn handshake(
                 // qualifies for `--speed-test` bursts; without the bit the host declines them.
                 // STREAMED_AU: the same shared reassembler accepts sentinel-headed streamed
                 // blocks, and the probe is exactly the tool that measures the overlap win.
-                let mut caps = punktfunk_core::quic::VIDEO_CAP_HOST_TIMING
-                    | punktfunk_core::quic::VIDEO_CAP_PROBE_SEQ
-                    | punktfunk_core::quic::VIDEO_CAP_STREAMED_AU;
-                if std::env::var_os("PUNKTFUNK_CLIENT_10BIT").is_some() {
-                    caps |= punktfunk_core::quic::VIDEO_CAP_10BIT;
+                let mut caps = rubyfunk_core::quic::VIDEO_CAP_HOST_TIMING
+                    | rubyfunk_core::quic::VIDEO_CAP_PROBE_SEQ
+                    | rubyfunk_core::quic::VIDEO_CAP_STREAMED_AU;
+                if std::env::var_os("RUBYFUNK_CLIENT_10BIT").is_some() {
+                    caps |= rubyfunk_core::quic::VIDEO_CAP_10BIT;
                 }
-                if std::env::var_os("PUNKTFUNK_CLIENT_444").is_some() {
-                    caps |= punktfunk_core::quic::VIDEO_CAP_444;
+                if std::env::var_os("RUBYFUNK_CLIENT_444").is_some() {
+                    caps |= rubyfunk_core::quic::VIDEO_CAP_444;
                 }
-                // PUNKTFUNK_CLIENT_HDR=1 advertises VIDEO_CAP_HDR (BT.2020 PQ), and 10-bit
+                // RUBYFUNK_CLIENT_HDR=1 advertises VIDEO_CAP_HDR (BT.2020 PQ), and 10-bit
                 // with it — the host needs both for an HDR session. Pairs with
-                // PUNKTFUNK_CLIENT_PEAK_NITS, which carries the panel's ST.2086 volume.
-                if std::env::var_os("PUNKTFUNK_CLIENT_HDR").is_some() {
+                // RUBYFUNK_CLIENT_PEAK_NITS, which carries the panel's ST.2086 volume.
+                if std::env::var_os("RUBYFUNK_CLIENT_HDR").is_some() {
                     caps |=
-                        punktfunk_core::quic::VIDEO_CAP_HDR | punktfunk_core::quic::VIDEO_CAP_10BIT;
+                        rubyfunk_core::quic::VIDEO_CAP_HDR | rubyfunk_core::quic::VIDEO_CAP_10BIT;
                 }
-                // PUNKTFUNK_CLIENT_CHACHA20=1 advertises VIDEO_CAP_CHACHA20 — drives the
+                // RUBYFUNK_CLIENT_CHACHA20=1 advertises VIDEO_CAP_CHACHA20 — drives the
                 // host's ChaCha20-Poly1305 session-cipher resolution (the soft-AES armv7
                 // negotiation, design/chacha20-session-cipher.md §7) without a webOS build;
                 // the negotiated cipher is reported in the welcome log line below.
-                if std::env::var_os("PUNKTFUNK_CLIENT_CHACHA20").is_some() {
-                    caps |= punktfunk_core::quic::VIDEO_CAP_CHACHA20;
+                if std::env::var_os("RUBYFUNK_CLIENT_CHACHA20").is_some() {
+                    caps |= rubyfunk_core::quic::VIDEO_CAP_CHACHA20;
                 }
                 caps
             },
@@ -886,31 +882,31 @@ async fn handshake(
             audio_bitstreams: 0,
             // The probe just dumps the bitstream (no decode), so it advertises every codec — HEVC
             // (the host default) AND H.264 (so it can drive a GPU-less software host,
-            // `PUNKTFUNK_ENCODER=software`) AND AV1. The host picks one and reports it in
+            // `RUBYFUNK_ENCODER=software`) AND AV1. The host picks one and reports it in
             // `Welcome::codec`; the dump extension follows that.
-            video_codecs: punktfunk_core::quic::CODEC_H264
-                | punktfunk_core::quic::CODEC_HEVC
-                | punktfunk_core::quic::CODEC_AV1
+            video_codecs: rubyfunk_core::quic::CODEC_H264
+                | rubyfunk_core::quic::CODEC_HEVC
+                | rubyfunk_core::quic::CODEC_AV1
                 // PyroWave only on request: a PyroWave-default host would otherwise pick it
                 // for every probe run, changing the dump format under long-standing recipes.
-                | if args.preferred_codec == punktfunk_core::quic::CODEC_PYROWAVE {
-                    punktfunk_core::quic::CODEC_PYROWAVE
+                | if args.preferred_codec == rubyfunk_core::quic::CODEC_PYROWAVE {
+                    rubyfunk_core::quic::CODEC_PYROWAVE
                 } else {
                     0
                 },
             // `--codec` soft preference (0 = auto). The host honors it when it can emit it.
             preferred_codec: args.preferred_codec,
-            // PUNKTFUNK_CLIENT_PEAK_NITS=<nits> advertises a synthetic display volume — the host
+            // RUBYFUNK_CLIENT_PEAK_NITS=<nits> advertises a synthetic display volume — the host
             // writes it into the virtual display's EDID (CTA HDR block), so the EDID-forwarding
             // path can be validated headlessly (check the host's monitor caps / ADD log line).
-            display_hdr: punktfunk_core::client::display_hdr_env_override(),
+            display_hdr: rubyfunk_core::client::display_hdr_env_override(),
             // No CLIENT_CAP_CURSOR by default: this headless tool renders nothing — advertising
             // it would just strip the pointer from the dumped bitstream. `--cursor-capture`
             // advertises it deliberately and then flips the channel to the capture model, so the
             // HOST composites and the dump is where the pointer must appear.
             client_caps: {
                 let mut c = if args.cursor_capture || args.cursor_channel {
-                    punktfunk_core::quic::CLIENT_CAP_CURSOR
+                    rubyfunk_core::quic::CLIENT_CAP_CURSOR
                 } else {
                     0
                 };
@@ -921,17 +917,17 @@ async fn handshake(
                 // format without this bit is a request the host is right to ignore. Set both, or
                 // neither.
                 if args.audio_format.is_some() {
-                    c |= punktfunk_core::quic::CLIENT_CAP_AUDIO_HIRES;
+                    c |= rubyfunk_core::quic::CLIENT_CAP_AUDIO_HIRES;
                 }
                 if args.pad_audio_test {
-                    c |= punktfunk_core::quic::CLIENT_CAP_PAD_AUDIO;
+                    c |= rubyfunk_core::quic::CLIENT_CAP_PAD_AUDIO;
                 }
                 c
             },
             // Like STREAMED_AU above: the shared-core reassembler pins geometry per-frame, so
             // the probe accepts a mid-session shard change (and jumbo growth) up to the
             // receive ceiling — and it's exactly the tool to measure both.
-            max_shard_payload: punktfunk_core::config::max_shard_payload() as u16,
+            max_shard_payload: rubyfunk_core::config::max_shard_payload() as u16,
             // `0`/`0` is UNSPECIFIED. This hand-built `Hello` sets the cap bit and the format
             // together, so no inert format reaches the wire to read as a request.
             audio_rate_hz: args.audio_format.map(|(r, _)| r).unwrap_or(0),
@@ -948,8 +944,8 @@ async fn handshake(
         suites: extra.suites,
         // A host answers a `Redirect` only to a client that says it follows one.
         features: {
-            use punktfunk_core::quic::v2::registry::{FEATURE_PROFILES, FEATURE_SCREENS};
-            let mut set = punktfunk_core::quic::v2::features::FeatureSet::default();
+            use rubyfunk_core::quic::v2::registry::{FEATURE_PROFILES, FEATURE_SCREENS};
+            let mut set = rubyfunk_core::quic::v2::features::FeatureSet::default();
             if args.as_profile.is_some() {
                 set = set.with(FEATURE_PROFILES);
             }
@@ -967,8 +963,8 @@ async fn handshake(
     let server = loop {
         let (ty, body) = recv.read_frame().await?;
         match ty {
-            punktfunk_core::quic::v2::msg::Redirect::TYPE => {
-                let to = punktfunk_core::quic::v2::msg::Redirect::from_body(&body)
+            rubyfunk_core::quic::v2::msg::Redirect::TYPE => {
+                let to = rubyfunk_core::quic::v2::msg::Redirect::from_body(&body)
                     .map_err(|e| anyhow!("Redirect decode: {e:?}"))?;
                 println!(
                     "redirect addr={:?} port={} profile={} seat_no={} seat_name={:?} occupant={:?} pin={}",
@@ -980,7 +976,7 @@ async fn handshake(
                 break ServerHello::from_body(&body)
                     .map_err(|e| anyhow!("ServerHello decode: {e:?}"))?
             }
-            punktfunk_core::quic::v2::registry::MSG_PENDING => {
+            rubyfunk_core::quic::v2::registry::MSG_PENDING => {
                 tracing::info!("the host is waiting for this probe to be approved")
             }
             _ => {}
@@ -996,7 +992,7 @@ async fn handshake(
         bit_depth = welcome.bit_depth,
         color = ?welcome.color,
         hdr = welcome.color.is_hdr(),
-        chroma_444 = welcome.chroma_format == punktfunk_core::quic::CHROMA_IDC_444,
+        chroma_444 = welcome.chroma_format == rubyfunk_core::quic::CHROMA_IDC_444,
         chroma_format_idc = welcome.chroma_format,
         codec = codec_ext(welcome.codec),
         suite = ?server.suite,
@@ -1013,7 +1009,7 @@ async fn clock(send: &mut CtlTx, recv: &mut CtlRx, resync: bool) -> Result<Optio
     // Wall-clock skew handshake on the still-private control stream (before --remode/--speed-test
     // take it): align our clock to the host's so the per-frame capture→received latency is valid
     // across machines. `None` ⇒ an old host that doesn't answer — fall back to a shared clock (0).
-    let first_skew = punktfunk_core::quic::clock_sync(send, recv).await;
+    let first_skew = rubyfunk_core::quic::clock_sync(send, recv).await;
     let clock_offset_ns = match &first_skew {
         Some(skew) => {
             tracing::info!(
@@ -1035,7 +1031,7 @@ async fn clock(send: &mut CtlTx, recv: &mut CtlRx, resync: bool) -> Result<Optio
         let first = first_skew.as_ref().ok_or_else(|| {
             anyhow!("clock-resync: host never answered the connect-time handshake")
         })?;
-        let second = punktfunk_core::quic::clock_sync(send, recv)
+        let second = rubyfunk_core::quic::clock_sync(send, recv)
             .await
             .ok_or_else(|| anyhow!("clock-resync: host did not answer the re-probe"))?;
         let disagree_ns = (second.offset_ns - first.offset_ns).unsigned_abs();
@@ -1102,7 +1098,7 @@ async fn control_plane(
 
 /// Log what the host says about screens past the first: each layout and each stream's config.
 fn spawn_screen_log(mut recv: CtlRx) {
-    use punktfunk_core::quic::v2::msg::{ScreenLayout, StreamConfig};
+    use rubyfunk_core::quic::v2::msg::{ScreenLayout, StreamConfig};
     tokio::spawn(async move {
         while let Ok((ty, body)) = recv.read_frame().await {
             if let Ok(layout) = decode::<ScreenLayout>(ty, &body) {
@@ -1228,7 +1224,7 @@ fn spawn_speed_test(
     let c = counters.clone();
     // Per-packet wire size to express delivered bytes as link bytes (header + shard + tag);
     // every shard is zero-padded to shard_payload so all data packets are this exact size.
-    let crypto_overhead = punktfunk_core::crypto::TAG_LEN as u64;
+    let crypto_overhead = rubyfunk_core::crypto::TAG_LEN as u64;
     let conn2 = conn.clone();
     tokio::spawn(async move {
         use std::sync::atomic::Ordering::Relaxed;
@@ -1254,7 +1250,7 @@ fn spawn_speed_test(
         let base_pkts = c.rx_wire_packets.load(Relaxed);
         let base_bytes = c.rx_wire_bytes.load(Relaxed);
         tracing::info!(target_kbps, duration_ms, "requesting speed-test probe");
-        let ask = punktfunk_core::quic::ProbeShaped::from(ProbeRequest {
+        let ask = rubyfunk_core::quic::ProbeShaped::from(ProbeRequest {
             target_kbps,
             duration_ms,
         });
@@ -1514,7 +1510,7 @@ fn spawn_input_test(conn: &Wire, mode: Mode) {
                 }
                 // Gamepad plane: tap A + sweep the left stick on pad 0 (the host
                 // accumulates these into its virtual xpad; needs /dev/uinput access).
-                use punktfunk_core::input::gamepad::{AXIS_LS_X, BTN_A};
+                use rubyfunk_core::input::gamepad::{AXIS_LS_X, BTN_A};
                 let pad_events = [
                     (InputKind::GamepadButton, BTN_A, 1),
                     (InputKind::GamepadButton, BTN_A, 0),
@@ -1589,9 +1585,9 @@ fn spawn_mic_test(conn: &Wire, burst: bool) {
                     pcm[f * 2 + 1] = s;
                 }
                 if let Ok(n) = enc.encode_float(&pcm, &mut out) {
-                    let d = punktfunk_core::quic::encode_mic_datagram(
+                    let d = rubyfunk_core::quic::encode_mic_datagram(
                         seq,
-                        punktfunk_core::quic::wall_clock_ns(),
+                        rubyfunk_core::quic::wall_clock_ns(),
                         &out[..n],
                     );
                     if conn2.send_datagram(d).is_err() {
@@ -1643,13 +1639,13 @@ fn spawn_touch_test(conn: &Wire, mode: Mode) {
 /// Rich-input plane: instantiate pad 0 on the host (a gamepad event creates the virtual
 /// DualSense), then drive its touchpad (drag a finger across) + motion (gyro wobble) over the
 /// 0xCC plane. Proves the rich client→host path; the 0xCD feedback is logged by the receive
-/// loop below. Requires the host on the DualSense backend (`PUNKTFUNK_GAMEPAD=dualsense`).
+/// loop below. Requires the host on the DualSense backend (`RUBYFUNK_GAMEPAD=dualsense`).
 /// Pad 0 as a player holds it: every stick and trigger moves each frame and A taps once a
 /// second, as `GamepadState` snapshots. RT counts frames, so a reader can tell lost from late.
 fn spawn_pad_soak(conn: &Wire, secs: u64, hz: u32) {
     let conn2 = conn.clone();
     tokio::spawn(async move {
-        use punktfunk_core::input::{gamepad::BTN_A, GamepadSnapshot};
+        use rubyfunk_core::input::{gamepad::BTN_A, GamepadSnapshot};
         tokio::time::sleep(std::time::Duration::from_secs(2)).await;
         tracing::info!(secs, hz, "pad-soak: driving pad 0");
         let mut tick =
@@ -1686,8 +1682,8 @@ fn spawn_pad_soak(conn: &Wire, secs: u64, hz: u32) {
 fn spawn_rich_input_test(conn: &Wire) {
     let conn2 = conn.clone();
     tokio::spawn(async move {
-        use punktfunk_core::input::gamepad::{AXIS_LS_X, MOTION_ACCEL_LSB_PER_G};
-        use punktfunk_core::quic::RichInput;
+        use rubyfunk_core::input::gamepad::{AXIS_LS_X, MOTION_ACCEL_LSB_PER_G};
+        use rubyfunk_core::quic::RichInput;
         tokio::time::sleep(std::time::Duration::from_secs(2)).await;
         // A neutral gamepad axis event makes the host create the virtual DualSense pad 0.
         let arrive = InputEvent {
@@ -1739,7 +1735,7 @@ fn spawn_rich_input_test(conn: &Wire) {
 fn spawn_pad_audio_test(conn: &Wire, pads: u8) {
     let conn2 = conn.clone();
     tokio::spawn(async move {
-        use punktfunk_core::input::{encode_gamepad_arrival, gamepad::AXIS_LS_X};
+        use rubyfunk_core::input::{encode_gamepad_arrival, gamepad::AXIS_LS_X};
         tokio::time::sleep(std::time::Duration::from_secs(2)).await;
         for pad in 0..pads {
             let arrival = InputEvent {
@@ -1778,18 +1774,18 @@ fn spawn_pad_audio_test(conn: &Wire, pads: u8) {
 /// lossless session: the RESOLVED codec off the Welcome, never what was asked for, since a
 /// probe that assumed its own request would mis-parse what it was actually sent.
 enum SideDatagram<'a> {
-    PadAudio(punktfunk_core::quic::PadAudioFrame),
+    PadAudio(rubyfunk_core::quic::PadAudioFrame),
     Pcm(&'a [u8]),
     Opus(&'a [u8]),
-    Rumble(punktfunk_core::quic::RumbleUpdate),
-    HdrMeta(punktfunk_core::quic::HdrMeta),
-    Hid(punktfunk_core::quic::HidOutput),
-    HostTiming(punktfunk_core::quic::HostTiming),
+    Rumble(rubyfunk_core::quic::RumbleUpdate),
+    HdrMeta(rubyfunk_core::quic::HdrMeta),
+    Hid(rubyfunk_core::quic::HidOutput),
+    HostTiming(rubyfunk_core::quic::HostTiming),
     Other,
 }
 
 fn classify_side_datagram(d: &[u8], lossless: bool) -> SideDatagram<'_> {
-    use punktfunk_core::quic as q;
+    use rubyfunk_core::quic as q;
     if let Some(frame) = q::decode_pad_audio_datagram(d) {
         return SideDatagram::PadAudio(frame);
     }
@@ -1838,8 +1834,8 @@ impl AudioTap {
         out_path: Option<&str>,
     ) -> AudioTap {
         let audio_layout =
-            punktfunk_core::audio::AudioLayout::from_wire(layout_wire).unwrap_or_default();
-        let layout = punktfunk_core::audio::layout_for(channels, audio_layout);
+            rubyfunk_core::audio::AudioLayout::from_wire(layout_wire).unwrap_or_default();
+        let layout = rubyfunk_core::audio::layout_for(channels, audio_layout);
         let dec = (!lossless)
             .then(|| {
                 opus::MSDecoder::new(48_000, layout.streams, layout.coupled, layout.mapping).ok()
@@ -1865,7 +1861,7 @@ impl AudioTap {
 
     /// A lossless PCM datagram (0xD3), at the Welcome's bit depth.
     fn pcm(&mut self, wire: &[u8]) {
-        if punktfunk_core::audio::pcm::to_f32(wire, self.bits, &mut self.lossless_pcm).is_none() {
+        if rubyfunk_core::audio::pcm::to_f32(wire, self.bits, &mut self.lossless_pcm).is_none() {
             return;
         }
         if !self.logged {
@@ -1963,7 +1959,7 @@ impl LatencySplit {
         }
     }
 
-    fn host_timing(&mut self, t: punktfunk_core::quic::HostTiming) {
+    fn host_timing(&mut self, t: rubyfunk_core::quic::HostTiming) {
         let Some(i) = self.pending.iter().position(|(p, _)| *p == t.pts_ns) else {
             return;
         };
@@ -2023,7 +2019,7 @@ impl LatencySplit {
 struct StatsMirror {
     last_report: std::time::Instant,
     /// The counters the last loss window closed on.
-    at: punktfunk_core::stats::Stats,
+    at: rubyfunk_core::stats::Stats,
 }
 
 impl StatsMirror {
@@ -2087,7 +2083,7 @@ impl VideoTally {
     }
 }
 
-/// PUNKTFUNK_PERF: the cumulative receive-path stage split for the whole run — where the
+/// RUBYFUNK_PERF: the cumulative receive-path stage split for the whole run — where the
 /// receive core's time went (kernel drain vs AES-GCM open vs reassembly+FEC), the
 /// measurement tool's view of the client-pump wall.
 fn report_pump_perf(session: &mut Session) {
@@ -2103,7 +2099,7 @@ fn report_pump_perf(session: &mut Session) {
         pkts_per_batch = p.packets.checked_div(p.batches.max(1)).unwrap_or(0),
         decrypt_ns_pkt = per_pkt(p.decrypt_ns),
         reasm_ns_pkt = per_pkt(p.reasm_ns),
-        "receive stage split (whole run, PUNKTFUNK_PERF)"
+        "receive stage split (whole run, RUBYFUNK_PERF)"
     );
 }
 
@@ -2121,7 +2117,7 @@ fn spawn_datagram_rx(
     welcome: &Welcome,
     audio_out_path: Option<String>,
     counters: &Arc<Counters>,
-    host_timing_tx: std::sync::mpsc::SyncSender<punktfunk_core::quic::HostTiming>,
+    host_timing_tx: std::sync::mpsc::SyncSender<rubyfunk_core::quic::HostTiming>,
 ) {
     let c = counters.clone();
     let ht_tx = host_timing_tx;
@@ -2131,7 +2127,7 @@ fn spawn_datagram_rx(
         welcome.audio_rate_hz,
         welcome.audio_bits,
     );
-    let lossless = welcome.audio_codec == punktfunk_core::quic::AUDIO_CODEC_PCM;
+    let lossless = welcome.audio_codec == rubyfunk_core::quic::AUDIO_CODEC_PCM;
     let layout_wire = welcome.audio_layout;
     tokio::spawn(async move {
         use std::sync::atomic::Ordering::Relaxed;
@@ -2187,7 +2183,7 @@ fn spawn_datagram_rx(
                         );
                     }
                     // A v2 tail was present: the seq/ttl contract check for
-                    // PUNKTFUNK_TEST_FEEDBACK, asserted at report time.
+                    // RUBYFUNK_TEST_FEEDBACK, asserted at report time.
                     if u.envelope.is_some() {
                         c.saw_v2_rumble.store(true, Relaxed);
                     }
@@ -2238,7 +2234,7 @@ struct StreamTally {
 impl ScreenTally {
     fn note(
         &mut self,
-        frame: &punktfunk_core::session::Frame,
+        frame: &rubyfunk_core::session::Frame,
         out: Option<&str>,
         asks: Option<&quinn::Connection>,
     ) -> Result<()> {
@@ -2255,7 +2251,7 @@ impl ScreenTally {
             .last_index
             .is_some_and(|last| frame.frame_index.wrapping_sub(last) != 1);
         t.last_index = Some(frame.frame_index);
-        let key = frame.flags & u32::from(punktfunk_core::packet::FLAG_SOF) != 0;
+        let key = frame.flags & u32::from(rubyfunk_core::packet::FLAG_SOF) != 0;
         if gap && !key {
             t.gaps += 1;
             t.asks = t.asks.wrapping_add(1).max(1);
@@ -2302,14 +2298,14 @@ impl ScreenTally {
 fn data_plane(
     welcome: Welcome,
     (shared, media): (
-        punktfunk_core::transport::shared::ClientMedia,
-        punktfunk_core::session::MediaV2,
+        rubyfunk_core::transport::shared::ClientMedia,
+        rubyfunk_core::session::MediaV2,
     ),
     out_path: Option<String>,
     seconds: Option<u64>,
     clock_offset_ns: Option<i64>,
     counters: Arc<Counters>,
-    host_timing_rx: std::sync::mpsc::Receiver<punktfunk_core::quic::HostTiming>,
+    host_timing_rx: std::sync::mpsc::Receiver<rubyfunk_core::quic::HostTiming>,
     // Some when the host took screens: further screens' keyframe asks leave here.
     screen_asks: Option<quinn::Connection>,
 ) -> Result<()> {
@@ -2362,7 +2358,7 @@ fn data_plane(
         }
         let frame = match session.poll_frame() {
             Ok(frame) => frame,
-            Err(PunktfunkError::NoFrame) => {
+            Err(RubyFunkError::NoFrame) => {
                 std::thread::sleep(std::time::Duration::from_micros(300));
                 continue;
             }
@@ -2374,12 +2370,12 @@ fn data_plane(
         if frame.flags & FLAG_PROBE as u32 != 0 {
             continue;
         }
-        if frame.stream != punktfunk_core::packet::V2_STREAM_VIDEO {
+        if frame.stream != rubyfunk_core::packet::V2_STREAM_VIDEO {
             screens.note(&frame, out_path.as_deref(), screen_asks.as_ref())?;
             continue;
         }
         if let Some(lat) = capture_latency_us(
-            punktfunk_core::quic::wall_clock_ns(),
+            rubyfunk_core::quic::wall_clock_ns(),
             clock_offset,
             frame.pts_ns,
         ) {
@@ -2471,7 +2467,7 @@ mod tests {
 
     fn args(flags: &[&str]) -> Args {
         parse_argv(
-            std::iter::once("punktfunk-probe")
+            std::iter::once("rubyfunk-probe")
                 .chain(flags.iter().copied())
                 .map(String::from)
                 .collect(),
@@ -2481,7 +2477,7 @@ mod tests {
     #[test]
     fn a_redirect_is_followed_once_pinned_to_the_seat() {
         let mut a = args(&["--connect", "192.168.1.213:9777", "--as", "ada"]);
-        let to = punktfunk_core::quic::v2::msg::Redirect {
+        let to = rubyfunk_core::quic::v2::msg::Redirect {
             port: 9779,
             pin: "ab".repeat(32),
             ..Default::default()
@@ -2499,7 +2495,7 @@ mod tests {
     fn an_empty_pin_keeps_the_one_dialed_with() {
         let pin = "cd".repeat(32);
         let mut a = args(&["--connect", "10.0.0.2:9777", "--pin", &pin]);
-        let to = punktfunk_core::quic::v2::msg::Redirect {
+        let to = rubyfunk_core::quic::v2::msg::Redirect {
             addr: "10.0.0.3".into(),
             port: 9780,
             ..Default::default()
@@ -2512,7 +2508,7 @@ mod tests {
     /// The side planes sort by kind byte, and a PCM datagram is audio only on a lossless session.
     #[test]
     fn side_datagrams_sort_by_kind_and_the_welcomes_codec() {
-        use punktfunk_core::quic as q;
+        use rubyfunk_core::quic as q;
         let pcm = q::encode_audio_pcm_datagram(1, 2, &[0; 8]);
         assert!(matches!(classify_side_datagram(&pcm, true), SideDatagram::Pcm(b) if b.len() == 8));
         assert!(
@@ -2584,7 +2580,7 @@ mod tests {
 
     #[test]
     fn host_timings_split_the_latency_they_match() {
-        use punktfunk_core::quic::{HostStages, HostTiming};
+        use rubyfunk_core::quic::{HostStages, HostTiming};
         let mut split = LatencySplit::default();
         split.received(10, 5_000);
         split.received(20, 6_000);

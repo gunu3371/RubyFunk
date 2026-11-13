@@ -3,8 +3,8 @@
 //! Omarchy stores the active theme at `~/.local/state/omarchy/current/theme/`.
 //! Two files there carry colours:
 //!
-//! - `punktfunk.json` — our template, rendered on `omarchy-theme-set` after
-//!   `punktfunk-omarchy setup`. Exact, host-side opt-in.
+//! - `rubyfunk.json` — our template, rendered on `omarchy-theme-set` after
+//!   `rubyfunk-omarchy setup`. Exact, host-side opt-in.
 //! - `colors.toml` — the theme's native palette, present on every Omarchy box.
 //!
 //! File read, not an API: a non-Omarchy box has no directory, so every miss
@@ -46,7 +46,7 @@ pub struct OsTheme {
 
 /// All three colours are required: half a palette is worse than none.
 /// Unparsable `mode` is `dark`, matching the console.
-pub fn parse_punktfunk_json(raw: &str) -> Option<OsTheme> {
+pub fn parse_rubyfunk_json(raw: &str) -> Option<OsTheme> {
     let v: serde_json::Value = serde_json::from_str(raw).ok()?;
     let colour = |k: &str| {
         v.get(k)
@@ -92,15 +92,15 @@ pub fn present() -> bool {
     omarchy_state_dir().is_some_and(|d| d.is_dir())
 }
 
-/// Active theme, or `None` on a non-Omarchy box. `punktfunk.json` wins when
+/// Active theme, or `None` on a non-Omarchy box. `rubyfunk.json` wins when
 /// registered; `colors.toml` covers a client-only install. Uncached:
 /// `omarchy-theme-set` retargets the `current` symlink.
 pub fn current() -> Option<OsTheme> {
     let theme = omarchy_state_dir()?.join("current/theme");
     // A half-written switch parses as nothing; the other file, or a tick of "no theme", is fine.
-    std::fs::read_to_string(theme.join("punktfunk.json"))
+    std::fs::read_to_string(theme.join("rubyfunk.json"))
         .ok()
-        .and_then(|raw| parse_punktfunk_json(&raw))
+        .and_then(|raw| parse_rubyfunk_json(&raw))
         .or_else(|| {
             std::fs::read_to_string(theme.join("colors.toml"))
                 .ok()
@@ -122,17 +122,17 @@ mod tests {
     fn an_unrendered_template_is_not_a_theme() {
         // `{{ accent }}` is JSON-valid; parse_hex is what refuses it.
         assert!(
-            parse_punktfunk_json(&rendered("dark", "#1a1b26", "#c0caf5", "{{ accent }}")).is_none()
+            parse_rubyfunk_json(&rendered("dark", "#1a1b26", "#c0caf5", "{{ accent }}")).is_none()
         );
         assert!(
-            parse_punktfunk_json(r##"{"mode":"dark","accent":"#89b4fa"}"##).is_none(),
+            parse_rubyfunk_json(r##"{"mode":"dark","accent":"#89b4fa"}"##).is_none(),
             "a partial palette"
         );
         assert!(
-            parse_punktfunk_json(r#"{"mode":"dark","acc"#).is_none(),
+            parse_rubyfunk_json(r#"{"mode":"dark","acc"#).is_none(),
             "half-written during a switch"
         );
-        assert!(parse_punktfunk_json(&rendered("dark", "#1a1b26", "#c0caf5", "#zzzzzz")).is_none());
+        assert!(parse_rubyfunk_json(&rendered("dark", "#1a1b26", "#c0caf5", "#zzzzzz")).is_none());
     }
 
     #[test]
@@ -151,7 +151,7 @@ mod tests {
 
     #[test]
     fn mode_defaults_to_dark_and_light_is_honoured() {
-        let t = |m| parse_punktfunk_json(&rendered(m, "#1a1b26", "#c0caf5", "#7aa2f7")).unwrap();
+        let t = |m| parse_rubyfunk_json(&rendered(m, "#1a1b26", "#c0caf5", "#7aa2f7")).unwrap();
         assert!(t("dark").dark);
         assert!(!t("light").dark);
         assert!(

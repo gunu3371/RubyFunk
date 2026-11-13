@@ -43,12 +43,12 @@ const post = (p, body) =>
 
 // ── /manifestSearch ─────────────────────────────────────────────────────────────────────────────
 {
-  const res = await post("manifestSearch", { Query: { KeyWord: "punktfunk", MatchType: "Substring" } });
+  const res = await post("manifestSearch", { Query: { KeyWord: "rubyfunk", MatchType: "Substring" } });
   const body = await res.json();
-  check("search substring 'punktfunk': 200", res.status === 200, `got ${res.status}`);
+  check("search substring 'rubyfunk': 200", res.status === 200, `got ${res.status}`);
   check("search: Data is a non-empty array", Array.isArray(body.Data) && body.Data.length > 0);
   const hit = body.Data?.[0];
-  check("search: PackageIdentifier present", hit?.PackageIdentifier === "unom.PunktfunkHost");
+  check("search: PackageIdentifier present", hit?.PackageIdentifier === "gunu3371.RubyFunkHost");
   check("search: PackageName + Publisher present (schema-required)", !!hit?.PackageName && !!hit?.Publisher);
   check("search: Versions non-empty (minItems 1)", Array.isArray(hit?.Versions) && hit.Versions.length > 0);
   check("search: version carries ProductCodes for ARP correlation", Array.isArray(hit?.Versions?.[0]?.ProductCodes) && hit.Versions[0].ProductCodes.length > 0);
@@ -64,7 +64,7 @@ const post = (p, body) =>
 }
 {
   const res = await post("manifestSearch", {
-    Inclusions: [{ PackageMatchField: "PackageIdentifier", RequestMatch: { KeyWord: "unom.PunktfunkHost", MatchType: "CaseInsensitive" } }],
+    Inclusions: [{ PackageMatchField: "PackageIdentifier", RequestMatch: { KeyWord: "gunu3371.RubyFunkHost", MatchType: "CaseInsensitive" } }],
   });
   check("Inclusions on PackageIdentifier match", res.status === 200);
 }
@@ -78,7 +78,7 @@ const post = (p, body) =>
 {
   // An unsupported field must never accidentally match — we told the client we don't serve it.
   const res = await post("manifestSearch", {
-    Filters: [{ PackageMatchField: "NormalizedPackageNameAndPublisher", RequestMatch: { KeyWord: "punktfunkhostunom", MatchType: "Exact" } }],
+    Filters: [{ PackageMatchField: "NormalizedPackageNameAndPublisher", RequestMatch: { KeyWord: "rubyfunkhostunom", MatchType: "Exact" } }],
   });
   check("unsupported match field yields no match", res.status === 204, `got ${res.status}`);
 }
@@ -89,7 +89,7 @@ const post = (p, body) =>
 
 // ── /packageManifests/{id} ──────────────────────────────────────────────────────────────────────
 {
-  const res = await get("packageManifests/unom.PunktfunkHost");
+  const res = await get("packageManifests/gunu3371.RubyFunkHost");
   const body = await res.json();
   check("manifest: 200", res.status === 200, `got ${res.status}`);
   const v = body.Data?.Versions?.[0];
@@ -113,7 +113,7 @@ const post = (p, body) =>
   );
 }
 {
-  const res = await get("packageManifests/UNOM.PUNKTFUNKHOST");
+  const res = await get("packageManifests/UNOM.RUBYFUNKHOST");
   check("manifest: PackageIdentifier is case-insensitive", res.status === 200, `got ${res.status}`);
 }
 {
@@ -121,7 +121,7 @@ const post = (p, body) =>
   check("manifest: unknown id -> 404", res.status === 404, `got ${res.status}`);
 }
 {
-  const res = await get("packageManifests/unom.PunktfunkHost?Version=0.0.0-nope");
+  const res = await get("packageManifests/gunu3371.RubyFunkHost?Version=0.0.0-nope");
   check("manifest: unknown ?Version -> 404", res.status === 404, `got ${res.status}`);
 }
 {

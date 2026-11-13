@@ -1,6 +1,6 @@
 [package]
 name = "pf-libva"
-description = "The dlopen'd libva runtime shared by punktfunk's VAAPI decoder and encoder: entry points, a VADisplay over a DRM render node, and the entrypoint probe"
+description = "The dlopen'd libva runtime shared by rubyfunk's VAAPI decoder and encoder: entry points, a VADisplay over a DRM render node, and the entrypoint probe"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

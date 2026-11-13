@@ -149,7 +149,7 @@ export async function* sseFrames(
 	cfg: Connection,
 	opts: EventStreamOptions = {},
 ): AsyncGenerator<SseFrame> {
-	const warn = opts.onWarning ?? ((m) => console.warn(`[punktfunk] ${m}`));
+	const warn = opts.onWarning ?? ((m) => console.warn(`[rubyfunk] ${m}`));
 	let lastId: number = opts.since ?? LIVE_ONLY_CURSOR;
 	let backoff = BACKOFF_INITIAL_MS;
 	const abort = new AbortController();

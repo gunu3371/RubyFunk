@@ -26,7 +26,7 @@ jobs:
     # The tests are pure JVM (no NDK), but sharing android.yml's image means one image to
     # keep warm instead of a per-run setup-java + sdkmanager download pair.
     container:
-      image: 192.168.1.58:5010/punktfunk-android-ci:latest
+      image: 192.168.1.58:5010/rubyfunk-android-ci:latest
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -49,7 +49,7 @@ jobs:
         run: sha256sum -c gradle/wrapper/gradle-wrapper.jar.sha256
 
       # Roborazzi renders Compose on the JVM (Robolectric Native Graphics). `-PskipRustBuild` keeps
-      # the cargo-ndk native build out of the graph — the tests never load libpunktfunk_android.so.
+      # the cargo-ndk native build out of the graph — the tests never load librubyfunk_android.so.
       - name: Capture screenshots (Roborazzi)
         working-directory: clients/android
         run: ./gradlew :app:testDebugUnitTest -PskipRustBuild --stacktrace
@@ -59,6 +59,6 @@ jobs:
         # v3: Gitea's API rejects upload-artifact@v4 (see apple.yml). Download is a zip.
         uses: actions/upload-artifact@ff15f0306b3f739f7b6fd43fb5d26cd321bd4de5 # v3
         with:
-          name: punktfunk-android-screenshots
+          name: rubyfunk-android-screenshots
           path: clients/android/app/build/outputs/roborazzi
           retention-days: 30

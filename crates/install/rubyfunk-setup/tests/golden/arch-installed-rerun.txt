@@ -1,0 +1,31 @@
+==> Detected arch → pacman (guide: https://docs.punktfunk.unom.io/docs/arch)
+==> Choices (nothing below has run yet)
+  Full controller (joins the rubyfunk group — grants usbip attach): yes
+  Third-party clients (Moonlight, Artemis): no
+  Shared clipboard: yes
+  Start at boot with nobody logged in: no
+  Web console reachable from: this local network
+==> host, web console and plugin runner are already installed (rubyfunk-host 0.34.0, canary channel) — updating to the current build
+  + sudo pacman -Syu --noconfirm rubyfunk-host rubyfunk-web rubyfunk-scripting
+==> Checking for Sunshine / Apollo / Vibeshine
+  ok No conflicting game-streaming host detected.
+==> Options (each one can be changed later)
+  ok would set RUBYFUNK_UI_BIND=0.0.0.0 in /box/config/rubyfunk/host.env
+  ok would set clipboard="files" in /box/config/rubyfunk/host-settings.json
+==> Controller access
+  ok already in the input group
+  + sudo usermod -aG rubyfunk "$USER"
+==> Firewall
+  ok no active firewall found — nothing to open (https://docs.punktfunk.unom.io/docs/ports if you add one later)
+==> Starting the host and the web console
+  + systemctl --user enable --now rubyfunk-host rubyfunk-web
+  + certutil -A -d sql:/box/home/.pki/nssdb -n rubyfunk-console -t C,, -i /box/config/rubyfunk/native-cert.pem
+==> Checking
+
+  Done. Next: let a device in.
+  On the device you play on, open rubyfunk and pick this host. Approve it in the notification here, or in the console.
+  Console: https://192.168.1.10:47992  (its certificate is this host's own)
+  Password — this prints it, until you first sign in: sed -n 's/^RUBYFUNK_UI_PASSWORD=//p' ~/.config/rubyfunk/web-password
+  Group changes apply after a restart of this computer (controllers won't work until then).
+  https://docs.punktfunk.unom.io/docs/troubleshooting · https://docs.punktfunk.unom.io/docs/arch
+

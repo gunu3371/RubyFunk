@@ -10,8 +10,8 @@ use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
 use pf_driver_proto::gamepad::DEVTYPE_HORIPAD_STEAM;
 use pf_driver_proto::hori::NEUTRAL_REPORT;
-use punktfunk_core::input::GamepadFrame;
-use punktfunk_core::quic::RichInput;
+use rubyfunk_core::input::GamepadFrame;
+use rubyfunk_core::quic::RichInput;
 
 /// INF hardware id. A package rename must not change it (`hwid_matches_inf`).
 pub(super) const HORI_HWID: &str = "pf_horipad_steam";
@@ -36,7 +36,7 @@ impl HoriWinPad {
                 usb_vid_pid: Some("VID_0F0D&PID_01AB"),
                 usb_mi: None,
                 bluetooth: false,
-                description: "Punktfunk Virtual Wireless HORIPAD For Steam",
+                description: "RubyFunk Virtual Wireless HORIPAD For Steam",
                 enumerator: "VID_0F0D&PID_01AB",
                 property: None,
             },
@@ -57,7 +57,7 @@ impl PadProto for HoriWinProto {
     const LABEL: &'static str = "HORIPAD/Windows";
     const DEVICE: &'static str = "HORIPAD for Steam";
     const CREATE_HINT: &'static str =
-        " (install/repair: punktfunk-host.exe driver install --gamepad)";
+        " (install/repair: rubyfunk-host.exe driver install --gamepad)";
 
     fn open(&mut self, idx: u8) -> Result<HoriWinPad> {
         let p = HoriWinPad::open(idx)?;

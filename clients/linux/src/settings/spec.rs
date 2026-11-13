@@ -99,7 +99,7 @@ specs! {
         "Always opens it at launch. Otherwise it opens when a controller connects, and this \
          window returns when the last one disconnects", General, false, Device;
     FOLLOW_OS_THEME: "follow_os_theme", "Follow system theme",
-        "Colours track omarchy-theme-set live \u{2014} off keeps Punktfunk's own look",
+        "Colours track omarchy-theme-set live \u{2014} off keeps RubyFunk's own look",
         General, false, Device;
     OMARCHY_MENU: "omarchy_menu", "Hosts in the Omarchy menu",
         "Super+Space: connect, wake, the console \u{2014} this writes rows to omarchy-menu.jsonc",

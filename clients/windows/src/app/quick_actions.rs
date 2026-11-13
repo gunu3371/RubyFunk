@@ -20,7 +20,7 @@ use pf_client_core::overlay_actions::{
 };
 use pf_client_core::ring::{slot_offset, CENTRE_DIAMETER, RING_RADIUS, SLOT_DIAMETER};
 use pf_fluent::Palette;
-use punktfunk_core::input::key_vk;
+use rubyfunk_core::input::key_vk;
 use std::rc::Rc;
 use std::sync::Arc;
 use windows_reactor::*;

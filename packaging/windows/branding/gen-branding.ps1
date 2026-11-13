@@ -1,17 +1,17 @@
 <#
 .SYNOPSIS
-  Generate the punktfunk host installer icon.
+  Generate the rubyfunk host installer icon.
 
 .DESCRIPTION
-  Renders the punktfunk brand mark - the two overlapping circles ("lens") from
+  Renders the rubyfunk brand mark - the two overlapping circles ("lens") from
   web/src/components/brand-mark.tsx (the canonical flattened geometry, shared with the Apple icon,
   the marketing site and the docs) into:
 
-    punktfunk.ico        multi-size icon (16..256, PNG-compressed entries - Vista+ format, we
+    rubyfunk.ico        multi-size icon (16..256, PNG-compressed entries - Vista+ format, we
                          require Windows 10). Shipped in {app} and used for the Apps & Features
                          entry; the tray's state icons are drawn separately, not by this script.
 
-  Outputs are COMMITTED next to this script (like include/punktfunk_core.h, generated-but-checked-in);
+  Outputs are COMMITTED next to this script (like include/rubyfunk_core.h, generated-but-checked-in);
   re-run only when the brand changes. Everything is drawn 4x supersampled and downscaled
   (System.Drawing regions/clips do not antialias), so edges stay clean at every size.
 
@@ -89,7 +89,7 @@ function Resize-Bitmap([System.Drawing.Bitmap]$src, [int]$w, [int]$h) {
 
 $SS = 4   # supersample factor
 
-# --- punktfunk.ico: rounded brand tile at 16..256 --------------------------------------------
+# --- rubyfunk.ico: rounded brand tile at 16..256 --------------------------------------------
 # Small sizes are classic 32bpp DIB entries (older shell consumers reject an all-PNG icon); only
 # 128/256 use PNG compression (the standard Vista+ layout).
 function New-IconTile([int]$sz) {
@@ -167,7 +167,7 @@ for ($i = 0; $i -lt $icoSizes.Count; $i++) {
 }
 foreach ($p in $pngs) { $bw.Write([byte[]]$p) }
 $bw.Flush()
-$icoPath = Join-Path $OutDir 'punktfunk.ico'
+$icoPath = Join-Path $OutDir 'rubyfunk.ico'
 [IO.File]::WriteAllBytes($icoPath, $ico.ToArray())
 $bw.Dispose(); $ico.Dispose()
 # Self-check: a malformed container here would only surface later as a shell that draws nothing.

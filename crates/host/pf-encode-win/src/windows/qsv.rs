@@ -126,7 +126,7 @@ fn ts_90k(pts_ns: u64) -> u64 {
     pts_ns.wrapping_mul(9) / 100_000
 }
 
-/// Defeat LTR-RFI (`PUNKTFUNK_NO_QSV_LTR`); loss recovery then always IDRs.
+/// Defeat LTR-RFI (`RUBYFUNK_NO_QSV_LTR`); loss recovery then always IDRs.
 fn ltr_disabled() -> bool {
     crate::knobs::get().no_qsv_ltr != 0
 }
@@ -256,7 +256,7 @@ fn create_session(target_luid: Option<[u8; 8]>) -> Result<(Loader, Session, (u16
             // instead of burning the reset budget on the same mismatch.
             return Err(anyhow::Error::new(super::TerminalEncoderError).context(
                 "capture device's adapter is not an Intel VPL implementation (hybrid box? \
-                     point PUNKTFUNK_RENDER_ADAPTER / the web-console GPU preference at the \
+                     point RUBYFUNK_RENDER_ADAPTER / the web-console GPU preference at the \
                      Intel adapter for a QSV session)",
             ));
         }
@@ -737,7 +737,7 @@ impl Retrieve {
         let q = Arc::new(OutQueue::new("QSV")?);
         let (s, t_q) = (session as usize, q.clone());
         let thread =
-            RetrieveThread::spawn("punktfunk-qsv-out", move |stop| sync_loop(s, &t_q, &stop))?;
+            RetrieveThread::spawn("rubyfunk-qsv-out", move |stop| sync_loop(s, &t_q, &stop))?;
         Ok(Self { q, thread })
     }
 }

@@ -2,7 +2,7 @@
 # cargo-ndk for all three shipping ABIs and assembles the debug APK (clients/android). Mirrors apple.yml
 # but on a Linux runner — the NDK is cross-platform, so no self-hosted host is needed.
 #
-# Runs in the punktfunk-android-ci builder image (ci/android-ci.Dockerfile, content-keyed on
+# Runs in the rubyfunk-android-ci builder image (ci/android-ci.Dockerfile, content-keyed on
 # the LAN registry): JDK 21, the Android SDK/NDK/CMake pins, cargo-ndk and sccache are all
 # baked, so the multi-GB per-run Google downloads this job used to make are gone. Emulator
 # instrumentation tests are deferred until a KVM-capable runner exists (they self-skip
@@ -153,7 +153,7 @@ jobs:
     if: ${{ github.event_name != 'pull_request' || needs.gate.outputs.heavy == 'true' }}
     runs-on: ubuntu-24.04
     container:
-      image: 192.168.1.58:5010/punktfunk-android-ci:latest
+      image: 192.168.1.58:5010/rubyfunk-android-ci:latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -396,7 +396,7 @@ jobs:
         # (same reason as apple.yml / *-screenshots.yml). Download is a zip of the matched APK(s).
         uses: actions/upload-artifact@ff15f0306b3f739f7b6fd43fb5d26cd321bd4de5 # v3
         with:
-          name: punktfunk-android-apk
+          name: rubyfunk-android-apk
           path: |
             clients/android/app/build/outputs/apk/release/*.apk
             clients/android/app/build/outputs/apk/debug/*.apk
@@ -408,7 +408,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ff15f0306b3f739f7b6fd43fb5d26cd321bd4de5 # v3
         with:
-          name: punktfunk-android-native-symbols
+          name: rubyfunk-android-native-symbols
           path: clients/android/app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip
           if-no-files-found: ignore
           retention-days: 30
@@ -425,7 +425,7 @@ jobs:
         env:
           REGISTRY: git.unom.io
           OWNER: unom
-          PKG: punktfunk-android
+          PKG: rubyfunk-android
           VERSION: ${{ github.run_number }}
           REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
           GITEA_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
@@ -435,25 +435,25 @@ jobs:
           SYMS=clients/android/app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip
           base="https://$REGISTRY/api/packages/$OWNER/generic/$PKG"
           # 1) immutable, run-number-versioned store (sideload + provenance)
-          curl -fsS --user "enricobuehler:$REGISTRY_TOKEN" --upload-file "$AAB" "$base/$VERSION/punktfunk-android-r$VERSION.aab"
-          curl -fsS --user "enricobuehler:$REGISTRY_TOKEN" --upload-file "$APK" "$base/$VERSION/punktfunk-android-r$VERSION.apk"
-          curl -fsS --user "enricobuehler:$REGISTRY_TOKEN" --upload-file "$SYMS" "$base/$VERSION/punktfunk-android-r$VERSION-native-symbols.zip"
+          curl -fsS --user "enricobuehler:$REGISTRY_TOKEN" --upload-file "$AAB" "$base/$VERSION/rubyfunk-android-r$VERSION.aab"
+          curl -fsS --user "enricobuehler:$REGISTRY_TOKEN" --upload-file "$APK" "$base/$VERSION/rubyfunk-android-r$VERSION.apk"
+          curl -fsS --user "enricobuehler:$REGISTRY_TOKEN" --upload-file "$SYMS" "$base/$VERSION/rubyfunk-android-r$VERSION-native-symbols.zip"
           echo "published store version $VERSION (versionCode)"
           # 2) channel alias for a predictable sideload URL: stable -> latest/, canary -> canary/
           case "$GITHUB_REF" in refs/tags/v*) ALIAS=latest ;; *) ALIAS=canary ;; esac
-          curl -fsS -o /dev/null --user "enricobuehler:$REGISTRY_TOKEN" -X DELETE "$base/$ALIAS/punktfunk-android.apk" || true
-          curl -fsS --user "enricobuehler:$REGISTRY_TOKEN" --upload-file "$APK" "$base/$ALIAS/punktfunk-android.apk"
-          curl -fsS -o /dev/null --user "enricobuehler:$REGISTRY_TOKEN" -X DELETE "$base/$ALIAS/punktfunk-android-native-symbols.zip" || true
-          curl -fsS --user "enricobuehler:$REGISTRY_TOKEN" --upload-file "$SYMS" "$base/$ALIAS/punktfunk-android-native-symbols.zip"
-          echo "sideload alias: $base/$ALIAS/punktfunk-android.apk"
+          curl -fsS -o /dev/null --user "enricobuehler:$REGISTRY_TOKEN" -X DELETE "$base/$ALIAS/rubyfunk-android.apk" || true
+          curl -fsS --user "enricobuehler:$REGISTRY_TOKEN" --upload-file "$APK" "$base/$ALIAS/rubyfunk-android.apk"
+          curl -fsS -o /dev/null --user "enricobuehler:$REGISTRY_TOKEN" -X DELETE "$base/$ALIAS/rubyfunk-android-native-symbols.zip" || true
+          curl -fsS --user "enricobuehler:$REGISTRY_TOKEN" --upload-file "$SYMS" "$base/$ALIAS/rubyfunk-android-native-symbols.zip"
+          echo "sideload alias: $base/$ALIAS/rubyfunk-android.apk"
           # 3) on a real release, attach the .aab + .apk + symbols to the unified Gitea Release (X.Y.Z names)
           case "$GITHUB_REF" in
             refs/tags/v*)
               . scripts/ci/gitea-release.sh
               RID=$(ensure_release "$GITHUB_REF_NAME" "$GITHUB_REF_NAME" auto)
-              upsert_asset "$RID" "$AAB" "punktfunk-${VERSION_NAME}.aab"
-              upsert_asset "$RID" "$APK" "punktfunk-${VERSION_NAME}.apk"
-              upsert_asset "$RID" "$SYMS" "punktfunk-${VERSION_NAME}-android-native-symbols.zip"
+              upsert_asset "$RID" "$AAB" "rubyfunk-${VERSION_NAME}.aab"
+              upsert_asset "$RID" "$APK" "rubyfunk-${VERSION_NAME}.apk"
+              upsert_asset "$RID" "$SYMS" "rubyfunk-${VERSION_NAME}-android-native-symbols.zip"
               ;;
           esac
 
@@ -476,7 +476,7 @@ jobs:
           SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
         run: |
           echo "uploading to Play track '$PLAY_TRACK'${PLAY_ALSO_TRACK:+ (+ '$PLAY_ALSO_TRACK')}"
-          set -- --package io.unom.punktfunk \
+          set -- --package io.github.gunu3371.rubyfunk \
                  --aab clients/android/app/build/outputs/bundle/release/app-release.aab \
                  --track "$PLAY_TRACK" --status completed
           if [ -n "${PLAY_ALSO_TRACK:-}" ]; then set -- "$@" --also-track "$PLAY_ALSO_TRACK"; fi

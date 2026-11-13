@@ -1,0 +1,29 @@
+# rubyfunk seat: one user's headless desktop and stock host, started by rubyfunk-seats.
+#
+# The instance is the seat's Linux account (`rubyfunk-seat@pf-seat-1`). The supervisor writes
+# /run/rubyfunk/seats/<user>.env and a drop-in with the BindPaths for this seat's private
+# compatdata, shadercache and downloading, and the mounts of the owner's libraries, before each
+# start; start the unit through `rubyfunk-seats start <id>`, not by hand.
+[Unit]
+Description=rubyfunk seat %i
+After=systemd-logind.service systemd-user-sessions.service
+StartLimitIntervalSec=120
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=%i
+PAMName=login
+Environment=XDG_SESSION_TYPE=wayland
+Environment=XDG_SESSION_CLASS=user
+EnvironmentFile=/run/rubyfunk/seats/%i.env
+# Holds the session id for seat-reap.
+RuntimeDirectory=rubyfunk-seat-%i
+ExecStart=/usr/libexec/rubyfunk/seat-session
+# pam_systemd moves the session's processes out of this unit, so stopping it reaches only the
+# runner. The runner kills its children on SIGTERM; this kills the session for anything it missed.
+# `-`: a failed reap must not skip the drop-in's later ExecStopPost= unmounts.
+ExecStopPost=-+/usr/libexec/rubyfunk/seat-reap %i
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=20

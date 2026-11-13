@@ -17,13 +17,13 @@ anyhow = "1"
 tracing = "0.1"
 pyrowave-sys = { path = "../../codec/pyrowave-sys", optional = true }
 ash = { workspace = true, optional = true }
-# The AU memory the PyroWave decoder lends the reassembler (`punktfunk_core::au`).
-punktfunk-core = { path = "../../core/punktfunk-core" }
+# The AU memory the PyroWave decoder lends the reassembler (`rubyfunk_core::au`).
+rubyfunk-core = { path = "../../core/rubyfunk-core" }
 
 [target.'cfg(any(target_os = "linux", windows))'.dependencies]
 # Native Vulkan Video decode (WP-C of the native-decode program, HEVC added by M3
 # WP-2, AV1 by M7): auto's TOP rung on both desktop OSes since M9 — for every codec it
-# speaks, AV1 included — also pinnable via `PUNKTFUNK_DECODER=native-vulkan` —
+# speaks, AV1 included — also pinnable via `RUBYFUNK_DECODER=native-vulkan` —
 # video_vk_native.rs, running pf-vkdecode's VkH264Decoder/VkH265Decoder/VkAv1Decoder on
 # the presenter's shared device.
 pf-vkdecode = { path = "../../codec/pf-vkdecode", optional = true }
@@ -50,10 +50,10 @@ pf-bitstream = { path = "../../codec/pf-bitstream", optional = true }
 #
 # ⚠ Both of these are NEW COMPILE COST on the client packaging legs, which is easy to
 # miss because the workspace already built openh264: every client leg is `-p`-scoped and
-# excludes pf-encode (flatpak's `cargo build -p punktfunk-client-linux -p
-# punktfunk-client-session -p punktfunk-cli`, windows.yml/windows-msix.yml's
-# `-p punktfunk-client-windows …`, deb.yml's client job, packaging/nix's
-# `punktfunk-client`), so all of them compile the bundled OpenH264 tree for the FIRST
+# excludes pf-encode (flatpak's `cargo build -p rubyfunk-client-linux -p
+# rubyfunk-client-session -p rubyfunk-cli`, windows.yml/windows-msix.yml's
+# `-p rubyfunk-client-windows …`, deb.yml's client job, packaging/nix's
+# `rubyfunk-client`), so all of them compile the bundled OpenH264 tree for the FIRST
 # time here. Only the `--workspace` CI legs and the host packages built it before.
 #
 # `default-features = false` drops two things deliberately:
@@ -166,10 +166,10 @@ desktop = [
 d3d11va = ["dep:pf-dxvadec", "dep:pf-bitstream"]
 # PyroWave client decode ships in every default build (flatpak included; pyrowave-sys is a
 # vendored in-repo tree, offline-safe, and an empty stub off Linux/Windows). The codec is
-# still strictly per-session opt-in (Settings codec pick / PUNKTFUNK_PREFER_PYROWAVE=1).
+# still strictly per-session opt-in (Settings codec pick / RUBYFUNK_PREFER_PYROWAVE=1).
 pyrowave = ["dep:pyrowave-sys", "dep:ash"]
 
-# Headless wavelet decode bench over a `PUNKTFUNK_DUMP_VIDEO` capture.
+# Headless wavelet decode bench over a `RUBYFUNK_DUMP_VIDEO` capture.
 [[example]]
 name = "pyrowave_bench"
 required-features = ["pyrowave"]

@@ -24,7 +24,7 @@ its own after that. There are no accounts and nothing leaves your network.
    the PIN.
 3. The host now shows as paired. Pick it again to start streaming.
 
-If the PIN runs out, click **Pair a device** again. A `punktfunk://` link can't pair a device.
+If the PIN runs out, click **Pair a device** again. A `rubyfunk://` link can't pair a device.
 
 **Moonlight** works the other way round: Moonlight shows the PIN and you type it into the console.
 See [Connect with Moonlight → Pair](/docs/moonlight#3-pair).
@@ -67,4 +67,4 @@ The host has a stable certificate; each side pins the other's fingerprint. The P
 SPAKE2: someone without the PIN gets one online guess and nothing to attack offline. If a host's
 fingerprint changes, the client refuses it and asks you to pair again. To run without pairing on a
 fully trusted network, see [Security → Pairing policy](/docs/security#pairing-policy-open-hosts-and-trust-on-first-use).
-To pair from a script, use [`punktfunk pair`](/docs/clients#scripting-the-punktfunk-cli).
+To pair from a script, use [`rubyfunk pair`](/docs/clients#scripting-the-rubyfunk-cli).

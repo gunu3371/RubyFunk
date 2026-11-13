@@ -1874,7 +1874,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "punktfunk-seat-keeper"
+name = "rubyfunk-seat-keeper"
 version = "0.0.1"
 dependencies = [
  "hex",

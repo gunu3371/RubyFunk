@@ -324,8 +324,8 @@ const OfflineCard: FC<{ title: string; onRetry: () => void }> = ({
 			{/* The exact runner commands, so the operator can act without leaving the page. */}
 			<pre className="w-full overflow-x-auto rounded-md bg-muted p-3 text-left text-xs text-muted-foreground">
 				<code>
-					systemctl --user status punktfunk-scripting{"\n"}
-					Get-ScheduledTask PunktfunkScripting{"  # Windows"}
+					systemctl --user status rubyfunk-scripting{"\n"}
+					Get-ScheduledTask RubyFunkScripting{"  # Windows"}
 				</code>
 			</pre>
 			<Button variant="outline" size="sm" onClick={onRetry}>

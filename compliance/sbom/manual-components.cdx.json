@@ -7,7 +7,7 @@
       "type": "library",
       "name": "pyrowave",
       "version": "c0b997f84ced7bd827ca737aa5145f4ec811de8d",
-      "description": "GPU wavelet codec, vendored at crates/codec/pyrowave-sys/vendor/pyrowave (pruned tree) with local patches from crates/codec/pyrowave-sys/patches/; commits recorded in vendor/pyrowave/PUNKTFUNK-VENDOR.txt",
+      "description": "GPU wavelet codec, vendored at crates/codec/pyrowave-sys/vendor/pyrowave (pruned tree) with local patches from crates/codec/pyrowave-sys/patches/; commits recorded in vendor/pyrowave/RUBYFUNK-VENDOR.txt",
       "licenses": [
         {
           "license": {
@@ -107,7 +107,7 @@
       "type": "library",
       "name": "fec-rs",
       "version": "0.1.0",
-      "description": "Reed-Solomon FEC, forked at crates/core/punktfunk-core/vendor/fec-rs with the Cauchy generator matrix Moonlight's nanors uses",
+      "description": "Reed-Solomon FEC, forked at crates/core/rubyfunk-core/vendor/fec-rs with the Cauchy generator matrix Moonlight's nanors uses",
       "licenses": [
         {
           "license": {
@@ -232,8 +232,8 @@
     },
     {
       "type": "application",
-      "name": "punktfunk-gamescope",
-      "version": "upstream gamescope pinned by packaging/nix/gamescope.nix (nixpkgs) or built by packaging/gamescope/build-punktfunk-gamescope.sh, plus the local patch series from packaging/gamescope/patches/",
+      "name": "rubyfunk-gamescope",
+      "version": "upstream gamescope pinned by packaging/nix/gamescope.nix (nixpkgs) or built by packaging/gamescope/build-rubyfunk-gamescope.sh, plus the local patch series from packaging/gamescope/patches/",
       "description": "Patched gamescope compositor distributed via sysext/Arch/nix channels alongside the host",
       "licenses": [
         {
@@ -253,7 +253,7 @@
       "type": "library",
       "name": "wayland",
       "version": "1.26.0 (packaging/gamescope/subprojects/wayland.wrap)",
-      "description": "Linked static into punktfunk-gamescope on Debian 13 builds only (.deb, SteamOS box)",
+      "description": "Linked static into rubyfunk-gamescope on Debian 13 builds only (.deb, SteamOS box)",
       "licenses": [{ "license": { "id": "MIT" } }],
       "externalReferences": [{ "type": "vcs", "url": "https://gitlab.freedesktop.org/wayland/wayland" }]
     },
@@ -261,7 +261,7 @@
       "type": "library",
       "name": "libdrm",
       "version": "2.4.134 (packaging/gamescope/subprojects/libdrm.wrap)",
-      "description": "Linked static into punktfunk-gamescope on Debian 13 builds only (.deb, SteamOS box)",
+      "description": "Linked static into rubyfunk-gamescope on Debian 13 builds only (.deb, SteamOS box)",
       "licenses": [{ "license": { "id": "MIT" } }],
       "externalReferences": [{ "type": "vcs", "url": "https://gitlab.freedesktop.org/mesa/drm" }]
     },
@@ -269,7 +269,7 @@
       "type": "library",
       "name": "libxkbcommon",
       "version": "1.13.2 (packaging/gamescope/subprojects/libxkbcommon.wrap)",
-      "description": "Linked static into punktfunk-gamescope on Debian 13 builds only (.deb, SteamOS box)",
+      "description": "Linked static into rubyfunk-gamescope on Debian 13 builds only (.deb, SteamOS box)",
       "licenses": [{ "license": { "id": "MIT" } }],
       "externalReferences": [{ "type": "vcs", "url": "https://github.com/xkbcommon/libxkbcommon" }]
     },
@@ -277,7 +277,7 @@
       "type": "library",
       "name": "pixman",
       "version": "0.46.4 (packaging/gamescope/subprojects/pixman.wrap)",
-      "description": "Linked static into punktfunk-gamescope on Debian 13 builds only (.deb, SteamOS box)",
+      "description": "Linked static into rubyfunk-gamescope on Debian 13 builds only (.deb, SteamOS box)",
       "licenses": [{ "license": { "id": "MIT" } }],
       "externalReferences": [{ "type": "vcs", "url": "https://gitlab.freedesktop.org/pixman/pixman" }]
     },

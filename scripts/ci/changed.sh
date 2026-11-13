@@ -43,7 +43,7 @@ classify() {
                 scripts/ci/ensure-sccache.sh|scripts/ci/install-retrying-curl.sh|\
                 scripts/ci/check-installer-behavior.sh|scripts/ci/check-install-defaults.sh|\
                 scripts/ci/check-unsafe-hygiene.sh|scripts/ci/check-android-jni-names.sh|\
-                clients/android/kit/src/main/kotlin/io/unom/punktfunk/kit/NativeBridge.kt|\
+                clients/android/kit/src/main/kotlin/io/github/gunu3371/rubyfunk/kit/NativeBridge.kt|\
                 scripts/unsafe-census.py|scripts/ci/unsafe-census-baseline.json|\
                 packaging/windows/drivers/*.rs|packaging/windows/drivers/*/*.inx|\
                 clients/windows/*.rs|packaging/windows/pf-vkhdr-layer/*.rs|\
@@ -52,7 +52,7 @@ classify() {
                 about.toml|about.hbs|\
                 assets/os-icons/LICENSES/*|assets/launcher-icons/LICENSES/*|\
                 THIRD-PARTY-NOTICES.txt|clients/windows/THIRD-PARTY-NOTICES.txt|\
-                clients/apple/Sources/PunktfunkKit/Resources/THIRD-PARTY-NOTICES.txt|\
+                clients/apple/Sources/RubyFunkKit/Resources/THIRD-PARTY-NOTICES.txt|\
                 clients/android/app/src/main/assets/THIRD-PARTY-NOTICES.txt)
                     rust=true
                     ;;
@@ -70,9 +70,9 @@ classify() {
             esac
             case "$path" in
                 web/*|api/openapi.json|scripts/ci/retry.sh|clients/shared/library-id-vectors.json|\
-                crates/host/punktfunk-host/src/library/custom.rs|plugin-kit/src/wire.ts|\
-                crates/core/punktfunk-core/testdata/grant-vectors.json|\
-                crates/core/punktfunk-core/testdata/gamepad-button-vectors.json)
+                crates/host/rubyfunk-host/src/library/custom.rs|plugin-kit/src/wire.ts|\
+                crates/core/rubyfunk-core/testdata/grant-vectors.json|\
+                crates/core/rubyfunk-core/testdata/gamepad-button-vectors.json)
                     web=true
                     ;;
             esac
@@ -84,7 +84,7 @@ classify() {
             case "$path" in
                 sdk/*|plugin-kit/*|api/openapi.json|scripts/ci/retry.sh|\
                 clients/shared/library-id-vectors.json|\
-                crates/host/punktfunk-host/testdata/path-refusal-vectors.json|\
+                crates/host/rubyfunk-host/testdata/path-refusal-vectors.json|\
                 packaging/nix/packages.nix|packaging/nix/nixos-module.nix)
                     sdk_plugin_kit=true
                     ;;
@@ -129,7 +129,7 @@ self_test() {
     check android 'clients/android/app/build.gradle.kts' \
         'rust=false rust_arm64=false web=false docs_site=false sdk_plugin_kit=false decky_typecheck=false'
     # The rust job compares its JNI names with the native exports.
-    check android-bridge 'clients/android/kit/src/main/kotlin/io/unom/punktfunk/kit/NativeBridge.kt' \
+    check android-bridge 'clients/android/kit/src/main/kotlin/io/github/gunu3371/rubyfunk/kit/NativeBridge.kt' \
         'rust=true rust_arm64=false web=false docs_site=false sdk_plugin_kit=false decky_typecheck=false'
     # A workspace member with no cfg gate: workspace clippy compiles it on Linux, android.yml
     # (cargo-ndk, android cfg) does not stand in for that.
@@ -142,7 +142,7 @@ self_test() {
         'rust=true rust_arm64=false web=false docs_site=false sdk_plugin_kit=false decky_typecheck=false'
     check notice-template 'about.hbs' \
         'rust=true rust_arm64=false web=false docs_site=false sdk_plugin_kit=false decky_typecheck=false'
-    check host 'crates/host/punktfunk-host/src/main.rs' \
+    check host 'crates/host/rubyfunk-host/src/main.rs' \
         'rust=true rust_arm64=false web=false docs_site=false sdk_plugin_kit=false decky_typecheck=false'
     check workspace-tool 'tools/loss-harness/src/main.rs' \
         'rust=true rust_arm64=false web=false docs_site=false sdk_plugin_kit=false decky_typecheck=false'
@@ -177,17 +177,17 @@ self_test() {
     # The host's unprivileged launch kinds and the console's copy: each side's test reads the other.
     check launch-kinds-console 'web/src/lib/command-execution.ts' \
         'rust=true rust_arm64=false web=true docs_site=false sdk_plugin_kit=false decky_typecheck=false'
-    check launch-kinds-host 'crates/host/punktfunk-host/src/library/custom.rs' \
+    check launch-kinds-host 'crates/host/rubyfunk-host/src/library/custom.rs' \
         'rust=true rust_arm64=false web=true docs_site=false sdk_plugin_kit=false decky_typecheck=false'
-    check grant-vectors 'crates/core/punktfunk-core/testdata/grant-vectors.json' \
+    check grant-vectors 'crates/core/rubyfunk-core/testdata/grant-vectors.json' \
         'rust=true rust_arm64=true web=true docs_site=false sdk_plugin_kit=false decky_typecheck=false'
-    check gamepad-button-vectors 'crates/core/punktfunk-core/testdata/gamepad-button-vectors.json' \
+    check gamepad-button-vectors 'crates/core/rubyfunk-core/testdata/gamepad-button-vectors.json' \
         'rust=true rust_arm64=true web=true docs_site=false sdk_plugin_kit=false decky_typecheck=false'
     # The console types the plugin surfaces from the kit's wire.ts.
     check plugin-surface 'plugin-kit/src/wire.ts' \
         'rust=false rust_arm64=false web=true docs_site=false sdk_plugin_kit=true decky_typecheck=false'
     # The runner's sandbox replays the host's path refusals.
-    check path-refusal-vectors 'crates/host/punktfunk-host/testdata/path-refusal-vectors.json' \
+    check path-refusal-vectors 'crates/host/rubyfunk-host/testdata/path-refusal-vectors.json' \
         'rust=true rust_arm64=false web=false docs_site=false sdk_plugin_kit=true decky_typecheck=false'
     # The runner tests read how the Nix packages install its unit.
     check nix-runner-unit 'packaging/nix/packages.nix' \

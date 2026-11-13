@@ -20,12 +20,14 @@ use jni::EnvUnowned;
 /// hostSndbufKb, nLegs, burstsLossPct, cappedLossPct, nFindings]`, five per finding
 /// `[id, severity, n0, n1, n2]`, then `recommendedKbps` (the core's headroom under the ceiling).
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeNetworkCheck<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeNetworkCheck<
+    'local,
+>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
     handle: jlong,
 ) -> JDoubleArray<'local> {
-    use punktfunk_core::client::health::{self, LegShape};
+    use rubyfunk_core::client::health::{self, LegShape};
     env.with_env(|env| -> jni::errors::Result<JDoubleArray<'local>> {
         let Some(h) = SESSIONS.get(handle) else {
             return Ok(JDoubleArray::default());

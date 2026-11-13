@@ -87,7 +87,7 @@ describe("frameAncestorSource", () => {
 
 	test("keeps whatever hostname the operator browsed to", () => {
 		// The policy has to match their address bar, not a name we prefer.
-		for (const hostname of ["192.168.1.21", "punktfunk.local", "deck"]) {
+		for (const hostname of ["192.168.1.21", "rubyfunk.local", "deck"]) {
 			expect(
 				frameAncestorSource({
 					requestScheme: "http:",

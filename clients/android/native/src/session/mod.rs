@@ -16,8 +16,8 @@ mod input;
 mod planes;
 mod probe;
 
-use punktfunk_core::client::NativeClient;
-use punktfunk_core::fp::{hex, parse_hex32};
+use rubyfunk_core::client::NativeClient;
+use rubyfunk_core::fp::{hex, parse_hex32};
 use std::collections::HashMap;
 use std::panic::AssertUnwindSafe;
 use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, AtomicU8, Ordering};
@@ -32,7 +32,7 @@ use std::thread::JoinHandle;
 /// `panic = "unwind"` profile in the workspace `Cargo.toml` exists precisely so these guards work.
 pub(crate) fn jni_guard<T>(default: T, f: impl FnOnce() -> T) -> T {
     std::panic::catch_unwind(AssertUnwindSafe(f)).unwrap_or_else(|_| {
-        log::error!("punktfunk JNI: caught a panic at the FFI boundary (returning default)");
+        log::error!("rubyfunk JNI: caught a panic at the FFI boundary (returning default)");
         default
     })
 }
@@ -266,7 +266,7 @@ impl SessionHandle {
                     // else is a closed session, and there is nothing left to drain.
                     match client.next_frame(std::time::Duration::from_millis(5)) {
                         Ok(_) => {}
-                        Err(punktfunk_core::PunktfunkError::NoFrame) => {}
+                        Err(rubyfunk_core::RubyFunkError::NoFrame) => {}
                         Err(_) => break,
                     }
                 }

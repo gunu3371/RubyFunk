@@ -10,7 +10,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 /// The folder beside a library's `steamapps` that holds each Linux seat's own folder for it.
-pub const SEAT_ROOTS: &str = ".punktfunk-seats";
+pub const SEAT_ROOTS: &str = ".rubyfunk-seats";
 
 /// Top-level entries of a Steam install that a seat's copy leaves behind, on Windows and Linux:
 /// the box's sign-ins, library, caches and logs, Steam Guard's sentry files, and the seats'
@@ -452,7 +452,7 @@ mod tests {
         let paths = vec![
             r"C:\Program Files (x86)\Steam".to_owned(),
             r#"D:\Games "shared""#.to_owned(),
-            "/var/lib/punktfunk/games".to_owned(),
+            "/var/lib/rubyfunk/games".to_owned(),
         ];
         assert_eq!(library_paths(&library_folders_vdf(&paths)), paths);
     }
@@ -494,36 +494,36 @@ mod tests {
     /// library still wanted and one the owner dropped, around a top-level field.
     const SEAT: &str = "\"libraryfolders\"\n{\n\
         \t\"contentstatsid\"\t\t\"-123\"\n\
-        \t\"0\"\n\t{\n\t\t\"path\"\t\t\"/var/lib/punktfunk/seats/s/home/.local/share/Steam\"\n\
+        \t\"0\"\n\t{\n\t\t\"path\"\t\t\"/var/lib/rubyfunk/seats/s/home/.local/share/Steam\"\n\
         \t\t\"contentid\"\t\t\"2720844216766770910\"\n\
         \t\t\"apps\"\n\t\t{\n\t\t\t\"228980\"\t\t\"0\"\n\t\t}\n\t}\n\
         \t\"1\"\n\t{\n\t\t\"path\"\t\t\"/run/media/system/QEMU_HARDDISK\"\n\
         \t\t\"apps\"\n\t\t{\n\t\t\t\"12210\"\t\t\"23927789464\"\n\t\t}\n\t}\n\
-        \t\"2\"\n\t{\n\t\t\"path\"\t\t\"/var/lib/punktfunk/seats/s/libraries/kept\"\n\
+        \t\"2\"\n\t{\n\t\t\"path\"\t\t\"/var/lib/rubyfunk/seats/s/libraries/kept\"\n\
         \t\t\"contentid\"\t\t\"77\"\n\t\t\"apps\"\n\t\t{\n\t\t\t\"730\"\t\t\"1\"\n\t\t}\n\t}\n\
-        \t\"3\"\n\t{\n\t\t\"path\"\t\t\"/var/lib/punktfunk/seats/s/libraries/gone\"\n\t}\n}\n";
+        \t\"3\"\n\t{\n\t\t\"path\"\t\t\"/var/lib/rubyfunk/seats/s/libraries/gone\"\n\t}\n}\n";
 
     fn managed(path: &str) -> bool {
-        path.starts_with("/var/lib/punktfunk/seats/s/libraries/") || path.starts_with("/run/media/")
+        path.starts_with("/var/lib/rubyfunk/seats/s/libraries/") || path.starts_with("/run/media/")
     }
 
     #[test]
     fn a_merge_keeps_steam_s_entries_and_lists_exactly_the_box_s() {
         let wanted = [
-            "/var/lib/punktfunk/seats/s/libraries/kept".to_owned(),
-            "/var/lib/punktfunk/seats/s/libraries/new".to_owned(),
+            "/var/lib/rubyfunk/seats/s/libraries/kept".to_owned(),
+            "/var/lib/rubyfunk/seats/s/libraries/new".to_owned(),
         ];
         let merged = merge_library_folders(SEAT, managed, &wanted).unwrap();
         assert_eq!(
             merged,
             "\"libraryfolders\"\n{\n\
              \t\"contentstatsid\"\t\t\"-123\"\n\
-             \t\"0\"\n\t{\n\t\t\"path\"\t\t\"/var/lib/punktfunk/seats/s/home/.local/share/Steam\"\n\
+             \t\"0\"\n\t{\n\t\t\"path\"\t\t\"/var/lib/rubyfunk/seats/s/home/.local/share/Steam\"\n\
              \t\t\"contentid\"\t\t\"2720844216766770910\"\n\
              \t\t\"apps\"\n\t\t{\n\t\t\t\"228980\"\t\t\"0\"\n\t\t}\n\t}\n\
-             \t\"1\"\n\t{\n\t\t\"path\"\t\t\"/var/lib/punktfunk/seats/s/libraries/kept\"\n\
+             \t\"1\"\n\t{\n\t\t\"path\"\t\t\"/var/lib/rubyfunk/seats/s/libraries/kept\"\n\
              \t\t\"contentid\"\t\t\"77\"\n\t\t\"apps\"\n\t\t{\n\t\t\t\"730\"\t\t\"1\"\n\t\t}\n\t}\n\
-             \t\"2\"\n\t{\n\t\t\"path\"\t\t\"/var/lib/punktfunk/seats/s/libraries/new\"\n\t}\n}\n"
+             \t\"2\"\n\t{\n\t\t\"path\"\t\t\"/var/lib/rubyfunk/seats/s/libraries/new\"\n\t}\n}\n"
         );
         assert_eq!(
             merge_library_folders(&merged, managed, &wanted),

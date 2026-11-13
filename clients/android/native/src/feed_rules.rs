@@ -8,9 +8,9 @@
 //! piece) abandons that AU: it is closed with an empty buffer at its own pts, so the codec needs
 //! no flush, and the next `first` piece re-syncs the feed.
 
-use punktfunk_core::packet::FLAG_SOF;
-use punktfunk_core::quic::ColorInfo;
-use punktfunk_core::session::Frame;
+use rubyfunk_core::packet::FLAG_SOF;
+use rubyfunk_core::quic::ColorInfo;
+use rubyfunk_core::session::Frame;
 
 /// H.273's unspecified transfer: the stream names no colour of its own.
 const TRC_UNSPECIFIED: u8 = 2;
@@ -158,9 +158,9 @@ pub(crate) fn colour_after(
 #[cfg(test)]
 mod tests {
     use super::{colour_after, gate, render_after, spoiled, Cause, Gate, PartFeed, Piece, Spoiled};
-    use punktfunk_core::packet::FLAG_SOF;
-    use punktfunk_core::quic::ColorInfo;
-    use punktfunk_core::session::{Frame, FramePart};
+    use rubyfunk_core::packet::FLAG_SOF;
+    use rubyfunk_core::quic::ColorInfo;
+    use rubyfunk_core::session::{Frame, FramePart};
 
     /// A header states PQ or a flip back to SDR; one that names nothing keeps the last word, and
     /// only AV1 parses for it.

@@ -24,7 +24,7 @@
 # `web/bun.lock` said 5.0.8 — the `^5.0.8` override from ec9aa415 landed in the lockfile, the
 # bun2nix branch had generated `bun.nix` off the pre-override lock, and the merge kept both. The
 # Nix build fetches node_modules strictly from `bun.nix`, so the offline `bun install` inside the
-# derivation is then asked for a tarball the store cache does not contain and `punktfunk-web` fails
+# derivation is then asked for a tarball the store cache does not contain and `rubyfunk-web` fails
 # to build — with a "package not found" that names npm, not the lockfile that actually drifted.
 #
 # The gate also enforces the version pin the flake and README only *state*: `bun.nix` has no schema
@@ -189,7 +189,7 @@ while read -r dir; do
         echo "check-bun-nix: $dir/bun.nix matches $dir/bun.lock"
     else
         echo "check-bun-nix: $dir/bun.nix is STALE — it does not match $dir/bun.lock." >&2
-        echo "The Nix build fetches node_modules only from bun.nix, so punktfunk's bun packages" >&2
+        echo "The Nix build fetches node_modules only from bun.nix, so rubyfunk's bun packages" >&2
         echo "would build against the wrong dependency set (or fail to fetch it at all)." >&2
         echo "Regenerate and commit it:  scripts/ci/check-bun-nix.sh --fix" >&2
         echo "--- diff (committed -> regenerated from bun.lock) ---" >&2

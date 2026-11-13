@@ -3,7 +3,7 @@
 //! tear the probe nodes down.
 //!
 //! `ssm` / `sink` / `sss-primary` / `mint` / `plan` / `micpitch` / `micpins` /
-//! `cleanup`. Nodes stamp `PunktfunkAudioProbe=1` under `Device Parameters`
+//! `cleanup`. Nodes stamp `RubyFunkAudioProbe=1` under `Device Parameters`
 //! because DeviceDesc dies at INF install; `cleanup` and
 //! [`devnode_cleanup`](super::devnode_cleanup) match that marker, not the name.
 //!
@@ -22,9 +22,9 @@ use wasapi::{Direction, SampleType, StreamMode, WaveFormat};
 /// `Device Parameters` stamp. `cleanup` and
 /// [`devnode_cleanup`](super::devnode_cleanup) match this so a probe node cannot
 /// outlive the product.
-pub const PROBE_MARKER: &str = "PunktfunkAudioProbe";
+pub const PROBE_MARKER: &str = "RubyFunkAudioProbe";
 /// Device Manager name until the INF install overwrites it.
-const PROBE_DESC: &str = "Punktfunk Audio Probe";
+const PROBE_DESC: &str = "RubyFunk Audio Probe";
 const ENDPOINT_WAIT: Duration = Duration::from_secs(15);
 /// Tone renders at 0.5; autoconvert may attenuate. Above this is signal.
 const SIGNAL_FLOOR: f32 = 0.05;
@@ -147,7 +147,7 @@ pub fn run(args: &[String]) -> Result<()> {
             Ok(())
         }
         _ => bail!(
-            "usage: punktfunk-host audio-probe \
+            "usage: rubyfunk-host audio-probe \
              <ssm|sink|sss-primary|mint|plan|micpitch|micpins|cleanup> [--keep]"
         ),
     }
@@ -170,7 +170,7 @@ fn probe_ssm(keep: bool) -> Result<()> {
             println!("audio-probe ssm: render endpoint {render_ep} appeared, but:");
             println!("  {e:#}");
             println!("  VERDICT: FAIL (S3) — the minted SSM instance has NO capture endpoint;");
-            println!("  a punktfunk-owned virtual mic cannot come from this driver.");
+            println!("  a rubyfunk-owned virtual mic cannot come from this driver.");
             restore_defaults(prev_render, prev_capture);
             if !keep {
                 remove_devnode(&inst);
@@ -192,7 +192,7 @@ fn probe_ssm(keep: bool) -> Result<()> {
     if peak > SIGNAL_FLOOR {
         println!(
             "  VERDICT: PASS (S3) — the minted Steam Streaming Microphone instance carries \
-             audio render→capture; a punktfunk-owned virtual mic needs no VB-Cable where \
+             audio render→capture; a rubyfunk-owned virtual mic needs no VB-Cable where \
              Steam is installed."
         );
     } else {
@@ -238,7 +238,7 @@ fn probe_sink(keep: bool) -> Result<()> {
     if peak > SIGNAL_FLOOR {
         println!(
             "  VERDICT: PASS (S2) — default-routed audio reaches the minted Speakers instance \
-             and its WASAPI loopback carries it; \"Punktfunk Speakers\" can be the canonical \
+             and its WASAPI loopback carries it; \"RubyFunk Speakers\" can be the canonical \
              client-only sink."
         );
     } else {

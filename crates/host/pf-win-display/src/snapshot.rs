@@ -324,7 +324,7 @@ mod tests {
             active,
             external_physical: !ours,
             internal_panel: false,
-            tech: if ours { "punktfunk-virtual" } else { "HDMI" },
+            tech: if ours { "rubyfunk-virtual" } else { "HDMI" },
             friendly: if ours { String::new() } else { "TV".into() },
             monitor_device_path: String::new(),
             ours,

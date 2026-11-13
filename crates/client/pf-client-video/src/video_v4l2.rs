@@ -11,7 +11,7 @@
 //!
 //! The driver's enumeration is the only truth: [`caps`] lists a codec only
 //! where a node takes it and offers a picture format this client can show.
-//! Pin with `PUNKTFUNK_DECODER=native-v4l2`; `PUNKTFUNK_V4L2_DEVICE` names
+//! Pin with `RUBYFUNK_DECODER=native-v4l2`; `RUBYFUNK_V4L2_DEVICE` names
 //! the node.
 
 use std::collections::VecDeque;
@@ -52,7 +52,7 @@ use crate::video_color::ColorDesc;
 use crate::video_types::display_of;
 use crate::video_types::AnyPlanner;
 
-/// `PUNKTFUNK_DECODER=native-v4l2`.
+/// `RUBYFUNK_DECODER=native-v4l2`.
 pub(crate) const DECODER_PIN: &str = "native-v4l2";
 
 /// `DRM_FORMAT_MOD_LINEAR`. V4L2 buffers carry no modifier; the linear
@@ -92,9 +92,9 @@ pub(crate) struct Caps {
 impl Caps {
     fn slot(&self, wire: u8) -> Option<&CodecNode> {
         match wire {
-            punktfunk_core::quic::CODEC_H264 => self.h264.as_ref(),
-            punktfunk_core::quic::CODEC_HEVC => self.hevc.as_ref(),
-            punktfunk_core::quic::CODEC_AV1 => self.av1.as_ref(),
+            rubyfunk_core::quic::CODEC_H264 => self.h264.as_ref(),
+            rubyfunk_core::quic::CODEC_HEVC => self.hevc.as_ref(),
+            rubyfunk_core::quic::CODEC_AV1 => self.av1.as_ref(),
             _ => None,
         }
     }
@@ -102,9 +102,9 @@ impl Caps {
     pub(crate) fn summary(&self) -> V4l2Summary {
         let mut s = V4l2Summary::default();
         for wire in [
-            punktfunk_core::quic::CODEC_H264,
-            punktfunk_core::quic::CODEC_HEVC,
-            punktfunk_core::quic::CODEC_AV1,
+            rubyfunk_core::quic::CODEC_H264,
+            rubyfunk_core::quic::CODEC_HEVC,
+            rubyfunk_core::quic::CODEC_AV1,
         ] {
             if let Some(node) = self.slot(wire) {
                 s.codecs |= wire;
@@ -115,7 +115,7 @@ impl Caps {
         }
         // 8-bit only: no stateless decoder here has a 10-bit format we show.
         if self.hevc_stateless.is_some() {
-            s.codecs |= punktfunk_core::quic::CODEC_HEVC;
+            s.codecs |= rubyfunk_core::quic::CODEC_HEVC;
         }
         s
     }
@@ -129,9 +129,9 @@ pub(crate) fn caps() -> &'static Caps {
 
 fn wire_fourcc(wire: u8) -> Option<u32> {
     match wire {
-        punktfunk_core::quic::CODEC_H264 => Some(uapi::V4L2_PIX_FMT_H264),
-        punktfunk_core::quic::CODEC_HEVC => Some(uapi::V4L2_PIX_FMT_HEVC),
-        punktfunk_core::quic::CODEC_AV1 => Some(uapi::V4L2_PIX_FMT_AV1),
+        rubyfunk_core::quic::CODEC_H264 => Some(uapi::V4L2_PIX_FMT_H264),
+        rubyfunk_core::quic::CODEC_HEVC => Some(uapi::V4L2_PIX_FMT_HEVC),
+        rubyfunk_core::quic::CODEC_AV1 => Some(uapi::V4L2_PIX_FMT_AV1),
         _ => None,
     }
 }
@@ -150,9 +150,9 @@ fn probe() -> Caps {
             continue;
         };
         for (wire, slot) in [
-            (punktfunk_core::quic::CODEC_H264, &mut caps.h264),
-            (punktfunk_core::quic::CODEC_HEVC, &mut caps.hevc),
-            (punktfunk_core::quic::CODEC_AV1, &mut caps.av1),
+            (rubyfunk_core::quic::CODEC_H264, &mut caps.h264),
+            (rubyfunk_core::quic::CODEC_HEVC, &mut caps.hevc),
+            (rubyfunk_core::quic::CODEC_AV1, &mut caps.av1),
         ] {
             let fourcc = wire_fourcc(wire).expect("the three listed codecs map");
             if slot.is_some() || !inputs.contains(&fourcc) {
@@ -217,9 +217,9 @@ fn frame_based(path: &Path) -> bool {
     }
 }
 
-/// `PUNKTFUNK_V4L2_DEVICE`, else every `/dev/video*` in numeric order.
+/// `RUBYFUNK_V4L2_DEVICE`, else every `/dev/video*` in numeric order.
 fn candidate_nodes() -> Vec<PathBuf> {
-    if let Some(forced) = std::env::var_os("PUNKTFUNK_V4L2_DEVICE").filter(|v| !v.is_empty()) {
+    if let Some(forced) = std::env::var_os("RUBYFUNK_V4L2_DEVICE").filter(|v| !v.is_empty()) {
         return vec![PathBuf::from(forced)];
     }
     let Ok(dir) = std::fs::read_dir("/dev") else {
@@ -313,7 +313,7 @@ impl NativeV4l2Decoder {
     /// Refuses when no node takes this codec and shape, so the ladder falls
     /// through at construction instead of on the first access unit.
     pub(crate) fn new(wire: u8, stream: StreamFormat) -> Result<NativeV4l2Decoder> {
-        if stream.chroma_format_idc != punktfunk_core::quic::CHROMA_IDC_420 {
+        if stream.chroma_format_idc != rubyfunk_core::quic::CHROMA_IDC_420 {
             bail!("V4L2 decode is 4:2:0 only");
         }
         let caps = caps();
@@ -326,7 +326,7 @@ impl NativeV4l2Decoder {
             )));
         }
         match &caps.hevc_stateless {
-            Some(path) if wire == punktfunk_core::quic::CODEC_HEVC => {
+            Some(path) if wire == rubyfunk_core::quic::CODEC_HEVC => {
                 if stream.bit_depth > 8 {
                     bail!("the stateless V4L2 decoder has no 10-bit picture format we show");
                 }
@@ -394,10 +394,10 @@ impl<D: Opened> StatefulRung<D> {
     /// The rung over the decoder at `node`, opened on the first access unit.
     fn on_node(wire: u8, node: PathBuf) -> StatefulRung<D> {
         let planner = match wire {
-            punktfunk_core::quic::CODEC_H264 => {
+            rubyfunk_core::quic::CODEC_H264 => {
                 AnyPlanner::H264(Box::new(pf_bitstream::h264::H264Planner::new()))
             }
-            punktfunk_core::quic::CODEC_HEVC => {
+            rubyfunk_core::quic::CODEC_HEVC => {
                 AnyPlanner::H265(Box::new(pf_bitstream::h265::H265Planner::new()))
             }
             _ => AnyPlanner::Av1(Box::new(pf_bitstream::av1::Av1Planner::new())),
@@ -784,7 +784,7 @@ mod tests {
     }
 
     fn rung() -> StatefulRung<FakeDecoder> {
-        StatefulRung::on_node(punktfunk_core::quic::CODEC_H264, PathBuf::from("fake"))
+        StatefulRung::on_node(rubyfunk_core::quic::CODEC_H264, PathBuf::from("fake"))
     }
 
     fn fake(d: &mut StatefulRung<FakeDecoder>) -> &mut FakeDecoder {

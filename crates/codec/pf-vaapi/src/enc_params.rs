@@ -46,11 +46,11 @@ pub struct SessionParams {
     /// kept for fails to store.
     pub slots: u8,
     /// The reorder bound this stream actually uses. Zero for the low-delay P-only
-    /// shape every punktfunk host emits.
+    /// shape every rubyfunk host emits.
     pub max_num_reorder_frames: u32,
     pub initial_qp: u8,
     /// VBV depth in frames of bits. One holds picture size roughly constant and
-    /// takes motion as a QP dip; the libav path's `PUNKTFUNK_VBV_FRAMES` knob.
+    /// takes motion as a QP dip; the libav path's `RUBYFUNK_VBV_FRAMES` knob.
     pub vbv_frames: f32,
     /// The range the VPP writes and the VUI states, either codec; `false` is studio.
     pub full_range: bool,

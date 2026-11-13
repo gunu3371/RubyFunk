@@ -5,9 +5,9 @@ use jni::errors::LogErrorAndDefault;
 use jni::objects::{JByteArray, JObject, JString};
 use jni::sys::{jboolean, jint, jlong};
 use jni::EnvUnowned;
-use punktfunk_core::client::{ConnectParams, NativeClient};
-use punktfunk_core::config::{CompositorPref, GamepadPref, Mode};
-use punktfunk_core::quic::v2::msg::{ProfileUnlock, Zeroizing};
+use rubyfunk_core::client::{ConnectParams, NativeClient};
+use rubyfunk_core::config::{CompositorPref, GamepadPref, Mode};
+use rubyfunk_core::quic::v2::msg::{ProfileUnlock, Zeroizing};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -28,8 +28,8 @@ static DIAL_PENDING: AtomicBool = AtomicBool::new(false);
 /// Stable token for a failed pair/connect cause, matched by Kotlin (`ConnectErrors.kt`):
 /// a typed host rejection yields its `RejectReason::as_str()` token ("not-armed", "denied",
 /// "approval-timeout", …); transport-level causes map to "crypto" / "timeout" / "io" / "error".
-fn note_error(e: &punktfunk_core::error::PunktfunkError) {
-    use punktfunk_core::error::PunktfunkError as E;
+fn note_error(e: &rubyfunk_core::error::RubyFunkError) {
+    use rubyfunk_core::error::RubyFunkError as E;
     let (token, said) = match e {
         E::Rejected(r, said) => (r.as_str(), said.as_str()),
         E::Crypto => ("crypto", ""),
@@ -44,7 +44,9 @@ fn note_error(e: &punktfunk_core::error::PunktfunkError) {
 /// `NativeBridge.nativeTakeLastSaid(): String` — the host's own sentence with the most recent
 /// refusal, cleared on read (`""` when it said none). Read beside `nativeTakeLastError`.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeTakeLastSaid<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeTakeLastSaid<
+    'local,
+>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
 ) -> JString<'local> {
@@ -56,7 +58,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeTakeLastSai
 /// `NativeBridge.nativeDialPending(): Boolean` — the dial `nativeConnect` is blocked on was
 /// parked by the host for its operator's approval; it now waits for that verdict.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeDialPending(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeDialPending(
     _env: EnvUnowned,
     _this: JObject,
 ) -> jboolean {
@@ -67,7 +69,9 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeDialPending
 /// `nativeConnect`/`nativePair`, cleared on read (`""` when none). Call right after a `0`
 /// handle / `""` fingerprint.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeTakeLastError<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeTakeLastError<
+    'local,
+>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
 ) -> JString<'local> {
@@ -77,15 +81,17 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeTakeLastErr
 }
 
 /// `NativeBridge.nativeGenerateIdentity(): String` — mint a fresh persistent self-signed identity.
-/// Returns `"<certPem>\n-----PUNKTFUNK-KEY-----\n<keyPem>"`, or `""` on failure (logged). Kotlin
+/// Returns `"<certPem>\n-----RUBYFUNK-KEY-----\n<keyPem>"`, or `""` on failure (logged). Kotlin
 /// persists it (Keystore-wrapped) and only calls this again when the store is genuinely empty.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeGenerateIdentity<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeGenerateIdentity<
+    'local,
+>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
 ) -> JString<'local> {
-    let out = match punktfunk_core::quic::endpoint::generate_identity() {
-        Ok((cert, key)) => format!("{cert}\n-----PUNKTFUNK-KEY-----\n{key}"),
+    let out = match rubyfunk_core::quic::endpoint::generate_identity() {
+        Ok((cert, key)) => format!("{cert}\n-----RUBYFUNK-KEY-----\n{key}"),
         Err(e) => {
             log::error!("nativeGenerateIdentity failed: {e}");
             String::new()
@@ -101,28 +107,28 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeGenerateIde
 /// creation); Kotlin's one connect choke point (`HostConnect.connectToHost`) does. The rest of the
 /// toggle rides explicit per-session parameters (`nativeStartVideo` / `nativeStartAudio`).
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeSetLowLatencyMode(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeSetLowLatencyMode(
     _env: EnvUnowned,
     _this: JObject,
     enabled: jboolean,
 ) {
     jni_guard((), || {
-        punktfunk_core::transport::set_dscp_default(enabled);
+        rubyfunk_core::transport::set_dscp_default(enabled);
     })
 }
 
-/// `debug.punktfunk.force_parts` = 1: arm slice-progressive parts delivery even when the
+/// `debug.rubyfunk.force_parts` = 1: arm slice-progressive parts delivery even when the
 /// Kotlin `FEATURE_PartialFrame` probe said no — the rebuild-free on-glass experiment for a
 /// decoder that may accept `BUFFER_FLAG_PARTIAL_FRAME` without declaring the feature (the NP3's
 /// c2.qti decoders declare nothing). Android-only; everywhere else the probe verdict stands.
 fn force_parts_sysprop() -> bool {
-    crate::sys::sysprop(c"debug.punktfunk.force_parts").as_deref() == Some("1")
+    crate::sys::sysprop(c"debug.rubyfunk.force_parts").as_deref() == Some("1")
 }
 
 /// The rates this session may ask for when the one the user chose will not open, best first.
 ///
 /// **Down the requested rate's own FAMILY, then the 48 kHz floor.** The two families
-/// ([`punktfunk_core::audio::pcm::rate_is_supported`]) are 44.1 / 88.2 / 176.4 kHz and 48 / 96 kHz,
+/// ([`rubyfunk_core::audio::pcm::rate_is_supported`]) are 44.1 / 88.2 / 176.4 kHz and 48 / 96 kHz,
 /// and within a family the lower rates are the same material at half the samples — a 176.4 kHz
 /// interface that will not open is overwhelmingly likely to be an 88.2 or 44.1 kHz one, and asking
 /// there next is asking for the rate the endpoint most plausibly runs at.
@@ -137,7 +143,7 @@ fn force_parts_sysprop() -> bool {
 /// The requested rate is the first rung, so an openable rate is asked for unchanged and a default
 /// session's ladder is one rung long.
 fn rate_fallback_ladder(rate_hz: u32) -> &'static [u32] {
-    const HZ48: u32 = punktfunk_core::audio::SAMPLE_RATE_HZ;
+    const HZ48: u32 = rubyfunk_core::audio::SAMPLE_RATE_HZ;
     match rate_hz {
         176_400 => &[176_400, 88_200, 44_100, HZ48],
         88_200 => &[88_200, 44_100, HZ48],
@@ -148,65 +154,18 @@ fn rate_fallback_ladder(rate_hz: u32) -> &'static [u32] {
     }
 }
 
-/// Resolve the audio format this `Hello` should ASK for, from what Kotlin's setting requested —
-/// after proving this device can actually open it.
-///
-/// This is `design/hi-res-audio.md` §7's rule made mechanical: *"a client that cannot open a
-/// 96 kHz output must not set `CLIENT_CAP_AUDIO_HIRES`"*. It has to happen here, before the
-/// handshake, because after it there is no recovery: AAudio grants an explicitly-requested rate or
-/// fails the open (it never substitutes), the host does not renegotiate the plane mid-session
-/// (§6), and the only ways to play a wire of one rate through a stream of another are the wrong
-/// speed or a resampler nobody asked for — which §9 forbids in as many words ("say so and fall
-/// back, not resample quietly"). So the fall back happens where falling back is still free: in the
-/// request.
-///
-/// **Every rung above the floor is probed, and admitting the 44.1 kHz family made that matter
-/// more, not less.** When the ladder was 96 → 48 there was one uncertain rate; now there are four,
-/// and their odds are nothing alike — 44 100 Hz is granted by very nearly every Android output,
-/// 176 400 Hz by very nearly none, and 88 200 Hz by whatever the HAL happens to think. None of
-/// that is inferable from the number, so [`crate::audio::output_rate_is_openable`] opens a stream
-/// and reads back what it was granted, once per rung, until one holds.
-///
-/// Dropping the RATE keeps the depth, so a device that refuses the rate still gets a 24-bit
-/// lossless session rather than being pushed all the way back to Opus — the depth is where the
-/// plane earns its bandwidth anyway (and it is the half that is audible at all: §12).
-///
-/// The 48 kHz floor is never probed. It is universally supported, and the DEPTH never reaches
-/// AAudio at all (the device is opened as f32 on both planes — see `crate::audio`), so there is
-/// nothing about 16-vs-24-bit for a probe to discover. An ordinary session therefore opens no
-/// stream here and pays nothing.
-///
-/// # ⚠⚠ "Not asking" is `(0, 0)`, and it is NOT `(48 000, 16)`
-///
-/// Core's `advertised_client_caps` sets `CLIENT_CAP_AUDIO_HIRES` when **either field is non-zero**
-/// — it keys on *the caller specified a format*, not on *the format differs from the default*, and
-/// deliberately: 48 kHz/16-bit is the cheapest lossless rung as well as the legacy pair, so a
-/// "differs from the default" rule would make it the one rung on the ladder nobody could ask for.
-///
-/// So returning the legacy-looking `(48 000, 16)` for a user who chose **Standard (Opus)** does not
-/// mean "no request" — it advertises the capability, the host's gate accepts 48 kHz/16-bit as a
-/// perfectly supported format, and the host then silently gives that user the lossless `0xD3` plane
-/// at 1.5 Mbps in place of 256 kbps of Opus. This returned exactly that pair until it was caught by
-/// comparing all four clients; the desktop client and every pre-v24 `punktfunk_connect_ex*` send
-/// `(0, 0)`, and so does this now.
-///
-/// ⚠⚠ The reach of that slip grew on 2026-08-17: `PUNKTFUNK_AUDIO_HIRES` went default-ON, so where
-/// this used to need a host whose operator had opted in, it now lands on every host that has not
-/// deliberately opted out.
-///
-/// `(0, 0)` is also what keeps the `Hello` byte-identical to a legacy one, because the wire encodes
-/// an explicit 48 000/16 the same as absent — the difference lives entirely in the capability bit.
+/// Request lossless audio only when the caller supplies a supported format.
+/// Zeroes leave the capability absent, so the Opus preference stays Opus.
 fn resolve_requested_audio_format(rate_hz: u32, bits: u8, channels: u8) -> (u32, u8) {
-    const HZ48: u32 = punktfunk_core::audio::SAMPLE_RATE_HZ;
-    /// "This session did not ask for the lossless plane" — see the ⚠⚠ section above for why this
-    /// is a pair of zeroes and not the legacy 48 000/16.
+    const HZ48: u32 = rubyfunk_core::audio::SAMPLE_RATE_HZ;
+    // Zeroes keep the lossless capability absent.
     const UNSPECIFIED: (u32, u8) = (0, 0);
     // A format core would not carry — including Kotlin's `0`/`0` for the Opus setting — asks for
     // nothing, rather than being an error: the request is a preference, and an unrecognized one
     // must not block a connect. The rate set comes from core rather than being re-expressed here,
     // so the host's gate and every client's request validation cannot drift apart.
-    if !punktfunk_core::audio::pcm::depth_is_supported(bits)
-        || !punktfunk_core::audio::pcm::rate_is_supported(rate_hz)
+    if !rubyfunk_core::audio::pcm::depth_is_supported(bits)
+        || !rubyfunk_core::audio::pcm::rate_is_supported(rate_hz)
     {
         return UNSPECIFIED;
     }
@@ -258,7 +217,7 @@ fn audio_rate_is_openable(_rate_hz: u32, _channels: u8) -> bool {
 /// Android ARMv7 always asks for ChaCha because software AES limits these TV-class devices. Other
 /// ABIs keep AES; their hardware acceleration makes the tradeoff target-specific.
 fn video_caps(hdr: bool, ten_bit_sdr: bool, multi_slice: bool) -> u8 {
-    use punktfunk_core::quic::{
+    use rubyfunk_core::quic::{
         VIDEO_CAP_10BIT, VIDEO_CAP_CHACHA20, VIDEO_CAP_HDR, VIDEO_CAP_MULTI_SLICE,
     };
     let mut caps = if cfg!(all(target_os = "android", target_arch = "arm")) {
@@ -281,7 +240,7 @@ fn video_caps(hdr: bool, ten_bit_sdr: bool, multi_slice: bool) -> u8 {
 #[cfg(test)]
 mod caps_tests {
     use super::video_caps;
-    use punktfunk_core::quic::{
+    use rubyfunk_core::quic::{
         VIDEO_CAP_10BIT, VIDEO_CAP_CHACHA20, VIDEO_CAP_HDR, VIDEO_CAP_MULTI_SLICE,
     };
 
@@ -444,7 +403,7 @@ fn request_of(env: &jni::Env, request: &JString) -> jni::errors::Result<Option<C
 /// `NativeBridge.nativeConnect(requestJson): Long` — see [`ConnectRequest`]. Returns an opaque
 /// handle, or 0 on failure (`nativeTakeLastError` carries the cause).
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeConnect<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeConnect<'local>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
     request: JString<'local>,
@@ -470,7 +429,9 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeConnect<'lo
 /// "error" before anything is dialed.
 #[unsafe(no_mangle)]
 #[allow(clippy::too_many_arguments)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeConnectWithUnlock<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeConnectWithUnlock<
+    'local,
+>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
     request: JString<'local>,
@@ -483,7 +444,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeConnectWith
 ) -> jlong {
     type Read = Option<(
         ConnectRequest,
-        Option<punktfunk_core::error::Result<ProfileUnlock>>,
+        Option<rubyfunk_core::error::Result<ProfileUnlock>>,
     )>;
     let read: Read = env
         .with_env(|env| -> jni::errors::Result<Read> {
@@ -495,7 +456,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeConnectWith
             }
             // An unlock goes only to a pinned host; refused before its secret is read.
             if parse_hex32(&req.pin_hex).is_none() {
-                let unpinned = punktfunk_core::error::PunktfunkError::InvalidArg(
+                let unpinned = rubyfunk_core::error::RubyFunkError::InvalidArg(
                     "a profile unlock needs a pinned host",
                 );
                 return Ok(Some((req, Some(Err(unpinned)))));
@@ -527,10 +488,10 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeConnectWith
 
 /// `NativeBridge.nativeProfileUnlockMessage(challenge, seatId, deviceFp, boxFp): ByteArray?` —
 /// the 152 bytes a profile's unlock key signs, with SHA-256 as the digest
-/// ([`punktfunk_core::quic::v2::msg::unlock_signed_message`]). `seatId` is the seat's 32
+/// ([`rubyfunk_core::quic::v2::msg::unlock_signed_message`]). `seatId` is the seat's 32
 /// lowercase hex characters; the three arrays are 32 bytes each. Null for anything else.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeProfileUnlockMessage<
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeProfileUnlockMessage<
     'local,
 >(
     mut env: EnvUnowned<'local>,
@@ -549,7 +510,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeProfileUnlo
         let (Some(c), Some(d), Some(b)) = (c, d, b) else {
             return Ok(JByteArray::default());
         };
-        match punktfunk_core::quic::v2::msg::unlock_signed_message(&c, &seat, &d, &b) {
+        match rubyfunk_core::quic::v2::msg::unlock_signed_message(&c, &seat, &d, &b) {
             Ok(m) => env.byte_array_from_slice(&m),
             Err(_) => Ok(JByteArray::default()),
         }
@@ -598,9 +559,9 @@ fn connect(req: ConnectRequest, prompts_unlock: bool, unlock: Option<ProfileUnlo
     } = req;
     // Which shell asked, for the host's `handshake complete` line. Set before the dial: core reads
     // it once the host says it parses the block.
-    punktfunk_core::client::set_client_label(&dialer);
+    rubyfunk_core::client::set_client_label(&dialer);
     let preset = preset_id.as_deref().and_then(|id| {
-        punktfunk_core::quic::SessionPreset::new(id, preset_name.as_deref().unwrap_or(""))
+        rubyfunk_core::quic::SessionPreset::new(id, preset_name.as_deref().unwrap_or(""))
     });
     let launch = launch.filter(|s| !s.is_empty());
     let profile = profile.filter(|s| !s.is_empty());
@@ -615,7 +576,7 @@ fn connect(req: ConnectRequest, prompts_unlock: bool, unlock: Option<ProfileUnlo
     // Slice-progressive parts, by decoder truth (Kotlin's FEATURE_PartialFrame probe) — with a
     // sysprop escape hatch for the on-glass science question the probe can't answer: does the
     // decoder ACTUALLY choke on BUFFER_FLAG_PARTIAL_FRAME input, or does it merely not declare
-    // the feature? (`adb shell setprop debug.punktfunk.force_parts 1` + stream restart; a codec
+    // the feature? (`adb shell setprop debug.rubyfunk.force_parts 1` + stream restart; a codec
     // that can't take parts errors recoverably and the reanchor gate + keyframe path recovers.)
     let force_parts = force_parts_sysprop();
     let frame_parts = frame_parts_ok || force_parts;
@@ -652,14 +613,14 @@ fn connect(req: ConnectRequest, prompts_unlock: bool, unlock: Option<ProfileUnlo
     // Requested surround layout (2 = stereo / 6 = 5.1 / 8 = 7.1); anything else is stereo. The
     // host clamps it and echoes the resolved count in `connector.audio_channels`, which drives the
     // decoder + AAudio layout (read in `crate::audio::AudioPlayback::start`).
-    let audio_channels = punktfunk_core::audio::normalize_channels(audio_channels);
+    let audio_channels = rubyfunk_core::audio::normalize_channels(audio_channels);
     // The audio format, downgraded to something this device has PROVED it can open before the
     // `Hello` carries it — see `resolve_requested_audio_format` for why it cannot wait until
     // playback.
     let (audio_rate_hz, audio_bits) =
         resolve_requested_audio_format(audio_rate_hz, audio_bits, audio_channels);
     let params = ConnectParams {
-        probe_only: delivery_flags & punktfunk_core::quic::EXT_DELIVERY_PROBE_ONLY != 0,
+        probe_only: delivery_flags & rubyfunk_core::quic::EXT_DELIVERY_PROBE_ONLY != 0,
         compositor: CompositorPref::from_u8(compositor_pref),
         gamepad: GamepadPref::from_u8(gamepad_pref),
         bitrate_kbps, // 0 = host default
@@ -677,8 +638,8 @@ fn connect(req: ConnectRequest, prompts_unlock: bool, unlock: Option<ProfileUnlo
         audio_rate_hz,
         audio_bits,
         // Legacy coupling: libopus here decodes either, and nothing on Android needs the other.
-        audio_layout: punktfunk_core::audio::AudioLayout::Legacy,
-        video_fit: punktfunk_core::video_fit::VideoFit::from_name(&video_fit),
+        audio_layout: rubyfunk_core::audio::AudioLayout::Legacy,
+        video_fit: rubyfunk_core::video_fit::VideoFit::from_name(&video_fit),
         // Codecs this device decodes (`VideoDecoders.decodableCodecBits`): H.264 + HEVC always,
         // AV1 on a real `video/av01` decoder, PyroWave on a GPU that passes the probe — the one
         // bit here naming no MediaCodec, since it decodes as Vulkan compute in `crate::pyro`.
@@ -686,12 +647,12 @@ fn connect(req: ConnectRequest, prompts_unlock: bool, unlock: Option<ProfileUnlo
         // advertise nothing and kill the handshake. The host echoes its pick in `connector.codec`.
         video_codecs: {
             let bits = video_codecs
-                & (punktfunk_core::quic::CODEC_H264
-                    | punktfunk_core::quic::CODEC_HEVC
-                    | punktfunk_core::quic::CODEC_AV1
-                    | punktfunk_core::quic::CODEC_PYROWAVE);
+                & (rubyfunk_core::quic::CODEC_H264
+                    | rubyfunk_core::quic::CODEC_HEVC
+                    | rubyfunk_core::quic::CODEC_AV1
+                    | rubyfunk_core::quic::CODEC_PYROWAVE);
             if bits == 0 {
-                punktfunk_core::quic::CODEC_H264 | punktfunk_core::quic::CODEC_HEVC
+                rubyfunk_core::quic::CODEC_H264 | rubyfunk_core::quic::CODEC_HEVC
             } else {
                 bits
             }
@@ -705,7 +666,7 @@ fn connect(req: ConnectRequest, prompts_unlock: bool, unlock: Option<ProfileUnlo
         // so declaring a pad's render caps later would have nothing to gate. Gated on the
         // settings so a user with pad audio off does not make the host provision endpoints.
         client_caps: if pad_audio_ok {
-                punktfunk_core::quic::CLIENT_CAP_PAD_AUDIO
+                rubyfunk_core::quic::CLIENT_CAP_PAD_AUDIO
             } else {
                 0
             }
@@ -715,19 +676,19 @@ fn connect(req: ConnectRequest, prompts_unlock: bool, unlock: Option<ProfileUnlo
             // host-cap echo — so an older host ignores the bit and re-routes exactly as it
             // always did ("the host went quiet"), never a broken session.
             | if keep_host_audio {
-                punktfunk_core::quic::CLIENT_CAP_KEEP_HOST_AUDIO
+                rubyfunk_core::quic::CLIENT_CAP_KEEP_HOST_AUDIO
             } else {
                 0
             }
             // Desktop mouse mode with a mouse: Kotlin's HostCursor wears the host's pointer and
             // tells the host when to composite it instead.
             | if client_cursor {
-                punktfunk_core::quic::CLIENT_CAP_CURSOR
+                rubyfunk_core::quic::CLIENT_CAP_CURSOR
             } else {
                 0
             },
         // Slice-progressive delivery, by decoder truth (Kotlin probes FEATURE_PartialFrame on
-        // every decoder this device would use; `debug.punktfunk.force_parts` overrides for the
+        // every decoder this device would use; `debug.rubyfunk.force_parts` overrides for the
         // on-glass experiment): AU prefixes then arrive as `Frame::part` pieces and the decode
         // loop feeds them with BUFFER_FLAG_PARTIAL_FRAME.
         frame_parts,
@@ -759,7 +720,7 @@ fn connect(req: ConnectRequest, prompts_unlock: bool, unlock: Option<ProfileUnlo
             let client = Arc::new(client);
             // A forwarded cursor starts out of the picture: the host composites it until the
             // mouse takes it (Kotlin's HostCursor), so no session starts without a pointer.
-            if client.host_caps() & punktfunk_core::quic::HOST_CAP_CURSOR != 0 {
+            if client.host_caps() & rubyfunk_core::quic::HOST_CAP_CURSOR != 0 {
                 let _ = client.set_cursor_render(false);
             }
             let handle = SessionHandle {
@@ -800,7 +761,7 @@ fn connect(req: ConnectRequest, prompts_unlock: bool, unlock: Option<ProfileUnlo
 /// JNI calls keep their `Arc` until they return; the final drop joins the remaining workers and
 /// closes the connector. Zero, stale, duplicate, and concurrent closes are no-ops.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeClose(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeClose(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -820,7 +781,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeClose(
 /// Missing keys are ignored. The table lookup retains the session through this call even when
 /// `nativeClose` removes the key concurrently.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeDisconnectQuit(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeDisconnectQuit(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -837,7 +798,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeDisconnectQ
 /// Returns `false` for a missing session, nonpositive geometry, or a closed request channel.
 /// A concurrent close cannot invalidate the table-retained session during this enqueue.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeRequestMode(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeRequestMode(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -866,7 +827,9 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeRequestMode
 /// Return the connected host certificate's SHA-256 as 64 lowercase hex characters.
 /// Missing or concurrently closed session keys return an empty string.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeHostFingerprint<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeHostFingerprint<
+    'local,
+>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
     handle: jlong,
@@ -884,7 +847,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeHostFingerp
 /// The stream watchdog polls this to leave a frozen final frame after disconnect. Missing or
 /// concurrently closed keys return `false`; a successful lookup is one atomic client read.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeSessionEnded(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeSessionEnded(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -896,12 +859,12 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeSessionEnde
     })
 }
 
-/// Return the session's `PunktfunkEndReason` byte for Kotlin's disconnect message.
+/// Return the session's `RubyFunkEndReason` byte for Kotlin's disconnect message.
 ///
 /// `0` means no reason, including a missing or concurrently closed key. A retained lookup
 /// distinguishes deliberate host closure from network loss without exposing session memory.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeEndReason(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeEndReason(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -918,14 +881,14 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeEndReason(
 /// (0-based) of a session that ended with `endReason`, on the schedule every client shares; `-1`
 /// means stay ended. Only a lost connection redials.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeRedialDelayMs(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeRedialDelayMs(
     _env: EnvUnowned,
     _this: JObject,
     end_reason: jint,
     attempt: jint,
 ) -> jlong {
     jni_guard(-1, || {
-        punktfunk_core::client::PunktfunkEndReason::from_u8(end_reason as u8)
+        rubyfunk_core::client::RubyFunkEndReason::from_u8(end_reason as u8)
             .redial_delay(attempt.max(0) as u32)
             .map_or(-1, |d| d.as_millis() as jlong)
     })
@@ -941,9 +904,11 @@ fn since_first(since_first_ms: jlong) -> Option<Duration> {
 /// `NativeBridge.nativeWakeRedialDelayMs(autoWake, token, sinceFirstMs)` — milliseconds before
 /// dialing again a host that refused a connect with `token` (`nativeTakeLastError`),
 /// `sinceFirstMs` after its first such refusal (`-1`: the first); `-1` means show the refusal.
-/// The rule every client shares (`punktfunk_core::reject::wake_redial_delay`).
+/// The rule every client shares (`rubyfunk_core::reject::wake_redial_delay`).
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeWakeRedialDelayMs<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeWakeRedialDelayMs<
+    'local,
+>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
     auto_wake: jboolean,
@@ -954,8 +919,8 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeWakeRedialD
         .with_env(|env| token.try_to_string(env))
         .resolve::<LogErrorAndDefault>();
     jni_guard(-1, || {
-        let refused = punktfunk_core::reject::RejectReason::from_token(&token);
-        punktfunk_core::reject::wake_redial_delay(
+        let refused = rubyfunk_core::reject::RejectReason::from_token(&token);
+        rubyfunk_core::reject::wake_redial_delay(
             auto_wake,
             refused,
             false,
@@ -968,7 +933,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeWakeRedialD
 /// `NativeBridge.nativeSessionWakeRedialDelayMs(handle, autoWake, sinceFirstMs)` — the same for
 /// a session that ended: its typed close counts only before any frame. `-1` for a missing key.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeSessionWakeRedialDelayMs(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeSessionWakeRedialDelayMs(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -992,7 +957,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeSessionWake
 /// `""` (logged). Blocking — Kotlin calls it off the UI thread.
 #[unsafe(no_mangle)]
 #[allow(clippy::too_many_arguments)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativePair<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativePair<'local>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
     host: JString<'local>,
@@ -1045,7 +1010,9 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativePair<'local
 /// paired, or `""` with the cause in `nativeTakeLastError`. Never streams. Blocking.
 #[unsafe(no_mangle)]
 #[allow(clippy::too_many_arguments)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeRequestAccess<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeRequestAccess<
+    'local,
+>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
     host: JString<'local>,
@@ -1062,7 +1029,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeRequestAcce
         let host = g(env, &host);
         let cert = g(env, &cert_pem);
         let key = g(env, &key_pem);
-        let pin = punktfunk_core::fp::parse_hex32(&g(env, &pin_hex));
+        let pin = rubyfunk_core::fp::parse_hex32(&g(env, &pin_hex));
         let name = g(env, &name);
 
         let out = if host.is_empty() || cert.is_empty() || key.is_empty() {
@@ -1094,8 +1061,8 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeRequestAcce
 #[cfg(test)]
 mod tests {
     use super::*;
-    use punktfunk_core::audio::pcm::{BITS_16, BITS_24};
-    use punktfunk_core::audio::SAMPLE_RATE_HZ;
+    use rubyfunk_core::audio::pcm::{BITS_16, BITS_24};
+    use rubyfunk_core::audio::SAMPLE_RATE_HZ;
 
     /// The rule this leg exists to enforce: the `Hello` never asks for an audio format this device
     /// has not proved it can open, because after the handshake there is no way back — AAudio grants
@@ -1227,7 +1194,7 @@ mod tests {
             );
             for &rung in ladder {
                 assert!(
-                    punktfunk_core::audio::pcm::rate_is_supported(rung),
+                    rubyfunk_core::audio::pcm::rate_is_supported(rung),
                     "{rung} Hz is on {rate} Hz's ladder but is not a rate the plane carries"
                 );
             }

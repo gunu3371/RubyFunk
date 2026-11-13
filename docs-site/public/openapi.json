@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "punktfunk management API",
-    "description": "Control-plane API for managing a punktfunk streaming host: host capabilities, runtime status, paired clients, the pairing PIN flow, and session control. Authentication: HTTP bearer token, enforced on every route except `/api/v1/health` when the host is started with a management token (mandatory for non-loopback binds).",
+    "title": "rubyfunk management API",
+    "description": "Control-plane API for managing a rubyfunk streaming host: host capabilities, runtime status, paired clients, the pairing PIN flow, and session control. Authentication: HTTP bearer token, enforced on every route except `/api/v1/health` when the host is started with a management token (mandatory for non-loopback binds).",
     "contact": {
       "name": "unom"
     },
@@ -637,7 +637,7 @@
           "host"
         ],
         "summary": "List compositor backends",
-        "description": "Each row carries availability and whether `Auto` resolves to it. Clients pass\n`id` to `--compositor` or `PUNKTFUNK_COMPOSITOR_*`.",
+        "description": "Each row carries availability and whether `Auto` resolves to it. Clients pass\n`id` to `--compositor` or `RUBYFUNK_COMPOSITOR_*`.",
         "operationId": "listCompositors",
         "responses": {
           "200": {
@@ -6001,7 +6001,7 @@
           "plugins"
         ],
         "summary": "Attach a plugin UI channel",
-        "description": "`Upgrade: punktfunk-ui` from the plugin, on its own pipe. The connection is kept for the\nconsole's next request to the plugin's page, which the host sends down it as plain HTTP.",
+        "description": "`Upgrade: rubyfunk-ui` from the plugin, on its own pipe. The connection is kept for the\nconsole's next request to the plugin's page, which the host sends down it as plain HTTP.",
         "operationId": "attachPluginUi",
         "parameters": [
           {
@@ -6019,7 +6019,7 @@
             "description": "The connection is parked for the plugin's page"
           },
           "400": {
-            "description": "Not an `Upgrade: punktfunk-ui` request",
+            "description": "Not an `Upgrade: rubyfunk-ui` request",
             "content": {
               "application/json": {
                 "schema": {
@@ -6288,7 +6288,7 @@
           "profiles"
         ],
         "summary": "Turn Reachable without logging in on or off",
-        "description": "Linux. On moves the box's host to a system service that runs from boot, places every connect\non a seat of the box and keeps the box's files in `/var/lib/punktfunk`; the owner plays on a\nseat of their own. Off hands the door's own settings to the owner's host, then puts the files\nand the host back. The answer is 202 once the switch is\nqueued: the console reloads and polls `GET /host`, whose `door` says which host answers. The\nowner's user must be in the `punktfunk-update` group. Admin lane only.",
+        "description": "Linux. On moves the box's host to a system service that runs from boot, places every connect\non a seat of the box and keeps the box's files in `/var/lib/rubyfunk`; the owner plays on a\nseat of their own. Off hands the door's own settings to the owner's host, then puts the files\nand the host back. The answer is 202 once the switch is\nqueued: the console reloads and polls `GET /host`, whose `door` says which host answers. The\nowner's user must be in the `rubyfunk-update` group. Admin lane only.",
         "operationId": "setDoor",
         "requestBody": {
           "content": {
@@ -6318,7 +6318,7 @@
             }
           },
           "403": {
-            "description": "The owner's user isn't in the punktfunk-update group",
+            "description": "The owner's user isn't in the rubyfunk-update group",
             "content": {
               "application/json": {
                 "schema": {
@@ -6513,7 +6513,7 @@
           "profiles"
         ],
         "summary": "Windows accounts a new profile can bind to",
-        "description": "The enabled local Windows accounts on this PC that no profile holds: none a seat signs in to,\nnone a take-turns profile uses, none of punktfunk's own seat accounts. Empty on every other\nOS. The console's **Add profile** reads this for **Own account (take turns)** and for **Own\ndesktop** on an existing account.",
+        "description": "The enabled local Windows accounts on this PC that no profile holds: none a seat signs in to,\nnone a take-turns profile uses, none of rubyfunk's own seat accounts. Empty on every other\nOS. The console's **Add profile** reads this for **Own account (take turns)** and for **Own\ndesktop** on an existing account.",
         "operationId": "windowsAccounts",
         "responses": {
           "200": {
@@ -9045,7 +9045,7 @@
             }
           },
           "409": {
-            "description": "Refused: unsupported install kind, apply disabled (PUNKTFUNK_UPDATE_APPLY=0), a job already running, an active streaming session without `force`, or nothing newer to apply",
+            "description": "Refused: unsupported install kind, apply disabled (RUBYFUNK_UPDATE_APPLY=0), a job already running, an active streaming session without `force`, or nothing newer to apply",
             "content": {
               "application/json": {
                 "schema": {
@@ -9627,7 +9627,7 @@
         "properties": {
           "connector": {
             "type": "string",
-            "description": "Connector (`DP-1`, `HDMI-A-2`) — the value `PUNKTFUNK_CAPTURE_MONITOR` takes."
+            "description": "Connector (`DP-1`, `HDMI-A-2`) — the value `RUBYFUNK_CAPTURE_MONITOR` takes."
           },
           "description": {
             "type": "string",
@@ -9654,7 +9654,7 @@
           },
           "selected": {
             "type": "boolean",
-            "description": "True when `PUNKTFUNK_CAPTURE_MONITOR` currently names this monitor."
+            "description": "True when `RUBYFUNK_CAPTURE_MONITOR` currently names this monitor."
           },
           "x": {
             "type": "integer",
@@ -11157,7 +11157,7 @@
               "string",
               "null"
             ],
-            "description": "Stream this physical connector (`DP-1`, `HDMI-A-2`) instead of a\nvirtual display; `None` is the virtual path. Host-wide, orthogonal\nto `preset`. `PUNKTFUNK_CAPTURE_MONITOR` overrides it so `host.env`\ncan pin without a console write undoing it."
+            "description": "Stream this physical connector (`DP-1`, `HDMI-A-2`) instead of a\nvirtual display; `None` is the virtual path. Host-wide, orthogonal\nto `preset`. `RUBYFUNK_CAPTURE_MONITOR` overrides it so `host.env`\ncan pin without a console write undoing it."
           },
           "clients": {
             "type": "object",
@@ -12825,14 +12825,14 @@
               "string",
               "null"
             ],
-            "description": "`PUNKTFUNK_ENCODER` when pinned (`qsv` / `nvenc` / …, not `auto`). A vendor mismatch is\noverridden at session open (adapter wins); the console uses this to flag a stale pin."
+            "description": "`RUBYFUNK_ENCODER` when pinned (`qsv` / `nvenc` / …, not `auto`). A vendor mismatch is\noverridden at session open (adapter wins); the console uses this to flag a stale pin."
           },
           "env_override": {
             "type": [
               "string",
               "null"
             ],
-            "description": "`PUNKTFUNK_RENDER_ADAPTER` when set. Honoured in `auto`; a manual pick overrides it."
+            "description": "`RUBYFUNK_RENDER_ADAPTER` when set. Honoured in `auto`; a manual pick overrides it."
           },
           "gpus": {
             "type": "array",
@@ -12940,7 +12940,7 @@
           "abi_version": {
             "type": "integer",
             "format": "int32",
-            "description": "`punktfunk-core` C ABI version.",
+            "description": "`rubyfunk-core` C ABI version.",
             "minimum": 0
           },
           "status": {
@@ -12950,7 +12950,7 @@
           },
           "version": {
             "type": "string",
-            "description": "`punktfunk-host` crate version."
+            "description": "`rubyfunk-host` crate version."
           }
         }
       },
@@ -13002,7 +13002,7 @@
           },
           "elevated": {
             "type": "boolean",
-            "description": "Windows: `run` gets the signed-in administrator's full token, with no UAC prompt. Runs\nonly after an administrator ran `punktfunk-host hooks elevated on`."
+            "description": "Windows: `run` gets the signed-in administrator's full token, with no UAC prompt. Runs\nonly after an administrator ran `rubyfunk-host hooks elevated on`."
           },
           "filter": {
             "oneOf": [
@@ -13020,7 +13020,7 @@
               "string",
               "null"
             ],
-            "description": "HMAC secret file (`X-Punktfunk-Signature: sha256=<hex>`). Warns if world-readable."
+            "description": "HMAC secret file (`X-RubyFunk-Signature: sha256=<hex>`). Warns if world-readable."
           },
           "hold": {
             "type": "boolean",
@@ -13259,7 +13259,7 @@
           "abi_version": {
             "type": "integer",
             "format": "int32",
-            "description": "`punktfunk-core` C ABI version.",
+            "description": "`rubyfunk-core` C ABI version.",
             "minimum": 0
           },
           "app_version": {
@@ -13286,14 +13286,14 @@
               "string",
               "null"
             ],
-            "description": "Why turning the door on would be refused here, as the operator's next move: the files a\nchannel installs it with are missing, or the account isn't in `punktfunk-update`. `null`\nwhen it would start, on the door itself and on a seat host, and for every lane but the\nadmin one. The answer is up to 30 s old; a switch request drops it."
+            "description": "Why turning the door on would be refused here, as the operator's next move: the files a\nchannel installs it with are missing, or the account isn't in `rubyfunk-update`. `null`\nwhen it would start, on the door itself and on a seat host, and for every lane but the\nadmin one. The answer is up to 30 s old; a switch request drops it."
           },
           "elevated_commands": {
             "type": [
               "boolean",
               "null"
             ],
-            "description": "Whether hooks and prep steps marked `elevated` run as administrator: `true` once an\nadministrator ran `punktfunk-host hooks elevated on` here. `null` where commands can't\nelevate (every OS but Windows), and for every lane but the admin one."
+            "description": "Whether hooks and prep steps marked `elevated` run as administrator: `true` once an\nadministrator ran `rubyfunk-host hooks elevated on` here. `null` where commands can't\nelevate (every OS but Windows), and for every lane but the admin one."
           },
           "fingerprint": {
             "type": [
@@ -13337,7 +13337,7 @@
           },
           "version": {
             "type": "string",
-            "description": "`punktfunk-host` crate version."
+            "description": "`rubyfunk-host` crate version."
           }
         }
       },
@@ -13364,7 +13364,7 @@
           "env_file": {
             "type": "string",
             "description": "The file an operator edits to pin a setting.",
-            "example": "/home/me/.config/punktfunk/host.env"
+            "example": "/home/me/.config/rubyfunk/host.env"
           },
           "restart_pending": {
             "type": "array",
@@ -14633,7 +14633,7 @@
           "buttons": {
             "type": "integer",
             "format": "int32",
-            "description": "`punktfunk_core::input::gamepad::BTN_*` mask, as applied.",
+            "description": "`rubyfunk_core::input::gamepad::BTN_*` mask, as applied.",
             "minimum": 0
           },
           "declared": {
@@ -15466,7 +15466,7 @@
       },
       "PresetRef": {
         "type": "object",
-        "description": "The settings preset a client dialled with ([`punktfunk_core::quic::SessionPreset`]). The\nid is the client's own and stable across a rename, so it is what a hook or plugin keys on\ntogether with the device fingerprint; the name is for people.",
+        "description": "The settings preset a client dialled with ([`rubyfunk_core::quic::SessionPreset`]). The\nid is the client's own and stable across a rename, so it is what a hook or plugin keys on\ntogether with the device fingerprint; the name is for people.",
         "required": [
           "id",
           "name"
@@ -15548,7 +15548,7 @@
               "string",
               "null"
             ],
-            "description": "With `seat`, an account that already exists, which the seat runs on instead of one\npunktfunk makes: a local Windows standard account on Windows Server, a person's own login\non a Linux door."
+            "description": "With `seat`, an account that already exists, which the seat runs on instead of one\nrubyfunk makes: a local Windows standard account on Windows Server, a person's own login\non a Linux door."
           },
           "seat_password": {
             "type": "string",
@@ -15905,7 +15905,7 @@
       },
       "Remedy": {
         "type": "object",
-        "description": "Operator action. Copy-paste only: the host is unprivileged and does not run the command.\nJoining `punktfunk` is opt-in — write on the vhci `attach` node materialises arbitrary USB.",
+        "description": "Operator action. Copy-paste only: the host is unprivileged and does not run the command.\nJoining `rubyfunk` is opt-in — write on the vhci `attach` node materialises arbitrary USB.",
         "required": [
           "text",
           "relogin_required"
@@ -16300,7 +16300,7 @@
               "string",
               "null"
             ],
-            "description": "The account of a seat on an existing one, for the console's card and its Remove\nsentence. Absent for an account punktfunk made, and to a paired device."
+            "description": "The account of a seat on an existing one, for the console's card and its Remove\nsentence. Absent for an account rubyfunk made, and to a paired device."
           },
           "detail": {
             "type": [
@@ -16483,7 +16483,7 @@
       },
       "SessionEndReason": {
         "type": "string",
-        "description": "Why a session ended, in the client's own words\n([`punktfunk_core::client::PunktfunkEndReason`]) so both ends name the same end the\nsame way. The bytes match that ABI where the two overlap.\n\n[`Self::StoppedByOperator`] and [`Self::Stolen`] are the ones a client cannot see: the\nhost closes them as code 0, which every client reads as `host_ended`.",
+        "description": "Why a session ended, in the client's own words\n([`rubyfunk_core::client::RubyFunkEndReason`]) so both ends name the same end the\nsame way. The bytes match that ABI where the two overlap.\n\n[`Self::StoppedByOperator`] and [`Self::Stolen`] are the ones a client cannot see: the\nhost closes them as code 0, which every client reads as `host_ended`.",
         "enum": [
           "local",
           "game_exited",
@@ -16763,7 +16763,7 @@
           "wire": {
             "type": "integer",
             "format": "int32",
-            "description": "The punktfunk protocol the session speaks. Absent on the compat plane.",
+            "description": "The rubyfunk protocol the session speaks. Absent on the compat plane.",
             "minimum": 0
           }
         }
@@ -17963,7 +17963,7 @@
           },
           "check_disabled": {
             "type": "boolean",
-            "description": "`PUNKTFUNK_UPDATE_CHECK=0`."
+            "description": "`RUBYFUNK_UPDATE_CHECK=0`."
           },
           "current_version": {
             "type": "string"
@@ -18027,7 +18027,7 @@
               "string",
               "null"
             ],
-            "description": "One-click apply is possible but not opted in — command to run\n(Linux: join `punktfunk-update`)."
+            "description": "One-click apply is possible but not opted in — command to run\n(Linux: join `rubyfunk-update`)."
           }
         }
       },
@@ -18054,7 +18054,7 @@
               "string",
               "null"
             ],
-            "description": "Hex ECDSA-P256-SHA256 signature (ASN.1 DER) by the host's long-lived native identity over\n`\"punktfunk-wt-cert-v1:\" + cert_hash_sha256`. Absent when that identity is the legacy RSA\npair. A browser that has paired MUST check this; one that has not cannot, and does not."
+            "description": "Hex ECDSA-P256-SHA256 signature (ASN.1 DER) by the host's long-lived native identity over\n`\"rubyfunk-wt-cert-v1:\" + cert_hash_sha256`. Absent when that identity is the legacy RSA\npair. A browser that has paired MUST check this; one that has not cannot, and does not."
           },
           "expires_at": {
             "type": "integer",
@@ -18157,7 +18157,7 @@
     },
     {
       "name": "plugins",
-      "description": "Plugin directory: running `punktfunk-plugin-*` processes register a lease and, optionally, a loopback UI the web console proxies and adds to its nav"
+      "description": "Plugin directory: running `rubyfunk-plugin-*` processes register a lease and, optionally, a loopback UI the web console proxies and adds to its nav"
     },
     {
       "name": "plugin-access",

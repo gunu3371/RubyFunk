@@ -1,4 +1,4 @@
-Keep the encoder's plane views across frames — PUNKTFUNK LOCAL PATCH.
+Keep the encoder's plane views across frames — RUBYFUNK LOCAL PATCH.
 
 Not upstream. pyrowave_encoder_encode_gpu_synchronous() wrapped three images and
 created three image views on every call, leaving them to the frame context to
@@ -20,7 +20,7 @@ index 8dc897d..04bfb08 100644
  	// the encode path reuses them across frames instead of allocating four buffers per frame.
  	BufferHandle queued_meta_gpu;
  	BufferHandle queued_bitstream_gpu;
-+	// PUNKTFUNK: the plane views, wrapped once and kept while the caller passes the same
++	// RUBYFUNK: the plane views, wrapped once and kept while the caller passes the same
 +	// images. Otherwise every frame creates three views and defers three destroys.
 +	ImageHandle view_images[3];
 +	ImageViewHandle views[3];
@@ -41,7 +41,7 @@ index 8dc897d..04bfb08 100644
 +	       a.swizzle == b.swizzle && a.layout == b.layout;
 +}
 +
-+// PUNKTFUNK: the encoder's plane views, wrapped on the first encode of these images and
++// RUBYFUNK: the encoder's plane views, wrapped on the first encode of these images and
 +// reused until the caller passes different ones. Held on the encoder, so the frame
 +// context never recycles a view the next encode still binds.
 +static bool cached_plane_views(pyrowave_encoder encoder, const pyrowave_gpu_buffers *buffers,

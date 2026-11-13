@@ -81,7 +81,7 @@ mod imp {
     impl DisplayWakeRequest {
         /// `None` if the kernel refuses; the session still streams.
         pub fn new() -> Option<DisplayWakeRequest> {
-            let h = power_request("punktfunk streaming session")?;
+            let h = power_request("rubyfunk streaming session")?;
             // SAFETY: `h` is the just-created, owned power-request handle; the type is a plain enum.
             unsafe {
                 PowerSetRequest(h, POWER_REQUEST_DISPLAY_REQUIRED);

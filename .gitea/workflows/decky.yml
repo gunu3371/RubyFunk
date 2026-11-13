@@ -1,8 +1,8 @@
-# Build the punktfunk Decky Loader plugin (Gaming-Mode QAM launcher) into a distribution zip
+# Build the rubyfunk Decky Loader plugin (Gaming-Mode QAM launcher) into a distribution zip
 # and publish it to Gitea's GENERIC package registry, giving Decky's "install from URL" a
 # stable link. On tags the zip is ALSO attached to the Gitea release.
 #
-#   PUT/GET  https://git.unom.io/api/packages/unom/generic/punktfunk-decky/<version>/punktfunk.zip
+#   PUT/GET  https://git.unom.io/api/packages/unom/generic/punktfunk-decky/<version>/rubyfunk.zip
 #
 # The plugin backend is PURE PYTHON (clients/decky/main.py — no compiled binary), so we do NOT
 # need the Decky CLI (which requires Docker + rust-nightly only to compile native backends).
@@ -46,11 +46,11 @@ on:
 env:
   REGISTRY: git.unom.io
   OWNER: unom
-  PACKAGE: punktfunk-decky        # generic-registry package name
+  PACKAGE: rubyfunk-decky        # generic-registry package name
   # The plugin's ON-DISK dir == the zip's top-level dir. Deliberately NOT plugin.json "name"
   # (that is the brand-cased label Decky lists, and it locates a plugin by matching it, not by
   # the folder) — see clients/decky/scripts/package.sh.
-  PLUGIN: punktfunk
+  PLUGIN: rubyfunk
 
 jobs:
   build-publish:
@@ -122,30 +122,30 @@ jobs:
           # check_update). The manifest names the channel's ALIAS zip, uploaded right beside it:
           # the registry's cleanup rule prunes canary version numbers after a week, so a
           # per-version URL 404s as soon as the newest canary build is that old.
-          bundle() {  # <version> <alias>  ->  $RUNNER_TEMP/<alias>/{punktfunk.zip,manifest.json}
+          bundle() {  # <version> <alias>  ->  $RUNNER_TEMP/<alias>/{rubyfunk.zip,manifest.json}
             local v="$1" alias="$2" out="$RUNNER_TEMP/$2" f sha
             mkdir -p "$out"
             for f in package.json plugin.json; do
               VERSION="$v" node -e 'const fs=require("fs"),f=process.argv[1];const j=JSON.parse(fs.readFileSync(f,"utf8"));j.version=process.env.VERSION;fs.writeFileSync(f,JSON.stringify(j,null,2)+"\n");' "$DEST/$f"
             done
             printf '{"channel":"%s","manifest":"%s/%s/manifest.json"}\n' "$alias" "$BASE" "$alias" > "$DEST/update.json"
-            rm -f "$out/punktfunk.zip"
-            ( cd clients/decky/out && zip -r "$out/punktfunk.zip" "$PLUGIN" )
+            rm -f "$out/rubyfunk.zip"
+            ( cd clients/decky/out && zip -r "$out/rubyfunk.zip" "$PLUGIN" )
             # Backstop against packaging drift: the runtime-loaded pieces MUST be in the zip.
-            for f in main.py dist/index.js bin/punktfunkrun.sh assets/grid.png \
-                     controller_config/punktfunk.vdf update.json; do
-              unzip -l "$out/punktfunk.zip" "$PLUGIN/$f" >/dev/null || { echo "MISSING $f" >&2; exit 1; }
+            for f in main.py dist/index.js bin/rubyfunkrun.sh assets/grid.png \
+                     controller_config/rubyfunk.vdf update.json; do
+              unzip -l "$out/rubyfunk.zip" "$PLUGIN/$f" >/dev/null || { echo "MISSING $f" >&2; exit 1; }
             done
             # Decky verifies the download against this hash and aborts on a mismatch.
-            sha=$(sha256sum "$out/punktfunk.zip" | cut -d' ' -f1)
-            printf '{"version":"%s","artifact":"%s/%s/punktfunk.zip","sha256":"%s"}\n' \
+            sha=$(sha256sum "$out/rubyfunk.zip" | cut -d' ' -f1)
+            printf '{"version":"%s","artifact":"%s/%s/rubyfunk.zip","sha256":"%s"}\n' \
               "$v" "$BASE" "$alias" "$sha" > "$out/manifest.json"
             cat "$out/manifest.json"
           }
           bundle "$VERSION" "$ALIAS"
           [ -z "$CANARY_VERSION" ] || bundle "$CANARY_VERSION" canary
-          ls -lh "$RUNNER_TEMP"/*/punktfunk.zip
-          unzip -l "$RUNNER_TEMP/$ALIAS/punktfunk.zip"
+          ls -lh "$RUNNER_TEMP"/*/rubyfunk.zip
+          unzip -l "$RUNNER_TEMP/$ALIAS/rubyfunk.zip"
 
       - name: Publish to the Gitea generic registry
         working-directory: ${{ gitea.workspace }}
@@ -161,12 +161,12 @@ jobs:
           publish() {  # <version> <alias>
             local dest f
             for dest in "$1" "$2"; do
-              for f in punktfunk.zip manifest.json; do
+              for f in rubyfunk.zip manifest.json; do
                 curl -fsS -o /dev/null --user "enricobuehler:$TOKEN" -X DELETE "$BASE/$dest/$f" || true
                 curl -fsS --user "enricobuehler:$TOKEN" --upload-file "$RUNNER_TEMP/$2/$f" "$BASE/$dest/$f"
               done
             done
-            echo "install-from-URL link: $BASE/$2/punktfunk.zip"
+            echo "install-from-URL link: $BASE/$2/rubyfunk.zip"
             echo "update manifest:       $BASE/$2/manifest.json"
           }
           publish "$VERSION" "$ALIAS"
@@ -180,4 +180,4 @@ jobs:
         run: |
           . scripts/ci/gitea-release.sh
           RID=$(ensure_release "$GITHUB_REF_NAME" "$GITHUB_REF_NAME" auto)
-          upsert_asset "$RID" "$RUNNER_TEMP/$ALIAS/punktfunk.zip" "punktfunk-${VERSION}.zip"
+          upsert_asset "$RID" "$RUNNER_TEMP/$ALIAS/rubyfunk.zip" "rubyfunk-${VERSION}.zip"

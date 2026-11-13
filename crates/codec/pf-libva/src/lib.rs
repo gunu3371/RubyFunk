@@ -344,13 +344,13 @@ impl Display {
         Self::open_for_vendor(va, None)
     }
 
-    /// `PUNKTFUNK_VAAPI_DEVICE` pins a node; otherwise nodes matching the
+    /// `RUBYFUNK_VAAPI_DEVICE` pins a node; otherwise nodes matching the
     /// presenter's PCI vendor lead each name-ordered probe. Unknown nodes follow.
     pub fn open_for_vendor(va: Libva, preferred_vendor: Option<u32>) -> Result<Display> {
-        if let Some(pin) = std::env::var_os("PUNKTFUNK_VAAPI_DEVICE") {
+        if let Some(pin) = std::env::var_os("RUBYFUNK_VAAPI_DEVICE") {
             let path = pin.to_string_lossy().into_owned();
             let (display, node, version) = Display::probe(&va, &path)
-                .with_context(|| format!("PUNKTFUNK_VAAPI_DEVICE={path}"))?;
+                .with_context(|| format!("RUBYFUNK_VAAPI_DEVICE={path}"))?;
             return Ok(Display {
                 va,
                 display,

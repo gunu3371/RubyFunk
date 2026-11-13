@@ -9,8 +9,8 @@
 //   3. The real servePluginUi server (loopback, per-boot bearer secret, __health) proxies
 //      into the HttpApi handler end-to-end.
 import { describe, expect, test } from "bun:test";
-import type { Punktfunk } from "@punktfunk/host";
-import { servePluginUi } from "@punktfunk/host";
+import type { RubyFunk } from "@rubyfunk/host";
+import { servePluginUi } from "@rubyfunk/host";
 import { Effect, Layer, Schema } from "effect";
 import * as FileSystem from "effect/FileSystem";
 import { Etag, HttpPlatform, HttpRouter } from "effect/http";
@@ -101,7 +101,7 @@ describe("spike 1: HttpApi via toWebHandler on Bun", () => {
 				registrations.push({ method, path, body });
 				return undefined;
 			},
-		} as unknown as Punktfunk;
+		} as unknown as RubyFunk;
 
 		const kitFetch = async (req: Request): Promise<Response | undefined> => {
 			const url = new URL(req.url);

@@ -283,7 +283,7 @@ impl CaptureStats {
 pub struct SendStats {
     /// One protocol frame of this session, and the slip threshold: late by less than this is jitter.
     ///
-    /// Carried, not read from Opus [`FRAME_MS`](punktfunk_core::audio::FRAME_MS). On a lossless
+    /// Carried, not read from Opus [`FRAME_MS`](rubyfunk_core::audio::FRAME_MS). On a lossless
     /// plane pacing 1 ms frames, a 5 ms threshold would miss four-frame slips and still report
     /// `late=0`.
     frame: Duration,
@@ -361,7 +361,7 @@ impl SendStats {
 /// sends 100 or 500 frames into it. See `design/hi-res-audio.md`.
 pub const INFILL_MAX: Duration = Duration::from_millis(500);
 
-// No module-scope frame constant: `punktfunk_core::audio::FRAME_MS` is the Opus plane only.
+// No module-scope frame constant: `rubyfunk_core::audio::FRAME_MS` is the Opus plane only.
 // Infill threshold and egress slip live on [`InfillPolicy::new`] and [`SendStats::new`]. The
 // lossless `0xD3` frame is whatever the handshake negotiated. Tests keep a local copy for the
 // "5 ms session is unchanged" assertions.
@@ -692,7 +692,7 @@ mod tests {
     }
 
     /// Opus `0xC9` 5 ms, local to these tests. Production policy is the session frame, not this constant.
-    const FRAME_MS: u32 = punktfunk_core::audio::FRAME_MS;
+    const FRAME_MS: u32 = rubyfunk_core::audio::FRAME_MS;
     const OPUS_FRAME_US: u32 = FRAME_MS * 1_000;
 
     fn cover_a_hole(p: &mut InfillPolicy, frame: Duration) -> usize {
@@ -817,7 +817,7 @@ mod tests {
 
     #[test]
     fn every_lossless_frame_length_gets_the_same_wall_clock_budget() {
-        for frame_us in punktfunk_core::audio::pcm::FRAME_US_LADDER {
+        for frame_us in rubyfunk_core::audio::pcm::FRAME_US_LADDER {
             let frame = Duration::from_micros(frame_us as u64);
             let mut p = InfillPolicy::new(frame_us);
             assert_eq!(p.after(), frame * 2, "{frame_us} µs: two of its own frames");
@@ -944,7 +944,7 @@ mod tests {
 
     #[test]
     fn a_slipped_slot_is_one_frame_of_whatever_this_session_paces() {
-        for frame_us in punktfunk_core::audio::pcm::FRAME_US_LADDER {
+        for frame_us in rubyfunk_core::audio::pcm::FRAME_US_LADDER {
             let frame = Duration::from_micros(frame_us as u64);
             let mut s = SendStats::new(frame_us);
             // One microsecond under a frame is jitter; the frame itself is a slip — inclusive.

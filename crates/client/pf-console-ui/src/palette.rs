@@ -53,13 +53,13 @@ pub(crate) const CELL_RAMP: [f64; 16] = [
     -0.10,  0.08, -0.06,  0.12,
 ];
 
-/// Brand default, 19 more dark fields, then 16 pale. Dark → light is cycle order. An `id` is a
+/// Twenty dark fields, then 16 pale. Ruby is the brand default. Dark → light is cycle order. An `id` is a
 /// stored `ui_palette` value: renaming one orphans saved choices.
 #[rustfmt::skip]
 pub const PALETTES: [Palette; 36] = [
     // --- dark fields (white ink) ---
     Palette {
-        // The brand default: the website's deep-violet ground, lit by its brand violets.
+        // Keep the stored Violet choice stable.
         id: "violet", name: "Violet", stops: None,
         ground: (0.129, 0.094, 0.431), accent: (0.525, 0.471, 0.961), light: false,
     },
@@ -169,7 +169,7 @@ pub const PALETTES: [Palette; 36] = [
             (0.06, 0.00, 0.20), (0.40, 0.02, 0.16), (0.80, 0.06, 0.30),
             (1.00, 0.28, 0.48), (1.00, 0.62, 0.56),
         ]),
-        ground: (0.080, 0.000, 0.060), accent: (1.00, 0.50, 0.62), light: false,
+        ground: (0.080, 0.000, 0.060), accent: (1.0, 0.278431, 0.482353), light: false,
     },
     Palette {
         // Black rock, red heat, a yellow glow.
@@ -383,7 +383,11 @@ pub const PALETTES: [Palette; 36] = [
 
 /// Palette for `id`, or the brand default. Unknown is a newer client's name, not an empty draw.
 pub fn palette(id: &str) -> &'static Palette {
-    PALETTES.iter().find(|p| p.id == id).unwrap_or(&PALETTES[0])
+    PALETTES
+        .iter()
+        .find(|p| p.id == id)
+        .or_else(|| PALETTES.iter().find(|p| p.id == "ruby"))
+        .expect("ruby palette is defined")
 }
 
 /// Sample a ramp at `t` ∈ [0, 1], linear between neighbouring stops.
@@ -424,7 +428,7 @@ pub(crate) fn mesh_colors_of(stops: &[(f64, f64, f64)]) -> [(f64, f64, f64); 16]
 
 /// The brand default's field ramp: the website's surfaces, dark first — `--neutral-accent`
 /// `#0e093a`, `--neutral` `#21186e`, `--neutral-highlight` `#302593`, `--brand` `#6c5bf3`,
-/// `--brand-light` `#a79ff8` (punktfunk-website `src/styles/globals.css`).
+/// `--brand-light` `#a79ff8` (rubyfunk-website `src/styles/globals.css`).
 pub const VIOLET_FIELD: [(f64, f64, f64); 5] = [
     (0.055, 0.035, 0.227),
     (0.129, 0.094, 0.431),
@@ -812,13 +816,13 @@ mod tests {
     fn violet_is_the_untouched_shipped_field() {
         assert_eq!(PALETTES[0].id, "violet");
         assert!(
-            PALETTES[0].stops.is_none(),
-            "the default is the explicit grid"
+            palette("violet").stops.is_none(),
+            "Violet keeps its explicit grid"
         );
         assert_eq!(palette("violet").mesh_colors(), MESH_COLORS);
         // An unknown name is a newer client's palette, not an error.
-        assert_eq!(palette("chartreuse").id, "violet");
-        assert_eq!(palette("").id, "violet");
+        assert_eq!(palette("chartreuse").id, "ruby");
+        assert_eq!(palette("").id, "ruby");
     }
 
     /// Hue angle in degrees, or `None` for something too grey to have one.

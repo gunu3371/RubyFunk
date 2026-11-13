@@ -146,7 +146,7 @@ pub(in crate::linux) enum PassthroughFallback {
     /// A linear pitch off 64 bytes: iHD imports it at a rounded pitch and the picture shears.
     UnalignedPitch,
     /// This pool can never spare a deferred-requeue hold (depth ≤ reserve, or
-    /// `PUNKTFUNK_ZEROCOPY_HOLD=0`), so no raw frame is safe to publish. A transient shortage
+    /// `RUBYFUNK_ZEROCOPY_HOLD=0`), so no raw frame is safe to publish. A transient shortage
     /// on a pool that can hold never gets here: `.process` drops that arrival (`held_drops`).
     NoHold,
 }
@@ -190,7 +190,7 @@ impl PassthroughFallback {
             }
             PassthroughFallback::NotDmabuf => {
                 "the compositor accepted the dmabuf offer and is serving memory anyway — check \
-                 PUNKTFUNK_FORCE_SHM and the compositor's allocator"
+                 RUBYFUNK_FORCE_SHM and the compositor's allocator"
             }
             PassthroughFallback::NoFourcc => {
                 "a capture format the encoder path cannot describe — file it, the negotiation \
@@ -202,7 +202,7 @@ impl PassthroughFallback {
                  rounded — this width streams through the CPU copy instead of the raw import"
             }
             PassthroughFallback::NoHold => {
-                "the pool is at or below the reserve, or PUNKTFUNK_ZEROCOPY_HOLD=0 — every frame \
+                "the pool is at or below the reserve, or RUBYFUNK_ZEROCOPY_HOLD=0 — every frame \
                  takes the CPU copy rather than letting the producer rewrite a DMA-BUF the \
                  encoder still reads"
             }

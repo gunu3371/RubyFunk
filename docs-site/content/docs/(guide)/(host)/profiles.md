@@ -27,7 +27,7 @@ it is on. A host holds up to 8 profiles, and two can't share a name.
 ## On Windows
 
 **Own account (take turns)** binds a profile to a Windows account on this PC. When someone picks it,
-punktfunk brings that account to the screen and streams it, so each person has their own desktop,
+rubyfunk brings that account to the screen and streams it, so each person has their own desktop,
 Steam and saves. One person streams at a time — picking another profile switches the PC to that
 account, the way Windows' own **Switch user** does. This needs no Windows Server, no Remote Desktop
 and no extra licence: it works on Windows 11 and every other edition, because nobody is playing at
@@ -66,7 +66,7 @@ A player who picks a stopped seat sees `Getting Kid's desk ready…` while it st
 **Browser streaming** on, a browser plays on a seat too, on the seat's own port, UDP 9783–9786.
 A card's
 **Start**, **Stop** and **End session** do the same by hand; **End session** keeps the seat
-running. **Remove** deletes the Windows account punktfunk made and its files too. An existing
+running. **Remove** deletes the Windows account rubyfunk made and its files too. An existing
 account stays, with its files.
 
 ### What a seat can do
@@ -104,12 +104,12 @@ yours included.
    keeps the groups it started with, so logging out is not enough:
 
    ```sh
-   sudo usermod -aG punktfunk-update $USER
+   sudo usermod -aG rubyfunk-update $USER
    ```
 
-   On SteamOS, run `bash ~/punktfunk/scripts/steamdeck/update.sh` in Konsole instead and enter
+   On SteamOS, run `bash ~/rubyfunk/scripts/steamdeck/update.sh` in Konsole instead and enter
    your password: it sets the switch up and joins the group. Restart once after. On NixOS, set
-   `services.punktfunk.seats.enable = true` and rebuild.
+   `services.rubyfunk.seats.enable = true` and rebuild.
 
 2. Open **Profiles** and tick **Reachable without logging in**. Confirm with the console
    password. The page reloads while the host restarts, and the console asks you to sign in again.
@@ -117,9 +117,9 @@ yours included.
 What turning it on does:
 
 - **Files move.** The host's identity, pairings, profiles and the console password are copied
-  to `/var/lib/punktfunk`, owned by a `punktfunk` system user that runs the host from then on.
+  to `/var/lib/rubyfunk`, owned by a `rubyfunk` system user that runs the host from then on.
   Display settings and hooks stay yours. Paired clients keep working: the fingerprint is the same.
-- **You become a seat.** Your own `punktfunk-host` moves to the first seat's ports and serves
+- **You become a seat.** Your own `rubyfunk-host` moves to the first seat's ports and serves
   your library, plugins and Steam from your own home. The console reaches it from **Library**,
   **Game sources** and **Plugins**; the page's title, **Anna's library ▾**, picks another seat's.
 - **The monitor wins.** When you log in at the machine, the background session ends within a few
@@ -133,7 +133,7 @@ What turning it on does:
 - **Seats see your games.** Every seat shows your Steam libraries: its Steam plays, updates and
   runs Proton from them while the files stay yours. A library on a filesystem other than btrfs,
   ext4, xfs or f2fs stays hidden from seats. New games a seat installs go to
-  `/var/lib/punktfunk-seats/games`, and you join its group, `punktfunk-games`, at your next login. Each
+  `/var/lib/rubyfunk-seats/games`, and you join its group, `rubyfunk-games`, at your next login. Each
   seat keeps its own Proton prefixes and shader cache.
 - **Your library is the box's.** Every profile's apps list the games your own host found. A
   profile with a desktop of its own plays your Steam games with its own Steam, and ROM Manager
@@ -159,7 +159,7 @@ their own stay on the box, stopped, and come back with the switch.
 
 | Check | Fix |
 |---|---|
-| The switch says `Add … to the punktfunk-update group first` | Run the command in step 1, restart, then try again. |
+| The switch says `Add … to the rubyfunk-update group first` | Run the command in step 1, restart, then try again. |
 | The switch is greyed out, with a line under it | The line names what this box is missing and the command that adds it. Reload the page after. |
 | A profile shows **Unavailable** | Its seat didn't start. **Doctor** names the failing check. |
 
@@ -180,8 +180,8 @@ The controller interface asks on every connect instead:
 
 - A device that had its own Steam seat before keeps playing as the profile named after it, without
   being asked.
-- A [`punktfunk://` link's `as=`](/docs/presets-and-links) or the command line's
-  [`--as`](/docs/clients#scripting-the-punktfunk-cli) plays as a profile for one connect.
+- A [`rubyfunk://` link's `as=`](/docs/presets-and-links) or the command line's
+  [`--as`](/docs/clients#scripting-the-rubyfunk-cli) plays as a profile for one connect.
 - The [Decky plugin](/docs/steam-deck) shows one chip per profile under the host.
 - [Moonlight](/docs/moonlight) and the other clients play as the owner.
 

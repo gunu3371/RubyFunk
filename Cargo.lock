@@ -1119,7 +1119,7 @@ dependencies = [
  "pf-frame",
  "pf-inject",
  "pf-vdisplay",
- "punktfunk-core",
+ "rubyfunk-core",
  "tracing",
  "tracing-subscriber",
 ]
@@ -1731,7 +1731,7 @@ name = "gen-headers"
 version = "0.46.0"
 dependencies = [
  "cbindgen",
- "punktfunk-core",
+ "rubyfunk-core",
 ]
 
 [[package]]
@@ -2672,7 +2672,7 @@ checksum = "f9f8bd3e56ce4dfc153cf470fffbfa98c7620958b312ca5c3a4b8d5181fd13c6"
 name = "loss-harness"
 version = "0.46.0"
 dependencies = [
- "punktfunk-core",
+ "rubyfunk-core",
 ]
 
 [[package]]
@@ -3285,7 +3285,7 @@ dependencies = [
  "pf-paths-win",
  "pf-win-display",
  "pipewire",
- "punktfunk-core",
+ "rubyfunk-core",
  "sha2 0.11.0",
  "tracing",
  "wasapi",
@@ -3346,8 +3346,8 @@ dependencies = [
  "pf-dmabuf",
  "pf-update-check",
  "pipewire",
- "punktfunk-core",
  "rand 0.10.3",
+ "rubyfunk-core",
  "rustls",
  "sdl3",
  "serde",
@@ -3383,9 +3383,9 @@ dependencies = [
  "pf-v4l2dec",
  "pf-vaapi",
  "pf-vkdecode",
- "punktfunk-core",
  "pyrowave-sys",
  "rav1d",
+ "rubyfunk-core",
  "sha2 0.11.0",
  "tracing",
  "windows 0.100.0",
@@ -3402,8 +3402,8 @@ dependencies = [
  "libc",
  "pf-host-config",
  "pf-portal",
- "punktfunk-core",
  "quinn",
+ "rubyfunk-core",
  "tokio",
  "tracing",
  "wayland-client",
@@ -3421,7 +3421,7 @@ dependencies = [
  "metal",
  "pf-client-core",
  "pf-presenter",
- "punktfunk-core",
+ "rubyfunk-core",
  "sdl3",
  "serde",
  "serde_json",
@@ -3474,8 +3474,8 @@ dependencies = [
  "pf-libva",
  "pf-vaapi",
  "pf-zerocopy",
- "punktfunk-core",
  "pyrowave-sys",
+ "rubyfunk-core",
  "rustix",
  "serde",
  "serde_json",
@@ -3590,8 +3590,8 @@ dependencies = [
  "pf-paths-win",
  "pf-portal",
  "pf-win-display",
- "punktfunk-core",
  "reis",
+ "rubyfunk-core",
  "rustix",
  "serde_json",
  "tokio",
@@ -3660,7 +3660,7 @@ dependencies = [
  "pf-client-core",
  "pf-dmabuf",
  "pf-vkdecode",
- "punktfunk-core",
+ "rubyfunk-core",
  "rustix",
  "sdl3",
  "tracing",
@@ -3774,7 +3774,7 @@ dependencies = [
  "pf-paths-win",
  "pf-portal",
  "pf-win-display",
- "punktfunk-core",
+ "rubyfunk-core",
  "serde",
  "serde_json",
  "sha2 0.11.0",
@@ -3807,7 +3807,7 @@ version = "0.46.0"
 dependencies = [
  "anyhow",
  "pf-paths",
- "punktfunk-core",
+ "rubyfunk-core",
  "serde_json",
  "tracing",
  "windows 0.62.2",
@@ -4059,337 +4059,6 @@ dependencies = [
  "rusty-fork",
  "tempfile",
  "unarray",
-]
-
-[[package]]
-name = "punktfunk-capture-worker"
-version = "0.46.0"
-dependencies = [
- "anyhow",
- "bytemuck",
- "pf-driver-proto",
- "pf-encode-session",
- "pf-encode-win",
- "pf-frame",
- "tracing",
- "tracing-subscriber",
- "windows 0.62.2",
-]
-
-[[package]]
-name = "punktfunk-cli"
-version = "0.46.0"
-dependencies = [
- "base64 0.23.1",
- "pf-client-core",
- "punktfunk-core",
- "serde_json",
- "tracing-subscriber",
- "winresource",
-]
-
-[[package]]
-name = "punktfunk-client-android"
-version = "0.46.0"
-dependencies = [
- "android_logger",
- "anyhow",
- "ash",
- "async-channel",
- "jni",
- "libc",
- "log",
- "ndk",
- "ndk-sys",
- "pf-bitstream",
- "pf-client-core",
- "pf-client-video",
- "pf-console-ui",
- "punktfunk-core",
- "serde",
- "serde_json",
- "skia-safe",
- "tracing",
- "uac-host",
- "usbfs-iso",
-]
-
-[[package]]
-name = "punktfunk-client-apple"
-version = "0.46.0"
-dependencies = [
- "pf-client-core",
- "pf-console-ui",
- "punktfunk-core",
- "punktfunk-ffi",
- "serde",
- "serde_json",
- "skia-safe",
- "tracing",
-]
-
-[[package]]
-name = "punktfunk-client-linux"
-version = "0.46.0"
-dependencies = [
- "anyhow",
- "async-channel",
- "glib-build-tools",
- "gtk4",
- "libadwaita",
- "pf-client-core",
- "punktfunk-core",
- "relm4",
- "serde",
- "serde_json",
- "tracing",
-]
-
-[[package]]
-name = "punktfunk-client-session"
-version = "0.46.0"
-dependencies = [
- "pf-client-core",
- "pf-console-ui",
- "pf-presenter",
- "punktfunk-core",
- "serde_json",
- "tracing",
- "winresource",
-]
-
-[[package]]
-name = "punktfunk-client-windows"
-version = "0.46.0"
-dependencies = [
- "pf-client-core",
- "pf-fluent",
- "punktfunk-core",
- "serde_json",
- "tracing",
- "windows 0.100.0",
- "windows-reactor",
- "winresource",
-]
-
-[[package]]
-name = "punktfunk-core"
-version = "0.46.0"
-dependencies = [
- "aes-gcm",
- "aws-lc-rs",
- "chacha20poly1305",
- "crc32fast",
- "criterion",
- "fec-rs",
- "hmac 0.13.0",
- "if-addrs",
- "libc",
- "opus",
- "pf-packed444",
- "proptest",
- "quinn",
- "quinn-udp",
- "rcgen",
- "reed-solomon-simd",
- "rustls",
- "rustls-webpki",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "socket2",
- "spake2",
- "thiserror 2.0.21",
- "tokio",
- "tracing",
- "ureq",
- "windows-sys 0.61.2",
- "zeroize",
-]
-
-[[package]]
-name = "punktfunk-encode-worker"
-version = "0.46.0"
-dependencies = [
- "pf-encode",
- "pf-zerocopy",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "punktfunk-ffi"
-version = "0.46.0"
-dependencies = [
- "log",
- "opus",
- "pf-bitstream",
- "punktfunk-core",
- "quinn",
- "rand 0.10.3",
- "rcgen",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "punktfunk-host"
-version = "0.46.0"
-dependencies = [
- "aes",
- "aes-gcm",
- "anyhow",
- "ashpd",
- "aws-lc-rs",
- "axum",
- "base64 0.23.1",
- "cbc",
- "futures-util",
- "h2",
- "hermir",
- "hex",
- "hmac 0.13.0",
- "http-body-util",
- "hyper",
- "hyper-util",
- "if-addrs",
- "jiff",
- "libc",
- "libloading 0.9.0",
- "log",
- "mac_address",
- "mdns-sd",
- "omur",
- "opus",
- "pf-audio",
- "pf-capture",
- "pf-clipboard",
- "pf-driver-proto",
- "pf-encode",
- "pf-frame",
- "pf-gpu",
- "pf-host-config",
- "pf-inject",
- "pf-paths",
- "pf-paths-win",
- "pf-portal",
- "pf-seats",
- "pf-update-check",
- "pf-vdisplay",
- "pf-win-display",
- "pf-zerocopy",
- "punktfunk-core",
- "punktfunk-ffi",
- "quinn",
- "rand 0.10.3",
- "rcgen",
- "rsa",
- "rustls",
- "rusty_enet",
- "semver",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "socket2",
- "tempfile",
- "tokio",
- "tokio-rustls",
- "tower",
- "tracing",
- "tracing-log",
- "tracing-subscriber",
- "ureq",
- "utoipa",
- "utoipa-axum",
- "utoipa-scalar",
- "wasapi",
- "windows 0.62.2",
- "windows-service",
- "winreg 0.56.0",
- "winresource",
- "wtransport",
- "x509-parser",
- "zbus",
-]
-
-[[package]]
-name = "punktfunk-probe"
-version = "0.46.0"
-dependencies = [
- "anyhow",
- "mdns-sd",
- "opus",
- "pf-client-core",
- "punktfunk-core",
- "quinn",
- "tokio",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "punktfunk-seats"
-version = "0.46.0"
-dependencies = [
- "anyhow",
- "pf-inject",
- "pf-paths",
- "pf-seats",
- "rustix",
- "tracing",
-]
-
-[[package]]
-name = "punktfunk-setup"
-version = "0.46.0"
-dependencies = [
- "console",
- "getrandom 0.4.3",
- "pf-host-config",
- "pf-paths",
- "portable-pty",
- "serde",
- "serde_json",
- "tempfile",
- "windows 0.62.2",
-]
-
-[[package]]
-name = "punktfunk-setup-win"
-version = "0.46.0"
-dependencies = [
- "pf-fluent",
- "pf-paths",
- "pf-paths-win",
- "punktfunk-setup",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "tar",
- "tempfile",
- "windows 0.100.0",
- "windows-reactor",
- "windows-reactor-setup",
- "winresource",
- "xz2",
-]
-
-[[package]]
-name = "punktfunk-tray"
-version = "0.46.0"
-dependencies = [
- "anyhow",
- "ksni",
- "pf-paths",
- "punktfunk-core",
- "rustls",
- "serde",
- "serde_json",
- "ureq",
- "windows 0.62.2",
- "windows-service",
- "winreg 0.56.0",
- "winresource",
 ]
 
 [[package]]
@@ -4830,6 +4499,337 @@ dependencies = [
 ]
 
 [[package]]
+name = "rubyfunk-capture-worker"
+version = "0.46.0"
+dependencies = [
+ "anyhow",
+ "bytemuck",
+ "pf-driver-proto",
+ "pf-encode-session",
+ "pf-encode-win",
+ "pf-frame",
+ "tracing",
+ "tracing-subscriber",
+ "windows 0.62.2",
+]
+
+[[package]]
+name = "rubyfunk-cli"
+version = "0.46.0"
+dependencies = [
+ "base64 0.23.1",
+ "pf-client-core",
+ "rubyfunk-core",
+ "serde_json",
+ "tracing-subscriber",
+ "winresource",
+]
+
+[[package]]
+name = "rubyfunk-client-android"
+version = "0.46.0"
+dependencies = [
+ "android_logger",
+ "anyhow",
+ "ash",
+ "async-channel",
+ "jni",
+ "libc",
+ "log",
+ "ndk",
+ "ndk-sys",
+ "pf-bitstream",
+ "pf-client-core",
+ "pf-client-video",
+ "pf-console-ui",
+ "rubyfunk-core",
+ "serde",
+ "serde_json",
+ "skia-safe",
+ "tracing",
+ "uac-host",
+ "usbfs-iso",
+]
+
+[[package]]
+name = "rubyfunk-client-apple"
+version = "0.46.0"
+dependencies = [
+ "pf-client-core",
+ "pf-console-ui",
+ "rubyfunk-core",
+ "rubyfunk-ffi",
+ "serde",
+ "serde_json",
+ "skia-safe",
+ "tracing",
+]
+
+[[package]]
+name = "rubyfunk-client-linux"
+version = "0.46.0"
+dependencies = [
+ "anyhow",
+ "async-channel",
+ "glib-build-tools",
+ "gtk4",
+ "libadwaita",
+ "pf-client-core",
+ "relm4",
+ "rubyfunk-core",
+ "serde",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
+name = "rubyfunk-client-session"
+version = "0.46.0"
+dependencies = [
+ "pf-client-core",
+ "pf-console-ui",
+ "pf-presenter",
+ "rubyfunk-core",
+ "serde_json",
+ "tracing",
+ "winresource",
+]
+
+[[package]]
+name = "rubyfunk-client-windows"
+version = "0.46.0"
+dependencies = [
+ "pf-client-core",
+ "pf-fluent",
+ "rubyfunk-core",
+ "serde_json",
+ "tracing",
+ "windows 0.100.0",
+ "windows-reactor",
+ "winresource",
+]
+
+[[package]]
+name = "rubyfunk-core"
+version = "0.46.0"
+dependencies = [
+ "aes-gcm",
+ "aws-lc-rs",
+ "chacha20poly1305",
+ "crc32fast",
+ "criterion",
+ "fec-rs",
+ "hmac 0.13.0",
+ "if-addrs",
+ "libc",
+ "opus",
+ "pf-packed444",
+ "proptest",
+ "quinn",
+ "quinn-udp",
+ "rcgen",
+ "reed-solomon-simd",
+ "rustls",
+ "rustls-webpki",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "socket2",
+ "spake2",
+ "thiserror 2.0.21",
+ "tokio",
+ "tracing",
+ "ureq",
+ "windows-sys 0.61.2",
+ "zeroize",
+]
+
+[[package]]
+name = "rubyfunk-encode-worker"
+version = "0.46.0"
+dependencies = [
+ "pf-encode",
+ "pf-zerocopy",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "rubyfunk-ffi"
+version = "0.46.0"
+dependencies = [
+ "log",
+ "opus",
+ "pf-bitstream",
+ "quinn",
+ "rand 0.10.3",
+ "rcgen",
+ "rubyfunk-core",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "rubyfunk-host"
+version = "0.46.0"
+dependencies = [
+ "aes",
+ "aes-gcm",
+ "anyhow",
+ "ashpd",
+ "aws-lc-rs",
+ "axum",
+ "base64 0.23.1",
+ "cbc",
+ "futures-util",
+ "h2",
+ "hermir",
+ "hex",
+ "hmac 0.13.0",
+ "http-body-util",
+ "hyper",
+ "hyper-util",
+ "if-addrs",
+ "jiff",
+ "libc",
+ "libloading 0.9.0",
+ "log",
+ "mac_address",
+ "mdns-sd",
+ "omur",
+ "opus",
+ "pf-audio",
+ "pf-capture",
+ "pf-clipboard",
+ "pf-driver-proto",
+ "pf-encode",
+ "pf-frame",
+ "pf-gpu",
+ "pf-host-config",
+ "pf-inject",
+ "pf-paths",
+ "pf-paths-win",
+ "pf-portal",
+ "pf-seats",
+ "pf-update-check",
+ "pf-vdisplay",
+ "pf-win-display",
+ "pf-zerocopy",
+ "quinn",
+ "rand 0.10.3",
+ "rcgen",
+ "rsa",
+ "rubyfunk-core",
+ "rubyfunk-ffi",
+ "rustls",
+ "rusty_enet",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "socket2",
+ "tempfile",
+ "tokio",
+ "tokio-rustls",
+ "tower",
+ "tracing",
+ "tracing-log",
+ "tracing-subscriber",
+ "ureq",
+ "utoipa",
+ "utoipa-axum",
+ "utoipa-scalar",
+ "wasapi",
+ "windows 0.62.2",
+ "windows-service",
+ "winreg 0.56.0",
+ "winresource",
+ "wtransport",
+ "x509-parser",
+ "zbus",
+]
+
+[[package]]
+name = "rubyfunk-probe"
+version = "0.46.0"
+dependencies = [
+ "anyhow",
+ "mdns-sd",
+ "opus",
+ "pf-client-core",
+ "quinn",
+ "rubyfunk-core",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "rubyfunk-seats"
+version = "0.46.0"
+dependencies = [
+ "anyhow",
+ "pf-inject",
+ "pf-paths",
+ "pf-seats",
+ "rustix",
+ "tracing",
+]
+
+[[package]]
+name = "rubyfunk-setup"
+version = "0.46.0"
+dependencies = [
+ "console",
+ "getrandom 0.4.3",
+ "pf-host-config",
+ "pf-paths",
+ "portable-pty",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "windows 0.62.2",
+]
+
+[[package]]
+name = "rubyfunk-setup-win"
+version = "0.46.0"
+dependencies = [
+ "pf-fluent",
+ "pf-paths",
+ "pf-paths-win",
+ "rubyfunk-setup",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "tar",
+ "tempfile",
+ "windows 0.100.0",
+ "windows-reactor",
+ "windows-reactor-setup",
+ "winresource",
+ "xz2",
+]
+
+[[package]]
+name = "rubyfunk-tray"
+version = "0.46.0"
+dependencies = [
+ "anyhow",
+ "ksni",
+ "pf-paths",
+ "rubyfunk-core",
+ "rustls",
+ "serde",
+ "serde_json",
+ "ureq",
+ "windows 0.62.2",
+ "windows-service",
+ "winreg 0.56.0",
+ "winresource",
+]
+
+[[package]]
 name = "rustc-hash"
 version = "2.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5046,7 +5046,7 @@ version = "0.46.0"
 dependencies = [
  "anyhow",
  "pf-inject",
- "punktfunk-core",
+ "rubyfunk-core",
  "rustix",
  "tracing-subscriber",
  "wayland-client",

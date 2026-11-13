@@ -11,7 +11,7 @@
 //! * [`version`] — channel and "newer" across packaging formats.
 //! * [`detect`] — install-kind ladder, parameterised by [`detect::Product`].
 //!
-//! No apply code. Apply is privileged and per-product (`punktfunk-host::update`,
+//! No apply code. Apply is privileged and per-product (`rubyfunk-host::update`,
 //! `pf-client-core::update`, the root helper in `pf-update`).
 
 // Signed network bytes. A bounds bug in the parser would void the signature check.

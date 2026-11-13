@@ -4,7 +4,7 @@
 //! session-ended watchdog) instead of holding a blocking event thread — access news is a
 //! console edit or an expiry warning, a handful per session, and every gate the mask drives
 //! re-checks within a second anyway. The connector already folds each mid-session
-//! [`punktfunk_core::quic::AccessUpdate`] latest-wins into its live grants/deadline slots;
+//! [`rubyfunk_core::quic::AccessUpdate`] latest-wins into its live grants/deadline slots;
 //! the seq counter here only exists so the poller can tell a FRESH update arrived (the host's
 //! T−5 m / T−1 m warnings owe a toast) without diffing state that a warning doesn't change.
 
@@ -26,7 +26,9 @@ use super::SESSIONS;
 /// `AccessUpdate` drained from the connector's event plane. Not android-gated — pure `jni` +
 /// connector reads, so it links on the host build too. Cheap; safe on the UI thread.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeAccessState<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeAccessState<
+    'local,
+>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
     handle: jlong,

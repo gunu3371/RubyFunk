@@ -1,7 +1,7 @@
 # pf-vkhdr-layer — HDR Vulkan layer for the virtual display
 
-A tiny Vulkan **implicit layer** (`VK_LAYER_PUNKTFUNK_hdr_inject`) that lets **Vulkan games enable
-HDR while streaming over the punktfunk virtual display**.
+A tiny Vulkan **implicit layer** (`VK_LAYER_RUBYFUNK_hdr_inject`) that lets **Vulkan games enable
+HDR while streaming over the rubyfunk virtual display**.
 
 ## The problem it solves
 
@@ -26,7 +26,7 @@ Dark Ages enables HDR over the virtual display with this layer.**
 - Intercepts `vkGetPhysicalDeviceSurfaceFormatsKHR` / `...2KHR`, calls down to the ICD, and appends
   `{A2B10G10R10_UNORM_PACK32, HDR10_ST2084_EXT}` + `{R16G16B16A16_SFLOAT, EXTENDED_SRGB_LINEAR_EXT}`
   (deduped — a no-op on real HDR monitors that already list them).
-- **Self-gates**: it only injects when the surface's monitor is a punktfunk virtual display (EDID
+- **Self-gates**: it only injects when the surface's monitor is a rubyfunk virtual display (EDID
   manufacturer `PNK`) with Windows HDR on right now: advanced color enabled, wide color not
   enforced (checked via `DisplayConfigGetDeviceInfo` / `GET_ADVANCED_COLOR_INFO`). So it does
   **nothing** on physical displays, on SDR sessions, or under Auto Color Management — no

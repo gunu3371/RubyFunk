@@ -7,7 +7,7 @@
 //! first token it has art for. Empty or unknown chains fall through to the UI's
 //! fallback glyph. UI-agnostic so every shell resolves identically.
 
-pub use punktfunk_core::discovery::sanitize_os;
+pub use rubyfunk_core::discovery::sanitize_os;
 
 /// Most-specific-first after sanitize. Empty means no OS icon.
 pub fn os_icon_tokens(chain: &str) -> Vec<String> {

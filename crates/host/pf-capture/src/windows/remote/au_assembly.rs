@@ -57,7 +57,7 @@ impl Clocks {
     }
 }
 
-/// Access units to disk while `PUNKTFUNK_IDD_DIAG` is on, in the framing the S5 encode probe
+/// Access units to disk while `RUBYFUNK_IDD_DIAG` is on, in the framing the S5 encode probe
 /// wrote — `[u32 len][u64 pts_ns][u8 keyframe][bytes]` per chunk — so a field failure replays
 /// through the same corpus tooling. A write error drops the dump; the stream never fails for it.
 pub(crate) struct AuDump(std::io::BufWriter<std::fs::File>);
@@ -116,7 +116,7 @@ pub(crate) struct AuAssembly<'a> {
     pub(crate) last_arrival: Option<Duration>,
     /// The driver's own split of that span, when its slot carried the stamps.
     pub(crate) last_split: Option<DriverSplit>,
-    /// Bitstream capture while `PUNKTFUNK_IDD_DIAG` is on; dropped on the first write error.
+    /// Bitstream capture while `RUBYFUNK_IDD_DIAG` is on; dropped on the first write error.
     dump: Option<AuDump>,
 }
 

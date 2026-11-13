@@ -1,5 +1,5 @@
 {
-  "$comment": "A typed resolution → the mode a client asks for, pinned by punktfunk-core resolutions::custom, the Swift Resolutions.custom and the Kotlin Resolutions.custom tests. Each side: at least 320 × 200, at most max_dimension(codec) from render-scale-vectors.json, then floored even.",
+  "$comment": "A typed resolution → the mode a client asks for, pinned by rubyfunk-core resolutions::custom, the Swift Resolutions.custom and the Kotlin Resolutions.custom tests. Each side: at least 320 × 200, at most max_dimension(codec) from render-scale-vectors.json, then floored even.",
   "custom": [
     {"name": "a listed size passes", "typed": [1920, 1080], "codec": "hevc", "want": [1920, 1080]},
     {"name": "odd sides floor even", "typed": [1921, 1081], "codec": "hevc", "want": [1920, 1080]},

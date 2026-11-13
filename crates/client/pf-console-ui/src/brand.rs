@@ -1,6 +1,6 @@
-//! The punktfunk mark: two discs and the lens where they overlap, on the theme's accent.
+//! The rubyfunk mark: two discs and the lens where they overlap, on the theme's accent.
 //!
-//! Geometry is the app icon's (`Punktfunk_App-Icon_512.svg`): equal discs of radius a third of
+//! Geometry is the app icon's (`RubyFunk_App-Icon_512.svg`): equal discs of radius a third of
 //! the box, centres offset by `(r, -r)`, and a highlight that is NOT their overlap — it is the
 //! lens between the deep disc and a copy of itself shifted one radius down the axis, so it runs
 //! from the deep rim to the deep centre with its tips 60° either side of the axis, lit from

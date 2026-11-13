@@ -1,13 +1,13 @@
 # macOS — App Store metadata
 
-> **Scope correction.** The Mac app is a **client only**. There is no macOS host: `punktfunk-host`
+> **Scope correction.** The Mac app is a **client only**. There is no macOS host: `rubyfunk-host`
 > has no macOS capture, virtual-display, or encode backend (the two `cfg!(target_os = "macos")` hits
 > in the host crate are OS *detection* for the host tile and a path helper; the loopback-test host
 > is a synthetic frame source for `test-loopback.sh`, not a shippable host). A macOS host is a
 > feasibility study — it needs four new backends and the private `CGVirtualDisplay` API.
 > None of the copy below claims a Mac can host, and it should not until that ships.
 
-- **Name:** Punktfunk
+- **Name:** RubyFunk
 - **Subtitle (DE):** Schnell, lokal & offen.
 - **Subtitle (EN):** Fast, local & open.
 
@@ -46,9 +46,9 @@ Your gaming PC in a window or full screen, at your display's exact resolution. M
 ## Description (DE) — max 4000 characters
 
 ```
-Punktfunk streamt deinen Gaming-PC auf den Mac – in der exakten Auflösung und Bildwiederholrate deines Displays, über dein eigenes Netzwerk, ohne Konto und ohne Cloud.
+RubyFunk streamt deinen Gaming-PC auf den Mac – in der exakten Auflösung und Bildwiederholrate deines Displays, über dein eigenes Netzwerk, ohne Konto und ohne Cloud.
 
-Punktfunk besteht aus zwei Hälften: einem Host auf dem PC, von dem du streamst, und dieser App auf dem Gerät, auf dem du spielst. Der Host ist quelloffen und kostenlos, läuft auf Linux und auf Windows 11 – auf dem Gaming-Rig unterm Schreibtisch, auf einem Laptop oder headless auf einem Server, an dem gar kein Monitor hängt.
+RubyFunk besteht aus zwei Hälften: einem Host auf dem PC, von dem du streamst, und dieser App auf dem Gerät, auf dem du spielst. Der Host ist quelloffen und kostenlos, läuft auf Linux und auf Windows 11 – auf dem Gaming-Rig unterm Schreibtisch, auf einem Laptop oder headless auf einem Server, an dem gar kein Monitor hängt.
 
 DEIN MAC BEKOMMT SEIN EIGENES DISPLAY
 
@@ -72,7 +72,7 @@ DualSense, Xbox- und weitere MFi-kompatible Controller. Beim DualSense gehen Rum
 
 DEINE BIBLIOTHEK, DEIN NETZWERK
 
-Installierte Steam-Titel und selbst hinzugefügte Spiele erscheinen als Raster mit Artwork und starten direkt. Hosts findet die App im Netzwerk von allein. Beim ersten Mal koppelst du einmalig mit einer PIN, danach verbindet sich der Mac über eine gepinnte Identität aus deinem Schlüsselbund – kein Konto, kein Login. Einen schlafenden PC weckt Punktfunk per Wake-on-LAN.
+Installierte Steam-Titel und selbst hinzugefügte Spiele erscheinen als Raster mit Artwork und starten direkt. Hosts findet die App im Netzwerk von allein. Beim ersten Mal koppelst du einmalig mit einer PIN, danach verbindet sich der Mac über eine gepinnte Identität aus deinem Schlüsselbund – kein Konto, kein Login. Einen schlafenden PC weckt RubyFunk per Wake-on-LAN.
 
 MESSEN STATT GLAUBEN
 
@@ -80,7 +80,7 @@ Ein gestuftes Overlay zeigt Bildrate, Bitrate und Latenz – über zwei Maschine
 
 WAS DU BRAUCHST
 
-Einen Punktfunk-Host auf einem Linux-PC oder auf Windows 11 (22H2 oder neuer) im selben Netzwerk. Der Host ist quelloffen (MIT/Apache-2.0) und kostenlos – Anleitungen und Quellcode findest du auf punktfunk.unom.io. Diese App ist der Client: ein Mac kann derzeit nicht selbst Host sein.
+Einen RubyFunk-Host auf einem Linux-PC oder auf Windows 11 (22H2 oder neuer) im selben Netzwerk. Der Host ist quelloffen (MIT/Apache-2.0) und kostenlos – Anleitungen und Quellcode findest du auf punktfunk.unom.io. Diese App ist der Client: ein Mac kann derzeit nicht selbst Host sein.
 
 Kein Konto. Keine Cloud. Keine Telemetrie. Die App erfasst keine Daten über dich.
 ```
@@ -90,9 +90,9 @@ Kein Konto. Keine Cloud. Keine Telemetrie. Die App erfasst keine Daten über dic
 ## Description (EN) — max 4000 characters
 
 ```
-Punktfunk streams your gaming PC to your Mac — at your display's exact resolution and refresh rate, over your own network, with no account and no cloud.
+RubyFunk streams your gaming PC to your Mac — at your display's exact resolution and refresh rate, over your own network, with no account and no cloud.
 
-Punktfunk comes in two halves: a host on the PC you stream from, and this app on the device you play on. The host is open source and free, and runs on Linux and on Windows 11 — on the gaming rig under your desk, on a laptop, or headless on a server with no monitor attached at all.
+RubyFunk comes in two halves: a host on the PC you stream from, and this app on the device you play on. The host is open source and free, and runs on Linux and on Windows 11 — on the gaming rig under your desk, on a laptop, or headless on a server with no monitor attached at all.
 
 YOUR MAC GETS A DISPLAY OF ITS OWN
 
@@ -116,7 +116,7 @@ DualSense, Xbox, and other MFi-compatible controllers. On a DualSense, rumble, l
 
 YOUR LIBRARY, YOUR NETWORK
 
-Installed Steam titles and games you add yourself appear as a grid with artwork, ready to launch. The app finds hosts on your network by itself. The first time, you pair once with a PIN; after that your Mac reconnects on a pinned identity stored in your keychain — no account, no login. Punktfunk can wake a sleeping PC over Wake-on-LAN.
+Installed Steam titles and games you add yourself appear as a grid with artwork, ready to launch. The app finds hosts on your network by itself. The first time, you pair once with a PIN; after that your Mac reconnects on a pinned identity stored in your keychain — no account, no login. RubyFunk can wake a sleeping PC over Wake-on-LAN.
 
 MEASURED, NOT PROMISED
 
@@ -124,7 +124,7 @@ A tiered overlay shows frame rate, bitrate, and latency — corrected for clock 
 
 WHAT YOU NEED
 
-A Punktfunk host on a Linux PC or on Windows 11 (22H2 or later) on the same network. The host is open source (MIT/Apache-2.0) and free — guides and source at punktfunk.unom.io. This app is the client: a Mac cannot currently act as a host.
+A RubyFunk host on a Linux PC or on Windows 11 (22H2 or later) on the same network. The host is open source (MIT/Apache-2.0) and free — guides and source at punktfunk.unom.io. This app is the client: a Mac cannot currently act as a host.
 
 No account. No cloud. No telemetry. This app collects no data about you.
 ```
@@ -134,7 +134,7 @@ No account. No cloud. No telemetry. This app collects no data about you.
 ## Keywords — max 100 characters
 
 Comma-separated, **no spaces after the commas** (spaces count against the limit). The app name and
-the subtitle are already indexed, so `punktfunk`, `schnell`, `lokal`, and `offen` are deliberately
+the subtitle are already indexed, so `rubyfunk`, `schnell`, `lokal`, and `offen` are deliberately
 absent — repeating them would waste characters.
 
 ### DE (97)
@@ -149,7 +149,7 @@ streaming,spiele,remote,desktop,fernzugriff,pc,linux,windows,controller,gamepad,
 streaming,remote,desktop,pc,linux,windows,gaming,controller,gamepad,latency,selfhosted,lan,play
 ```
 
-**Deliberately excluded:** `Moonlight`, `GameStream`, `NVIDIA`, `Steam`. Punktfunk genuinely is
+**Deliberately excluded:** `Moonlight`, `GameStream`, `NVIDIA`, `Steam`. RubyFunk genuinely is
 GameStream-compatible and does read your Steam library, but App Store Review Guideline 4.1 and the
 metadata rules disallow third-party app, product, and company names in the **keyword** field — it is
 a routine rejection. Saying it in the description is fine; the current descriptions avoid naming

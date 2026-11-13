@@ -1,6 +1,6 @@
-//! Runs the REAL `punktfunk-session` binary and asserts it speaks the stdout contract.
+//! Runs the REAL `rubyfunk-session` binary and asserts it speaks the stdout contract.
 //!
-//! 0.22.0 shipped a stub as `punktfunk-session` — a stray copy of the GTK shell replaced
+//! 0.22.0 shipped a stub as `rubyfunk-session` — a stray copy of the GTK shell replaced
 //! this crate's `main.rs`, and every build gate stayed green because the wrong program
 //! compiled perfectly. Nothing in CI ever *ran* the binary; the failure only existed at
 //! runtime, as a connect that silently bounced back to the host list. This test is the
@@ -16,7 +16,7 @@ use std::time::{Duration, Instant};
 /// the same contract before the deadline.
 #[test]
 fn a_failing_connect_still_speaks_the_contract() {
-    let mut child = Command::new(env!("CARGO_BIN_EXE_punktfunk-session"))
+    let mut child = Command::new(env!("CARGO_BIN_EXE_rubyfunk-session"))
         .args([
             "--connect",
             "127.0.0.1:1",
@@ -29,7 +29,7 @@ fn a_failing_connect_still_speaks_the_contract() {
         .stdout(Stdio::piped())
         .stderr(Stdio::null())
         .spawn()
-        .expect("spawn punktfunk-session");
+        .expect("spawn rubyfunk-session");
 
     let mut stdout = child.stdout.take().expect("piped stdout");
     let reader = std::thread::spawn(move || {
@@ -43,12 +43,12 @@ fn a_failing_connect_still_speaks_the_contract() {
     // blocked) gets anywhere near it.
     let deadline = Instant::now() + Duration::from_secs(120);
     loop {
-        match child.try_wait().expect("wait on punktfunk-session") {
+        match child.try_wait().expect("wait on rubyfunk-session") {
             Some(_) => break,
             None if Instant::now() > deadline => {
                 let _ = child.kill();
                 let _ = child.wait();
-                panic!("punktfunk-session neither exited nor spoke within 120 s");
+                panic!("rubyfunk-session neither exited nor spoke within 120 s");
             }
             None => std::thread::sleep(Duration::from_millis(200)),
         }

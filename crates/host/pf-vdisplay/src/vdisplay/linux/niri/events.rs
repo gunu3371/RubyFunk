@@ -18,7 +18,7 @@ pub(crate) fn ensure_running() {
     static STARTED: Once = Once::new();
     STARTED.call_once(|| {
         let spawned = thread::Builder::new()
-            .name("punktfunk-niri-events".into())
+            .name("rubyfunk-niri-events".into())
             .spawn(|| loop {
                 if let Err(e) = read_events() {
                     tracing::debug!(error = %format!("{e:#}"), "niri: event stream ended");

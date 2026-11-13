@@ -17,7 +17,7 @@ use super::pad_shm::ShmPad;
 use crate::pad_shm_ring::{stamp, OFF_OUTPUT, OFF_OUT_SEQ, SHM_SIZE};
 use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
-use punktfunk_core::quic::RichInput;
+use rubyfunk_core::quic::RichInput;
 use std::sync::atomic::Ordering;
 
 /// One virtual DualSense or Edge: a `pf_pad_<index>` / `pf_edge_<index>` devnode plus the sealed
@@ -52,7 +52,7 @@ impl WinDsIdentity {
             // software-enumerated devnode. `hwid_matches_inf` pins it.
             hwid: "pf_dualsense",
             usb_vid_pid: "VID_054C&PID_0CE6",
-            description: "Punktfunk Virtual DualSense",
+            description: "RubyFunk Virtual DualSense",
             enumerator: "VID_054C&PID_0CE6&MI_03",
         }
     }
@@ -63,7 +63,7 @@ impl WinDsIdentity {
             instance_prefix: "pf_edge",
             hwid: "pf_dualsenseedge",
             usb_vid_pid: "VID_054C&PID_0DF2",
-            description: "Punktfunk Virtual DualSense Edge",
+            description: "RubyFunk Virtual DualSense Edge",
             enumerator: "VID_054C&PID_0DF2&MI_03",
         }
     }
@@ -115,7 +115,7 @@ impl DsWinPad {
 /// Windows DualSense [`PadProto`]: sealed-channel open, the same [`DsState`] mappers as
 /// `linux/dualsense.rs`, section feedback poll. Lifecycle lives in [`UhidManager`].
 pub struct DsWinProto {
-    /// Steam back grips have no DualSense HID slot. `PUNKTFUNK_STEAM_REMAP=paddles=…`; default drop.
+    /// Steam back grips have no DualSense HID slot. `RUBYFUNK_STEAM_REMAP=paddles=…`; default drop.
     remap: crate::steam_remap::RemapConfig,
 }
 
@@ -133,7 +133,7 @@ impl PadProto for DsWinProto {
     const LABEL: &'static str = "DualSense/Windows";
     const DEVICE: &'static str = "DualSense";
     const CREATE_HINT: &'static str =
-        " (install/repair: punktfunk-host.exe driver install --gamepad)";
+        " (install/repair: rubyfunk-host.exe driver install --gamepad)";
 
     fn open(&mut self, idx: u8) -> Result<DsWinPad> {
         let p = DsWinPad::open(idx, &WinDsIdentity::dualsense())?;
@@ -144,7 +144,7 @@ impl PadProto for DsWinProto {
         Ok(p)
     }
 
-    fn merge_frame(&self, prev: &DsState, f: &punktfunk_core::input::GamepadFrame) -> DsState {
+    fn merge_frame(&self, prev: &DsState, f: &rubyfunk_core::input::GamepadFrame) -> DsState {
         let buttons = crate::steam_remap::fold_paddles(f.buttons, self.remap.paddles);
         DsState::merge_frame(prev, f, buttons)
     }
@@ -195,8 +195,8 @@ pub fn deck_spike_hold(index: u8, secs: u64) -> Result<()> {
         // hidapi parses MI_ from the child hwids; absent = interface 0, Steam wants 2.
         usb_mi: Some(2),
         bluetooth: false,
-        description: "Punktfunk Virtual Steam Deck (spike)",
-        enumerator: "punktfunk",
+        description: "RubyFunk Virtual Steam Deck (spike)",
+        enumerator: "rubyfunk",
         property: None,
     })?;
     // Same devnode-proved delivery as a session pad — a bring-up tool must not fall back

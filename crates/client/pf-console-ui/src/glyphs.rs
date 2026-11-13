@@ -11,7 +11,7 @@
 use crate::icons::{self, Icon};
 use crate::platform::Platform;
 use crate::theme::{fill, stroke, Fonts, Frame, GLYPH_STROKE, HAIRLINE, W};
-use punktfunk_core::config::GamepadPref;
+use rubyfunk_core::config::GamepadPref;
 use skia_safe::{Canvas, Color4f, PathBuilder, Point, RRect, Rect};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]

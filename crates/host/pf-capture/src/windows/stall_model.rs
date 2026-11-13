@@ -683,7 +683,7 @@ mod tests {
         );
     }
 
-    /// With the ETW leg on (`PUNKTFUNK_IDD_DIAG`), a game presenting through the hole keeps
+    /// With the ETW leg on (`RUBYFUNK_IDD_DIAG`), a game presenting through the hole keeps
     /// compose-silence even under a still cursor; dwm-only flow still demotes.
     #[test]
     fn a_present_witness_blocks_the_damage_idle_demotion() {

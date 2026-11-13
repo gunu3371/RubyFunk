@@ -275,7 +275,7 @@ mod tests {
         assert_eq!(
             H265ProfileKey::from_stream(1, 2, false, 0, 0).unwrap_err(),
             H265ParamsError::UnsupportedChromaFormat(2),
-            "4:2:2 is legal H.265 with no punktfunk output plumbing"
+            "4:2:2 is legal H.265 with no rubyfunk output plumbing"
         );
         assert_eq!(
             H265ProfileKey::from_stream(1, 0, false, 0, 0).unwrap_err(),

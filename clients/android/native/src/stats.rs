@@ -1,10 +1,10 @@
 //! The Android side of the stats overlay: a handle on the connector's shared window
-//! ([`punktfunk_core::hud::Stats`]) plus what only this client knows, the decoder it resolved and
+//! ([`rubyfunk_core::hud::Stats`]) plus what only this client knows, the decoder it resolved and
 //! the presenter's cadence readout. The window does the windowing and the formatting; this
 //! forwards stamps in the shapes the decode paths hold them. Pure `std` plus the core, so it
 //! builds on the host workspace too.
 
-use punktfunk_core::hud::Stats;
+use rubyfunk_core::hud::Stats;
 use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 

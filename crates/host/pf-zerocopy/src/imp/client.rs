@@ -83,7 +83,7 @@ impl RemoteImporter {
     /// Spawn the worker and handshake; its YUV converts write `full_range`, or studio. `Err`
     /// means no isolated zero-copy — same fallback as `EglImporter::new()`.
     ///
-    /// First choice is `punktfunk-encode-worker`: it holds `CAP_SYS_NICE`, the only way the
+    /// First choice is `rubyfunk-encode-worker`: it holds `CAP_SYS_NICE`, the only way the
     /// Vulkan bridge's convert gets a priority queue ahead of a GPU-bound game. Missing, off, or
     /// refusing, this host binary re-execs as the worker at default priority. Never the other way
     /// round: a host image carrying the worker's capability is unidentifiable to KWin.
@@ -106,10 +106,10 @@ impl RemoteImporter {
             ipc::WorkerPath::Off => {}
         }
         match ipc::self_exe() {
-            Some(exe) => Self::spawn_exe(&exe.exec_path(), "punktfunk-host", full_range),
+            Some(exe) => Self::spawn_exe(&exe.exec_path(), "rubyfunk-host", full_range),
             None => Self::spawn_exe(
                 &std::env::current_exe().context("resolve /proc/self/exe for the worker")?,
-                "punktfunk-host",
+                "rubyfunk-host",
                 full_range,
             ),
         }
@@ -554,7 +554,7 @@ fn memfd_with(bytes: &[u8]) -> Result<OwnedFd> {
     use rustix::fs::{MemfdFlags, SealFlags};
     use std::io::Write as _;
     let fd = rustix::fs::memfd_create(
-        c"punktfunk-cursor",
+        c"rubyfunk-cursor",
         MemfdFlags::CLOEXEC | MemfdFlags::ALLOW_SEALING,
     )
     .context("memfd_create(cursor)")?;

@@ -15,7 +15,7 @@ use super::gamepad_raii::SwDeviceProfile;
 use super::pad_shm::ShmPad;
 use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
-use punktfunk_core::quic::{HidOutput, RichInput};
+use rubyfunk_core::quic::{HidOutput, RichInput};
 
 /// INF hardware id. A package rename must not change this (`hwid_matches_inf`).
 pub(super) const DS4_HWID: &str = "pf_dualshock4";
@@ -41,7 +41,7 @@ impl Ds4WinPad {
                 // Composite USB device (headset audio on 0-2); the HID interface is 3.
                 usb_mi: Some(3),
                 bluetooth: false,
-                description: "Punktfunk Virtual DualShock 4",
+                description: "RubyFunk Virtual DualShock 4",
                 enumerator: "VID_054C&PID_09CC&MI_03",
                 property: None,
             },
@@ -67,7 +67,7 @@ impl Ds4WinPad {
 
 /// Slot table, unplug, heartbeat, and `HidoutDedup` live in [`UhidManager`].
 pub struct Ds4WinProto {
-    /// Steam back-grip policy. DS4 has no paddle HID slot; `PUNKTFUNK_STEAM_REMAP=paddles=…`, default drop.
+    /// Steam back-grip policy. DS4 has no paddle HID slot; `RUBYFUNK_STEAM_REMAP=paddles=…`, default drop.
     remap: crate::steam_remap::RemapConfig,
 }
 
@@ -85,7 +85,7 @@ impl PadProto for Ds4WinProto {
     const LABEL: &'static str = "DualShock 4/Windows";
     const DEVICE: &'static str = "DualShock 4";
     const CREATE_HINT: &'static str =
-        " (install/repair: punktfunk-host.exe driver install --gamepad)";
+        " (install/repair: rubyfunk-host.exe driver install --gamepad)";
 
     fn open(&mut self, idx: u8) -> Result<Ds4WinPad> {
         let p = Ds4WinPad::open(idx)?;
@@ -96,7 +96,7 @@ impl PadProto for Ds4WinProto {
         Ok(p)
     }
 
-    fn merge_frame(&self, prev: &DsState, f: &punktfunk_core::input::GamepadFrame) -> DsState {
+    fn merge_frame(&self, prev: &DsState, f: &rubyfunk_core::input::GamepadFrame) -> DsState {
         let buttons = crate::steam_remap::fold_paddles(f.buttons, self.remap.paddles);
         DsState::merge_frame(prev, f, buttons)
     }

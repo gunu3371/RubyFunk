@@ -1,4 +1,4 @@
-// @punktfunk/plugin-kit — Effect-based framework for punktfunk plugins.
+// @rubyfunk/plugin-kit — Effect-based framework for rubyfunk plugins.
 
 export {
 	type AccessRequestOutcome,

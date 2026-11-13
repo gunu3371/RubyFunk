@@ -1,5 +1,5 @@
 # Native Linux client screenshots for the app/marketing listings. The client renders
-# host-free mock scenes (PUNKTFUNK_SHOT_SCENE) under a virtual X display; the driver
+# host-free mock scenes (RUBYFUNK_SHOT_SCENE) under a virtual X display; the driver
 # (clients/linux/tools/screenshots.sh) grabs each one — no host, GPU, or Wayland. The
 # Linux analogue of apple.yml's `screenshots` job, gated to STABLE RELEASE tags only.
 # Standalone + best-effort: a failure here reds nothing else. PNGs land as a 30-day
@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-24.04
     # Same image as ci.yml/deb.yml — already carries the Rust toolchain + GTK/SDL build deps.
     container:
-      image: 192.168.1.58:5010/punktfunk-rust-ci:latest
+      image: 192.168.1.58:5010/rubyfunk-rust-ci:latest
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -102,7 +102,7 @@ jobs:
           /tmp/src-mtimes target
 
       - name: Build client
-        run: cargo build --release -p punktfunk-client-linux --locked
+        run: cargo build --release -p rubyfunk-client-linux --locked
 
       - name: Capture screenshots
         run: bash clients/linux/tools/screenshots.sh
@@ -116,15 +116,15 @@ jobs:
       # `gtk::init()`, and libtest gives every test its own thread — so a second display test in
       # the same process dies with "Attempted to initialize GTK from two different threads",
       # which `--test-threads=1` does not fix. Discovered by name so a new one is picked up.
-      # Each gets a scratch PUNKTFUNK_CONFIG_DIR: the tests that write the stores need one.
+      # Each gets a scratch RUBYFUNK_CONFIG_DIR: the tests that write the stores need one.
       - name: Display-only client tests
         run: |
-          cargo test -p punktfunk-client-linux --locked -- --ignored --list --format terse \
+          cargo test -p rubyfunk-client-linux --locked -- --ignored --list --format terse \
             | sed -n 's/: test$//p' \
             | while read -r t; do
                 echo "--- $t"
-                PUNKTFUNK_CONFIG_DIR="$(mktemp -d)" xvfb-run -a \
-                  cargo test -p punktfunk-client-linux --locked -- --ignored --exact "$t"
+                RUBYFUNK_CONFIG_DIR="$(mktemp -d)" xvfb-run -a \
+                  cargo test -p rubyfunk-client-linux --locked -- --ignored --exact "$t"
               done
 
       - name: Upload screenshots
@@ -132,7 +132,7 @@ jobs:
         # v3: Gitea's API rejects upload-artifact@v4 (see apple.yml). Download is a zip.
         uses: actions/upload-artifact@ff15f0306b3f739f7b6fd43fb5d26cd321bd4de5 # v3
         with:
-          name: punktfunk-linux-client-screenshots
+          name: rubyfunk-linux-client-screenshots
           path: clients/linux/screenshots
           retention-days: 30
 

@@ -10,9 +10,9 @@
 # and logs land in scripts/abr-rig/out/. `tc` and network namespaces need
 # NET_ADMIN, so this is a local/on-demand rig and never a CI gate.
 #
-# PUNKTFUNK_ABR_PROBE=0 and the other ABR environment knobs pass through, which
+# RUBYFUNK_ABR_PROBE=0 and the other ABR environment knobs pass through, which
 # is how the startup-burst control run is taken. PF_RIG_RECOVERY_MS sets how long
-# the host takes to answer a keyframe request. PUNKTFUNK_PERF=1 puts the host's
+# the host takes to answer a keyframe request. RUBYFUNK_PERF=1 puts the host's
 # send-loop percentiles in its log, for reading a standing delay at a low rate.
 # PF_RIG_SEED seeds the capacity wander, so two runs see the same link.
 set -euo pipefail
@@ -33,12 +33,12 @@ fi
 
 # Passed through so a control run is one environment variable, not a second script.
 env_args=(-e PF_RIG_OUT=/out)
-for k in PUNKTFUNK_ABR_PROBE PUNKTFUNK_ABR_PROBE_KBPS PUNKTFUNK_ABR_MAX_MBPS \
-         PUNKTFUNK_FEC_PCT \
-         PUNKTFUNK_PACE_FACTOR PUNKTFUNK_DELIVERY PF_RIG_RECOVERY_MS \
+for k in RUBYFUNK_ABR_PROBE RUBYFUNK_ABR_PROBE_KBPS RUBYFUNK_ABR_MAX_MBPS \
+         RUBYFUNK_FEC_PCT \
+         RUBYFUNK_PACE_FACTOR RUBYFUNK_DELIVERY PF_RIG_RECOVERY_MS \
          PF_RIG_KEYFRAME_ANSWER PF_RIG_IDR_PCT PF_RIG_DECODER_HOLD \
          PF_RIG_BRINGUP_MS PF_RIG_NO_RAMP PF_RIG_POLICE_BURST_KB PF_RIG_SEED PF_RIG_FIXED_KBPS \
-         PUNKTFUNK_PERF PUNKTFUNK_GSO PUNKTFUNK_VIDEO_DROP RUST_LOG; do
+         RUBYFUNK_PERF RUBYFUNK_GSO RUBYFUNK_VIDEO_DROP RUST_LOG; do
   if [ -n "${!k:-}" ]; then env_args+=(-e "$k=${!k}"); fi
 done
 

@@ -1,7 +1,7 @@
-# punktfunk documentation site — Fumadocs on TanStack Start, built with Bun, served by
+# rubyfunk documentation site — Fumadocs on TanStack Start, built with Bun, served by
 # the Nitro `bun` preset bundle. Self-contained context:
 #
-#   docker build -t punktfunk-docs docs-site
+#   docker build -t rubyfunk-docs docs-site
 #
 # Runtime: PORT (default 3000).
 FROM oven/bun:1.4.4 AS build

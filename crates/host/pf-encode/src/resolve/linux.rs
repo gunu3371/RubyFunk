@@ -1,4 +1,4 @@
-//! Linux backend selection: the `PUNKTFUNK_ENCODER` resolver, the open ladder (direct-SDK
+//! Linux backend selection: the `RUBYFUNK_ENCODER` resolver, the open ladder (direct-SDK
 //! NVENC, Vulkan Video, native VAAPI, PyroWave, openh264) and every capability answer that
 //! must agree with it, each read off one [`Resolved`].
 
@@ -26,7 +26,7 @@ pub(crate) struct Probes {
     pub(crate) vaapi_ten_bit: [OnceLock<bool>; 2],
     /// Vulkan Video encode caps, HEVC then AV1.
     pub(crate) vulkan: [OnceLock<VulkanFacts>; 2],
-    /// pf-zerocopy's raw lane: `PUNKTFUNK_NVENC_RAW`, and a box that runs the fused convert.
+    /// pf-zerocopy's raw lane: `RUBYFUNK_NVENC_RAW`, and a box that runs the fused convert.
     pub(crate) nvenc_raw: OnceLock<bool>,
 }
 
@@ -53,7 +53,7 @@ pub(crate) struct VulkanFacts {
 /// Vulkan device; `resolve_codec` ignores the bit unless the client prefers it.
 pub(crate) fn wire_caps(r: &Resolved) -> u8 {
     let pyro = if r.inputs.features.pyrowave && r.backend() != LinuxBackend::Software {
-        punktfunk_core::quic::CODEC_PYROWAVE
+        rubyfunk_core::quic::CODEC_PYROWAVE
     } else {
         0
     };
@@ -152,13 +152,13 @@ pub(crate) fn open(
         full_range,
         ..
     } = *p;
-    // Negotiated PyroWave bypasses `PUNKTFUNK_ENCODER` (that pref is a lab override).
+    // Negotiated PyroWave bypasses `RUBYFUNK_ENCODER` (that pref is a lab override).
     if codec == Codec::PyroWave {
         debug_assert!(full_range, "PyroWave converts at full range only");
         #[cfg(feature = "pyrowave")]
         {
             // Worker seam, not the encoder: GPU-priority needs `CAP_SYS_NICE`,
-            // which only `punktfunk-encode-worker` may carry. See `pyrowave_remote`.
+            // which only `rubyfunk-encode-worker` may carry. See `pyrowave_remote`.
             // `hdr` is the session's BT.2020 PQ verdict — 10-bit without it is SDR.
             return pyrowave_remote::open_preferring_worker(
                 width,
@@ -175,7 +175,7 @@ pub(crate) fn open(
         #[cfg(not(feature = "pyrowave"))]
         anyhow::bail!(
             "session negotiated PyroWave but this host was built without --features \
-             punktfunk-host/pyrowave (the advertisement bit should not have been set)"
+             rubyfunk-host/pyrowave (the advertisement bit should not have been set)"
         );
     }
     // Default VAAPI. HEVC/AV1 open Vulkan Video first when the probe says yes, or always under
@@ -206,7 +206,7 @@ pub(crate) fn open(
                     tracing::info!(
                         codec = ?codec,
                         "Linux Vulkan Video encode (real RFI via DPB reference slots) — \
-                         set PUNKTFUNK_VULKAN_ENCODE=0 for VAAPI"
+                         set RUBYFUNK_VULKAN_ENCODE=0 for VAAPI"
                     );
                     return Ok((Box::new(e) as Box<dyn Encoder>, "vulkan"));
                 }
@@ -252,7 +252,7 @@ pub(crate) fn open(
             #[cfg(not(feature = "vulkan-encode"))]
             {
                 anyhow::bail!(
-                    "PUNKTFUNK_ENCODER=vulkan requires a build with --features vulkan-encode"
+                    "RUBYFUNK_ENCODER=vulkan requires a build with --features vulkan-encode"
                 )
             }
         }
@@ -277,7 +277,7 @@ pub(crate) fn open(
             .map(|e| (Box::new(e) as Box<dyn Encoder>, "software"))
         }
         None => anyhow::bail!(
-            "unknown PUNKTFUNK_ENCODER={pref:?} — use auto (default), nvenc, vaapi, vulkan, pyrowave, or software"
+            "unknown RUBYFUNK_ENCODER={pref:?} — use auto (default), nvenc, vaapi, vulkan, pyrowave, or software"
         ),
     }
 }
@@ -314,7 +314,7 @@ fn open_nvenc(p: &OpenParams, knobs: &Knobs) -> Result<Box<dyn Encoder>> {
         let _ = knobs;
         anyhow::bail!(
             "{} on NVIDIA needs the direct-SDK NVENC backend, which this build left out — \
-             build with --features punktfunk-host/nvenc",
+             build with --features rubyfunk-host/nvenc",
             p.codec.label()
         )
     }
@@ -818,7 +818,7 @@ fn narrow_to_openable(
 
 /// Open the software H.264 encoder by name, bypassing the backend ladder.
 ///
-/// [`crate::open_video`] opens the backend [`Resolved`] names from `PUNKTFUNK_ENCODER`, and
+/// [`crate::open_video`] opens the backend [`Resolved`] names from `RUBYFUNK_ENCODER`, and
 /// `auto` never picks software. The browser plane decides later and wants this encoder
 /// specifically: it serves a GPU-less host, at full range. Like [`crate::open_video`], it reads
 /// the env knobs once per open.
@@ -908,7 +908,7 @@ mod tests {
         assert!(cursor_blend_capable_for(Some(AmdIntel), false, true));
         assert!(
             !cursor_blend_capable_for(Some(AmdIntel), false, false),
-            "no eligible Vulkan CSC arm (H.264, PUNKTFUNK_VULKAN_ENCODE=0, unsupported \
+            "no eligible Vulkan CSC arm (H.264, RUBYFUNK_VULKAN_ENCODE=0, unsupported \
              device) resolves to native VAAPI, which cannot blend"
         );
         assert!(cursor_blend_capable_for(Some(Vulkan), false, true));
@@ -1160,7 +1160,7 @@ mod tests {
             Err(e) => e,
         };
         assert!(
-            err.to_string().contains("unknown PUNKTFUNK_ENCODER"),
+            err.to_string().contains("unknown RUBYFUNK_ENCODER"),
             "{err:#}"
         );
     }
@@ -1169,9 +1169,9 @@ mod tests {
     /// Vulkan Video, nothing for an `nvenc` pin without the direct SDK (sweep R5-04).
     #[test]
     fn a_pin_advertises_only_what_the_build_opens() {
-        let codecs = punktfunk_core::quic::CODEC_H264
-            | punktfunk_core::quic::CODEC_HEVC
-            | punktfunk_core::quic::CODEC_AV1;
+        let codecs = rubyfunk_core::quic::CODEC_H264
+            | rubyfunk_core::quic::CODEC_HEVC
+            | rubyfunk_core::quic::CODEC_AV1;
         let vulkan_pin = Resolved::new(inputs(
             "vulkan",
             Features {
@@ -1200,7 +1200,7 @@ mod tests {
         ));
         assert_eq!(
             with_pyrowave.wire_caps(),
-            punktfunk_core::quic::CODEC_PYROWAVE
+            rubyfunk_core::quic::CODEC_PYROWAVE
         );
     }
 
@@ -1208,7 +1208,7 @@ mod tests {
     #[test]
     fn a_software_pin_is_h264_on_the_cpu() {
         let r = Resolved::new(inputs("software", FULL));
-        assert_eq!(r.wire_caps(), punktfunk_core::quic::CODEC_H264);
+        assert_eq!(r.wire_caps(), rubyfunk_core::quic::CODEC_H264);
         assert!(!r.is_gpu());
     }
 

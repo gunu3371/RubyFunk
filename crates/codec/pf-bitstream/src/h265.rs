@@ -256,7 +256,7 @@ impl std::fmt::Display for PlanError {
         match self {
             PlanError::Parse(msg) => write!(f, "parse error: {msg}"),
             PlanError::OutsideEnvelope(what) => {
-                write!(f, "outside the punktfunk decode envelope: {what}")
+                write!(f, "outside the rubyfunk decode envelope: {what}")
             }
             PlanError::NoActiveParamSet { pps_id } => {
                 write!(f, "slice references PPS {pps_id}, which has not been seen")

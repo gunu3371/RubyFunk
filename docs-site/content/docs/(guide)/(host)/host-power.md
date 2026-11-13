@@ -40,17 +40,17 @@ The host refuses with the reason:
 - **The system said no.** A Linux host respects other programs' sleep inhibitors and refuses while
   another user is logged in locally. A machine that can't sleep lists **Sleep host** as
   unavailable, with the reason.
-- **Linux: the host user isn't in group `punktfunk`.** The packages let that group sleep, restart
+- **Linux: the host user isn't in group `rubyfunk`.** The packages let that group sleep, restart
   and shut down the machine without a password prompt. The console shows the action as
   unavailable.
 
 Moonlight clients have no power actions.
 
-## Restart Punktfunk
+## Restart RubyFunk
 
-**Restart Punktfunk** on the same card restarts the host service, not the machine. Streams end the
+**Restart RubyFunk** on the same card restarts the host service, not the machine. Streams end the
 same way and the service comes straight back. The console offers it when a
 [setting](/docs/configuration#settings-in-the-web-console) applies only after a restart.
 
-It needs a service to start the host again: `punktfunk-host` as a user service on Linux, the
-Punktfunk Host service on Windows. A host started by hand in a terminal shows it as unavailable.
+It needs a service to start the host again: `rubyfunk-host` as a user service on Linux, the
+RubyFunk Host service on Windows. A host started by hand in a terminal shows it as unavailable.

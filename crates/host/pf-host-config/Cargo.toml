@@ -6,7 +6,7 @@ name = "pf-host-config"
 version.workspace = true
 edition.workspace = true
 license = "MIT OR Apache-2.0"
-description = "Process-wide punktfunk host configuration: the settings registry, its store, and the env knobs."
+description = "Process-wide rubyfunk host configuration: the settings registry, its store, and the env knobs."
 publish = false
 
 [dependencies]

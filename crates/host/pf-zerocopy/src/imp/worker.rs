@@ -1,5 +1,5 @@
-//! Isolated GPU-import worker (`punktfunk-encode-worker zerocopy-worker`, or
-//! `punktfunk-host zerocopy-worker` when that binary is missing or refuses).
+//! Isolated GPU-import worker (`rubyfunk-encode-worker zerocopy-worker`, or
+//! `rubyfunk-host zerocopy-worker` when that binary is missing or refuses).
 //!
 //! Owns the headless EGLDisplay + GL context, the CUDA context, and the Vulkan bridge so a
 //! driver fault on a producer-invalidated dmabuf kills this process, not the streaming host.

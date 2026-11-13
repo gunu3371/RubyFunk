@@ -9,7 +9,7 @@ Companion to [`loss-harness`](../loss-harness/README.md) (FEC loss sweep).
 ## Comparing against other clients (`glass-timer.html`)
 
 Overlay-vs-overlay comparisons against other streaming clients are apples-to-oranges: their
-stats end at decode / render-*submit*, while Punktfunk's display stage stamps the system's real
+stats end at decode / render-*submit*, while RubyFunk's display stage stamps the system's real
 on-glass time — a ~2-refresh present tail every composited iOS/tvOS client pays but almost none
 can measure. The only fair cross-client number is **photon-to-photon**, and `glass-timer.html`
 is the host half of that measurement:
@@ -19,7 +19,7 @@ is the host half of that measurement:
    high-speed camera — an iPhone at 240 fps slo-mo gives ~4 ms resolution.
 3. Scrub the footage: in any single video frame, the difference between the two on-screen
    counters IS the glass-to-glass latency. Read ~20 spread-out frames for a p50.
-4. Repeat back-to-back per client (same host, game/scene, network) — Punktfunk, Moonlight, ….
+4. Repeat back-to-back per client (same host, game/scene, network) — RubyFunk, Moonlight, ….
 
 Reading aids, designed to survive motion blur + re-encode: the binary strip encodes
 centiseconds as fat cells (read it when the last digits smear); the 100 ms sweep bar compares

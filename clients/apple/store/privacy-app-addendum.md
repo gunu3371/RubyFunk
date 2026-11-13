@@ -20,7 +20,7 @@ below), so one URL covers both. The alternative — a separate `/legal/privacy-a
 works, but one URL is less to keep in sync.
 
 The page is CMS-driven (`src/routes/legal/privacy.tsx` renders Payload `RichText` blocks from the
-`pages` collection, slug `legal/privacy`, tenant `punktfunk`), so this is a CMS edit rather than a
+`pages` collection, slug `legal/privacy`, tenant `rubyfunk`), so this is a CMS edit rather than a
 code change.
 
 ## Confirming the "collects no data" framing
@@ -38,7 +38,7 @@ Checked against the source rather than taken on trust, and it holds:
 - **No account system.** Identity is a client keypair in the device keychain
   (`keychain-access-groups`, `ClientIdentityStore`); pairing is SPAKE2 with a PIN, host-to-device.
 - **Data stays on device.** Saved hosts and settings live in a shared `UserDefaults` suite
-  (`group.io.unom.punktfunk`) so the widget can read them. Nothing syncs; there is no CloudKit
+  (`group.io.github.gunu3371.rubyfunk`) so the widget can read them. Nothing syncs; there is no CloudKit
   entitlement.
 - **No ATT.** No `NSUserTrackingUsageDescription` anywhere, consistent with no tracking.
 
@@ -56,9 +56,9 @@ stating in the policy text anyway, because they are true and pre-empt questions:
 
 ## Text to append — Deutsch
 
-> ## Die Punktfunk-Apps
+> ## Die RubyFunk-Apps
 >
-> Dieser Abschnitt betrifft die Punktfunk-Apps für iPhone, iPad, Apple TV, Mac, Windows, Linux und
+> Dieser Abschnitt betrifft die RubyFunk-Apps für iPhone, iPad, Apple TV, Mac, Windows, Linux und
 > Android – im Unterschied zu den vorstehenden Abschnitten, die sich auf diese Website beziehen.
 >
 > **Die Apps erheben keine personenbezogenen Daten.** Es gibt keine Benutzerkonten, keine
@@ -67,7 +67,7 @@ stating in the policy text anyway, because they are true and pre-empt questions:
 > Tracking Transparency Frameworks statt, und es werden keine Daten an uns oder an Dritte
 > übermittelt.
 >
-> **Wohin die Daten fließen.** Punktfunk verbindet Ihr Gerät direkt mit einem Host-Rechner, den Sie
+> **Wohin die Daten fließen.** RubyFunk verbindet Ihr Gerät direkt mit einem Host-Rechner, den Sie
 > selbst betreiben – in der Regel in Ihrem eigenen Netzwerk. Video, Ton, Maus-, Tastatur- und
 > Controller-Eingaben sowie – sofern Sie ihn einschalten – Ihr Mikrofon werden ausschließlich
 > zwischen Ihrem Gerät und diesem Host übertragen, verschlüsselt und ohne Umweg über einen Server
@@ -92,18 +92,18 @@ stating in the policy text anyway, because they are true and pre-empt questions:
 > Datenschutzbestimmungen des jeweiligen Anbieters. Aggregierte Statistiken, die uns Apple oder
 > Google in ihren Entwicklerkonsolen anzeigen, lassen keinen Rückschluss auf einzelne Personen zu.
 >
-> **Der Host.** Der Punktfunk-Host ist quelloffene Software, die Sie selbst auf Ihrem eigenen
+> **Der Host.** Der RubyFunk-Host ist quelloffene Software, die Sie selbst auf Ihrem eigenen
 > Rechner betreiben. Welche Daten dabei anfallen – etwa lokale Protokolldateien –, bleibt
 > vollständig unter Ihrer Kontrolle; wir erhalten davon nichts. Der Quellcode ist unter
-> git.unom.io/unom/punktfunk einsehbar.
+> git.unom.io/github/gunu3371/rubyfunk einsehbar.
 
 ---
 
 ## Text to append — English
 
-> ## The Punktfunk apps
+> ## The RubyFunk apps
 >
-> This section concerns the Punktfunk apps for iPhone, iPad, Apple TV, Mac, Windows, Linux, and
+> This section concerns the RubyFunk apps for iPhone, iPad, Apple TV, Mac, Windows, Linux, and
 > Android — as distinct from the sections above, which concern this website.
 >
 > **The apps collect no personal data.** There are no user accounts, no registration, and no sign-in.
@@ -111,7 +111,7 @@ stating in the policy text anyway, because they are true and pre-empt questions:
 > No tracking within the meaning of Apple's App Tracking Transparency framework takes place, and no
 > data is transmitted to us or to any third party.
 >
-> **Where your data goes.** Punktfunk connects your device directly to a host machine that you run
+> **Where your data goes.** RubyFunk connects your device directly to a host machine that you run
 > yourself, normally on your own network. Video, audio, mouse, keyboard, and controller input — and
 > your microphone, if you switch it on — travel only between your device and that host, encrypted,
 > without passing through any server of ours. We operate no brokering, relay, or cloud service for
@@ -133,9 +133,9 @@ stating in the policy text anyway, because they are true and pre-empt questions:
 > policy applies. The aggregated statistics Apple and Google show us in their developer consoles do
 > not allow any individual to be identified.
 >
-> **The host.** The Punktfunk host is open source software that you run on your own machine. Any
+> **The host.** The RubyFunk host is open source software that you run on your own machine. Any
 > data it produces — local log files, for instance — remains entirely under your control, and none
-> of it reaches us. The source is available at git.unom.io/unom/punktfunk.
+> of it reaches us. The source is available at git.unom.io/github/gunu3371/rubyfunk.
 
 ---
 

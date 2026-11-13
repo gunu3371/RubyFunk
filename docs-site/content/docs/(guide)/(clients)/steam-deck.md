@@ -1,9 +1,9 @@
 ---
 title: Steam Deck (Decky)
-description: Install the Punktfunk Decky plugin to discover, pair, and stream from the Steam Deck's Gaming Mode — no drop to Desktop.
+description: Install the RubyFunk Decky plugin to discover, pair, and stream from the Steam Deck's Gaming Mode — no drop to Desktop.
 ---
 
-The Decky plugin adds a **Punktfunk** panel to the Quick Access Menu (the `…` button), so you can
+The Decky plugin adds a **RubyFunk** panel to the Quick Access Menu (the `…` button), so you can
 find a host, pair and stream without leaving Gaming Mode.
 
 The plugin launches the [Linux app](/docs/clients#linux-desktop-client-gtk4); it has no settings of
@@ -12,16 +12,16 @@ its own. In Desktop Mode, run the app directly. Both share one identity and one 
 ## Before you start
 
 1. Install [Decky Loader](https://decky.xyz/).
-2. Install the Punktfunk client, in Desktop Mode:
+2. Install the RubyFunk client, in Desktop Mode:
 
    ```sh
    flatpak install --user https://flatpak.unom.io/io.unom.punktfunk.flatpakref
    ```
 
-   A native `punktfunk-client` (a sysext, a distro package, your own build) works too. With both
+   A native `rubyfunk-client` (a sysext, a distro package, your own build) works too. With both
    installed the Flatpak wins; set `PF_DECKY_CLIENT=native` in the plugin's environment to change
    that. The client must be v0.22.0 or newer.
-3. Run a [Punktfunk host](/docs/install) on your network.
+3. Run a [RubyFunk host](/docs/install) on your network.
 
 ## Install the plugin
 
@@ -30,13 +30,13 @@ its own. In Desktop Mode, run the app directly. Both share one identity and one 
 2. Open the **Developer** tab and choose **Install Plugin from URL**.
 3. Paste `https://unom.io/pf-decky` and confirm.
 
-The **Punktfunk** panel appears right away. That link is the stable channel. For canary builds,
+The **RubyFunk** panel appears right away. That link is the stable channel. For canary builds,
 paste `https://unom.io/pf-decky-canary` instead. To pin a version, see
 [Release Channels](/docs/channels).
 
 ## Use it
 
-Open the **Punktfunk** panel from the Quick Access Menu.
+Open the **RubyFunk** panel from the Quick Access Menu.
 
 - **Hosts** lists the hosts on your network and the ones you saved. **Refresh** rescans. A lock
   means the host hasn't let this Deck in yet.
@@ -46,12 +46,12 @@ Open the **Punktfunk** panel from the Quick Access Menu.
 - **Tap a host** to stream fullscreen. A sleeping host is [woken](/docs/wake-on-lan) first once the
   client knows its MAC address.
 - **▸ Preset name** under a host streams it with that [preset](/docs/presets-and-links). Pin
-  presets in the Punktfunk app; the panel only shows them.
+  presets in the RubyFunk app; the panel only shows them.
 - **● Name** under a host with more than one profile streams as that profile, this time only.
-- **Open Punktfunk** opens the app's console: add a host by address, pair, browse a host's
+- **Open RubyFunk** opens the app's console: add a host by address, pair, browse a host's
   [library](/docs/game-library), and change [settings](/docs/client-settings).
 
-The plugin also puts a **Punktfunk** entry in your Steam library. It opens the same console.
+The plugin also puts a **RubyFunk** entry in your Steam library. It opens the same console.
 
 ### Request access
 
@@ -64,9 +64,9 @@ The host must be advertising on your network. A host you added by address offers
 ### Stream from Steam's Play button
 
 On a game's page, press **▾** beside **Play**. Hosts with that game in their library are listed
-with a small Punktfunk mark. Pick one and **Play** becomes **Stream**, even when the game isn't
+with a small RubyFunk mark. Pick one and **Play** becomes **Stream**, even when the game isn't
 installed on the Deck. Pick **This device** to hand the button back to Steam. The panel's
-**Punktfunk in Steam's Play menu** switch turns this off.
+**RubyFunk in Steam's Play menu** switch turns this off.
 
 ### Controls while streaming
 
@@ -74,18 +74,18 @@ installed on the Deck. Pick **This device** to hand the button back to Steam. Th
   seconds, or quit the game from the Steam overlay.
 - **The Steam and `…` buttons open the Deck's own menus.** To press them on the host, hold
   **Select**, or use **Host menus** in the panel while a stream runs. To send them raw instead, set
-  **Open Punktfunk → Settings → Controllers → Guide button** to **Send to host** (turn on
+  **Open RubyFunk → Settings → Controllers → Guide button** to **Send to host** (turn on
   **Show advanced** first).
 - **End game:** a stream started from a game's page adds **End game** to **Host menus**. It closes
   the game on the host, then the stream.
-- **Steam Input.** The plugin installs a Steam Input layout called **Punktfunk**. With Steam Input
+- **Steam Input.** The plugin installs a Steam Input layout called **RubyFunk**. With Steam Input
   on, the touchscreen reaches the host as real touch and the Deck is a standard gamepad. With Steam
   Input off, the host gets a full Steam Deck pad (paddles, both trackpads, gyro) and the touchscreen
   stops working as touch. Set it per game: game page → ⚙ → **Controller Settings**.
 
 ## Updating
 
-When the plugin or the client has an update, the panel shows **Update Punktfunk** at the top. Tap
+When the plugin or the client has an update, the panel shows **Update RubyFunk** at the top. Tap
 it; nothing leaves Gaming Mode. A client the plugin can't update (a sysext, a nix profile, a source
 build) shows the update command instead.
 
@@ -98,19 +98,19 @@ To update the Flatpak client from a terminal: `flatpak update`, without `sudo`.
 
 For host-side problems, start at [Troubleshooting](/docs/troubleshooting).
 
-### The panel says "Update the Punktfunk client"
+### The panel says "Update the RubyFunk client"
 
-The client is older than v0.22.0. Tap **Update Punktfunk** in the panel, or update it in Desktop
+The client is older than v0.22.0. Tap **Update RubyFunk** in the panel, or update it in Desktop
 Mode.
 
-### The panel says "Punktfunk isn’t installed"
+### The panel says "RubyFunk isn’t installed"
 
 The plugin found no client on the Deck. [Install the Flatpak](#before-you-start) in Desktop Mode.
 
 ### No hosts listed
 
 The host isn't reachable over mDNS. Check it runs on the same network and tap **Refresh**. For a
-VPN or another subnet, add it by address in **Open Punktfunk**.
+VPN or another subnet, add it by address in **Open RubyFunk**.
 
 ### Pairing fails
 
@@ -128,7 +128,7 @@ Start it from the panel, not by launching the client yourself.
 ### A host is missing from a game's ▾ menu
 
 The host must be paired and online, and have the game in its library as a Steam title. Open the
-panel once to rescan, then reopen the game page. Check that **Punktfunk in Steam's Play menu** is
+panel once to rescan, then reopen the game page. Check that **RubyFunk in Steam's Play menu** is
 on.
 
 ### Play stays green after picking a host
@@ -143,7 +143,7 @@ Each game streamed from its page has one. Panel → **About** → **Remove game 
 
 Panel → **About** → **Force-stop**, then start it again.
 
-### The Punktfunk library entry is gone
+### The RubyFunk library entry is gone
 
 Panel → **About** → **Recreate library shortcut**.
 
@@ -151,19 +151,19 @@ Panel → **About** → **Recreate library shortcut**.
 
 1. In the panel, tap **About → Remove game shortcuts**.
 2. Remove the plugin: Quick Access Menu → **plug** icon → **gear** → **Plugins** →
-   **Punktfunk** → **Uninstall**.
-3. Remove the two non-Steam entries named **Punktfunk** (one is hidden): in your library, **Manage
+   **RubyFunk** → **Uninstall**.
+3. Remove the two non-Steam entries named **RubyFunk** (one is hidden): in your library, **Manage
    → Remove non-Steam game from your library**.
 4. To remove the client too, in Desktop Mode:
 
    ```sh
-   flatpak uninstall --user --delete-data io.unom.punktfunk
+   flatpak uninstall --user --delete-data io.github.gunu3371.rubyfunk
    ```
 
-   Delete `~/.config/punktfunk` as well to forget this Deck's identity and saved hosts.
+   Delete `~/.config/rubyfunk` as well to forget this Deck's identity and saved hosts.
 5. On the host, [unpair the Deck](/docs/pairing#managing-paired-devices).
 
-The Steam Input template stays behind at `~/.local/share/Steam/controller_base/templates/punktfunk.vdf`;
+The Steam Input template stays behind at `~/.local/share/Steam/controller_base/templates/rubyfunk.vdf`;
 delete it if you like.
 
 The plugin source is [`clients/decky`](https://git.unom.io/unom/punktfunk/src/branch/main/clients/decky/README.md).

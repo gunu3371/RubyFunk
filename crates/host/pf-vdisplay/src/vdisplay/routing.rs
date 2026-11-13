@@ -2,7 +2,7 @@
 //!
 //! Decisions travel as [`GamescopeRoute`] values on the backend instance — never
 //! through process env, or a concurrent session retargets this one. Operator
-//! knobs (`PUNKTFUNK_GAMESCOPE_*`) are sampled once. Pin: tests below.
+//! knobs (`RUBYFUNK_GAMESCOPE_*`) are sampled once. Pin: tests below.
 //! Design: `design/gamemode-and-dedicated-sessions.md`.
 
 use super::*;
@@ -19,10 +19,10 @@ use super::*;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum GamescopeRoute {
     /// Host-managed session-plus / SteamOS at the client's mode. `client` is the
-    /// flavour (`steam`), from `PUNKTFUNK_GAMESCOPE_SESSION` if set.
+    /// flavour (`steam`), from `RUBYFUNK_GAMESCOPE_SESSION` if set.
     Managed { client: String },
     /// Capture an already-running gamescope. `node` is a PipeWire id, or `auto` to
-    /// discover the box's own session (`PUNKTFUNK_GAMESCOPE_NODE` if set).
+    /// discover the box's own session (`RUBYFUNK_GAMESCOPE_NODE` if set).
     Attach { node: String },
     /// Bare-spawn a headless gamescope, nesting this session's launch command.
     Spawn,
@@ -101,9 +101,9 @@ static OPERATOR_ENV: std::sync::OnceLock<(bool, Option<String>, Option<String>)>
 struct OperatorGamescope {
     managed: bool,
     attach: bool,
-    /// `PUNKTFUNK_GAMESCOPE_NODE` if set. The ladder needs presence; the route needs the value.
+    /// `RUBYFUNK_GAMESCOPE_NODE` if set. The ladder needs presence; the route needs the value.
     node: Option<String>,
-    /// `PUNKTFUNK_GAMESCOPE_SESSION` — the managed session flavour.
+    /// `RUBYFUNK_GAMESCOPE_SESSION` — the managed session flavour.
     session: Option<String>,
 }
 
@@ -121,15 +121,15 @@ fn operator_gamescope_from(get: impl Fn(&str) -> Option<String>) -> OperatorGame
     let (attach, node, session) = OPERATOR_ENV.get_or_init(|| {
         let env = with_env_lock(|| {
             let v = |k: &str| get(k).filter(|v| !v.is_empty());
-            // Presence is not the grammar: `PUNKTFUNK_GAMESCOPE_ATTACH=0` is off. This rung
+            // Presence is not the grammar: `RUBYFUNK_GAMESCOPE_ATTACH=0` is off. This rung
             // outranks dedicated spawn, so a silent inversion costs the client its own display.
             let off = |s: String| {
                 pf_host_config::registry::parse_bool(&s.trim().to_ascii_lowercase()) == Some(false)
             };
             (
-                v("PUNKTFUNK_GAMESCOPE_ATTACH").is_some_and(|s| !off(s)),
-                v("PUNKTFUNK_GAMESCOPE_NODE"),
-                v("PUNKTFUNK_GAMESCOPE_SESSION"),
+                v("RUBYFUNK_GAMESCOPE_ATTACH").is_some_and(|s| !off(s)),
+                v("RUBYFUNK_GAMESCOPE_NODE"),
+                v("RUBYFUNK_GAMESCOPE_SESSION"),
             )
         });
         if env.0 || env.1.is_some() || env.2.is_some() {
@@ -143,7 +143,7 @@ fn operator_gamescope_from(get: impl Fn(&str) -> Option<String>) -> OperatorGame
         env
     });
     OperatorGamescope {
-        managed: pf_host_config::row_bool("PUNKTFUNK_GAMESCOPE_MANAGED"),
+        managed: pf_host_config::row_bool("RUBYFUNK_GAMESCOPE_MANAGED"),
         attach: *attach,
         node: node.clone(),
         session: session.clone(),
@@ -155,7 +155,7 @@ fn operator_gamescope_from(get: impl Fn(&str) -> Option<String>) -> OperatorGame
 /// `pf_inject::set_backend_id` next to [`resolve_gamescope_route`].
 ///
 /// `&'static str` because this crate must not depend on pf-inject; the five
-/// Linux ids are the injector's `PUNKTFUNK_INPUT_BACKEND` vocabulary.
+/// Linux ids are the injector's `RUBYFUNK_INPUT_BACKEND` vocabulary.
 ///
 /// A return value, not a `setenv`: `pf_inject::default_backend` `getenv`s on
 /// the injector thread, and a per-session write races `environ`. The operator
@@ -189,7 +189,7 @@ pub fn input_backend_id(chosen: Compositor) -> &'static str {
 /// otherwise clobber each other. Caller must put it on the backend via
 /// `VirtualDisplay::set_gamescope_route`.
 ///
-/// The operator-pinned (`PUNKTFUNK_COMPOSITOR`) path calls this alone — it
+/// The operator-pinned (`RUBYFUNK_COMPOSITOR`) path calls this alone — it
 /// leaves input routing to the operator's knob, but `create` still needs a
 /// route or it falls through to a bare spawn on a box pinned to managed.
 /// A managed override without gamescope-session-plus on the box is dropped:
@@ -234,7 +234,7 @@ pub fn resolve_gamescope_route(
         let managed_override = ov.managed || ov.session.is_some();
         if managed_override && !installed {
             tracing::warn!(
-                "gamescope: PUNKTFUNK_GAMESCOPE_MANAGED / PUNKTFUNK_GAMESCOPE_SESSION ignored — \
+                "gamescope: RUBYFUNK_GAMESCOPE_MANAGED / RUBYFUNK_GAMESCOPE_SESSION ignored — \
                  gamescope-session-plus is not installed on this box"
             );
         }
@@ -677,7 +677,7 @@ pub fn reclaim_topology_journal() {
 pub fn reclaim_topology_journal() {}
 
 /// Warn once at startup when this box will need managed takeover but the user
-/// is not in the `punktfunk` group the helper gates on — the one prerequisite
+/// is not in the `rubyfunk` group the helper gates on — the one prerequisite
 /// that fails silently mid-stream. Gated so a box that never attempts takeover
 /// stays quiet. Call once at `serve` startup.
 #[cfg(target_os = "linux")]
@@ -688,7 +688,7 @@ pub fn preflight_takeover_privilege() {
 #[cfg(not(target_os = "linux"))]
 pub fn preflight_takeover_privilege() {}
 
-/// Why the `punktfunk`-group prerequisite does not apply. Each variant alone
+/// Why the `rubyfunk`-group prerequisite does not apply. Each variant alone
 /// makes the group irrelevant — do not nag — but keep `why` so a diagnostics
 /// UI can name which gate, not hide the row.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -795,7 +795,7 @@ mod tests {
         assert_eq!(pick(false, false, false, false, false, true, true), Managed);
         // Foreign gamescope on an infra-less box: attach and mirror it.
         assert_eq!(pick(false, false, false, false, false, false, true), Attach);
-        // Operator-set PUNKTFUNK_GAMESCOPE_SESSION keeps managed even without detected infra.
+        // Operator-set RUBYFUNK_GAMESCOPE_SESSION keeps managed even without detected infra.
         assert_eq!(
             pick(false, false, false, false, true, false, false),
             Managed
@@ -831,7 +831,7 @@ mod tests {
         assert!(!usable(false, false, true, false));
     }
 
-    /// Injector id is a return value, never a `PUNKTFUNK_INPUT_BACKEND` `set_var`
+    /// Injector id is a return value, never a `RUBYFUNK_INPUT_BACKEND` `set_var`
     /// (that raced `pf_inject::default_backend`'s `getenv` on the injector
     /// thread). Whole table: this crate cannot depend on pf-inject; the five
     /// ids are one half of the contract (`every_id_the_video_side_emits_maps_to_a_backend`
@@ -955,19 +955,19 @@ mod tests {
         );
     }
 
-    /// `PUNKTFUNK_GAMESCOPE_ATTACH=0` in host.env is off, not "set".
+    /// `RUBYFUNK_GAMESCOPE_ATTACH=0` in host.env is off, not "set".
     #[test]
     #[cfg(target_os = "linux")]
     fn an_explicit_off_attach_reads_as_off() {
         crate::fake::in_child(
             module_path!(),
             "an_explicit_off_attach_reads_as_off",
-            &[("PUNKTFUNK_GAMESCOPE_ATTACH", "0")],
+            &[("RUBYFUNK_GAMESCOPE_ATTACH", "0")],
             || assert!(!super::operator_gamescope().attach),
         );
     }
 
-    /// Sample must not move when `PUNKTFUNK_GAMESCOPE_NODE` reads differently afterwards.
+    /// Sample must not move when `RUBYFUNK_GAMESCOPE_NODE` reads differently afterwards.
     /// `node_env` outranks `dedicated_launch`; a live re-read of a published
     /// `=auto` would latch Attach for the host's life.
     #[test]
@@ -975,7 +975,7 @@ mod tests {
     fn operator_overrides_do_not_see_our_own_writes() {
         use super::{operator_gamescope, operator_gamescope_from};
         let first = operator_gamescope();
-        let published = |k: &str| (k == "PUNKTFUNK_GAMESCOPE_NODE").then(|| "auto".to_string());
+        let published = |k: &str| (k == "RUBYFUNK_GAMESCOPE_NODE").then(|| "auto".to_string());
         let second = operator_gamescope_from(published);
         assert_eq!(
             second.node, first.node,

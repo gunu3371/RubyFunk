@@ -232,7 +232,7 @@ pub fn is_admin_owned(path: &Path) -> Option<bool> {
 
 /// SID of the account this process runs as, as plain bytes.
 ///
-/// A per-user install (`PUNKTFUNK_CONFIG_DIR` into a profile) legitimately owns its own
+/// A per-user install (`RUBYFUNK_CONFIG_DIR` into a profile) legitimately owns its own
 /// secrets; only a *foreign* unprivileged owner is a plant.
 fn current_user_sid() -> Option<Vec<u8>> {
     use windows::core::Owned;

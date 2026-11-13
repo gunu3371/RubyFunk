@@ -18,7 +18,7 @@ use super::pad_shm::ShmPad;
 use super::steam_proto::{neutral_deck_report, parse_steam_output, DeckEncoder, SteamState};
 use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
-use punktfunk_core::quic::RichInput;
+use rubyfunk_core::quic::RichInput;
 
 /// INF hardware id. A package rename must not touch it
 /// (`dualsense_windows::tests::hwid_matches_inf`).
@@ -48,8 +48,8 @@ impl DeckWinPad {
                 // token, hidapi reports interface 0, and Steam never claims the pad.
                 usb_mi: Some(2),
                 bluetooth: false,
-                description: "Punktfunk Virtual Steam Deck",
-                enumerator: "punktfunk",
+                description: "RubyFunk Virtual Steam Deck",
+                enumerator: "rubyfunk",
                 property: None,
             },
         )?;
@@ -89,7 +89,7 @@ impl PadProto for DeckWinProto {
     const LABEL: &'static str = "Steam Deck/Windows";
     const DEVICE: &'static str = "Steam Deck";
     const CREATE_HINT: &'static str =
-        " (install/repair: punktfunk-host.exe driver install --gamepad)";
+        " (install/repair: rubyfunk-host.exe driver install --gamepad)";
 
     fn open(&mut self, idx: u8) -> Result<DeckWinPad> {
         let p = DeckWinPad::open(idx)?;
@@ -100,11 +100,7 @@ impl PadProto for DeckWinProto {
         Ok(p)
     }
 
-    fn merge_frame(
-        &self,
-        prev: &SteamState,
-        f: &punktfunk_core::input::GamepadFrame,
-    ) -> SteamState {
+    fn merge_frame(&self, prev: &SteamState, f: &rubyfunk_core::input::GamepadFrame) -> SteamState {
         SteamState::merge_frame(prev, f)
     }
 

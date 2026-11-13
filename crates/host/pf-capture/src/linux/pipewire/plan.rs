@@ -12,7 +12,7 @@ use std::sync::atomic::Ordering;
 #[derive(Debug, Clone, Copy)]
 pub(in crate::linux) struct NegotiationInputs {
     pub zerocopy: bool,
-    /// `PUNKTFUNK_FORCE_SHM` — race-free download path.
+    /// `RUBYFUNK_FORCE_SHM` — race-free download path.
     pub force_shm: bool,
     pub want_hdr: bool,
     /// The producer offers 10-bit SDR: a 10-bit SDR session takes its P010 where HDR does.
@@ -26,7 +26,7 @@ pub(in crate::linux) struct NegotiationInputs {
     pub native_nv12_knob: bool,
     /// Encoder can ingest packed 10-bit PQ CUDA. Only direct-SDK NVENC can.
     pub hdr_cuda_ok: bool,
-    /// `PUNKTFUNK_NV12`: the CUDA import emits NV12 (tiled blit or LINEAR compute CSC).
+    /// `RUBYFUNK_NV12`: the CUDA import emits NV12 (tiled blit or LINEAR compute CSC).
     pub nv12_knob: bool,
     /// The NVENC encoder converts held dmabufs itself and its convert samples a tiled layout
     /// (`raw_lane_ok`).
@@ -36,7 +36,7 @@ pub(in crate::linux) struct NegotiationInputs {
 /// Format choices the CUDA import makes per frame; the same on both threads.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub(in crate::linux) struct ImportPolicy {
-    /// `PUNKTFUNK_NV12`: emit NV12 for native NVENC YUV. Off leaves packed RGB.
+    /// `RUBYFUNK_NV12`: emit NV12 for native NVENC YUV. Off leaves packed RGB.
     pub nv12: bool,
     /// Planar YUV444 on tiled EGL. Wins over `nv12` — 4:4:4 must not subsample.
     pub yuv444: bool,
@@ -52,7 +52,7 @@ pub(in crate::linux) struct ImportState {
 }
 
 impl ImportPolicy {
-    /// A 10-bit SDR session keeps packed RGB whatever `PUNKTFUNK_NV12` asks: NVENC widens 8-bit
+    /// A 10-bit SDR session keeps packed RGB whatever `RUBYFUNK_NV12` asks: NVENC widens 8-bit
     /// to 10-bit only from packed RGB and refuses a planar 8-bit surface in a 10-bit session.
     pub(super) fn for_ten_bit_sdr(mut self, ten_bit_sdr: bool) -> Self {
         if ten_bit_sdr {
@@ -465,7 +465,7 @@ mod tests {
     }
 
     /// A 10-bit SDR session drops NV12 for packed RGB (NVENC widens 8-bit to 10-bit only from
-    /// packed RGB); an 8-bit session keeps whatever `PUNKTFUNK_NV12` configured.
+    /// packed RGB); an 8-bit session keeps whatever `RUBYFUNK_NV12` configured.
     #[test]
     fn ten_bit_sdr_keeps_packed_rgb() {
         let p = ImportPolicy {

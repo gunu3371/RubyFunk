@@ -13,7 +13,7 @@ use std::path::{Component, Path, PathBuf};
 
 pub const LEDGER_FILE: &str = "ledger.json";
 
-/// `seats` under the host config dir: `%ProgramData%\punktfunk\seats` for the SYSTEM service.
+/// `seats` under the host config dir: `%ProgramData%\rubyfunk\seats` for the SYSTEM service.
 #[cfg(not(target_os = "linux"))]
 pub fn default_root() -> PathBuf {
     pf_paths::config_dir().join("seats")

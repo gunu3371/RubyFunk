@@ -1,4 +1,4 @@
-# Build the punktfunk .debs and publish them to Gitea's Debian package registry, so Debian and
+# Build the rubyfunk .debs and publish them to Gitea's Debian package registry, so Debian and
 # Ubuntu boxes get new builds via `apt update && apt upgrade`. Five jobs; the four builders all
 # publish to the same apt distribution/component, and the fifth checks the result:
 #
@@ -14,7 +14,7 @@
 #                         (A 26.04-built host .deb is uninstallable on 24.04 — the reason this job
 #                         exists; see packaging/debian/README.md.)
 #   build-publish-gamescope
-#                       — the patched `punktfunk-gamescope`, on DEBIAN 13. It lived in the host job
+#                       — the patched `rubyfunk-gamescope`, on DEBIAN 13. It lived in the host job
 #                         until 2026-08 and never once succeeded there: noble's wayland is 1.22.0
 #                         and the vendored wlroots floors it at 1.23.1, so v0.26.0 and v0.27.0 both
 #                         shipped without the package while the docs told apt users to install it.
@@ -73,10 +73,10 @@ on:
       - 'crates/host/pf-vdisplay/**'
       - 'crates/host/pf-win-display/**'
       - 'crates/host/pf-zerocopy/**'
-      - 'crates/host/punktfunk-encode-worker/**'
-      - 'crates/host/punktfunk-host/**'
+      - 'crates/host/rubyfunk-encode-worker/**'
+      - 'crates/host/rubyfunk-host/**'
       - 'crates/install/pf-update/**'
-      - 'crates/install/punktfunk-tray/**'
+      - 'crates/install/rubyfunk-tray/**'
       - 'clients/linux/**'
       - 'clients/session/**'
       - 'clients/shared/**'
@@ -111,22 +111,22 @@ on:
       - 'Cargo.toml'
       - 'Cargo.lock'
       - 'rust-toolchain.toml'
-      - 'scripts/60-punktfunk.rules'
-      - 'scripts/60-punktfunk-dualsense.conf'
-      - 'scripts/70-punktfunk-client.rules'
-      - 'scripts/99-punktfunk-net.conf'
-      - 'scripts/99-punktfunk-client-net.conf'
+      - 'scripts/60-rubyfunk.rules'
+      - 'scripts/60-rubyfunk-dualsense.conf'
+      - 'scripts/70-rubyfunk-client.rules'
+      - 'scripts/99-rubyfunk-net.conf'
+      - 'scripts/99-rubyfunk-client-net.conf'
       - 'scripts/headless/**'
       - 'scripts/host.env.example'
-      - 'scripts/io.unom.punktfunk.dm-helper.policy'
+      - 'scripts/io.github.gunu3371.rubyfunk.dm-helper.policy'
       - 'scripts/pf-dm-helper'
-      - 'scripts/punktfunk-host-desktop-session.conf'
-      - 'scripts/punktfunk-host.service'
-      - 'scripts/punktfunk-kde-session.service'
-      - 'scripts/punktfunk-modules.conf'
-      - 'scripts/punktfunk-scripting.service'
-      - 'scripts/punktfunk-web-init.service'
-      - 'scripts/punktfunk-web.service'
+      - 'scripts/rubyfunk-host-desktop-session.conf'
+      - 'scripts/rubyfunk-host.service'
+      - 'scripts/rubyfunk-kde-session.service'
+      - 'scripts/rubyfunk-modules.conf'
+      - 'scripts/rubyfunk-scripting.service'
+      - 'scripts/rubyfunk-web-init.service'
+      - 'scripts/rubyfunk-web.service'
       - 'scripts/web-init.sh'
       - 'scripts/alsa-ucm2/**'
       - 'scripts/ci/assert-cap-matrix.sh'
@@ -171,7 +171,7 @@ jobs:
   build-publish:
     runs-on: ubuntu-24.04
     container:
-      image: 192.168.1.58:5010/punktfunk-rust-ci:latest
+      image: 192.168.1.58:5010/rubyfunk-rust-ci:latest
     timeout-minutes: 90
     env:
       # ⚠ Job-scoped, never workflow-scoped: build-publish-client-arm64 runs in the cross image,
@@ -192,7 +192,7 @@ jobs:
         # vX.Y.Z tag -> X.Y.Z in the `stable` apt distribution; a main push -> <next-minor>~ciN.g<sha>
         # in `canary`, where the '~' sorts below the eventual tag (scripts/ci/pf-version.sh owns the
         # rule, see channels.md). Computed BEFORE the build so it's stamped into the binary
-        # (PUNKTFUNK_BUILD_VERSION -> build.rs -> --version).
+        # (RUBYFUNK_BUILD_VERSION -> build.rs -> --version).
         run: |
           eval "$(bash scripts/ci/pf-version.sh --format deb)"   # -> PF_VERSION, PF_CHANNEL
           echo "VERSION=$PF_VERSION" >> "$GITHUB_ENV"
@@ -252,19 +252,19 @@ jobs:
 
       - name: Build release clients
         env:
-          PUNKTFUNK_BUILD_VERSION: ${{ env.VERSION }}   # stamped into the binaries (build.rs)
+          RUBYFUNK_BUILD_VERSION: ${{ env.VERSION }}   # stamped into the binaries (build.rs)
         run: |
           git config --global --add safe.directory "$PWD"
           # FOUR binaries ship in the client .deb, so all four are built here: the GTK shell,
-          # punktfunk-client-session (the Vulkan/Skia streamer the shell execs for a connect),
-          # punktfunk-cli (the headless `punktfunk` front-end), and pf-update (the root helper
-          # behind `punktfunk-client --apply-update`). build-client-deb.sh installs all four;
-          # leaving punktfunk-cli out here made it fall over on `install: No such file or
+          # rubyfunk-client-session (the Vulkan/Skia streamer the shell execs for a connect),
+          # rubyfunk-cli (the headless `rubyfunk` front-end), and pf-update (the root helper
+          # behind `rubyfunk-client --apply-update`). build-client-deb.sh installs all four;
+          # leaving rubyfunk-cli out here made it fall over on `install: No such file or
           # directory`, because its build-if-missing guard only tested the first two and so decided
           # everything was already built. The HOST is built separately in the build-publish-host
           # job (Ubuntu 24.04 image).
           cargo build --release --locked \
-            -p punktfunk-client-linux -p punktfunk-client-session -p punktfunk-cli -p pf-update
+            -p rubyfunk-client-linux -p rubyfunk-client-session -p rubyfunk-cli -p pf-update
 
       # ── The web console, built ONCE per (web+sdk content, bun) rather than once per job ────────
       # This bundle was being rebuilt six times on every push — ci.yml, here, both RPM legs, arch,
@@ -291,11 +291,11 @@ jobs:
         # below is what makes that safe. The bundle in the cache was smoke-booted by the run that
         # produced it, and ci.yml's `web` job still builds and tests the console on every push.
         if: steps.webconsole.outputs.cache-hit != 'true'
-        # Gate the .deb on a real bun boot: the punktfunk-web .deb runs the Nitro `bun` preset
+        # Gate the .deb on a real bun boot: the rubyfunk-web .deb runs the Nitro `bun` preset
         # (our Bun.serve TLS entry), so prove the build IS a bun bundle and serves /login.
         # No TLS env here, so the custom entry binds plain HTTP — the smoke curl stays simple.
         run: |
-          # bun builds AND runs the console, and build-bun-deb.sh vendors it into punktfunk-bun
+          # bun builds AND runs the console, and build-bun-deb.sh vendors it into rubyfunk-bun
           # (BUN_BIN, below). Baked into the rust-ci image; the script heals an image that lags the
           # pin in ci/bun.env (docker.yml bootstrap lag).
           sh ci/install-bun.sh
@@ -313,7 +313,7 @@ jobs:
           if ! grep -q 'Bun\.serve' .output/server/index.mjs; then
             echo "ERROR: web build is not a bun bundle — need the 'bun' preset + custom entry"; exit 1
           fi
-          PORT=3009 HOST=127.0.0.1 PUNKTFUNK_UI_PASSWORD=ci bun .output/server/index.mjs &
+          PORT=3009 HOST=127.0.0.1 RUBYFUNK_UI_PASSWORD=ci bun .output/server/index.mjs &
           NP=$!; sleep 3
           code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3009/login || echo 000)
           kill "$NP" 2>/dev/null || true
@@ -351,7 +351,7 @@ jobs:
       - name: Assert the shared payload (client .deb)
         run: |
           bash scripts/ci/assert-payload-parity.sh --self-test
-          bash scripts/ci/assert-payload-parity.sh dist/punktfunk-client_*.deb
+          bash scripts/ci/assert-payload-parity.sh dist/rubyfunk-client_*.deb
 
       # Visibility only. With the target cache now actually saving release artifacts (see the
       # cache key note above), this is how a regression in that arrangement becomes visible:
@@ -412,7 +412,7 @@ jobs:
   build-publish-host:
     runs-on: ubuntu-24.04
     container:
-      image: 192.168.1.58:5010/punktfunk-rust-ci-noble:latest
+      image: 192.168.1.58:5010/rubyfunk-rust-ci-noble:latest
     timeout-minutes: 90
     env:
       # ⚠ Job-scoped — see build-publish above and ci.yml's `rust` job.
@@ -475,14 +475,14 @@ jobs:
 
       - name: Build release host
         env:
-          PUNKTFUNK_BUILD_VERSION: ${{ env.VERSION }}   # stamped into the binary (build.rs)
+          RUBYFUNK_BUILD_VERSION: ${{ env.VERSION }}   # stamped into the binary (build.rs)
         run: |
           git config --global --add safe.directory "$PWD"
           # Same features the old combined build used: --nvenc (direct-SDK NVENC, real RFI on NVIDIA;
           # NVENC/CUDA is dlopen'd — no link dep, so this image needs no libcuda stub) + --vulkan-encode
           # (raw VK_KHR_video_encode_h265 on AMD/Intel, pure ash).
           #
-          # punktfunk-tray is deliberately NOT in this invocation — build-deb.sh builds it separately,
+          # rubyfunk-tray is deliberately NOT in this invocation — build-deb.sh builds it separately,
           # and that split is load-bearing (see the identical note in the RPM spec / Arch PKGBUILD):
           # cargo unifies features across one build, so co-building the tray with the host pulls the
           # host's ashpd -> zbus/tokio onto the tray's shared zbus and the tray panics at every launch
@@ -490,16 +490,16 @@ jobs:
           # It WAS listed here, which is why only the .deb shipped a crashing tray while the RPM and
           # Arch packages — which already split it — were fine.
           #
-          # punktfunk-encode-worker IS in this invocation: it is the capability-carrying PyroWave
+          # rubyfunk-encode-worker IS in this invocation: it is the capability-carrying PyroWave
           # encode worker that ships next to the host in /usr/bin, and build-deb.sh only builds it
           # if the artifact is missing — building it here keeps it on the same sccache pass as the
           # host. Unlike the tray it shares the host's dependency graph by design (v1 accepts that
           # the worker shares the host dependency graph), so feature unification here is harmless.
           #
-          # punktfunk-seats is the seat supervisor's binary. punktfunk-host already links its
+          # rubyfunk-seats is the seat supervisor's binary. rubyfunk-host already links its
           # library and pf-inject, so this adds no feature unification, only the one executable.
-          cargo build --release --locked --features punktfunk-host/nvenc,punktfunk-host/vulkan-encode \
-            -p punktfunk-host -p punktfunk-encode-worker -p punktfunk-seats
+          cargo build --release --locked --features rubyfunk-host/nvenc,rubyfunk-host/vulkan-encode \
+            -p rubyfunk-host -p rubyfunk-encode-worker -p rubyfunk-seats
 
       - name: Build host .deb
         run: |
@@ -522,13 +522,13 @@ jobs:
       - name: Assert the capability matrix (host .deb)
         run: |
           bash scripts/ci/assert-cap-matrix.sh --self-test
-          bash scripts/ci/assert-cap-matrix.sh dist/punktfunk-host_*.deb
+          bash scripts/ci/assert-cap-matrix.sh dist/rubyfunk-host_*.deb
 
       # Every path packaging/linux/payload.txt names for the host and seats, read out of the built .debs.
       - name: Assert the shared payload (host and seats .debs)
         run: |
           bash scripts/ci/assert-payload-parity.sh --self-test
-          bash scripts/ci/assert-payload-parity.sh dist/punktfunk-host_*.deb dist/punktfunk-seats_*.deb
+          bash scripts/ci/assert-payload-parity.sh dist/rubyfunk-host_*.deb dist/rubyfunk-seats_*.deb
 
       - name: Publish to the Gitea apt registry
         env:
@@ -566,7 +566,7 @@ jobs:
           key: cargo-target-noble-release-v1-${{ env.rustc }}-${{ hashFiles('Cargo.lock') }}
 
   # ---------------------------------------------------------------------------------------------
-  # `punktfunk-gamescope` for apt — the patched build that gives a gamescope session HDR, a cursor,
+  # `rubyfunk-gamescope` for apt — the patched build that gives a gamescope session HDR, a cursor,
   # and the client's real refresh rate instead of a hardcoded 60 Hz. Same reasoning as the RPM leg
   # in rpm.yml: without a package, a Debian/Ubuntu box has no route to it except compiling by hand.
   #
@@ -577,14 +577,14 @@ jobs:
   build-publish-gamescope:
     runs-on: ubuntu-24.04
     container:
-      image: 192.168.1.58:5010/punktfunk-gamescope-trixie:latest
+      image: 192.168.1.58:5010/rubyfunk-gamescope-trixie:latest
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Only the channel is used here. The package version is the gamescope upstream version + our
       # patch level, which build-gamescope-deb.sh derives itself; this package moves on its own
-      # cadence, not the punktfunk version line.
+      # cadence, not the rubyfunk version line.
       - name: Channel
         run: |
           git config --global --add safe.directory "$PWD"
@@ -599,7 +599,7 @@ jobs:
         id: gamescope
         with:
           path: gs-cache
-          key: punktfunk-gamescope-trixie-${{ hashFiles('packaging/gamescope/**') }}
+          key: rubyfunk-gamescope-trixie-${{ hashFiles('packaging/gamescope/**') }}
 
       # NOT best-effort: every dependency comes from the image or a pinned wrap, so a failure here
       # is a real regression in the tree or the pin.
@@ -616,7 +616,7 @@ jobs:
           # Baked into the image; a no-op once docker.yml republishes it (bootstrap lag).
           apt-get update
           apt-get install -y --no-install-recommends libeis-dev bison libexpat1-dev
-          bash packaging/gamescope/build-punktfunk-gamescope.sh \
+          bash packaging/gamescope/build-rubyfunk-gamescope.sh \
             --destdir "$PWD/gs-stage" --prefix /usr --jobs "$(nproc)" \
             --extra-fallback libdisplay-info
           # The WHOLE staged tree, not just the binary: it also carries the Vulkan WSI layer built
@@ -628,14 +628,14 @@ jobs:
       # actually produced a working compositor.
       - name: Build the .deb
         run: |
-          gs-cache/usr/bin/punktfunk-gamescope --version
+          gs-cache/usr/bin/rubyfunk-gamescope --version
           bash packaging/debian/build-gamescope-deb.sh --stage gs-cache
 
       - name: Publish to the Gitea apt registry
         env:
           TOKEN: ${{ secrets.REGISTRY_TOKEN }}
         run: |
-          for DEB in dist/punktfunk-gamescope_*.deb; do
+          for DEB in dist/rubyfunk-gamescope_*.deb; do
             echo "uploading $DEB"
             NAME=$(dpkg-deb -f "$DEB" Package)
             VER=$(dpkg-deb -f "$DEB" Version)
@@ -654,13 +654,13 @@ jobs:
         run: |
           . scripts/ci/gitea-release.sh
           RID=$(ensure_release "$GITHUB_REF_NAME" "$GITHUB_REF_NAME" auto)
-          for DEB in dist/punktfunk-gamescope_*.deb; do
+          for DEB in dist/rubyfunk-gamescope_*.deb; do
             upsert_asset "$RID" "$DEB"
           done
 
   # ---------------------------------------------------------------------------------------------
   # The aarch64 CLIENT .deb. Cross-compiled on the ordinary amd64 runner in the
-  # punktfunk-rust-ci-arm64cross image (the rust-ci toolchain + an arm64 multiarch sysroot — see
+  # rubyfunk-rust-ci-arm64cross image (the rust-ci toolchain + an arm64 multiarch sysroot — see
   # ci/rust-ci-arm64cross.Dockerfile); there is no arm64 runner in the fleet and none is needed.
   # Client only, by decision: the Linux host encodes with NVENC/QSV/AMF, all x86.
   # Publishes to the same distribution/component as the amd64 jobs — the apt registry keys pool
@@ -668,7 +668,7 @@ jobs:
   build-publish-client-arm64:
     runs-on: ubuntu-24.04
     container:
-      image: 192.168.1.58:5010/punktfunk-rust-ci-arm64cross:latest
+      image: 192.168.1.58:5010/rubyfunk-rust-ci-arm64cross:latest
     timeout-minutes: 90
     env:
       SKIA_BINARIES_URL: file:///opt/skia-binaries/skia-binaries-{key}.tar.gz
@@ -733,21 +733,21 @@ jobs:
 
       - name: Build the arm64 client .deb
         env:
-          PUNKTFUNK_BUILD_VERSION: ${{ env.VERSION }}   # stamped into the binaries (build.rs)
+          RUBYFUNK_BUILD_VERSION: ${{ env.VERSION }}   # stamped into the binaries (build.rs)
         run: |
           git config --global --add safe.directory "$PWD"
           # The restored target holds the binaries the cache was saved with, and the packer
           # ships any binary it finds. Build first, as build-publish does.
           cargo build --release --locked --target aarch64-unknown-linux-gnu \
-            -p punktfunk-client-linux -p punktfunk-client-session -p punktfunk-cli -p pf-update
+            -p rubyfunk-client-linux -p rubyfunk-client-session -p rubyfunk-cli -p pf-update
           ARCH=arm64 TARGET=aarch64-unknown-linux-gnu \
             bash packaging/debian/build-client-deb.sh
           # Fail here rather than shipping an amd64 binary under an arm64 package name.
-          readelf -h target/aarch64-unknown-linux-gnu/release/punktfunk-session \
+          readelf -h target/aarch64-unknown-linux-gnu/release/rubyfunk-session \
             | grep -q AArch64 || { echo "ERROR: session binary is not AArch64"; exit 1; }
           # The update check compares the version the shell carries; it must be this run's.
-          grep -qaF "$VERSION" target/aarch64-unknown-linux-gnu/release/punktfunk-client \
-            || { echo "ERROR: punktfunk-client does not carry version $VERSION"; exit 1; }
+          grep -qaF "$VERSION" target/aarch64-unknown-linux-gnu/release/rubyfunk-client \
+            || { echo "ERROR: rubyfunk-client does not carry version $VERSION"; exit 1; }
 
       - name: sccache stats (visibility only)
         if: always()
@@ -791,9 +791,9 @@ jobs:
   # ---------------------------------------------------------------------------------------------
   # Does the thing we just published actually INSTALL? Nothing in this repo asked that before, and
   # the cost of not asking was two independent, long-lived facts nobody knew:
-  #   * `punktfunk-host` has installed cleanly on Debian 13 for a long time — while docs-site said
+  #   * `rubyfunk-host` has installed cleanly on Debian 13 for a long time — while docs-site said
   #     "Debian isn't a supported target … nobody has verified it".
-  #   * `punktfunk-gamescope` was missing from apt entirely across two releases.
+  #   * `rubyfunk-gamescope` was missing from apt entirely across two releases.
   # Both are exactly what a five-minute install check catches, so it is now a job.
   #
   # It runs on the RUNNER (no `container:`) and drives docker directly — the same access

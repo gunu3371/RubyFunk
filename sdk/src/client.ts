@@ -1,6 +1,6 @@
-// The Effect-native surface (RFC §7): the `PunktfunkHost` service — a typed management-API
-// client plus the lifecycle-event `Stream` — provided by [`PunktfunkHostLive`]. Wire shapes
-// are the generated Effect Schemas in ./gen/punktfunk.ts, events included; API responses are
+// The Effect-native surface (RFC §7): the `RubyFunkHost` service — a typed management-API
+// client plus the lifecycle-event `Stream` — provided by [`RubyFunkHostLive`]. Wire shapes
+// are the generated Effect Schemas in ./gen/rubyfunk.ts, events included; API responses are
 // validated by default, so host/SDK version skew surfaces as a typed [`VersionSkew`] instead of
 // an `undefined` three frames later.
 import {
@@ -47,7 +47,7 @@ export class EventStreamError extends Data.TaggedError("EventStreamError")<{
 
 export type RequestError = AuthError | ApiError | TransportError;
 
-export interface PunktfunkHostService {
+export interface RubyFunkHostService {
 	readonly config: Connection;
 	/** One management-API request under `/api/v1`; the parsed JSON body. */
 	readonly request: (
@@ -55,7 +55,7 @@ export interface PunktfunkHostService {
 		path: string,
 		body?: unknown,
 	) => Effect.Effect<unknown, RequestError>;
-	/** GET + schema-validate (the generated schemas from `@punktfunk/host/effect`'s `api`). */
+	/** GET + schema-validate (the generated schemas from `@rubyfunk/host/effect`'s `api`). */
 	readonly get: <A, I>(
 		path: string,
 		schema: S.Codec<A, I>,
@@ -75,10 +75,10 @@ export interface PunktfunkHostService {
 	) => Stream.Stream<SseFrame, EventStreamError>;
 }
 
-export class PunktfunkHost extends Context.Service<
-	PunktfunkHost,
-	PunktfunkHostService
->()("@punktfunk/host/PunktfunkHost") {}
+export class RubyFunkHost extends Context.Service<
+	RubyFunkHost,
+	RubyFunkHostService
+>()("@rubyfunk/host/RubyFunkHost") {}
 
 const toRequestError = (path: string, cause: unknown): RequestError => {
 	if (cause instanceof HttpStatusError) {
@@ -89,7 +89,7 @@ const toRequestError = (path: string, cause: unknown): RequestError => {
 	return new TransportError({ cause });
 };
 
-export const makeService = (cfg: Connection): PunktfunkHostService => {
+export const makeService = (cfg: Connection): RubyFunkHostService => {
 	const request = (method: string, path: string, body?: unknown) =>
 		Effect.tryPromise({
 			try: () => httpRequest(cfg, method, path, body),
@@ -115,7 +115,7 @@ export const makeService = (cfg: Connection): PunktfunkHostService => {
 		);
 	const events = (opts?: EventStreamOptions) => {
 		const warn =
-			opts?.onWarning ?? ((m: string) => console.warn(`[punktfunk] ${m}`));
+			opts?.onWarning ?? ((m: string) => console.warn(`[rubyfunk] ${m}`));
 		// Drop-or-emit per frame. v4's `Stream.filterMap` wants a `Filter`; flat-mapping to
 		// `Stream.empty` (drop) / `Stream.succeed` (emit) expresses the same in stable
 		// primitives and keeps the `warn` side effects exactly where they were.
@@ -152,7 +152,7 @@ export const makeService = (cfg: Connection): PunktfunkHostService => {
  * stub, anything. The Node-resolving [`layer`] lives beside `config.ts`, because resolving a
  * connection from files is the one part of this that is not platform-neutral.
  */
-export const layerFrom = (conn: Connection): Layer.Layer<PunktfunkHost> =>
-	Layer.succeed(PunktfunkHost, makeService(conn));
+export const layerFrom = (conn: Connection): Layer.Layer<RubyFunkHost> =>
+	Layer.succeed(RubyFunkHost, makeService(conn));
 
 export { SseAuthError };

@@ -52,7 +52,7 @@ is removed.
 Log out and back in so niri restarts as biri, then restart the host:
 
 ```sh
-systemctl --user restart punktfunk-host
+systemctl --user restart rubyfunk-host
 ```
 
 On the next connect the log says `niri: virtual outputs available`.
@@ -61,7 +61,7 @@ On the next connect the log says `niri: virtual outputs available`.
 
 Nothing is required: the host finds niri on every connect.
 
-Leave `PUNKTFUNK_COMPOSITOR` unset: a pin turns off detection and session following. It accepts
+Leave `RUBYFUNK_COMPOSITOR` unset: a pin turns off detection and session following. It accepts
 `niri` (alias `biri`) if you need it. Every other option is in
 [Configuration](/docs/configuration).
 
@@ -70,8 +70,8 @@ Leave `PUNKTFUNK_COMPOSITOR` unset: a pin turns off detection and session follow
 From inside your niri session:
 
 ```sh
-systemctl --user enable --now punktfunk-host
-journalctl --user -u punktfunk-host -f    # watch it start and print its fingerprint
+systemctl --user enable --now rubyfunk-host
+journalctl --user -u rubyfunk-host -f    # watch it start and print its fingerprint
 ```
 
 Open [the web console](/docs/web-console) to pair a [client](/docs/clients). To serve Moonlight
@@ -105,13 +105,13 @@ Your niri is stock. The client is told the host can't create a display, and the 
 restart the host.
 
 To stream meanwhile, click **Stream this monitor** on a monitor's row in **Screens**, or set
-`PUNKTFUNK_CAPTURE_MONITOR` to its connector. That works on stock niri:
+`RUBYFUNK_CAPTURE_MONITOR` to its connector. That works on stock niri:
 [Stream a real monitor instead](/docs/virtual-displays#stream-a-real-monitor-instead).
 
 ### "find the niri IPC socket (no NIRI_SOCKET, no niri.*.sock)"
 
 The host found no running niri for its user: it started outside your niri session, or
-`PUNKTFUNK_COMPOSITOR` pins niri while another desktop runs. Start the host from inside the
+`RUBYFUNK_COMPOSITOR` pins niri while another desktop runs. Start the host from inside the
 session, as above, and leave the pin unset.
 
 ### "can't create a virtual output here"

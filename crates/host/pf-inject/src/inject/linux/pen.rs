@@ -1,4 +1,4 @@
-//! Virtual tablet ("Punktfunk Pen"): a uinput stylus with pressure, tilt, barrel
+//! Virtual tablet ("RubyFunk Pen"): a uinput stylus with pressure, tilt, barrel
 //! roll, hover distance, eraser, and barrel buttons.
 //!
 //! Compositors have no virtual-tablet protocol; they consume evdev tablets via
@@ -6,7 +6,7 @@
 //! `BTN_TOOL_PEN` + `ABS_X/Y` as `ID_INPUT_TABLET`. A stable vendor:product lets
 //! compositor mapping rules pin this device.
 //!
-//! [`PenTracker`](punktfunk_core::quic::PenTracker) feeds [`PenTransition`]s.
+//! [`PenTracker`](rubyfunk_core::quic::PenTracker) feeds [`PenTransition`]s.
 //! This file maps them to evdev and groups SYN frames so proximity-enter
 //! carries its position in the same frame — libinput otherwise reports a stale
 //! point. The uinput ABI and device live in [`crate::uinput_abi`].
@@ -18,7 +18,7 @@ use crate::uinput_abi::{
     UI_SET_KEYBIT, UI_SET_PROPBIT,
 };
 use anyhow::Result;
-use punktfunk_core::quic::{PenSample, PenTool, PenTransition, PEN_BARREL1, PEN_BARREL2};
+use rubyfunk_core::quic::{PenSample, PenTool, PenTransition, PEN_BARREL1, PEN_BARREL2};
 
 const ABS_X: u16 = 0x00;
 const ABS_Y: u16 = 0x01;
@@ -135,8 +135,8 @@ impl VirtualPen {
             product: 0x5046, // "PF"
             version: 1,
         };
-        dev.create(id, b"Punktfunk Pen", 0)?;
-        tracing::info!("virtual tablet created (Punktfunk Pen, uinput)");
+        dev.create(id, b"RubyFunk Pen", 0)?;
+        tracing::info!("virtual tablet created (RubyFunk Pen, uinput)");
 
         Ok(VirtualPen {
             dev,
@@ -159,13 +159,13 @@ impl VirtualPen {
         self.dev.emit(EV_ABS, ABS_Y, (s.y * ABS_RANGE) as i32);
         self.dev
             .emit(EV_ABS, ABS_PRESSURE, (s.pressure >> PRESSURE_SHIFT) as i32);
-        if s.distance != punktfunk_core::quic::PEN_DISTANCE_UNKNOWN {
+        if s.distance != rubyfunk_core::quic::PEN_DISTANCE_UNKNOWN {
             self.dev
                 .emit(EV_ABS, ABS_DISTANCE, (s.distance >> DISTANCE_SHIFT) as i32);
         }
         // Polar → tiltX/tiltY. Azimuth clockwise from north: east (90°) is +X, south (180°) is +Y.
-        if s.tilt_deg != punktfunk_core::quic::PEN_TILT_UNKNOWN
-            && s.azimuth_deg != punktfunk_core::quic::PEN_ANGLE_UNKNOWN
+        if s.tilt_deg != rubyfunk_core::quic::PEN_TILT_UNKNOWN
+            && s.azimuth_deg != rubyfunk_core::quic::PEN_ANGLE_UNKNOWN
         {
             let az = (s.azimuth_deg as f32).to_radians();
             let tilt = s.tilt_deg as f32;
@@ -174,7 +174,7 @@ impl VirtualPen {
             self.dev
                 .emit(EV_ABS, ABS_TILT_Y, (-tilt * az.cos()).round() as i32);
         }
-        if s.roll_deg != punktfunk_core::quic::PEN_ANGLE_UNKNOWN {
+        if s.roll_deg != rubyfunk_core::quic::PEN_ANGLE_UNKNOWN {
             self.dev.emit(EV_ABS, ABS_Z, (s.roll_deg % 360) as i32);
         }
         self.frame_dirty = true;

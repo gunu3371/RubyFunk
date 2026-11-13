@@ -4,7 +4,7 @@
 # sha256 and execs it. So this job is what makes `curl | sh` work at all, and it has to have
 # run on main at least once before a stub that points at `latest` can ship.
 #
-# musl needs no C cross-toolchain here — punktfunk-setup is pure Rust, so rust-lld plus the
+# musl needs no C cross-toolchain here — rubyfunk-setup is pure Rust, so rust-lld plus the
 # target's self-contained crt objects link a static-pie for both architectures (measured:
 # ~1 MB, seconds). See design/installer-v2.md D8 and WP4.1.
 name: setup-binary
@@ -17,7 +17,7 @@ on:
     branches: [main]
     tags: ['v*']
     paths:
-      - crates/install/punktfunk-setup/**
+      - crates/install/rubyfunk-setup/**
       - crates/host/pf-host-config/**
       - crates/host/pf-paths/**
       - data/platforms.json
@@ -25,7 +25,7 @@ on:
       - .gitea/workflows/setup-binary.yml
   pull_request:
     paths:
-      - crates/install/punktfunk-setup/**
+      - crates/install/rubyfunk-setup/**
       - crates/host/pf-host-config/**
       - crates/host/pf-paths/**
       - data/platforms.json
@@ -36,14 +36,14 @@ on:
 env:
   REGISTRY: git.unom.io
   OWNER: unom
-  PKG: punktfunk-setup
+  PKG: rubyfunk-setup
 
 jobs:
   build:
     name: build (${{ matrix.arch }})
     runs-on: ubuntu-24.04
     container:
-      image: 192.168.1.58:5010/punktfunk-rust-ci:latest
+      image: 192.168.1.58:5010/rubyfunk-rust-ci:latest
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -62,12 +62,12 @@ jobs:
       - name: Build
         run: |
           rustup target add ${{ matrix.target }}
-          cargo build --release --locked -p punktfunk-setup --target ${{ matrix.target }}
+          cargo build --release --locked -p rubyfunk-setup --target ${{ matrix.target }}
       # A dynamically linked binary would fail on exactly the boxes this exists for: a fresh
       # one, where nothing is installed yet.
       - name: Assert it is static
         run: |
-          BIN=target/${{ matrix.target }}/release/punktfunk-setup
+          BIN=target/${{ matrix.target }}/release/rubyfunk-setup
           # No PT_INTERP = nothing to load on a pristine box. The ELF type differs by arch —
           # x86_64-musl links static-pie (ET_DYN), aarch64-musl static (ET_EXEC) — so the
           # absent interpreter header is the one invariant. readelf, not file(1): the
@@ -78,31 +78,31 @@ jobs:
           ls -l "$BIN"
       - name: Checksum
         run: |
-          BIN=target/${{ matrix.target }}/release/punktfunk-setup
-          NAME=punktfunk-setup_${{ matrix.arch }}
+          BIN=target/${{ matrix.target }}/release/rubyfunk-setup
+          NAME=rubyfunk-setup_${{ matrix.arch }}
           cp "$BIN" "$NAME"
           sha256sum "$NAME" | awk '{print $1}' > "$NAME.sha256"
           cat "$NAME.sha256"
       # It has to actually run, not merely link. x86_64 only: the runner cannot execute arm64.
       - name: Smoke the artifact
         if: matrix.arch == 'x86_64'
-        run: ./punktfunk-setup_${{ matrix.arch }} --help | grep -q 'PUNKTFUNK_INSTALL_OMARCHY_SETUP'
+        run: ./rubyfunk-setup_${{ matrix.arch }} --help | grep -q 'RUBYFUNK_INSTALL_OMARCHY_SETUP'
       # v3: Gitea's API rejects upload-artifact@v4 (see apple.yml). Download is a zip.
       - uses: actions/upload-artifact@ff15f0306b3f739f7b6fd43fb5d26cd321bd4de5 # v3
         with:
-          name: punktfunk-setup-${{ matrix.arch }}
+          name: rubyfunk-setup-${{ matrix.arch }}
           path: |
-            punktfunk-setup_${{ matrix.arch }}
-            punktfunk-setup_${{ matrix.arch }}.sha256
+            rubyfunk-setup_${{ matrix.arch }}
+            rubyfunk-setup_${{ matrix.arch }}.sha256
       # publish reads these from the run-scoped cache, not the artifact: the artifact download
       # client re-encodes the storage redirect's presigned URL (%2F -> %252F), which breaks its
       # signature and the storage answers 400. The upload stays for humans.
       - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
-            punktfunk-setup_${{ matrix.arch }}
-            punktfunk-setup_${{ matrix.arch }}.sha256
-          key: punktfunk-setup-${{ matrix.arch }}-${{ github.run_id }}
+            rubyfunk-setup_${{ matrix.arch }}
+            rubyfunk-setup_${{ matrix.arch }}.sha256
+          key: rubyfunk-setup-${{ matrix.arch }}-${{ github.run_id }}
 
   # The only job that touches the PUBLISHED binary. Everything else builds from the tree, on
   # purpose — the smoke must exercise the checked-out code. This asks the other question: does
@@ -121,12 +121,12 @@ jobs:
       - name: Prepare the container
         run: apt-get update -qq && apt-get install -y -qq --no-install-recommends ca-certificates curl git nodejs
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      # No PUNKTFUNK_SETUP_BIN: the stub downloads `latest` and verifies its checksum, exactly
+      # No RUBYFUNK_SETUP_BIN: the stub downloads `latest` and verifies its checksum, exactly
       # as it does on a user's box. --dry-run so nothing is installed.
       - name: The stub fetches the published binary and runs it
         run: |
           sh scripts/install.sh --dry-run --yes \
-            | grep -q 'sudo apt install -y punktfunk-host punktfunk-web punktfunk-scripting'
+            | grep -q 'sudo apt install -y rubyfunk-host rubyfunk-web rubyfunk-scripting'
 
   publish:
     name: publish to the generic registry
@@ -134,23 +134,23 @@ jobs:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     container:
-      image: 192.168.1.58:5010/punktfunk-rust-ci:latest
+      image: 192.168.1.58:5010/rubyfunk-rust-ci:latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
-            punktfunk-setup_x86_64
-            punktfunk-setup_x86_64.sha256
-          key: punktfunk-setup-x86_64-${{ github.run_id }}
+            rubyfunk-setup_x86_64
+            rubyfunk-setup_x86_64.sha256
+          key: rubyfunk-setup-x86_64-${{ github.run_id }}
           fail-on-cache-miss: true
       - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
-            punktfunk-setup_aarch64
-            punktfunk-setup_aarch64.sha256
-          key: punktfunk-setup-aarch64-${{ github.run_id }}
+            rubyfunk-setup_aarch64
+            rubyfunk-setup_aarch64.sha256
+          key: rubyfunk-setup-aarch64-${{ github.run_id }}
           fail-on-cache-miss: true
       - name: Publish
         env:
@@ -161,8 +161,8 @@ jobs:
           BASE="https://${REGISTRY}/api/packages/${OWNER}/generic/${PKG}"
           # The versioned path is immutable (409 on a repeat is fine); the `latest` alias is
           # what the stub fetches, so it is deleted and re-uploaded.
-          for f in punktfunk-setup_x86_64 punktfunk-setup_x86_64.sha256 \
-                   punktfunk-setup_aarch64 punktfunk-setup_aarch64.sha256; do
+          for f in rubyfunk-setup_x86_64 rubyfunk-setup_x86_64.sha256 \
+                   rubyfunk-setup_aarch64 rubyfunk-setup_aarch64.sha256; do
             code=$(curl -sS -o /dev/null -w '%{http_code}' \
               --user "enricobuehler:${REGISTRY_TOKEN}" \
               --upload-file "$f" "$BASE/$VERSION/$f")

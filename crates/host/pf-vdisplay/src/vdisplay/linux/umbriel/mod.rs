@@ -38,7 +38,7 @@ impl std::error::Error for UmbrielIpcMismatch {}
 impl UmbrielIpcMismatch {
     /// The sentence the client shows.
     pub fn user_message(&self) -> &'static str {
-        "The host can't talk to this version of Umbriel. Update Punktfunk on the host."
+        "The host can't talk to this version of Umbriel. Update RubyFunk on the host."
     }
 }
 

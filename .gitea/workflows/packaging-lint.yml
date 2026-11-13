@@ -43,7 +43,7 @@ jobs:
       - name: Payload checker self-test
         run: bash scripts/ci/assert-payload-parity.sh --self-test
 
-      # Each channel's file capabilities and groups against capabilities.txt and punktfunk.sysusers.
+      # Each channel's file capabilities and groups against capabilities.txt and rubyfunk.sysusers.
       - name: Packaging policy matrices
         run: |
           python3 scripts/ci/check-packaging-policy.py --self-test
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     container:
-      image: 192.168.1.58:5010/punktfunk-fedora-rpm:latest
+      image: 192.168.1.58:5010/rubyfunk-fedora-rpm:latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -82,7 +82,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     container:
-      image: 192.168.1.58:5010/punktfunk-arch-ci:latest
+      image: 192.168.1.58:5010/rubyfunk-arch-ci:latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 

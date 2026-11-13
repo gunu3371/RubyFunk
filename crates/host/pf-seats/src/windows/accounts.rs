@@ -55,7 +55,7 @@ use zeroize::Zeroizing;
 
 /// The local group every seat account joins, so an ACL can refuse seat accounts by one name.
 /// A deny on it is the whole use: membership grants nothing.
-pub const SEATS_GROUP: &str = "punktfunk-seats";
+pub const SEATS_GROUP: &str = "rubyfunk-seats";
 const RDP_USERS_SID: &str = "S-1-5-32-555";
 const ADMINISTRATORS_SID: &str = "S-1-5-32-544";
 const DENY_CONSOLE: &str = "SeDenyInteractiveLogonRight";
@@ -329,7 +329,7 @@ impl AccountManager {
 }
 
 pub(super) fn marker(id: &SeatId) -> String {
-    format!("Punktfunk managed seat {id}")
+    format!("RubyFunk managed seat {id}")
 }
 
 /// `account_not_owned` for `seat`. An adopted row's message is the console's sentence.
@@ -615,7 +615,7 @@ fn add_to_rdp_users(account: &str) -> WinResult<bool> {
 /// idempotent. `true`: this call added it.
 fn join_seats_group(account: &str) -> WinResult<bool> {
     let mut name = wide(SEATS_GROUP, "seats group")?;
-    let mut comment = wide("Punktfunk seat accounts", "seats group comment")?;
+    let mut comment = wide("RubyFunk seat accounts", "seats group comment")?;
     let info = LOCALGROUP_INFO_1 {
         lgrpi1_name: PWSTR(name.as_mut_ptr()),
         lgrpi1_comment: PWSTR(comment.as_mut_ptr()),
@@ -626,7 +626,7 @@ fn join_seats_group(account: &str) -> WinResult<bool> {
     if status != NERR_Success && status != NERR_GroupExists && status != ERROR_ALIAS_EXISTS.0 {
         return Err(status_error(
             "account_group",
-            "NetLocalGroupAdd(punktfunk-seats) failed",
+            "NetLocalGroupAdd(rubyfunk-seats) failed",
             status,
         ));
     }
@@ -1081,7 +1081,7 @@ mod tests {
         let id = SeatId::parse("0123456789abcdef0123456789abcdef").unwrap();
         assert_eq!(
             marker(&id),
-            "Punktfunk managed seat 0123456789abcdef0123456789abcdef"
+            "RubyFunk managed seat 0123456789abcdef0123456789abcdef"
         );
     }
 

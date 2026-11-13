@@ -67,7 +67,7 @@ Use your bar's name in place of `default`. To scope the dock, set `enabled` the 
 
 Nothing is required: the host finds Umbriel on every connect.
 
-Leave `PUNKTFUNK_COMPOSITOR` unset: a pin turns off detection and session following. It accepts
+Leave `RUBYFUNK_COMPOSITOR` unset: a pin turns off detection and session following. It accepts
 `umbriel` if you need it. Every other option is in [Configuration](/docs/configuration).
 
 ## Start the host
@@ -76,8 +76,8 @@ Pick **Umbriel** in your display manager, or run `start-umbriel` from a TTY. Fro
 session:
 
 ```sh
-systemctl --user enable --now punktfunk-host
-journalctl --user -u punktfunk-host -f    # watch it start and print its fingerprint
+systemctl --user enable --now rubyfunk-host
+journalctl --user -u rubyfunk-host -f    # watch it start and print its fingerprint
 ```
 
 Open [the web console](/docs/web-console) to pair a [client](/docs/clients). To serve Moonlight
@@ -108,7 +108,7 @@ lingering so the host starts at boot: `sudo loginctl enable-linger "$USER"`.
 ### "find the Umbriel IPC socket (no UMBRIEL_SOCKET, no umbriel-*.sock)"
 
 The host found no running Umbriel for its user: it started outside your Umbriel session, or
-`PUNKTFUNK_COMPOSITOR` pins Umbriel while another desktop runs. Start the host from inside the
+`RUBYFUNK_COMPOSITOR` pins Umbriel while another desktop runs. Start the host from inside the
 session, as above, and leave the pin unset.
 
 ### "This Umbriel session can't be captured directly; the stream needs a GPU encoder" [#no-direct-capture]
@@ -121,7 +121,7 @@ to fall back to. Set **Encoder** to `auto` and turn **Direct capture** back on
 ### "The host can't talk to this version of Umbriel" [#ipc-mismatch]
 
 This Umbriel changed how programs talk to it, and your host doesn't know the new way yet. Update
-Punktfunk on the host. If no update covers it yet, roll Umbriel back to the last build that
+RubyFunk on the host. If no update covers it yet, roll Umbriel back to the last build that
 streamed.
 
 ### My monitors came back on after I saved my Umbriel config [#config-save]

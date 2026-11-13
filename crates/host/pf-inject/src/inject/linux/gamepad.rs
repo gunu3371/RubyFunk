@@ -1,7 +1,7 @@
 //! Virtual gamepads via `/dev/uinput`, cloning the kernel `xpad` identity so SDL/Steam/Proton
 //! match their built-in mapping with no extra config. One [`VirtualPad`] per attached client
 //! controller; [`GamepadManager`] applies decoded
-//! [`GamepadFrame`](punktfunk_core::input::GamepadFrame)s.
+//! [`GamepadFrame`](rubyfunk_core::input::GamepadFrame)s.
 //!
 //! Rumble is the reverse path on the same fd: the game uploads FF effects
 //! (`EV_UINPUT`/`UI_FF_UPLOAD` → `UI_BEGIN/END_FF_UPLOAD`) and plays them with `EV_FF`.
@@ -19,7 +19,7 @@ use crate::uinput_abi::{
     SYN_REPORT, UI_SET_EVBIT, UI_SET_FFBIT, UI_SET_KEYBIT,
 };
 use anyhow::Result;
-use punktfunk_core::input::{gamepad, GamepadFrame, MAX_PADS};
+use rubyfunk_core::input::{gamepad, GamepadFrame, MAX_PADS};
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
@@ -431,8 +431,8 @@ impl GamepadManager {
         }
     }
 
-    pub fn handle(&mut self, ev: &punktfunk_core::input::GamepadEvent) {
-        use punktfunk_core::input::GamepadEvent;
+    pub fn handle(&mut self, ev: &rubyfunk_core::input::GamepadEvent) {
+        use rubyfunk_core::input::GamepadEvent;
         match ev {
             GamepadEvent::Arrival { index, kind, .. } => {
                 tracing::info!(index, kind, "controller arrival ({})", self.slots.label());
@@ -503,7 +503,7 @@ mod tests {
     #[test]
     fn button_map_matches_the_shared_vectors() {
         let raw =
-            include_str!("../../../../../core/punktfunk-core/testdata/gamepad-button-vectors.json");
+            include_str!("../../../../../core/rubyfunk-core/testdata/gamepad-button-vectors.json");
         let file: serde_json::Value = serde_json::from_str(raw).expect("vector file parses");
         let keyed: Vec<(u32, u16)> = file["buttons"]
             .as_array()

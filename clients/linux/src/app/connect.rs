@@ -316,7 +316,7 @@ impl AppModel {
                     .hosts
                     .emit(HostsMsg::ShowError(error.unwrap_or_else(|| {
                         trust::connect_reject_message(
-                            punktfunk_core::reject::RejectReason::ProfileLocked,
+                            rubyfunk_core::reject::RejectReason::ProfileLocked,
                         )
                     }))),
             },
@@ -341,7 +341,7 @@ impl AppModel {
         }
     }
 
-    /// Route a `punktfunk://` URL (design/client-deep-links.md §4.1). Parsing, host/preset
+    /// Route a `rubyfunk://` URL (design/client-deep-links.md §4.1). Parsing, host/preset
     /// resolution and every refusal rule — including "only a stable record id may dial
     /// unattended" — live in the shared brain (`plan_from_link`); this is only the GTK end of
     /// it: turn the outcome into the same messages a card click raises, so a link gets the
@@ -402,7 +402,7 @@ impl AppModel {
             }
             Ok(PlanOutcome::ConfirmConnect(plan)) => {
                 // The link named this (saved, pinned) host by its LABEL or its ADDRESS rather
-                // than by its record id. `x-scheme-handler/punktfunk` is registered by our
+                // than by its record id. `x-scheme-handler/rubyfunk` is registered by our
                 // .desktop, so any web page can hand us such a URL and both of those are
                 // guessable — the dial waits for a person. Deliberately not the PIN ceremony
                 // below: this host is already pinned, and re-pairing it would throw that away.
@@ -479,7 +479,7 @@ impl AppModel {
                 );
             }
             Ok(PlanOutcome::Unsupported(route)) => self.toast(&format!(
-                "Punktfunk can't open “{}” links yet.",
+                "RubyFunk can't open “{}” links yet.",
                 route.as_str()
             )),
             Err(e) => self.toast(&e.message()),

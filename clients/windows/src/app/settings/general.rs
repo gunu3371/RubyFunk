@@ -9,7 +9,7 @@ use crate::trust::{KnownHosts, Settings};
 use pf_client_core::settings::GamepadUi;
 use pf_client_core::start;
 use pf_client_core::trust::{HudCorner, StatsVerbosity};
-use punktfunk_core::hud::{stats_scale, STATS_SCALE_PCTS};
+use rubyfunk_core::hud::{stats_scale, STATS_SCALE_PCTS};
 use windows_reactor::*;
 
 /// Stats-overlay tiers: `(stored value, display label)` — the cross-client verbosity ladder

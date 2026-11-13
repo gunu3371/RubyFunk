@@ -31,7 +31,7 @@ pub fn get() -> EncodeKnobs {
 pub mod dev_override {
     use super::EncodeKnobs;
 
-    /// `base` with every `PUNKTFUNK_*` knob variable that is set in the environment applied
+    /// `base` with every `RUBYFUNK_*` knob variable that is set in the environment applied
     /// over it. An unset variable leaves the field; a set one parses as
     /// [`EncodeKnobs::apply_env`] does.
     #[must_use]

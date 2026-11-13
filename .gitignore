@@ -11,7 +11,7 @@ node_modules/
 dist/
 # Swift package build artifacts + the locally-built xcframework (rebuild via scripts/build-xcframework.sh)
 clients/apple/.build/
-clients/apple/PunktfunkCore.xcframework/
+clients/apple/*.xcframework/
 clients/apple/.swiftpm/
 # Generated App Store screenshots (tools/screenshots.sh output; uploaded as a CI artifact)
 clients/apple/screenshots/

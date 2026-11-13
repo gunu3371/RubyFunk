@@ -7,7 +7,7 @@ use super::{
 use crate::app::style::*;
 use crate::trust::Settings;
 use pf_fluent::Token;
-use punktfunk_core::config::GamepadPref;
+use rubyfunk_core::config::GamepadPref;
 use windows_reactor::*;
 
 /// Virtual-pad presets: `(stored value, display label)` — the pad the HOST creates. Same set the

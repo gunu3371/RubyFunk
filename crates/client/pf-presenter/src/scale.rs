@@ -1,5 +1,5 @@
 //! The video scale: a placed frame drawn into the swapchain with the filter ladder
-//! `punktfunk_core::video_fit` names, in two passes through `scale.frag`.
+//! `rubyfunk_core::video_fit` names, in two passes through `scale.frag`.
 //!
 //! Pass one filters x from the frame into an RGBA16F intermediate `dst_w × frame_h`
 //! (float keeps Lanczos overshoot for the second pass). Pass two filters y into the
@@ -10,7 +10,7 @@ use crate::csc::{build_fullscreen_pipeline, color_pass, fill_or_destroy};
 use crate::vk::gpu::{subresource_range, Barrier, Pass, RenderImage};
 use anyhow::{Context as _, Result};
 use ash::vk;
-use punktfunk_core::video_fit::{Kernel, Placement};
+use rubyfunk_core::video_fit::{Kernel, Placement};
 
 const MID_FORMAT: vk::Format = vk::Format::R16G16B16A16_SFLOAT;
 
@@ -413,7 +413,7 @@ impl ScalePass {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use punktfunk_core::video_fit::{place, VideoFit};
+    use rubyfunk_core::video_fit::{place, VideoFit};
 
     type Px = [f32; 4];
 
@@ -587,7 +587,7 @@ mod tests {
         use crate::vk::gpu::{allocate, barrier};
         use anyhow::{Context as _, Result};
         use ash::vk;
-        use punktfunk_core::video_fit::Placement;
+        use rubyfunk_core::video_fit::Placement;
 
         const FORMAT: vk::Format = vk::Format::R8G8B8A8_UNORM;
 

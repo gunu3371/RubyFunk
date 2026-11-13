@@ -10,7 +10,7 @@
 //!
 //! Needs a live Mutter (`gnome-shell`, or `gnome-shell --headless`) on
 //! the session bus. Detected via `XDG_CURRENT_DESKTOP=GNOME` or
-//! `PUNKTFUNK_COMPOSITOR=mutter`.
+//! `RUBYFUNK_COMPOSITOR=mutter`.
 //!
 //! GNOME cannot rematch a virtual monitor (Mutter mints a fresh EDID
 //! serial per RecordVirtual). Scale is host-persisted
@@ -212,7 +212,7 @@ impl VirtualDisplay for MutterDisplay {
         let join_name = crate::backend::JoinName::default();
         self.join_name = Some(join_name.clone());
         thread::Builder::new()
-            .name("punktfunk-mutter-vout".into())
+            .name("rubyfunk-mutter-vout".into())
             .spawn(move || {
                 // Signals `done_rx` on every exit path.
                 let _done = done_tx;
@@ -580,7 +580,7 @@ pub(crate) fn stream_existing_output(
     let stop_thread = stop.clone();
     let connector_thread = connector.to_string();
     thread::Builder::new()
-        .name("punktfunk-mutter-mirror".into())
+        .name("rubyfunk-mutter-mirror".into())
         .spawn(move || mirror_thread(setup_tx, stop_thread, connector_thread, hw_cursor))
         .context("spawn Mutter monitor-mirror thread")?;
     // Built before the wait so a timeout still signals the thread,
@@ -1808,7 +1808,7 @@ mod tests {
     }
 
     /// Live GNOME create/drop. Needs gnome-shell on the session bus.
-    /// `PUNKTFUNK_MUTTER_VIRTUAL_PRIMARY=0` unless Exclusive is the point.
+    /// `RUBYFUNK_MUTTER_VIRTUAL_PRIMARY=0` unless Exclusive is the point.
     #[test]
     #[ignore = "needs a live gnome-shell on the session bus; run with --ignored"]
     fn live_mutter_create_drop() {

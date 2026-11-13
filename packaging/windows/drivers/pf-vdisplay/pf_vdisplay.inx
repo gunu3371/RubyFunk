@@ -1,12 +1,12 @@
 ;/*++
-; pf-vdisplay - punktfunk virtual display, UMDF2 IddCx driver INF (template; stampinf -> .inf).
+; pf-vdisplay - rubyfunk virtual display, UMDF2 IddCx driver INF (template; stampinf -> .inf).
 ;
 ; For the all-Rust wdk-sys / windows-drivers-rs driver in THIS tree
 ; (packaging/windows/drivers/pf-vdisplay/). The driver registers the OWNED pf_driver_proto
 ; control-interface GUID in CODE (WdfDeviceCreateDeviceInterface), so this INF is GUID-agnostic and
 ; is byte-identical to the superseded oracle's (packaging/windows/vdisplay-driver/.../pf_vdisplay.inx,
 ; itself adapted from MolotovCherry/virtual-display-rs (MIT) + SudoVDA's control-device security DACL).
-; HWID Root\pf_vdisplay + IddCx0102 + the DACL match the host backend (crates/host/punktfunk-host/src/
+; HWID Root\pf_vdisplay + IddCx0102 + the DACL match the host backend (crates/host/rubyfunk-host/src/
 ; vdisplay/pf_vdisplay.rs) and install-pf-vdisplay.ps1's Test-PfVdisplayPresent / nefconc node-create.
 ;--*/
 [Version]
@@ -31,7 +31,7 @@ DriverVer=
 ;   %DeviceName%=pf_vdisplay_Seat_Install, RdpIdd_IndirectDisplay
 ; That id is the one the terminal-services stack actually starts, so a seat display needs it — but
 ; claiming it takes over EVERY RDP session on the machine, admin sessions included. It is an
-; install-time choice the seats add-on makes, never something installing punktfunk implies. The
+; install-time choice the seats add-on makes, never something installing rubyfunk implies. The
 ; seats package ships its own INF that adds the line back; see docs/multi-seat-contract.
 ; Winning the id is not about the certificate: inbox rdpidd.inf ranks 0x00FF0000 too, and the tie
 ; goes to the newer DriverVer date (`windows-seat-display-tier.md` §5d).
@@ -120,10 +120,10 @@ UMDriverCopy=12,UMDF
 pf_vdisplay.dll
 
 [Strings]
-ManufacturerName="Punktfunk"
-DiskName="Punktfunk Virtual Display Installation Disk"
+ManufacturerName="RubyFunk"
+DiskName="RubyFunk Virtual Display Installation Disk"
 WudfRdDisplayName="Windows Driver Foundation - User-mode Driver Framework Reflector"
-DeviceName="Punktfunk Virtual Display"
+DeviceName="RubyFunk Virtual Display"
 
 REG_MULTI_SZ=0x00010000
 REG_SZ=0x00000000

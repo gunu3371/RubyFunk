@@ -276,10 +276,10 @@ mod tests {
         let heads = [
             output("DP-2", 0, 1920, 1080),
             output("DP-1", 1920, 1920, 1080),
-            output("Virtual-punktfunk-1", 3840, 2560, 1440),
+            output("Virtual-rubyfunk-1", 3840, 2560, 1440),
         ];
         let at = |t: &StreamTarget| pick(&heads, t, Some((1920, 1080)));
-        assert_eq!(at(&name("Virtual-punktfunk-1")), Some(2));
+        assert_eq!(at(&name("Virtual-rubyfunk-1")), Some(2));
         assert_eq!(at(&name("DP-1")), Some(1));
         // Unpublished or vanished: the size rungs.
         assert_eq!(at(&NONE), Some(0));
@@ -305,11 +305,11 @@ mod tests {
     #[test]
     fn a_shared_name_takes_the_newest_head() {
         let kwin = [
-            output("Virtual-punktfunk-1", 0, 1920, 1080),
-            output("Virtual-punktfunk-1", 1920, 3840, 2160),
+            output("Virtual-rubyfunk-1", 0, 1920, 1080),
+            output("Virtual-rubyfunk-1", 1920, 3840, 2160),
         ];
         assert_eq!(
-            pick(&kwin, &name("Virtual-punktfunk-1"), Some((1920, 1080))),
+            pick(&kwin, &name("Virtual-rubyfunk-1"), Some((1920, 1080))),
             Some(1)
         );
         let wlr = [

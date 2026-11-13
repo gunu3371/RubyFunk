@@ -15,7 +15,7 @@ fail() {
 }
 
 format_staged_rust() {
-    staged="${TMPDIR:-/tmp}/punktfunk-rustfmt-staged.$$"
+    staged="${TMPDIR:-/tmp}/rubyfunk-rustfmt-staged.$$"
     trap 'rm -f "$staged"' EXIT HUP INT TERM
 
     git -C "$root" diff --cached --name-only --diff-filter=ACMR |
@@ -48,7 +48,7 @@ format_staged_rust() {
 
 format_staged_biome() {
     workspace=$1
-    staged="${TMPDIR:-/tmp}/punktfunk-biome-staged.$$"
+    staged="${TMPDIR:-/tmp}/rubyfunk-biome-staged.$$"
     trap 'rm -f "$staged"' EXIT HUP INT TERM
 
     git -C "$root" diff --cached --name-only --diff-filter=ACMR -- "$workspace" |

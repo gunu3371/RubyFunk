@@ -33,8 +33,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 			{ name: "color-scheme", content: "dark light" },
 			{ name: "theme-color", content: "#6c5bf3" },
 			{ name: "apple-mobile-web-app-capable", content: "yes" },
-			{ name: "apple-mobile-web-app-title", content: "Punktfunk" },
-			{ title: "Punktfunk" },
+			{ name: "apple-mobile-web-app-title", content: "RubyFunk" },
+			{ title: "RubyFunk" },
 		],
 		links: [
 			{ rel: "stylesheet", href: appCss },

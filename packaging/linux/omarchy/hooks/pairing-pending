@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# punktfunk hook: a device is asking to pair → an Omarchy toast with an Approve action.
+# rubyfunk hook: a device is asking to pair → an Omarchy toast with an Approve action.
 #
-# Wired by `punktfunk-omarchy setup` as a `pairing.pending` entry in ~/.config/punktfunk/hooks.json.
+# Wired by `rubyfunk-omarchy setup` as a `pairing.pending` entry in ~/.config/rubyfunk/hooks.json.
 # The host runs it detached with the event JSON on stdin and every scalar leaf flattened into
 # `PF_EVENT_*` (see automation.md), so nothing here has to parse JSON.
 #
@@ -27,16 +27,16 @@ command -v omarchy-notification-send >/dev/null || exit 0
 
 # `--exec` gives the toast a button. It approves by ID, never "the newest request": two devices
 # knocking at once is exactly when a "newest" shortcut admits the wrong one.
-if [[ -n "$id" ]] && command -v punktfunk-host >/dev/null; then
+if [[ -n "$id" ]] && command -v rubyfunk-host >/dev/null; then
   omarchy-notification-send \
     --urgency=critical \
-    --icon=io.unom.punktfunk \
-    "Punktfunk pairing request" "$body" \
-    --exec "Approve:punktfunk-host ctl approve $id" \
-    --exec "Deny:punktfunk-host ctl deny $id"
+    --icon=io.github.gunu3371.rubyfunk \
+    "RubyFunk pairing request" "$body" \
+    --exec "Approve:rubyfunk-host ctl approve $id" \
+    --exec "Deny:rubyfunk-host ctl deny $id"
 else
   omarchy-notification-send \
     --urgency=critical \
-    --icon=io.unom.punktfunk \
-    "Punktfunk pairing request" "$body — approve it in the console"
+    --icon=io.github.gunu3371.rubyfunk \
+    "RubyFunk pairing request" "$body — approve it in the console"
 fi

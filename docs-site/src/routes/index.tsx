@@ -10,7 +10,7 @@ function Home() {
   return (
     <HomeLayout {...baseOptions()}>
       <main className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-24 text-center">
-        <BrandMark className="size-20 drop-shadow-[0_8px_30px_rgba(108,91,243,0.45)]" />
+        <BrandMark className="size-20 drop-shadow-[0_8px_30px_rgba(196,18,66,0.45)]" />
         <Wordmark className="h-12 md:h-14" />
         <p className="max-w-xl text-fd-muted-foreground">
           Low-latency desktop and game streaming with first-class Linux and Windows

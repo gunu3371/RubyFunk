@@ -34,9 +34,9 @@ pub(crate) fn open(
 }
 
 /// GameStream `SERVER_CODEC_MODE_SUPPORT` for an unprobed backend.
-const GPU_SUPERSET: u8 = punktfunk_core::quic::CODEC_H264
-    | punktfunk_core::quic::CODEC_HEVC
-    | punktfunk_core::quic::CODEC_AV1;
+const GPU_SUPERSET: u8 = rubyfunk_core::quic::CODEC_H264
+    | rubyfunk_core::quic::CODEC_HEVC
+    | rubyfunk_core::quic::CODEC_AV1;
 
 /// [`Resolved::wire_caps`] on Windows, over one resolution of the backend.
 pub(crate) fn wire_caps(r: &Resolved) -> u8 {
@@ -45,12 +45,12 @@ pub(crate) fn wire_caps(r: &Resolved) -> u8 {
     // software keeps the bit off. Encoder open confirms the plane and fence imports
     // (`pf-encode-win` `refused_import`); a refusal ends the session.
     let pyro = if r.inputs.features.pyrowave && backend != WindowsBackend::Software {
-        punktfunk_core::quic::CODEC_PYROWAVE
+        rubyfunk_core::quic::CODEC_PYROWAVE
     } else {
         0
     };
     let base = if backend == WindowsBackend::Software {
-        punktfunk_core::quic::CODEC_H264
+        rubyfunk_core::quic::CODEC_H264
     } else if r.is_probed() {
         r.codecs()
             .and_then(codec_support_wire_mask)
@@ -125,7 +125,7 @@ pub(crate) fn sdr10(r: &Resolved, codec: Codec) -> bool {
 }
 
 /// [`Resolved::rgb_full_range`] on Windows: AMF's conversion, measured on the render adapter
-/// unless `PUNKTFUNK_AMF_FULL_RANGE` says.
+/// unless `RUBYFUNK_AMF_FULL_RANGE` says.
 pub(crate) fn rgb_full_range(r: &Resolved) -> bool {
     if r.backend() != WindowsBackend::Amf {
         return true;
@@ -178,7 +178,7 @@ enum GpuVendor {
     Intel,
 }
 
-/// Explicit `PUNKTFUNK_ENCODER` pin. `None` for `auto`, unset, and unknown.
+/// Explicit `RUBYFUNK_ENCODER` pin. `None` for `auto`, unset, and unknown.
 fn windows_pinned_backend(pref: &str) -> Option<WindowsBackend> {
     match pref {
         "nvenc" | "hw" | "nvidia" | "cuda" => Some(WindowsBackend::Nvenc),
@@ -284,7 +284,7 @@ fn probe_codec_support(backend: WindowsBackend) -> CodecSupport {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use punktfunk_core::quic::{CODEC_AV1, CODEC_H264, CODEC_HEVC, CODEC_PYROWAVE};
+    use rubyfunk_core::quic::{CODEC_AV1, CODEC_H264, CODEC_HEVC, CODEC_PYROWAVE};
 
     const FULL: Features = Features {
         nvenc: true,

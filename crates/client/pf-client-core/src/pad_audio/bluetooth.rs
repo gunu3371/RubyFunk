@@ -1,16 +1,16 @@
 //! The Bluetooth sink: report `0x36` on a raw HID handle beside SDL's, one per block on a local
-//! clock. The speaker pair is Opus-encoded here; [`pad_bt`](punktfunk_core::audio::pad_bt)
+//! clock. The speaker pair is Opus-encoded here; [`pad_bt`](rubyfunk_core::audio::pad_bt)
 //! shapes the rest of the report.
 
 use super::{haptics_live, rumble_now};
 use crate::sc2_capture::Dev;
 use anyhow::{anyhow, bail, Context};
-use punktfunk_core::audio::pad_bt::{
+use rubyfunk_core::audio::pad_bt::{
     media_state, speaker_block, HapticsDecimator, MediaReport, BT_BLOCK_FRAMES, BT_OPUS_BITRATE,
     BT_OPUS_BYTES, BT_REPORT_PERIOD, BT_SPEAKER_FRAMES,
 };
-use punktfunk_core::audio::pad_mix::PAD_CHANNELS;
-use punktfunk_core::quic::HID_RAW_OUTPUT;
+use rubyfunk_core::audio::pad_mix::PAD_CHANNELS;
+use rubyfunk_core::quic::HID_RAW_OUTPUT;
 use std::collections::VecDeque;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{Receiver, RecvTimeoutError, SyncSender};

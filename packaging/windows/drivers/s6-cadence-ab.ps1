@@ -57,9 +57,9 @@ param(
     [switch]$NoLoad,
     [int]$GpuIndex = 0,
     [string]$Repo = 'C:\Users\Public\pf-phase0',
-    [string]$Client = 'C:\Users\Public\punktfunk-native\target\release\punktfunk-session.exe',
+    [string]$Client = 'C:\Users\Public\rubyfunk-native\target\release\rubyfunk-session.exe',
     [string]$FurMark = 'C:\Program Files\Geeks3D\FurMark2_x64\furmark.exe',
-    [string]$Service = 'PunktfunkHost',
+    [string]$Service = 'RubyFunkHost',
     [string]$OutDir = 'C:\Users\Public'
 )
 $ErrorActionPreference = 'Continue'
@@ -84,7 +84,7 @@ if (-not (Test-Path $Client)) { Say "FATAL no client at $Client"; exit 1 }
 if (-not $Reset) { Say "FATAL no reset-pf-vdisplay.ps1 under $Repo or $OutDir"; exit 1 }
 Say "reset script: $Reset"
 if (-not $Fp) {
-    $cert = Join-Path $env:ProgramData 'punktfunk\cert.pem'
+    $cert = Join-Path $env:ProgramData 'rubyfunk\cert.pem'
     if (-not (Test-Path $cert)) { Say "FATAL no cert at $cert and no -Fp"; exit 1 }
     $Fp = (Get-FileHash $cert -Algorithm SHA256).Hash.ToLower()
 }

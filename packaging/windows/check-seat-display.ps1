@@ -82,7 +82,7 @@ foreach ($d in $seats) {
            catch { '<unknown>' }
     $rank = try { (Get-PnpDeviceProperty -InstanceId $d.InstanceId -KeyName 'DEVPKEY_Device_DriverRank' -EA Stop).Data }
             catch { $null }
-    $ours = $d.FriendlyName -like '*Punktfunk*'
+    $ours = $d.FriendlyName -like '*RubyFunk*'
     if (-not $ours) { $bad += $d }
     $rankHex = if ($null -ne $rank) { '0x{0:X8}' -f [uint32]$rank } else { 'n/a' }
     Say ("  {0}`n    driver={1} inf={2} rank={3} {4}" -f

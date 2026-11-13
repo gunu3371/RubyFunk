@@ -13,7 +13,7 @@ use pf_client_core::orchestrate::{
 };
 use pf_client_core::unlock::{self, Pending};
 use pf_fluent::Palette;
-use punktfunk_core::quic::v2::msg::ProfileUnlock;
+use rubyfunk_core::quic::v2::msg::ProfileUnlock;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
@@ -250,11 +250,11 @@ fn connect_with(
     set_status: &AsyncSetState<String>,
     opts: ConnectOpts,
 ) {
-    // Session-always: every stream runs in the spawned punktfunk-session Vulkan binary.
+    // Session-always: every stream runs in the spawned rubyfunk-session Vulkan binary.
     connect_spawn(ctx, target, pin, set_screen, set_status, opts)
 }
 
-/// Spawn-mode connect: run the stream in the punktfunk-session binary and turn its events
+/// Spawn-mode connect: run the stream in the rubyfunk-session binary and turn its events
 /// into screens. The child never connects unpinned: a stored or ceremony pin, else the
 /// advertised fingerprint (TOFU, saved once ready proves the host holds it); no fingerprint
 /// routes to the PIN ceremony. One [`ConnectAttempt`] reads its ready and its exit;
@@ -354,7 +354,7 @@ fn connect_spawn(
                         st.call(format!("Connected, but couldn't save — {e:#}"));
                     }
                     // The child presented its first frame — its window is up, so the
-                    // shell yields: one visible Punktfunk window at a time. Every exit
+                    // shell yields: one visible RubyFunk window at a time. Every exit
                     // path restores it (the `Exited` handling above).
                     crate::shell_window::hide();
                     ss.call(Screen::Stream);
@@ -430,7 +430,7 @@ fn connect_spawn(
     }
 }
 
-/// Run the console (`punktfunk-session --browse`) in the session window. The shell yields
+/// Run the console (`rubyfunk-session --browse`) in the session window. The shell yields
 /// exactly like a stream — hidden on the console window's `ready`, restored when the child
 /// exits (launched titles stream in that same window, so the whole couch round-trip happens
 /// without the shell). `until_no_pads`: a controller connecting opened it, so it hands the

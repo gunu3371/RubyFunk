@@ -412,7 +412,7 @@ mod tests {
     fn a_saved_host_is_not_also_discovered() {
         let advert = |key: &str, fp: &str| DiscoveredHost {
             key: key.into(),
-            fullname: format!("{key}._punktfunk._udp.local."),
+            fullname: format!("{key}._rubyfunk._udp.local."),
             name: key.into(),
             addr: "10.0.0.9".into(),
             port: 9777,

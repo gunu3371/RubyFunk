@@ -14,7 +14,7 @@ use crate::triton_proto::Sc2Identity;
 use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
 use pf_driver_proto::gamepad::DEVTYPE_STEAMCONTROLLER;
-use punktfunk_core::quic::{HidOutput, RichInput, HID_RAW_FEATURE};
+use rubyfunk_core::quic::{HidOutput, RichInput, HID_RAW_FEATURE};
 use std::time::Instant;
 
 /// INF hardware id. A package rename must not touch it.
@@ -46,7 +46,7 @@ impl ScWinPad {
                 // Mouse and keyboard on interfaces 0 and 1; Steam claims the controller on 2.
                 usb_mi: Some(2),
                 bluetooth: false,
-                description: "Punktfunk Virtual Steam Controller (2015)",
+                description: "RubyFunk Virtual Steam Controller (2015)",
                 // Steam merges a pad's HID views by the USB interface token in the instance path.
                 enumerator: "VID_28DE&PID_1102&MI_02",
                 property: Some((
@@ -107,7 +107,7 @@ impl PadProto for ScWinProto {
     const LABEL: &'static str = "Steam Controller/Windows";
     const DEVICE: &'static str = "Steam Controller";
     const CREATE_HINT: &'static str =
-        " (install/repair: punktfunk-host.exe driver install --gamepad)";
+        " (install/repair: rubyfunk-host.exe driver install --gamepad)";
 
     fn open(&mut self, idx: u8) -> Result<ScWinPad> {
         let identity = crate::triton_proto::identity_for(idx);
@@ -124,7 +124,7 @@ impl PadProto for ScWinProto {
 
     /// Typed frames keep arriving beside a mirrored pad's reports: they update the fallback
     /// and show the client is alive.
-    fn merge_frame(&self, prev: &ScState, f: &punktfunk_core::input::GamepadFrame) -> ScState {
+    fn merge_frame(&self, prev: &ScState, f: &rubyfunk_core::input::GamepadFrame) -> ScState {
         let mut next = *prev;
         next.typed_frame(
             sc_merge_frame(&prev.typed, f, self.remap.paddles),

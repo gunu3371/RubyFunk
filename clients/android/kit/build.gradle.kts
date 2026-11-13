@@ -9,10 +9,10 @@ plugins {
     id("com.android.library")
 }
 
-val ndkVer = providers.gradleProperty("punktfunk.ndkVersion").get() // gradle.properties
+val ndkVer = providers.gradleProperty("rubyfunk.ndkVersion").get() // gradle.properties
 
 android {
-    namespace = "io.unom.punktfunk.kit"
+    namespace = "io.github.gunu3371.rubyfunk.kit"
     compileSdk = 37 // Android 17 — align with :app (androidx.core 1.19.0 requires it)
     ndkVersion = ndkVer
 
@@ -44,8 +44,8 @@ dependencies {
 }
 
 // ------------------------------------------------------------------------------------------------
-// cargo-ndk: cross-compile clients/android/native (punktfunk-client-android) into this module's jniLibs/<abi>/ so the
-// resulting libpunktfunk_android.so is packaged into the app (and any AAR this module produces).
+// cargo-ndk: cross-compile clients/android/native (rubyfunk-client-android) into this module's jniLibs/<abi>/ so the
+// resulting librubyfunk_android.so is packaged into the app (and any AAR this module produces).
 // NDK r28+ aligns to 16 KB pages by default — no extra linker flags. Prereqs (see clients/android
 // /README.md): `cargo install cargo-ndk` + `rustup target add aarch64-linux-android x86_64-linux-android`.
 // ------------------------------------------------------------------------------------------------
@@ -213,7 +213,7 @@ val fetchSkiaBinaries = tasks.register("fetchSkiaBinaries") {
 fun registerCargoNdk(taskName: String, release: Boolean) =
     tasks.register<Exec>(taskName) {
         group = "rust"
-        description = "cargo-ndk build of punktfunk-client-android (${if (release) "release" else "debug"})"
+        description = "cargo-ndk build of rubyfunk-client-android (${if (release) "release" else "debug"})"
         dependsOn(fetchSkiaBinaries) // skia-bindings must only see digest-verified archives (H-2)
         workingDir = repoRoot
         // cargo-ndk only adds to jniLibs. Empty it first, so no library an older tree built ships.
@@ -236,14 +236,14 @@ fun registerCargoNdk(taskName: String, release: Boolean) =
             // decode::try_set_frame_rate, decode::install_render_callback, adpf).
             "--platform", "28",
             "-o", jniLibs.absolutePath,
-            "build", "-p", "punktfunk-client-android",
+            "build", "-p", "rubyfunk-client-android",
         )
         if (release) cmd += "--release"
         commandLine(cmd)
     }
 
 // ------------------------------------------------------------------------------------------------
-// Lint the ANDROID target. `punktfunk-client-android` and every `#[cfg(target_os = "android")]`
+// Lint the ANDROID target. `rubyfunk-client-android` and every `#[cfg(target_os = "android")]`
 // module elsewhere in the workspace were, until this task existed, **completely unlinted**: ci.yml
 // runs `cargo clippy --workspace` on the HOST, where all of that code is compiled out, and this
 // workflow only ever ran `build`. The gap was found in 2026-08 with five lints sitting in
@@ -262,7 +262,7 @@ fun registerCargoNdk(taskName: String, release: Boolean) =
 fun registerCargoNdkClippy(taskName: String) =
     tasks.register<Exec>(taskName) {
         group = "verification"
-        description = "clippy (deny warnings) for punktfunk-client-android on both Android widths"
+        description = "clippy (deny warnings) for rubyfunk-client-android on both Android widths"
         dependsOn(fetchSkiaBinaries) // skia-bindings must only see digest-verified archives (H-2)
         workingDir = repoRoot
         cargoNdkEnvironment()
@@ -271,7 +271,7 @@ fun registerCargoNdkClippy(taskName: String) =
             "$cargoBin/cargo", "ndk",
             "-t", "arm64-v8a", "-t", "armeabi-v7a",
             "--platform", "28",
-            "clippy", "-p", "punktfunk-client-android", "--all-targets",
+            "clippy", "-p", "rubyfunk-client-android", "--all-targets",
             "--", "-D", "warnings",
         )
     }
@@ -285,7 +285,7 @@ val cargoNdkClippy = registerCargoNdkClippy("cargoNdkClippy")
 fun registerCheckJniImports(taskName: String, cargoTask: TaskProvider<Exec>) =
     tasks.register<Exec>(taskName) {
         group = "rust"
-        description = "verify libpunktfunk_android.so imports stay within the API-28 floor"
+        description = "verify librubyfunk_android.so imports stay within the API-28 floor"
         dependsOn(cargoTask)
         workingDir = repoRoot
         commandLine(
@@ -314,7 +314,7 @@ afterEvaluate {
     tasks.named("preDebugBuild").configure { dependsOn(checkJniNames) }
     tasks.named("preReleaseBuild").configure { dependsOn(checkJniNames) }
     // `-PskipRustBuild` skips the cargo-ndk native build — for JVM-only tasks (the Roborazzi
-    // screenshot unit tests render Compose on the JVM and never load libpunktfunk_android.so), so
+    // screenshot unit tests render Compose on the JVM and never load librubyfunk_android.so), so
     // CI/local screenshot runs don't need the Rust toolchain or NDK. The native build stays wired
     // for every normal APK/AAR build.
     //

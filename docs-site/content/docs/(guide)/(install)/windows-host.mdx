@@ -1,9 +1,9 @@
 ---
 title: "Windows Host"
-description: "Run the Punktfunk host on a Windows 11 PC: a signed installer with its own virtual display, gamepad drivers and web console."
+description: "Run the RubyFunk host on a Windows 11 PC: a signed installer with its own virtual display, gamepad drivers and web console."
 ---
 
-Stream a Windows 11 PC's desktop or games to any Punktfunk client, at the client's exact
+Stream a Windows 11 PC's desktop or games to any RubyFunk client, at the client's exact
 resolution and refresh, HDR included, with no second monitor or dummy plug. To stream *to* a
 Windows PC, see the [Windows client](/docs/clients#windows-desktop-client).
 
@@ -26,7 +26,7 @@ network and read [Security & Safe Use](/docs/security).
 
 ## Install
 
-Download `punktfunk-host-setup-<ver>.exe` from the
+Download `rubyfunk-host-setup-<ver>.exe` from the
 [latest release](https://git.unom.io/unom/punktfunk/releases) and run it, or install with winget
 from an **elevated** terminal:
 
@@ -49,7 +49,7 @@ The wizard's **Configure** step lists what it sets up. The defaults suit most PC
 - **Network set to Public?** The wizard offers to make it Private or to open the firewall there.
   Skip both and clients can't connect ([Windows firewall](/docs/troubleshooting#windows-firewall)).
 - **Sunshine, Apollo, Vibeshine, Vibepollo or LuminalShine set to start on its own?** Setup moves
-  Punktfunk's management API to TCP 47991 and keeps Moonlight compat off
+  RubyFunk's management API to TCP 47991 and keeps Moonlight compat off
   ([Switching from Sunshine](/docs/switching-from-sunshine)).
 
 ### winget
@@ -61,7 +61,7 @@ wizard. winget carries stable releases only; canary builds come as the setup `.e
 ### Unattended install
 
 ```powershell
-punktfunk-host-setup-<ver>.exe /VERYSILENT /SUPPRESSMSGBOXES
+rubyfunk-host-setup-<ver>.exe /VERYSILENT /SUPPRESSMSGBOXES
 ```
 
 Change a default with `/MERGETASKS` and the task names above: a bare name turns a task on, `!name`
@@ -70,18 +70,18 @@ With winget, pass the whole line through `--override`; `--custom` appends and le
 `/MERGETASKS`:
 
 ```powershell
-winget install unom.PunktfunkHost --override "/VERYSILENT /SUPPRESSMSGBOXES /MERGETASKS=gamestream"
+winget install gunu3371.RubyFunkHost --override "/VERYSILENT /SUPPRESSMSGBOXES /MERGETASKS=gamestream"
 ```
 
 An upgrade always updates both drivers and keeps your earlier Moonlight, firewall, console,
 HDR-layer and tray choices. A silent install shows no console password: print it from an elevated
-PowerShell with `punktfunk-host web password` before your first sign-in.
+PowerShell with `rubyfunk-host web password` before your first sign-in.
 
 ### About the signatures
 
-Setup and the Punktfunk programs are signed with a publicly trusted certificate. SmartScreen may
+Setup and the RubyFunk programs are signed with a publicly trusted certificate. SmartScreen may
 still show *"Windows protected your PC"* for a new release: choose **More info** → **Run anyway**.
-The drivers carry a separate self-signed certificate (`CN=punktfunk-driver`, SHA-1
+The drivers carry a separate self-signed certificate (`CN=rubyfunk-driver`, SHA-1
 `4B8493E7CD565758D335F8F4F05C5A7261A13E02`). Setup adds it to the machine's **Trusted Root** and
 **Trusted Publishers** stores, and uninstalling removes it.
 
@@ -98,19 +98,19 @@ The drivers carry a separate self-signed certificate (`CN=punktfunk-driver`, SHA
 - **Status icon.** It shows whether the host is running. Its menu opens the console and the logs
   folder, approves pairing, and starts, stops or restarts the host, each behind a UAC prompt.
   While **Tray autostart** is on, the service restarts the icon if it closes;
-  [`punktfunk-host tray`](/docs/host-cli#tray-windows) controls it by hand. **Punktfunk Host** in
+  [`rubyfunk-host tray`](/docs/host-cli#tray-windows) controls it by hand. **RubyFunk Host** in
   the Start menu opens it and starts a stopped host.
 - **Settings.** Change them in the console under **Host**; Moonlight compat is
-  **GameStream** there. A line in `%ProgramData%\punktfunk\host.env` pins a setting. After editing
-  it, run `punktfunk-host service restart` from an elevated prompt. See
+  **GameStream** there. A line in `%ProgramData%\rubyfunk\host.env` pins a setting. After editing
+  it, run `rubyfunk-host service restart` from an elevated prompt. See
   [Configuration](/docs/configuration).
-- **Encoder.** `PUNKTFUNK_ENCODER` in `host.env` forces `nvenc`, `amf`, `qsv` or `mf` (Media
+- **Encoder.** `RUBYFUNK_ENCODER` in `host.env` forces `nvenc`, `amf`, `qsv` or `mf` (Media
   Foundation). A pin that doesn't match the selected GPU's vendor is ignored. When the native
   encoder can't open, an 8-bit SDR session falls back to Media Foundation. NVENC has the most field
   time; AMF and QSV see less.
 - **HDR.** For a 10-bit session the host turns HDR on for its virtual display; you never touch
   **Use HDR** in Windows. See [HDR → Windows](/docs/hdr#windows).
-- **Logs.** `%ProgramData%\punktfunk\logs\` holds `service.log` and `host.log`, each rotated at
+- **Logs.** `%ProgramData%\rubyfunk\logs\` holds `service.log` and `host.log`, each rotated at
   10 MB. Only Administrators can read them, so use an elevated PowerShell or the console's
   **Troubleshooting** page. `RUST_LOG=debug` in `host.env` adds detail.
 - **Several people, taking turns.** Give each person their own account, Steam and saves with a
@@ -118,22 +118,22 @@ The drivers carry a separate self-signed certificate (`CN=punktfunk-driver`, SHA
   **same time** is the part that needs **Windows Server** and a Remote Desktop Services CAL per
   player ([Seats on Windows](/docs/windows-seats)); [Windows 11](/docs/windows-seats#windows-11)
   runs one desktop at a time.
-- **Two processes.** Task Manager shows two `punktfunk-host.exe`: the service and the worker it
+- **Two processes.** Task Manager shows two `rubyfunk-host.exe`: the service and the worker it
   starts in your session. Ending the worker only makes the service start another; stop the host
-  from the status icon or with `punktfunk-host service stop`.
+  from the status icon or with `rubyfunk-host service stop`.
 
 ## Updating
 
-Press **Update now** on the console's **Updates** card, run `winget upgrade unom.PunktfunkHost`, or
+Press **Update now** on the console's **Updates** card, run `winget upgrade gunu3371.RubyFunkHost`, or
 run a newer setup over the old one. All three keep your config, pairings and console password. See
 [Updating](/docs/updating).
 
 ## Uninstalling
 
-Open **Settings** → **Apps** → **Installed apps** → **Punktfunk Host** → **Uninstall**, or run
-`winget uninstall unom.PunktfunkHost`. It turns [seats](/docs/windows-seats) off and removes the
+Open **Settings** → **Apps** → **Installed apps** → **RubyFunk Host** → **Uninstall**, or run
+`winget uninstall gunu3371.RubyFunkHost`. It turns [seats](/docs/windows-seats) off and removes the
 service, the status icon and its Start menu entry, the virtual display, gamepad and audio devices
 with the driver certificate, the scheduled task, the firewall rules, the HDR layer and the `PATH`
-entry. `%ProgramData%\punktfunk` stays, so
+entry. `%ProgramData%\rubyfunk` stays, so
 a reinstall keeps your identity and pairings; [Uninstall → Windows host](/docs/uninstall#windows-host)
 clears it.

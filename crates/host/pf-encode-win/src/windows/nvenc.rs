@@ -11,7 +11,7 @@
 //! once (cached by pointer); `encode_picture` uses it in place. That holds while the host
 //! loop is capture → submit → poll. A pipelined loop must hand a texture ring.
 //!
-//! Two-thread retrieve (`PUNKTFUNK_NVENC_ASYNC=1`): the encode thread submits; a retrieve
+//! Two-thread retrieve (`RUBYFUNK_NVENC_ASYNC=1`): the encode thread submits; a retrieve
 //! thread waits on per-buffer events and `nvEncLockBitstream`. `submit` blocks on the
 //! oldest completion when `POOL - 1` encodes are in flight. Register/map/unmap stay on
 //! the encode thread. The DLL resolves at runtime, so an AMD/Intel box fails [`try_api`]
@@ -56,7 +56,7 @@ fn try_api() -> std::result::Result<&'static EncodeApi, &'static str> {
         .get_or_init(|| {
             let table = load_api();
             if let Err(e) = &table {
-                // Misdetect, or `PUNKTFUNK_ENCODER=nvenc` without a driver.
+                // Misdetect, or `RUBYFUNK_ENCODER=nvenc` without a driver.
                 tracing::warn!(error = %e, "NVENC API unavailable");
             }
             table
@@ -96,7 +96,7 @@ fn load_api() -> std::result::Result<EncodeApi, String> {
 static LIVE_SESSION_UNITS: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
 
 /// Concurrent-session budget (GeForce 8; pro cards unlimited).
-/// `PUNKTFUNK_NVENC_MAX_SESSIONS` overrides.
+/// `RUBYFUNK_NVENC_MAX_SESSIONS` overrides.
 fn session_cap() -> u32 {
     match crate::knobs::get().nvenc_max_sessions {
         0 => 8,
@@ -324,7 +324,7 @@ impl NvencD3d11Encoder {
         bit_depth: u8,
         chroma: ChromaFormat,
         // Slices per frame the client takes. 1 = single-slice — the safe shape toward decoders
-        // that never asked (some SoCs wedge). `PUNKTFUNK_NVENC_SLICES` overrides it.
+        // that never asked (some SoCs wedge). `RUBYFUNK_NVENC_SLICES` overrides it.
         slices: u32,
         // Selected render adapter (`None` = OS default). Only the probe/cache keys read it;
         // the session device comes from the first submitted frame.
@@ -482,8 +482,7 @@ impl NvencD3d11Encoder {
                 }
             }
             if two_thread {
-                self.s
-                    .start_retrieve("punktfunk-nvenc-out", retrieve_loop)?;
+                self.s.start_retrieve("rubyfunk-nvenc-out", retrieve_loop)?;
                 tracing::info!(
                     pool = POOL,
                     "NVENC async retrieve active (two-thread encode: submit here, \
@@ -534,7 +533,7 @@ impl NvencD3d11Encoder {
     /// the sync path uses, immediate once the event has fired. For a caller whose loop already
     /// parks on handles (the Windows driver's encode thread) — a two-thread retrieve there would
     /// only add a queue. Ignored on a GPU without `NV_ENC_CAPS_ASYNC_ENCODE_SUPPORT`, and by
-    /// `PUNKTFUNK_NVENC_ASYNC=1`, which asks for the two-thread mode instead. Call before the
+    /// `RUBYFUNK_NVENC_ASYNC=1`, which asks for the two-thread mode instead. Call before the
     /// session opens.
     pub fn use_completion_events(&mut self, on: bool) {
         self.want_events = on;

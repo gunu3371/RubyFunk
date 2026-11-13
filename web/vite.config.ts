@@ -15,12 +15,12 @@ const serverDir = fileURLToPath(new URL("./server", import.meta.url));
 
 // The management API the console drives. The browser always talks same-origin (/api/...):
 // in `vite dev` the dev server proxies it (below); in the built Bun/Nitro server a Nitro
-// route-rule proxies it (below). Override the upstream with PUNKTFUNK_MGMT_URL.
-const MGMT_URL = process.env.PUNKTFUNK_MGMT_URL ?? "https://127.0.0.1:47990";
+// route-rule proxies it (below). Override the upstream with RUBYFUNK_MGMT_URL.
+const MGMT_URL = process.env.RUBYFUNK_MGMT_URL ?? "https://127.0.0.1:47990";
 
 // Dev-only `/plugin-ui/<id>/**` proxy: the route (server/routes/plugin-ui/[...].ts) needs Bun's
 // `tls` fetch option. Same secret, cookie strip and 127.0.0.1-only dial, but it skips `callPlugin`:
-// no host relay for a port-0 (viaHost) plugin and no 401 retry. Needs PUNKTFUNK_MGMT_TOKEN in the
+// no host relay for a port-0 (viaHost) plugin and no 401 retry. Needs RUBYFUNK_MGMT_TOKEN in the
 // dev environment.
 function pluginUiDevProxy(): Plugin {
 	const fetchCred = (
@@ -58,7 +58,7 @@ function pluginUiDevProxy(): Plugin {
 		});
 
 	return {
-		name: "punktfunk-plugin-ui-dev-proxy",
+		name: "rubyfunk-plugin-ui-dev-proxy",
 		configureServer(server) {
 			server.middlewares.use("/plugin-ui", async (req, res) => {
 				const raw = req.url ?? "/"; // connect strips the /plugin-ui mount prefix
@@ -71,10 +71,10 @@ function pluginUiDevProxy(): Plugin {
 				}
 				const rest = m?.[2] ?? "/";
 				const search = m?.[3] ?? "";
-				const token = process.env.PUNKTFUNK_MGMT_TOKEN;
+				const token = process.env.RUBYFUNK_MGMT_TOKEN;
 				if (!token) {
 					res.statusCode = 503;
-					res.end("dev plugin-ui proxy: set PUNKTFUNK_MGMT_TOKEN");
+					res.end("dev plugin-ui proxy: set RUBYFUNK_MGMT_TOKEN");
 					return;
 				}
 				const cred = await fetchCred(id, token);
@@ -135,7 +135,7 @@ function dropUnomSoundSprites(): Plugin {
 	const SPRITE_URL =
 		/new URL\(\s*(["'])[^"']*\.(?:wav|mp3)\1\s*,\s*import\.meta\.url\s*\)\.href/g;
 	return {
-		name: "punktfunk-drop-unom-sound-sprites",
+		name: "rubyfunk-drop-unom-sound-sprites",
 		enforce: "pre",
 		transform(code, id) {
 			if (!DEFAULTS.test(id)) return null;
@@ -158,7 +158,7 @@ export default defineConfig({
 				// without this `bun run dev` 401s on every call and `apiFetch` bounces the developer
 				// to /login — where logging in doesn't help, because dev has no login gate at all.
 				configure(proxy) {
-					const token = process.env.PUNKTFUNK_MGMT_TOKEN;
+					const token = process.env.RUBYFUNK_MGMT_TOKEN;
 					if (!token) return;
 					proxy.on("proxyReq", (proxyReq) => {
 						proxyReq.setHeader("authorization", `Bearer ${token}`);
@@ -193,7 +193,7 @@ export default defineConfig({
 			// `Bun.serve({ tls })` so the console is served over HTTPS (HTTP/1.1 over TLS) with the
 			// host's own identity cert. (No HTTP/2 — Bun.serve has no h2 server — and no HTTP/3, which a
 			// browser won't speak against a self-signed host cert.) Bun is the runtime
-			// everywhere now — the Windows installer already bundles it, and the punktfunk-web .deb
+			// everywhere now — the Windows installer already bundles it, and the rubyfunk-web .deb
 			// vendors it (it can't be `node`: `Bun.serve` is a bun API). (dev `vite dev` is unaffected.)
 			preset: "bun",
 			entry: fileURLToPath(

@@ -1,7 +1,7 @@
 use super::*;
 use crate::model::HostRow;
 use pf_client_core::trust::Settings;
-use punktfunk_core::quic::v2::msg::UNLOCK_PASSWORD;
+use rubyfunk_core::quic::v2::msg::UNLOCK_PASSWORD;
 
 const TYPED: &str = " Tr0ub4dor&3 ";
 

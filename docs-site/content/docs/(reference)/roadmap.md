@@ -1,6 +1,6 @@
 ---
 title: "Roadmap"
-description: "Where Punktfunk is heading: what is being worked on, what comes next, and what is not planned."
+description: "Where RubyFunk is heading: what is being worked on, what comes next, and what is not planned."
 ---
 
 What the project is working on and what comes after it. Nothing under **Working on now** or

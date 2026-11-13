@@ -87,7 +87,7 @@ pub fn scroll_pattern_rgb10(w: usize, h: usize, frame: usize) -> Vec<u8> {
     px
 }
 
-/// Write `aus` to `path` with the `.idx` sidecar a `PUNKTFUNK_DUMP_VIDEO` capture carries
+/// Write `aus` to `path` with the `.idx` sidecar a `RUBYFUNK_DUMP_VIDEO` capture carries
 /// (`offset len flags complete` per access unit), so a field hasher splits any codec's stream
 /// by access unit.
 pub fn write_capture(path: &str, aus: &[&[u8]]) -> std::io::Result<()> {
@@ -191,7 +191,7 @@ impl Soak {
     /// Drive `enc` with `frame(i)` for every frame index and check each loss came back as a
     /// recovery anchor or, declined, as an IDR; under `acked`, that the frame after each loss
     /// leans on a confirmed one. The full stream and the view without the lost frames land in
-    /// `PUNKTFUNK_SMOKE_DIR` as `{name}-{anchor,acked}.*` and `…-dropS.*`, with the `.idx`
+    /// `RUBYFUNK_SMOKE_DIR` as `{name}-{anchor,acked}.*` and `…-dropS.*`, with the `.idx`
     /// sidecars `gpu_parity`'s field hashers read.
     pub fn run(
         &self,
@@ -284,7 +284,7 @@ impl Soak {
             }
             assert!(aus[1..].iter().all(|a| !a.keyframe), "no IDR under acks");
         }
-        if let Ok(dir) = std::env::var("PUNKTFUNK_SMOKE_DIR") {
+        if let Ok(dir) = std::env::var("RUBYFUNK_SMOKE_DIR") {
             let mode = if self.acked { "acked" } else { "anchor" };
             write_views(&format!("{dir}/{name}-{mode}"), self.codec, &aus, &lost);
         }
@@ -297,7 +297,7 @@ impl Soak {
 /// caller feed 10-bit frames). `PF_WAVE_SPOIL=1` loses a frame inside every sweep so the wave
 /// queued behind it must be exact; `PF_WAVE_IDR=1` forces an IDR into every wave, which
 /// flushes it. `PF_WAVE_ANCHOR=1` answers each loss with an RFI anchor instead (leave
-/// `PUNKTFUNK_NVENC_IR_ALWAYS` unset), and only it takes another lag or `PF_WAVE_CODEC=av1`:
+/// `RUBYFUNK_NVENC_IR_ALWAYS` unset), and only it takes another lag or `PF_WAVE_CODEC=av1`:
 /// NVENC AV1 never waves. `PF_WAVE_DECLINE=1`, also with that knob unset, follows each anchor
 /// with a loss too old to anchor: the wave answers it, and its start carries no anchor.
 #[cfg(all(any(test, feature = "test-support"), feature = "nvenc"))]
@@ -361,8 +361,8 @@ impl WaveSoak {
         );
         assert_ne!(
             soak.anchor || soak.decline,
-            on("PUNKTFUNK_NVENC_IR_ALWAYS"),
-            "PUNKTFUNK_NVENC_IR_ALWAYS=1 makes every ask a wave; PF_WAVE_ANCHOR=1 and \
+            on("RUBYFUNK_NVENC_IR_ALWAYS"),
+            "RUBYFUNK_NVENC_IR_ALWAYS=1 makes every ask a wave; PF_WAVE_ANCHOR=1 and \
              PF_WAVE_DECLINE=1 want anchors"
         );
         assert!(
@@ -383,7 +383,7 @@ impl WaveSoak {
     /// Drive `enc`, whose session `session` reaches, with `frame(i)` and check every AU: IDRs
     /// only where forced, recovery marks on every wave start and unspoiled close, the close
     /// bit on those closes, anchors where asked. The full stream and the view without the
-    /// lost frames land in `PUNKTFUNK_SMOKE_DIR` (default `.`) as `{name}-wave.*` and
+    /// lost frames land in `RUBYFUNK_SMOKE_DIR` (default `.`) as `{name}-wave.*` and
     /// `{name}-wave-dropS.*`, with the `.idx` sidecars `gpu_parity`'s field hashers read.
     pub fn run<E: crate::Encoder>(
         &self,
@@ -481,7 +481,7 @@ impl WaveSoak {
         }
         assert_eq!(aus.len(), last + 1, "one AU per submitted frame");
         m.check(&aus);
-        let dir = std::env::var("PUNKTFUNK_SMOKE_DIR").unwrap_or_else(|_| ".".into());
+        let dir = std::env::var("RUBYFUNK_SMOKE_DIR").unwrap_or_else(|_| ".".into());
         write_views(&format!("{dir}/{name}-wave"), self.codec, &aus, &m.lost);
         println!(
             "{name} wave soak: {}x{} {}-bit {} fps {} Mbps {:?} cycle={cycle} gap={gap} \

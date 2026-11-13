@@ -6,7 +6,7 @@ use super::*;
 /// Path of the host-written `GAMESCOPE_BIN` wrapper (per-user, in tmpfs).
 fn gamescope_bin_wrapper_path() -> std::path::PathBuf {
     let base = crate::session::runtime_dir();
-    std::path::Path::new(&base).join("punktfunk-gamescope-bin")
+    std::path::Path::new(&base).join("rubyfunk-gamescope-bin")
 }
 
 /// Injects `--nested-refresh $PF_HZ` (session-plus does not expose it). `$PF_HDR_ARGS` unquoted:
@@ -28,7 +28,7 @@ fn gamescope_bin_wrapper_script(bin: &str) -> String {
 }
 
 /// Hardcoded by some session scripts instead of `GAMESCOPE_BIN`. Env, PATH shim, and
-/// `PUNKTFUNK_GAMESCOPE_BIN` all miss at once.
+/// `RUBYFUNK_GAMESCOPE_BIN` all miss at once.
 pub(super) const DISTRO_GAMESCOPE_PATH: &str = "/usr/bin/gamescope";
 
 /// The socket directory every Xwayland — and so every gamescope — insists on before it will open a
@@ -82,7 +82,7 @@ enum BindOff {
     /// The session script could not be read — fail closed rather than arm a mechanism we cannot
     /// show is needed.
     ScriptUnreadable,
-    /// `PUNKTFUNK_GAMESCOPE_BIND=0`.
+    /// `RUBYFUNK_GAMESCOPE_BIND=0`.
     OperatorOff,
     /// [`note_bind_hazard`] fired: a session launched with the bind armed never came up.
     Disarmed,
@@ -194,7 +194,7 @@ fn x11_socket_dir_owner() -> Option<u32> {
 /// 0700: wlroots wants root-or-us and not group/other-writable.
 fn session_x11_dir() -> std::path::PathBuf {
     let base = crate::session::runtime_dir();
-    std::path::Path::new(&base).join("punktfunk-x11")
+    std::path::Path::new(&base).join("rubyfunk-x11")
 }
 
 /// Create (or re-assert) [`session_x11_dir`] and drop dead sockets from it.
@@ -424,7 +424,7 @@ pub(super) fn arm_session_bind(wrapper: &std::path::Path) -> Option<SessionBind>
                 "gamescope: the resolved gamescope is a bare name, not an absolute path — not \
                  redirecting {DISTRO_GAMESCOPE_PATH}, because the wrapper resolves that name \
                  through PATH inside the unit and would land back on the redirect itself. Put the \
-                 binary on the host's PATH, or set PUNKTFUNK_GAMESCOPE_BIN to an absolute path."
+                 binary on the host's PATH, or set RUBYFUNK_GAMESCOPE_BIN to an absolute path."
             );
             return None;
         }
@@ -438,7 +438,7 @@ pub(super) fn arm_session_bind(wrapper: &std::path::Path) -> Option<SessionBind>
         }
         BindPlan::Off(BindOff::OperatorOff) => {
             tracing::info!(
-                "gamescope: PUNKTFUNK_GAMESCOPE_BIND=0 — never redirecting {DISTRO_GAMESCOPE_PATH}. \
+                "gamescope: RUBYFUNK_GAMESCOPE_BIND=0 — never redirecting {DISTRO_GAMESCOPE_PATH}. \
                  On a distro whose gamescope-session-plus hardcodes that path the session runs the \
                  distro's stock gamescope: no HDR, no in-node cursor, and games see gamescope's \
                  60 Hz headless default."
@@ -449,7 +449,7 @@ pub(super) fn arm_session_bind(wrapper: &std::path::Path) -> Option<SessionBind>
             tracing::info!(
                 "gamescope: the {DISTRO_GAMESCOPE_PATH} redirect is disarmed for this host process \
                  — an earlier session did not come up with it armed. Running the distro's stock \
-                 gamescope (no HDR, no in-node cursor). Restart punktfunk-host to try it again."
+                 gamescope (no HDR, no in-node cursor). Restart rubyfunk-host to try it again."
             );
             return None;
         }
@@ -552,7 +552,7 @@ mod tests {
     /// that gets no mount namespace — the state every box was in before the redirect existed.
     #[test]
     fn bind_is_armed_only_where_it_is_needed_and_survivable() {
-        const OURS: &str = "/usr/bin/punktfunk-gamescope";
+        const OURS: &str = "/usr/bin/rubyfunk-gamescope";
         const AUTO: Option<bool> = None;
         const OFF: Option<bool> = Some(false);
         const FORCE: Option<bool> = Some(true);
@@ -644,23 +644,23 @@ mod tests {
     #[test]
     fn both_bind_renderers_carry_the_socket_directory() {
         let bind = SessionBind {
-            wrapper: std::path::PathBuf::from("/run/user/1000/punktfunk-gamescope-bin"),
-            x11_dir: Some(std::path::PathBuf::from("/run/user/1000/punktfunk-x11")),
+            wrapper: std::path::PathBuf::from("/run/user/1000/rubyfunk-gamescope-bin"),
+            x11_dir: Some(std::path::PathBuf::from("/run/user/1000/rubyfunk-x11")),
         };
         assert_eq!(
             bind.run_args(),
             vec![
                 format!(
-                    "--property=BindReadOnlyPaths=/run/user/1000/punktfunk-gamescope-bin:{DISTRO_GAMESCOPE_PATH}"
+                    "--property=BindReadOnlyPaths=/run/user/1000/rubyfunk-gamescope-bin:{DISTRO_GAMESCOPE_PATH}"
                 ),
-                format!("--property=BindPaths=/run/user/1000/punktfunk-x11:{X11_SOCKET_DIR}"),
+                format!("--property=BindPaths=/run/user/1000/rubyfunk-x11:{X11_SOCKET_DIR}"),
             ]
         );
         assert_eq!(
             bind.unit_lines(),
             format!(
-                "BindReadOnlyPaths=/run/user/1000/punktfunk-gamescope-bin:{DISTRO_GAMESCOPE_PATH}\n\
-                 BindPaths=/run/user/1000/punktfunk-x11:{X11_SOCKET_DIR}\n"
+                "BindReadOnlyPaths=/run/user/1000/rubyfunk-gamescope-bin:{DISTRO_GAMESCOPE_PATH}\n\
+                 BindPaths=/run/user/1000/rubyfunk-x11:{X11_SOCKET_DIR}\n"
             )
         );
         // The socket-directory bind must be read-WRITE (Xwayland creates its socket in there); a
@@ -670,7 +670,7 @@ mod tests {
         // No compensation needed ⇒ exactly one setting, and the unit line ends in a newline so the
         // `Environment=` lines after it in the drop-in body still parse.
         let plain = SessionBind {
-            wrapper: std::path::PathBuf::from("/run/user/1000/punktfunk-gamescope-bin"),
+            wrapper: std::path::PathBuf::from("/run/user/1000/rubyfunk-gamescope-bin"),
             x11_dir: None,
         };
         assert_eq!(plain.run_args().len(), 1);
@@ -678,7 +678,7 @@ mod tests {
         assert!(!plain.unit_lines().contains("BindPaths="));
     }
 
-    /// A `PUNKTFUNK_GAMESCOPE_BIN` with a space stays one word. `sh` reads the wrapper, and the
+    /// A `RUBYFUNK_GAMESCOPE_BIN` with a space stays one word. `sh` reads the wrapper, and the
     /// stand-in gamescope is written before it, so no `execve` meets a file still open for write.
     #[test]
     fn the_wrapper_runs_a_binary_whose_path_has_a_space() {

@@ -13,7 +13,7 @@
     kick-task.ps1 -Name pf-g4 -Script C:\Users\Public\g4-soak.ps1 -ScriptArgs "-Tag g4n -Minutes 240"
   -ScriptArgs carries no commas and no colons, so list arguments use '/' as the separator.
 
-  Sets PUNKTFUNK_IDD_DIAG in host.env for the run: without it the host starts no DxgKrnl ETW
+  Sets RUBYFUNK_IDD_DIAG in host.env for the run: without it the host starts no DxgKrnl ETW
   session and criterion 1 has nothing to attribute a gap with. host.env is restored at the end.
 
 .EXAMPLE
@@ -60,12 +60,12 @@ $root = 'C:\Users\Public'
 $log = "$root\live-g4-$Tag.log"
 $statusPath = "$root\g4-$Tag-status.jsonl"
 $statePath = "$root\g4-$Tag.state"
-$hostLog = 'C:\ProgramData\punktfunk\logs\host.log'
-$envPath = 'C:\ProgramData\punktfunk\host.env'
+$hostLog = 'C:\ProgramData\rubyfunk\logs\host.log'
+$envPath = 'C:\ProgramData\rubyfunk\host.env'
 $envBak = "$root\g4-$Tag-host.env.bak"
-$client = "$root\punktfunk-native\target\release\punktfunk-session.exe"
+$client = "$root\rubyfunk-native\target\release\rubyfunk-session.exe"
 $furmark = 'C:\Program Files\Geeks3D\FurMark2_x64\furmark.exe'
-$profiles = Join-Path $env:APPDATA 'punktfunk\client-profiles.json'
+$profiles = Join-Path $env:APPDATA 'rubyfunk\client-profiles.json'
 $profilesBak = "$root\g4-$Tag-client-profiles.bak"
 $unlockTask = "pf-g4-unlock-$Tag"
 $wakeTask = "pf-g4-wake-$Tag"
@@ -107,7 +107,7 @@ function Test-SecureDesktop {
 }
 
 function Get-MgmtToken {
-  (Get-Content -Raw 'C:\ProgramData\punktfunk\mgmt-token').Trim() -replace '^[A-Z_]+=', ''
+  (Get-Content -Raw 'C:\ProgramData\rubyfunk\mgmt-token').Trim() -replace '^[A-Z_]+=', ''
 }
 
 # GET one management endpoint, timed. `ms` is the whole round trip - criterion 5's number.
@@ -206,16 +206,16 @@ function Set-HostEnv([hashtable]$kv) {
   }
   $out = @($keep) + ($kv.Keys | ForEach-Object { "$_=$($kv[$_])" })
   $out | Set-Content $envPath -Encoding ascii
-  Restart-Service PunktfunkHost -Force -ErrorAction SilentlyContinue
+  Restart-Service RubyFunkHost -Force -ErrorAction SilentlyContinue
   Start-Sleep 15
-  Say "host.env applied: $(($kv.Keys | ForEach-Object { "$_=$($kv[$_])" }) -join ' ') service=$((Get-Service PunktfunkHost).Status)"
+  Say "host.env applied: $(($kv.Keys | ForEach-Object { "$_=$($kv[$_])" }) -join ' ') service=$((Get-Service RubyFunkHost).Status)"
 }
 
 function Restore-Box {
-  if (Test-Path $envBak) { Copy-Item $envBak $envPath -Force; Restart-Service PunktfunkHost -Force -ErrorAction SilentlyContinue }
+  if (Test-Path $envBak) { Copy-Item $envBak $envPath -Force; Restart-Service RubyFunkHost -Force -ErrorAction SilentlyContinue }
   if (Test-Path $profilesBak) { Copy-Item $profilesBak $profiles -Force } else { Remove-Item $profiles -ErrorAction SilentlyContinue }
   Get-Process furmark -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-  Get-Process punktfunk-session -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+  Get-Process rubyfunk-session -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
   foreach ($t in $unlockTask, $wakeTask) { Unregister-ScheduledTask $t -Confirm:$false -ErrorAction SilentlyContinue }
   Say "restored host.env + client profiles"
 }
@@ -289,7 +289,7 @@ function Invoke-SleepCycle([string]$token) {
   Unregister-ScheduledTask $wakeTask -Confirm:$false -ErrorAction SilentlyContinue
   # The service may have lost the adapter across S3; give it a settling window before the next cycle.
   Start-Sleep 30
-  Mark 'sleep-recovered' "service=$((Get-Service PunktfunkHost).Status) class=$(Get-CaptureClass $token)"
+  Mark 'sleep-recovered' "service=$((Get-Service RubyFunkHost).Status) class=$(Get-CaptureClass $token)"
 }
 
 # --- preflight ---------------------------------------------------------------------------
@@ -314,7 +314,7 @@ foreach ($p in $client, $envPath, $hostLog) {
 }
 $token = Get-MgmtToken
 if ((Get-Mgmt '/api/v1/status' $token).http -ne 200) { Say 'PREFLIGHT-FAILED mgmt api not answering'; exit 1 }
-Say "preflight ok host=$((Get-Item 'C:\Program Files\punktfunk\punktfunk-host.exe').LastWriteTime) free_gb=$([int]((Get-PSDrive C).Free/1GB))"
+Say "preflight ok host=$((Get-Item 'C:\Program Files\rubyfunk\rubyfunk-host.exe').LastWriteTime) free_gb=$([int]((Get-PSDrive C).Free/1GB))"
 
 # The client profile catalog gives each reconnect its mode; the resize leg drives the window.
 if (Test-Path $profiles) { Copy-Item $profiles $profilesBak -Force } else { '{"version":1,"profiles":[]}' | Set-Content $profiles }
@@ -326,9 +326,9 @@ if (Test-Path $profiles) { Copy-Item $profiles $profilesBak -Force } else { '{"v
   )
 } | ConvertTo-Json -Depth 8 | Set-Content $profiles -Encoding utf8
 
-$knobs = @{ PUNKTFUNK_IDD_DIAG = '1'; RUST_LOG = 'info,pf_capture=debug' }
-if ($Vendor -eq 'amd') { $knobs['PUNKTFUNK_ENCODER'] = 'amf'; $knobs['PUNKTFUNK_RENDER_ADAPTER'] = 'Radeon' }
-else { $knobs['PUNKTFUNK_ENCODER'] = 'nvenc'; $knobs['PUNKTFUNK_RENDER_ADAPTER'] = 'NVIDIA' }
+$knobs = @{ RUBYFUNK_IDD_DIAG = '1'; RUST_LOG = 'info,pf_capture=debug' }
+if ($Vendor -eq 'amd') { $knobs['RUBYFUNK_ENCODER'] = 'amf'; $knobs['RUBYFUNK_RENDER_ADAPTER'] = 'Radeon' }
+else { $knobs['RUBYFUNK_ENCODER'] = 'nvenc'; $knobs['RUBYFUNK_RENDER_ADAPTER'] = 'NVIDIA' }
 Set-HostEnv $knobs
 
 if ($doLock) {
@@ -359,7 +359,7 @@ $poller = Start-Job -ScriptBlock {
   }
 } -ArgumentList 'https://127.0.0.1:47990/api/v1/status', $token, $statusPath
 
-$cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2 'C:\ProgramData\punktfunk\cert.pem'
+$cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2 'C:\ProgramData\rubyfunk\cert.pem'
 $fp = $cert.GetCertHashString('SHA256').ToLower()
 # ~18 s per cycle goes on the bring-up wait and the inter-cycle pause; take it off the
 # streaming window so 100 cycles still fit inside $Minutes of wall clock.

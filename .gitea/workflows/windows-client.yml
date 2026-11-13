@@ -1,11 +1,11 @@
 # Windows CLIENT — build, lint, test and package, on a self-hosted windows-amd64 runner (host mode;
-# the generic runner + MSVC/WinUI toolchain come from unom/infra's windows-runner/, punktfunk's own
+# the generic runner + MSVC/WinUI toolchain come from unom/infra's windows-runner/, rubyfunk's own
 # extras — the WDK and the ARM64 rustup target — self-provision via the "Ensure Windows
 # toolchain" step, a fast no-op once present, so any runner with that label works).
 #
 # Covers BOTH client binaries: the WinUI 3 shell (windows-reactor + WASAPI + SDL3) and the
-# punktfunk-session Vulkan client (pf-presenter/pf-client-core/pf-console-ui — every stream runs in
-# it, spawned by the shell), plus punktfunk-cli, whose `punktfunk.exe` alias the MSIX manifest
+# rubyfunk-session Vulkan client (pf-presenter/pf-client-core/pf-console-ui — every stream runs in
+# it, spawned by the shell), plus rubyfunk-cli, whose `rubyfunk.exe` alias the MSIX manifest
 # references.
 #
 # ⚠ ONE FILE, ONE RELEASE BUILD PER ARCH. Build, clippy and fmt share it. Tests build under the
@@ -54,10 +54,10 @@
 #
 # Publishes THREE artifacts per arch (x64 + ARM64) to Gitea's generic package registry, all packed
 # from one assembled layout:
-#   punktfunk-client-setup_<arch>.exe   — per-user installer exe, the DEFAULT download
+#   rubyfunk-client-setup_<arch>.exe   — per-user installer exe, the DEFAULT download
 #                                         (stable path Steam can launch: overlay + Big Picture work)
-#   punktfunk-client-windows_<arch>-portable.zip — the same file set, no installer
-#   punktfunk-client-windows_<arch>.msix — kept for Microsoft Store compatibility
+#   rubyfunk-client-windows_<arch>-portable.zip — the same file set, no installer
+#   rubyfunk-client-windows_<arch>.msix — kept for Microsoft Store compatibility
 #
 # Registry (public, unom org): https://git.unom.io/unom/-/packages  (generic group)
 # Packaging internals: clients/windows/packaging/README.md.
@@ -113,7 +113,7 @@ on:
       - 'crates/codec/pyrowave-sys/**'
       - 'crates/core/pf-fluent/**'
       - 'crates/core/pf-update-check/**'
-      - 'crates/core/punktfunk-core/**'
+      - 'crates/core/rubyfunk-core/**'
       - 'Cargo.lock'
       - 'Cargo.toml'
       - 'scripts/ci/pf-version.ps1'
@@ -135,7 +135,7 @@ on:
       - 'crates/codec/pyrowave-sys/**'
       - 'crates/core/pf-fluent/**'
       - 'crates/core/pf-update-check/**'
-      - 'crates/core/punktfunk-core/**'
+      - 'crates/core/rubyfunk-core/**'
       - 'Cargo.lock'
       - 'Cargo.toml'
       - 'scripts/ci/pf-version.ps1'
@@ -154,7 +154,7 @@ on:
 env:
   REGISTRY: git.unom.io
   OWNER: unom
-  PKG: punktfunk-client-windows
+  PKG: rubyfunk-client-windows
   RUSTC_WRAPPER: sccache
   SCCACHE_BUCKET: unom-ci-sccache
   SCCACHE_ENDPOINT: https://storage.unom.io
@@ -290,23 +290,23 @@ jobs:
             "RUSTC_WRAPPER=" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           }
 
-      # All three client binaries, ONCE, in release. The shell spawns punktfunk-session.exe (a
-      # package sibling) for every stream, and punktfunk-cli builds the `punktfunk.exe` the manifest
+      # All three client binaries, ONCE, in release. The shell spawns rubyfunk-session.exe (a
+      # package sibling) for every stream, and rubyfunk-cli builds the `rubyfunk.exe` the manifest
       # aliases and pack-msix.ps1 requires (bf981027 added the requirement without the build — the
       # same gap 90c84ef4 closed for deb). --no-default-features on ARM64 is a no-op for the shell.
       #
       # Release, not debug, for the lint legs below too; tests build under `ci-test` (see the header).
       - name: Build (release)
         shell: pwsh
-        run: cargo build --release --locked -p punktfunk-client-windows -p punktfunk-client-session -p punktfunk-cli ${{ matrix.session_flags }} --target ${{ matrix.target }}
+        run: cargo build --release --locked -p rubyfunk-client-windows -p rubyfunk-client-session -p rubyfunk-cli ${{ matrix.session_flags }} --target ${{ matrix.target }}
 
       - name: Clippy (-D warnings)
         shell: pwsh
         run: |
-          # Every crate in the `paths:` trigger above but punktfunk-core is named here: `cargo
+          # Every crate in the `paths:` trigger above but rubyfunk-core is named here: `cargo
           # clippy -p X` BUILDS a dependency but only LINTS the packages it is given. The arm64
           # build has no Skia console and no PyroWave, so those two are x64 only.
-          $pkgs = @('-p','punktfunk-client-windows','-p','punktfunk-client-session','-p','punktfunk-cli','-p','pf-client-core','-p','pf-client-video','-p','pf-presenter','-p','pf-bitstream','-p','pf-vkdecode','-p','pf-dxvadec','-p','pf-update-check')
+          $pkgs = @('-p','rubyfunk-client-windows','-p','rubyfunk-client-session','-p','rubyfunk-cli','-p','pf-client-core','-p','pf-client-video','-p','pf-presenter','-p','pf-bitstream','-p','pf-vkdecode','-p','pf-dxvadec','-p','pf-update-check')
           $sf = @()
           if ('${{ matrix.target }}' -eq 'aarch64-pc-windows-msvc') { $sf = @('--no-default-features') } else { $pkgs += @('-p','pf-console-ui','-p','pyrowave-sys') }
           cargo clippy --release --locked @pkgs --all-targets @sf --target ${{ matrix.target }} -- -D warnings
@@ -316,7 +316,7 @@ jobs:
         if: matrix.arch == 'x64'
         shell: pwsh
         run: |
-          cargo fmt -p punktfunk-client-windows -p punktfunk-client-session -p punktfunk-cli -p pf-client-core -p pf-client-video -p pf-presenter -p pf-console-ui -p pf-dxvadec -- --check
+          cargo fmt -p rubyfunk-client-windows -p rubyfunk-client-session -p rubyfunk-cli -p pf-client-core -p pf-client-video -p pf-presenter -p pf-console-ui -p pf-dxvadec -- --check
           if ($LASTEXITCODE) { throw "rustfmt" }
 
       - name: Test
@@ -324,7 +324,7 @@ jobs:
         if: matrix.arch == 'x64'
         shell: pwsh
         run: |
-          cargo test --profile ci-test --locked -p punktfunk-client-windows -p punktfunk-client-session -p punktfunk-cli -p pf-client-core -p pf-client-video -p pf-presenter -p pf-console-ui -p pf-dxvadec --target ${{ matrix.target }}
+          cargo test --profile ci-test --locked -p rubyfunk-client-windows -p rubyfunk-client-session -p rubyfunk-cli -p pf-client-core -p pf-client-video -p pf-presenter -p pf-console-ui -p pf-dxvadec --target ${{ matrix.target }}
           if ($LASTEXITCODE) { throw "tests" }
 
       # d3d11va without desktop. The release build above enables desktop, so it never
@@ -356,7 +356,7 @@ jobs:
           AZURE_CODESIGNING_ENDPOINT: https://neu.codesigning.azure.net/
           AZURE_CODESIGNING_ACCOUNT: unomsigning
           AZURE_CODESIGNING_PROFILE: unom-io
-          # Service principal 'punktfunk-ci-signing', holding ONLY the Artifact Signing Certificate
+          # Service principal 'rubyfunk-ci-signing', holding ONLY the Artifact Signing Certificate
           # Profile Signer role, scoped to the unom-io profile — it can sign and nothing else.
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -372,7 +372,7 @@ jobs:
       # The DEFAULT download: a per-user installer exe + a portable zip, packed from the layout
       # the MSIX step just assembled. The MSIX shape (WindowsApps ACLs, alias-only activation)
       # breaks Steam's non-Steam-game picker, the Steam overlay injection and Big Picture launch;
-      # the installer's stable %LOCALAPPDATA%\Programs\Punktfunk path is the fix. The MSIX stays
+      # the installer's stable %LOCALAPPDATA%\Programs\RubyFunk path is the fix. The MSIX stays
       # published for Microsoft Store compatibility. Same signing env as the MSIX step above.
       - name: Pack + sign installer + portable zip
         if: github.event_name != 'pull_request'
@@ -387,7 +387,7 @@ jobs:
           MSIX_CERT_PFX_B64: ${{ secrets.MSIX_CERT_PFX_B64 }}
           MSIX_CERT_PASSWORD: ${{ secrets.MSIX_CERT_PASSWORD }}
         run: |
-          # The engine exe (punktfunk-setup-client + payload): same name, signing and silent
+          # The engine exe (rubyfunk-setup-client + payload): same name, signing and silent
           # flags as the Inno installer it replaced, and the same per-user ARP key.
           & clients/windows/packaging/pack-client-installer.ps1 `
             -Version $env:MSIX_VERSION -Arch ${{ matrix.arch }} `
@@ -410,7 +410,7 @@ jobs:
               -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', "/LOG=$log", '--dry-run'
             if ($p.ExitCode -ne 0) { throw "silent dry-run exited $($p.ExitCode)" }
             $text = Get-Content $log -Raw
-            foreach ($line in @('client installer', 'would unpack the payload', 'Punktfunk.lnk', 'Done. Next:')) {
+            foreach ($line in @('client installer', 'would unpack the payload', 'RubyFunk.lnk', 'Done. Next:')) {
               if (-not $text.Contains($line)) { throw "smoke transcript lacks: $line" }
             }
             Get-Content $log
@@ -436,7 +436,7 @@ jobs:
           $aliasNames = @{ "$($env:MSIX_PATH)" = "$($env:PKG)_${{ matrix.arch }}.msix" }
           if ($env:MSIX_CER_PATH) { $aliasNames[$env:MSIX_CER_PATH] = "$($env:PKG)_${{ matrix.arch }}.cer" }
           # The installer + portable zip (the default download; docs point at these alias URLs).
-          if ($env:CLIENT_SETUP_PATH) { $aliasNames[$env:CLIENT_SETUP_PATH] = "punktfunk-client-setup_${{ matrix.arch }}.exe" }
+          if ($env:CLIENT_SETUP_PATH) { $aliasNames[$env:CLIENT_SETUP_PATH] = "rubyfunk-client-setup_${{ matrix.arch }}.exe" }
           if ($env:CLIENT_ZIP_PATH) { $aliasNames[$env:CLIENT_ZIP_PATH] = "$($env:PKG)_${{ matrix.arch }}-portable.zip" }
           $files = @($env:MSIX_PATH, $env:MSIX_CER_PATH, $env:CLIENT_SETUP_PATH, $env:CLIENT_ZIP_PATH) | Where-Object { $_ -and (Test-Path $_) }
           if (-not $files) { throw "pack produced no artifacts to publish" }

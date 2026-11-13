@@ -1,4 +1,4 @@
-# punktfunk Windows client — packaging
+# rubyfunk Windows client — packaging
 
 Three artifacts, packed from one assembled layout by
 [`windows-client.yml`](../../../.gitea/workflows/windows-client.yml) to Gitea's generic package
@@ -6,29 +6,29 @@ registry — canary on every `main` push that touches the client, stable on `vX.
 
 | Artifact | Notes |
 |---|---|
-| `punktfunk-client-setup_<arch>.exe` | **The default download.** Per-user, no-UAC, into `%LOCALAPPDATA%\Programs\Punktfunk`. |
-| `punktfunk-client-windows_<arch>-portable.zip` | The same signed file set, nothing registered. |
-| `punktfunk-client-windows_<arch>.msix` | Kept for Microsoft Store compatibility. |
+| `rubyfunk-client-setup_<arch>.exe` | **The default download.** Per-user, no-UAC, into `%LOCALAPPDATA%\Programs\RubyFunk`. |
+| `rubyfunk-client-windows_<arch>-portable.zip` | The same signed file set, nothing registered. |
+| `rubyfunk-client-windows_<arch>.msix` | Kept for Microsoft Store compatibility. |
 
 `pack-msix.ps1` assembles `layout/` and packs the MSIX; `pack-client-installer.ps1` consumes that
 same layout for the installer and zip, signing the four exes individually — the MSIX only signs its
 container.
 
 App icons use the [RubyFunk palette](../../../docs/branding.md). The layout copies committed
-PNGs from `assets/`; executable icons come from `packaging/windows/branding/punktfunk.ico`
+PNGs from `assets/`; executable icons come from `packaging/windows/branding/rubyfunk.ico`
 at the repository root. Keep both sets in sync when changing colors.
 
 **Why the installer exists at all.** The MSIX install shape breaks the top user-reported flows: the
 exe lands under the ACL'd `C:\Program Files\WindowsApps`, which Steam's *Add a Non-Steam Game*
 picker cannot browse, and alias/`shell:AppsFolder` activation defeats the Steam overlay's injection
 and Big Picture launch. Steam must spawn the exe itself from a normal path. The installer re-creates
-the MSIX manifest's declarative grants per-user: `punktfunk://` in HKCU Classes, Start shortcuts,
-and `{app}` on the user PATH for the `punktfunk` CLI.
+the MSIX manifest's declarative grants per-user: `rubyfunk://` in HKCU Classes, Start shortcuts,
+and `{app}` on the user PATH for the `rubyfunk` CLI.
 
 **Two architectures, one x64 runner.** `x86_64-pc-windows-msvc` builds natively and
 `aarch64-pc-windows-msvc` cross-compiles, because the x64 MSVC toolset ships the ARM64 cross
 compiler. Nothing in the package links FFmpeg, so neither arch needs a per-arch `FFMPEG_DIR` staged
-on the runner. ARM64 builds `punktfunk-session` with `--no-default-features` (no Skia console UI)
+on the runner. ARM64 builds `rubyfunk-session` with `--no-default-features` (no Skia console UI)
 until rust-skia ships aarch64-pc-windows-msvc prebuilts.
 
 **No FFmpeg DLLs, and no FFmpeg notice.** The client decodes natively, so shipping the LGPL notice
@@ -56,12 +56,12 @@ MSIX requires a strictly 4-part numeric version:
 `packaging/windows/signing.ps1`, in this order:
 
 1. **Azure Artifact Signing** when `AZURE_CODESIGNING_ENDPOINT` / `_ACCOUNT` / `_PROFILE` are all set
-   (the workflow sets them; they are not secret). Credentials are the `punktfunk-ci-signing` service
+   (the workflow sets them; they are not secret). Credentials are the `rubyfunk-ci-signing` service
    principal, which holds only the *Artifact Signing Certificate Profile Signer* role scoped to the
    `unom-io` profile. Keys are HSM-backed and never leave Azure — no `.pfx`, no `.cer` emitted, and
    the chain is publicly trusted so there is nothing for a user to import.
 2. **`MSIX_CERT_PFX_B64` / `MSIX_CERT_PASSWORD`** — the older self-signed `CN=unom` cert, public half
-   checked in as [`punktfunk-codesign.cer`](punktfunk-codesign.cer).
+   checked in as [`rubyfunk-codesign.cer`](rubyfunk-codesign.cer).
 3. An **ephemeral** self-signed cert, for forks and local builds with no secrets.
 
 Modes 2 and 3 emit a `.cer` to import into `Cert:\LocalMachine\TrustedPeople` first. On a `v*` tag a
@@ -82,11 +82,11 @@ Two things about Azure mode are easy to get wrong:
 On a Windows box with MSVC and the Windows SDK, after a release build:
 
 ```powershell
-cargo build --release -p punktfunk-client-windows --target x86_64-pc-windows-msvc
+cargo build --release -p rubyfunk-client-windows --target x86_64-pc-windows-msvc
 pwsh -File clients/windows/packaging/pack-msix.ps1 `
   -Version 0.2.0.0 -TargetDir C:\t\x86_64-pc-windows-msvc\release -OutDir C:\t\msix
 
-cargo build --release -p punktfunk-client-windows --target aarch64-pc-windows-msvc
+cargo build --release -p rubyfunk-client-windows --target aarch64-pc-windows-msvc
 pwsh -File clients/windows/packaging/pack-msix.ps1 `
   -Version 0.2.0.0 -Arch arm64 -TargetDir C:\t\aarch64-pc-windows-msvc\release -OutDir C:\t\msix
 ```

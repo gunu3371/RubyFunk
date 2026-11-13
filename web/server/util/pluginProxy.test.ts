@@ -29,21 +29,21 @@ const CONSOLE_PORT = "47992";
 const PLUGIN_PORT = "47993";
 
 afterEach(() => {
-	delete process.env.PUNKTFUNK_UI_CONSOLE_PORT_ACTIVE;
-	delete process.env.PUNKTFUNK_UI_PLUGIN_PORT_ACTIVE;
+	delete process.env.RUBYFUNK_UI_CONSOLE_PORT_ACTIVE;
+	delete process.env.RUBYFUNK_UI_PLUGIN_PORT_ACTIVE;
 });
 
 describe("isDialablePort", () => {
 	test("refuses our own two listeners", () => {
-		process.env.PUNKTFUNK_UI_CONSOLE_PORT_ACTIVE = CONSOLE_PORT;
-		process.env.PUNKTFUNK_UI_PLUGIN_PORT_ACTIVE = PLUGIN_PORT;
+		process.env.RUBYFUNK_UI_CONSOLE_PORT_ACTIVE = CONSOLE_PORT;
+		process.env.RUBYFUNK_UI_PLUGIN_PORT_ACTIVE = PLUGIN_PORT;
 		expect(isDialablePort(47992)).toBe(false);
 		expect(isDialablePort(47993)).toBe(false);
 	});
 
 	test("allows an ordinary plugin port", () => {
-		process.env.PUNKTFUNK_UI_CONSOLE_PORT_ACTIVE = CONSOLE_PORT;
-		process.env.PUNKTFUNK_UI_PLUGIN_PORT_ACTIVE = PLUGIN_PORT;
+		process.env.RUBYFUNK_UI_CONSOLE_PORT_ACTIVE = CONSOLE_PORT;
+		process.env.RUBYFUNK_UI_PLUGIN_PORT_ACTIVE = PLUGIN_PORT;
 		expect(isDialablePort(51234)).toBe(true);
 	});
 
@@ -57,7 +57,7 @@ describe("isDialablePort", () => {
 		// `pluginOriginPort()` is null when the second listener failed to bind. A null must not
 		// collapse into "matches nothing dialable" — plugin UIs are already disabled in that state,
 		// but the health probe still runs.
-		process.env.PUNKTFUNK_UI_CONSOLE_PORT_ACTIVE = CONSOLE_PORT;
+		process.env.RUBYFUNK_UI_CONSOLE_PORT_ACTIVE = CONSOLE_PORT;
 		expect(isDialablePort(51234)).toBe(true);
 		expect(isDialablePort(47992)).toBe(false);
 	});
@@ -162,15 +162,15 @@ describe("callPlugin", () => {
 	const live = (secret: string) => ({ port: plugin.port as number, secret });
 
 	beforeEach(() => {
-		process.env.PUNKTFUNK_MGMT_URL = `http://127.0.0.1:${host.port}`;
-		process.env.PUNKTFUNK_MGMT_TOKEN = "t0k";
+		process.env.RUBYFUNK_MGMT_URL = `http://127.0.0.1:${host.port}`;
+		process.env.RUBYFUNK_MGMT_TOKEN = "t0k";
 		bustCredential("p");
 	});
 	afterAll(() => {
 		plugin.stop(true);
 		host.stop(true);
-		delete process.env.PUNKTFUNK_MGMT_URL;
-		delete process.env.PUNKTFUNK_MGMT_TOKEN;
+		delete process.env.RUBYFUNK_MGMT_URL;
+		delete process.env.RUBYFUNK_MGMT_TOKEN;
 	});
 
 	test("retries a rotated secret and passes the body through untouched", async () => {

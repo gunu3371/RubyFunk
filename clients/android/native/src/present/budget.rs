@@ -77,7 +77,7 @@ pub(crate) struct TimelineBudget {
     vsync_tick: bool,
     /// The live submit margin: from 0, widened by [`TimelineBudget::adapt_margin`].
     margin_ns: i64,
-    /// `debug.punktfunk.latch_margin_us` set it; it never adapts.
+    /// `debug.rubyfunk.latch_margin_us` set it; it never adapts.
     margin_pinned: bool,
 }
 

@@ -1,6 +1,6 @@
 // ── Example 2/4 · event → decision ──────────────────────────────────────────────────────────
 // The flagship pattern: watch pairing requests, notify yourself, and approve/deny THROUGH the
-// typed API — asynchronously, the punktfunk way (hooks never veto). Every call is checked and
+// typed API — asynchronously, the rubyfunk way (hooks never veto). Every call is checked and
 // autocompleted; no hand-written paths, no casts.
 import { connect } from "../src/index.js";
 

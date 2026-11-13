@@ -1,14 +1,14 @@
-# punktfunk — Windows client
+# rubyfunk — Windows client
 
 The WinUI 3 shell: discover, pair, configure, launch. Pure Rust — the UI is WinUI 3 driven through
-[windows-reactor](https://github.com/microsoft/windows-rs), and it links `punktfunk-core` directly.
+[windows-reactor](https://github.com/microsoft/windows-rs), and it links `rubyfunk-core` directly.
 
 Decode, present and input are **not** here. They live in the spawned
-[`punktfunk-session`](../session/) binary; this crate is the shell around it. What a user can do
+[`rubyfunk-session`](../session/) binary; this crate is the shell around it. What a user can do
 with the app is [the docs site](https://docs.punktfunk.unom.io/docs/install-client)'s job.
 The session presents through Vulkan, or through Direct3D 11 where the GPU's Vulkan driver can't
-import D3D11VA pictures (Snapdragon X). It picks once at start; `PUNKTFUNK_PRESENT_BACKEND=vulkan`
-or `d3d11` forces one, and `punktfunk-session --probe-decode` prints the pick.
+import D3D11VA pictures (Snapdragon X). It picks once at start; `RUBYFUNK_PRESENT_BACKEND=vulkan`
+or `d3d11` forces one, and `rubyfunk-session --probe-decode` prints the pick.
 
 Ships x64 and ARM64, three ways from one layout: a signed installer (the default — a per-user
 setup.exe whose stable install path Steam can launch, so the overlay and Big Picture work), a
@@ -22,11 +22,11 @@ toolchain and CMake (SDL3 builds from source) and nothing else — decode is nat
 `FFMPEG_DIR`. At start the client resolves the installed Windows App Runtime 2.6.4 or newer.
 
 ```sh
-cargo build -p punktfunk-client-windows --target x86_64-pc-windows-msvc
+cargo build -p rubyfunk-client-windows --target x86_64-pc-windows-msvc
 
-punktfunk-client --discover                                     # list hosts on the LAN
-punktfunk-client --headless --connect host[:port] [--pin HEX]   # connect, count frames, print stats
-punktfunk-client --headless --speed-test --connect host[:port]  # probe burst → recommended bitrate
+rubyfunk-client --discover                                     # list hosts on the LAN
+rubyfunk-client --headless --connect host[:port] [--pin HEX]   # connect, count frames, print stats
+rubyfunk-client --headless --speed-test --connect host[:port]  # probe burst → recommended bitrate
 ```
 
 > `CARGO_HOME` must be an ASCII path — non-ASCII characters break SDL3's MSVC precompiled-header
@@ -46,5 +46,5 @@ Walk this after a reactor bump or a change to the render/state architecture:
 - **Pair** — PIN entry pairs, and the typed PIN reaches the Connect click (the `use_ref` mirror path).
 - **Session** — connect spawns the session; HUD stats tick; Ctrl+Alt+Shift+Q releases the pointer;
   the shell window restores on exit.
-- **Shell** — speed test completes; library grid loads; a `punktfunk://` deep link routes and a
+- **Shell** — speed test completes; library grid loads; a `rubyfunk://` deep link routes and a
   second instance hands off and exits; the window icon appears.

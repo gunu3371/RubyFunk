@@ -15,7 +15,7 @@
 //! them empty.
 
 use crate::dpad::dpad_octant;
-use punktfunk_core::input::{gamepad as gs, GamepadFrame};
+use rubyfunk_core::input::{gamepad as gs, GamepadFrame};
 
 /// The Series report, id included. One S and Elite publish only its first
 /// [`pf_driver_proto::xbox::input_len`] bytes, which stop before Share.

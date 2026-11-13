@@ -1329,21 +1329,21 @@ mod tests {
     #[test]
     fn a_same_named_predecessor_resolves_to_the_new_output() {
         let classic = [
-            device("Virtual-punktfunk-1", 41, 1),
-            device("Virtual-punktfunk-12", 57, 2),
-            device("Virtual-punktfunk-1", 52, 3),
+            device("Virtual-rubyfunk-1", 41, 1),
+            device("Virtual-rubyfunk-12", 57, 2),
+            device("Virtual-rubyfunk-1", 52, 3),
         ];
-        let ours = newest_named(&classic, "Virtual-punktfunk-1").expect("resolved");
+        let ours = newest_named(&classic, "Virtual-rubyfunk-1").expect("resolved");
         assert_eq!(ours.global, 52);
 
         let registry = [
-            device("Virtual-punktfunk-1", 0, 4),
-            device("Virtual-punktfunk-1", 0, 2),
+            device("Virtual-rubyfunk-1", 0, 4),
+            device("Virtual-rubyfunk-1", 0, 2),
         ];
-        let ours = newest_named(&registry, "Virtual-punktfunk-1").expect("resolved");
+        let ours = newest_named(&registry, "Virtual-rubyfunk-1").expect("resolved");
         assert_eq!(ours.seq, 4);
 
-        assert!(newest_named(&classic, "Virtual-punktfunk").is_none());
+        assert!(newest_named(&classic, "Virtual-rubyfunk").is_none());
     }
 
     fn with_uuid(mut d: DeviceState, uuid: &str) -> DeviceState {
@@ -1356,20 +1356,20 @@ mod tests {
     #[test]
     fn a_shared_uuid_positions_the_newest_named_output() {
         let shared = [
-            with_uuid(device("Virtual-punktfunk-1", 41, 1), "u"),
-            with_uuid(device("Virtual-punktfunk-1", 52, 2), "u"),
-            with_uuid(device("Virtual-punktfunk-12", 57, 3), "w"),
+            with_uuid(device("Virtual-rubyfunk-1", 41, 1), "u"),
+            with_uuid(device("Virtual-rubyfunk-1", 52, 2), "u"),
+            with_uuid(device("Virtual-rubyfunk-12", 57, 3), "w"),
         ];
-        let at = |uuid| position_target(&shared, "Virtual-punktfunk-1", uuid).map(|d| d.global);
+        let at = |uuid| position_target(&shared, "Virtual-rubyfunk-1", uuid).map(|d| d.global);
         assert_eq!(at(Some("u")), Some(52));
         assert_eq!(at(None), Some(52));
         assert_eq!(at(Some("gone")), Some(52));
 
         let unique = [
-            with_uuid(device("Virtual-punktfunk-1", 0, 1), "u"),
-            with_uuid(device("Virtual-punktfunk-1", 0, 2), "v"),
+            with_uuid(device("Virtual-rubyfunk-1", 0, 1), "u"),
+            with_uuid(device("Virtual-rubyfunk-1", 0, 2), "v"),
         ];
-        let ours = position_target(&unique, "Virtual-punktfunk-1", Some("u")).expect("resolved");
+        let ours = position_target(&unique, "Virtual-rubyfunk-1", Some("u")).expect("resolved");
         assert_eq!(ours.seq, 1);
     }
 
@@ -1388,16 +1388,16 @@ mod tests {
     #[test]
     fn the_repair_takes_our_exact_name_and_a_disabled_output_first() {
         let heads = [
-            disabled(device("Virtual-punktfunk-12", 57, 3)),
-            disabled(device("Virtual-punktfunk-1", 41, 1)),
-            enabled(device("Virtual-punktfunk-1", 52, 2)),
+            disabled(device("Virtual-rubyfunk-12", 57, 3)),
+            disabled(device("Virtual-rubyfunk-1", 41, 1)),
+            enabled(device("Virtual-rubyfunk-1", 52, 2)),
         ];
-        let got = repair_candidate(&heads, "Virtual-punktfunk-1").expect("resolved");
+        let got = repair_candidate(&heads, "Virtual-rubyfunk-1").expect("resolved");
         assert_eq!((got.global, got.enabled), (41, false));
-        assert!(repair_candidate(&heads, "Virtual-punktfunk").is_none());
+        assert!(repair_candidate(&heads, "Virtual-rubyfunk").is_none());
 
-        let lit = [enabled(device("Virtual-punktfunk-1", 0, 1))];
-        let got = repair_candidate(&lit, "Virtual-punktfunk-1").expect("resolved");
+        let lit = [enabled(device("Virtual-rubyfunk-1", 0, 1))];
+        let got = repair_candidate(&lit, "Virtual-rubyfunk-1").expect("resolved");
         assert!(got.enabled, "nothing to repair is still our output");
     }
 }

@@ -16,8 +16,8 @@ use pf_driver_proto::gamepad::{
     identity_vid_pid, report_period_us, DEVTYPE_8BITDO_PRO2, DEVTYPE_8BITDO_PRO3,
     DEVTYPE_8BITDO_ULTIMATE2,
 };
-use punktfunk_core::input::{gamepad as gs, GamepadFrame};
-use punktfunk_core::quic::RichInput;
+use rubyfunk_core::input::{gamepad as gs, GamepadFrame};
+use rubyfunk_core::quic::RichInput;
 use std::time::Duration;
 
 const ACCEL_LSB_PER_G: i32 = 4096;

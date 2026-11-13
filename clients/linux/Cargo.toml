@@ -1,6 +1,6 @@
 [package]
-name = "punktfunk-client-linux"
-description = "Native Linux punktfunk/1 client — GTK4/libadwaita shell, PipeWire audio, SDL3 gamepads; streaming runs in the spawned punktfunk-session binary"
+name = "rubyfunk-client-linux"
+description = "Native Linux punktfunk/1 client — GTK4/libadwaita shell, PipeWire audio, SDL3 gamepads; streaming runs in the spawned rubyfunk-session binary"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -9,12 +9,12 @@ authors.workspace = true
 repository.workspace = true
 
 [[bin]]
-name = "punktfunk-client"
+name = "rubyfunk-client"
 path = "src/main.rs"
 
 [features]
 default = ["console"]
-# The shell's doorway to the console (`punktfunk-session --browse`). A build whose session
+# The shell's doorway to the console (`rubyfunk-session --browse`). A build whose session
 # has no console (`--no-default-features`, as Nix builds it) drops the doorway with it.
 console = []
 
@@ -28,7 +28,7 @@ console = []
 pf-client-core = { path = "../../crates/client/pf-client-core", default-features = false, features = [
     "desktop",
 ] }
-punktfunk-core = { path = "../../crates/core/punktfunk-core", features = ["quic"] }
+rubyfunk-core = { path = "../../crates/core/rubyfunk-core", features = ["quic"] }
 
 # UI shell. GTK 4.20 is already the package floor (Ubuntu 26.04, Fedora 43, GNOME 50), and
 # every such target ships libadwaita ≥ 1.8: Spinner, WrapBox, ToggleGroup, ShortcutsDialog.

@@ -14,7 +14,7 @@ Kept, and genuinely tvOS-shaped: Siri Remote pointer navigation (`SiriRemotePoin
 including the full DualSense feedback set, HDR passthrough, and Wake-on-LAN — which is the single
 best Apple TV feature, because it is what removes the trip to the other room.
 
-- **Name:** Punktfunk
+- **Name:** RubyFunk
 - **Subtitle (DE):** Schnell, lokal & offen.
 - **Subtitle (EN):** Fast, local & open.
 
@@ -25,7 +25,7 @@ best Apple TV feature, because it is what removes the trip to the other room.
 ### Primary (161)
 
 ```
-Anschalten, Host wählen, spielen: Punktfunk weckt deinen Gaming-PC per Wake-on-LAN und verbindet sich, sobald er wach ist. In 4K, mit HDR, mit deinem Controller.
+Anschalten, Host wählen, spielen: RubyFunk weckt deinen Gaming-PC per Wake-on-LAN und verbindet sich, sobald er wach ist. In 4K, mit HDR, mit deinem Controller.
 ```
 
 ### Alternate A — leads on the picture (157)
@@ -45,7 +45,7 @@ Dein DualSense am Apple TV, vollständig: Rumble, adaptive Trigger, Lightbar, To
 ### Primary (160)
 
 ```
-Turn on, pick a host, play: Punktfunk wakes your gaming PC over Wake-on-LAN and connects as soon as it's up. In 4K, with HDR, with the controller in your hands.
+Turn on, pick a host, play: RubyFunk wakes your gaming PC over Wake-on-LAN and connects as soon as it's up. In 4K, with HDR, with the controller in your hands.
 ```
 
 ### Alternate A — leads on the picture (148)
@@ -59,13 +59,13 @@ Your gaming PC on the big screen — at your TV's exact resolution and refresh r
 ## Description (DE) — max 4000 characters
 
 ```
-Punktfunk macht aus deinem Apple TV die Konsole für den Gaming-PC, der ohnehin schon im Haus steht – in 4K, mit HDR, über dein eigenes Netzwerk, ohne Konto und ohne Cloud.
+RubyFunk macht aus deinem Apple TV die Konsole für den Gaming-PC, der ohnehin schon im Haus steht – in 4K, mit HDR, über dein eigenes Netzwerk, ohne Konto und ohne Cloud.
 
-Punktfunk besteht aus zwei Hälften: einem Host auf dem PC, von dem du streamst, und dieser App auf dem Gerät, auf dem du spielst. Der Host ist quelloffen und kostenlos, läuft auf Linux und auf Windows 11 – auch headless auf einem Rechner, an dem gar kein Monitor hängt.
+RubyFunk besteht aus zwei Hälften: einem Host auf dem PC, von dem du streamst, und dieser App auf dem Gerät, auf dem du spielst. Der Host ist quelloffen und kostenlos, läuft auf Linux und auf Windows 11 – auch headless auf einem Rechner, an dem gar kein Monitor hängt.
 
 VOM SOFA AUS, VON ANFANG BIS ENDE
 
-Anschalten, Host auswählen, spielen. Die App findet Hosts im Netzwerk von allein. Beim ersten Mal koppelst du einmalig mit einer PIN, danach verbindet sich der Apple TV über eine gepinnte Identität – kein Konto, kein Login, kein Abtippen von IP-Adressen. Steht dein Gaming-PC im Standby, weckt ihn Punktfunk per Wake-on-LAN und verbindet sich, sobald er wach ist. Niemand muss dafür aufstehen.
+Anschalten, Host auswählen, spielen. Die App findet Hosts im Netzwerk von allein. Beim ersten Mal koppelst du einmalig mit einer PIN, danach verbindet sich der Apple TV über eine gepinnte Identität – kein Konto, kein Login, kein Abtippen von IP-Adressen. Steht dein Gaming-PC im Standby, weckt ihn RubyFunk per Wake-on-LAN und verbindet sich, sobald er wach ist. Niemand muss dafür aufstehen.
 
 DAS BILD, DAS DEIN FERNSEHER WIRKLICH KANN
 
@@ -85,7 +85,7 @@ Die nativen Apps sprechen punktfunk/1: eine QUIC-Steuerebene und eine verschlüs
 
 WAS DU BRAUCHST
 
-Einen Punktfunk-Host auf einem Linux-PC oder auf Windows 11 (22H2 oder neuer) im selben Netzwerk. Für die beste Erfahrung hängt der Apple TV am Kabel oder an einem guten 5-GHz-WLAN. Der Host ist quelloffen (MIT/Apache-2.0) und kostenlos – Anleitungen und Quellcode findest du auf punktfunk.unom.io.
+Einen RubyFunk-Host auf einem Linux-PC oder auf Windows 11 (22H2 oder neuer) im selben Netzwerk. Für die beste Erfahrung hängt der Apple TV am Kabel oder an einem guten 5-GHz-WLAN. Der Host ist quelloffen (MIT/Apache-2.0) und kostenlos – Anleitungen und Quellcode findest du auf punktfunk.unom.io.
 
 Kein Konto. Keine Cloud. Keine Telemetrie. Die App erfasst keine Daten über dich.
 ```
@@ -95,13 +95,13 @@ Kein Konto. Keine Cloud. Keine Telemetrie. Die App erfasst keine Daten über dic
 ## Description (EN) — max 4000 characters
 
 ```
-Punktfunk turns your Apple TV into a console for the gaming PC you already own — in 4K, with HDR, over your own network, with no account and no cloud.
+RubyFunk turns your Apple TV into a console for the gaming PC you already own — in 4K, with HDR, over your own network, with no account and no cloud.
 
-Punktfunk comes in two halves: a host on the PC you stream from, and this app on the device you play on. The host is open source and free, and runs on Linux and on Windows 11 — including headless, on a machine with no monitor attached at all.
+RubyFunk comes in two halves: a host on the PC you stream from, and this app on the device you play on. The host is open source and free, and runs on Linux and on Windows 11 — including headless, on a machine with no monitor attached at all.
 
 FROM THE COUCH, START TO FINISH
 
-Turn on, pick a host, play. The app finds hosts on your network by itself. The first time, you pair once with a PIN; after that your Apple TV reconnects on a pinned identity — no account, no login, no typing IP addresses with a remote. If your gaming PC is asleep, Punktfunk wakes it over Wake-on-LAN and connects as soon as it is up. Nobody has to get up to make that happen.
+Turn on, pick a host, play. The app finds hosts on your network by itself. The first time, you pair once with a PIN; after that your Apple TV reconnects on a pinned identity — no account, no login, no typing IP addresses with a remote. If your gaming PC is asleep, RubyFunk wakes it over Wake-on-LAN and connects as soon as it is up. Nobody has to get up to make that happen.
 
 THE PICTURE YOUR TV CAN ACTUALLY SHOW
 
@@ -121,7 +121,7 @@ The native apps speak punktfunk/1: a QUIC control plane and an encrypted data pl
 
 WHAT YOU NEED
 
-A Punktfunk host on a Linux PC or on Windows 11 (22H2 or later) on the same network. For the best experience, put your Apple TV on Ethernet or on good 5 GHz Wi-Fi. The host is open source (MIT/Apache-2.0) and free — guides and source at punktfunk.unom.io.
+A RubyFunk host on a Linux PC or on Windows 11 (22H2 or later) on the same network. For the best experience, put your Apple TV on Ethernet or on good 5 GHz Wi-Fi. The host is open source (MIT/Apache-2.0) and free — guides and source at punktfunk.unom.io.
 
 No account. No cloud. No telemetry. This app collects no data about you.
 ```

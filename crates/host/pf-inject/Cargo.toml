@@ -1,7 +1,7 @@
 # Input injection (plan §W6): the per-OS injector backends (wlroots virtual-input, KWin fake_input,
 # libei/reis, gamescope-EI on Linux; SendInput on Windows) + the virtual-gamepad HID stack (DualSense/
 # DualShock4/Switch Pro/Steam Controller/Deck over uhid/usbip and the Windows UMDF drivers), extracted
-# into a subsystem crate. Consumes punktfunk_core::input (the neutral GamepadEvent/InputEvent vocabulary,
+# into a subsystem crate. Consumes rubyfunk_core::input (the neutral GamepadEvent/InputEvent vocabulary,
 # moved to core in W5) and the pf-driver-proto wire contract; NEVER reaches the orchestrator (the one
 # gamescope-EI socket path is the shared pf-paths contract, not a vdisplay reach-in).
 [package]
@@ -10,13 +10,13 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license = "MIT OR Apache-2.0"
-description = "punktfunk host input injection: per-OS keyboard/mouse injectors + the virtual-gamepad HID backends behind one InputInjector trait."
+description = "rubyfunk host input injection: per-OS keyboard/mouse injectors + the virtual-gamepad HID backends behind one InputInjector trait."
 publish = false
 
 [dependencies]
 # The input wire types (`input`, `quic::{RichInput, HidOutput, Pen*}`) live outside the `quic`
 # feature, so the input crate never builds quinn, rustls or opus.
-punktfunk-core = { path = "../../core/punktfunk-core", default-features = false }
+rubyfunk-core = { path = "../../core/rubyfunk-core", default-features = false }
 pf-driver-proto = { path = "../pf-driver-proto" }
 pf-host-config = { path = "../pf-host-config" }
 pf-paths = { path = "../pf-paths" }
@@ -44,7 +44,7 @@ wayland-backend = "0.3"
 reis = { version = "0.7.1", features = ["tokio"] }
 futures-util = "0.3"
 # `macros` is for the `tokio::select!` in the libei and usbip worker loops. It used to be
-# absent and compile anyway, borrowed from punktfunk-core's `quic` feature via unification — i.e. an
+# absent and compile anyway, borrowed from rubyfunk-core's `quic` feature via unification — i.e. an
 # unrelated crate dropping it would have broken this one.
 tokio = { version = "1", features = ["rt", "rt-multi-thread", "net", "time", "macros"] }
 # Builds/validates the xkb keymap uploaded to the virtual keyboard + tracks modifier state.
@@ -93,7 +93,7 @@ windows = { version = "0.62", features = [
 ] }
 
 [dev-dependencies]
-# Reads `crates/core/punktfunk-core/testdata/gamepad-button-vectors.json`.
+# Reads `crates/core/rubyfunk-core/testdata/gamepad-button-vectors.json`.
 serde_json = "1"
 
 [target.'cfg(target_os = "linux")'.dev-dependencies]

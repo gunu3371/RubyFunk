@@ -143,14 +143,14 @@ impl Boost {
 }
 
 /// Boost the calling thread and log the outcome once, under its name. Info: a field
-/// bundle has to show whether the hot threads ran boosted. `PUNKTFUNK_THREAD_BOOST=0`
+/// bundle has to show whether the hot threads ran boosted. `RUBYFUNK_THREAD_BOOST=0`
 /// leaves every thread as it was (an A/B, and the way out if a driver spins).
 pub fn boost_and_log(what: &'static str) {
     static OFF: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-    if *OFF.get_or_init(|| crate::env_on("PUNKTFUNK_THREAD_BOOST") == Some(false)) {
+    if *OFF.get_or_init(|| crate::env_on("RUBYFUNK_THREAD_BOOST") == Some(false)) {
         tracing::info!(
             thread = what,
-            "thread priority left alone (PUNKTFUNK_THREAD_BOOST=0)"
+            "thread priority left alone (RUBYFUNK_THREAD_BOOST=0)"
         );
         return;
     }
@@ -162,7 +162,7 @@ pub fn boost_and_log(what: &'static str) {
     }
 }
 
-/// The core pump's boost (`punktfunk_core::client::set_thread_boost`).
+/// The core pump's boost (`rubyfunk_core::client::set_thread_boost`).
 pub fn boost_core_thread() {
     boost_and_log("core-pump");
 }

@@ -32,7 +32,7 @@ pub fn primary_menu() -> gtk::MenuButton {
     }
     menu.append(Some("Preferences"), Some("win.preferences"));
     menu.append(Some("Keyboard Shortcuts"), Some("win.shortcuts"));
-    menu.append(Some("About Punktfunk"), Some("win.about"));
+    menu.append(Some("About RubyFunk"), Some("win.about"));
     gtk::MenuButton::builder()
         .child(&crate::widgets::lucide::row_icon("menu"))
         .menu_model(&menu)

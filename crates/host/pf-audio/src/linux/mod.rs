@@ -1,6 +1,6 @@
 //! PipeWire desktop-audio capture through a host-owned virtual sink.
 //!
-//! Default (`PUNKTFUNK_STREAM_SINK` unset): create a `support.null-audio-sink`
+//! Default (`RUBYFUNK_STREAM_SINK` unset): create a `support.null-audio-sink`
 //! adapter and capture its monitor. That node is a **driver** (`timerfd` in the
 //! daemon data loop), so the capture group owns its clock. A stream node is a
 //! follower; PipeWire would schedule the group on any running driver on the box.
@@ -50,7 +50,7 @@ pub(super) fn heal_defaults() {
 
 use super::{AudioCapturer, VirtualMic, SAMPLE_RATE};
 use anyhow::{anyhow, Context, Result};
-use punktfunk_core::audio::{spa_channel_order, spa_positions};
+use rubyfunk_core::audio::{spa_channel_order, spa_positions};
 use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
 use std::sync::mpsc::{sync_channel, Receiver, RecvTimeoutError};
 use std::sync::Arc;
@@ -83,7 +83,7 @@ impl CaptureMode {
 }
 
 /// Whether capture owns a per-capturer sink that isolation can env-route into.
-/// Monitor mode (`PUNKTFUNK_STREAM_SINK=0`) has none, so isolation's audio
+/// Monitor mode (`RUBYFUNK_STREAM_SINK=0`) has none, so isolation's audio
 /// half degrades to shared.
 pub fn sink_capture_active() -> bool {
     capture_mode().owns_sink()
@@ -95,11 +95,11 @@ fn capture_mode() -> CaptureMode {
     {
         // `CLIENT_CAP_KEEP_HOST_AUDIO` or `audio.output_mode = follow_default`:
         // follow the operator's default sink, no default-sink claim. Wins over
-        // `PUNKTFUNK_STREAM_SINK` — "don't touch my devices" is the more
+        // `RUBYFUNK_STREAM_SINK` — "don't touch my devices" is the more
         // restrictive promise.
         return CaptureMode::Monitor;
     }
-    capture_mode_from(std::env::var("PUNKTFUNK_STREAM_SINK").ok().as_deref())
+    capture_mode_from(std::env::var("RUBYFUNK_STREAM_SINK").ok().as_deref())
 }
 
 /// What an open read from the audio settings. A parked capturer serves the next session only
@@ -153,7 +153,7 @@ struct CaptureNodes {
 /// adapter, or the stream's negotiated format), so the rate we claim is the
 /// rate we get — [`Declared`](super::CaptureRate::Declared), no probe.
 ///
-/// Monitor mode (`PUNKTFUNK_STREAM_SINK=0`) captures through PipeWire's
+/// Monitor mode (`RUBYFUNK_STREAM_SINK=0`) captures through PipeWire's
 /// resampler, which reports a clean rate whatever the node upstream really
 /// runs at. The answer comes from the monitored node via
 /// [`monitor_rate::monitored_sink_rate`], as an
@@ -180,7 +180,7 @@ pub(super) fn probe_capture_rate() -> super::CaptureRate {
             tracing::debug!(
                 reason = %format!("{e:#}"),
                 "hi-res capture-rate probe: the monitored sink's own rate is not readable — \
-                 declining hi-res (PUNKTFUNK_STREAM_SINK=0 captures through PipeWire's resampler, \
+                 declining hi-res (RUBYFUNK_STREAM_SINK=0 captures through PipeWire's resampler, \
                  so the rate our own stream reports proves nothing)"
             );
             super::CaptureRate::Unknown
@@ -217,7 +217,7 @@ impl PwAudioCapturer {
 
     /// [`open`](Self::open) with a caller-chosen sink `node.name` so isolation
     /// can pin nested apps (`PULSE_SINK`) to the same node it captures.
-    /// Must keep the `punktfunk-speaker` prefix (claim-staleness and the
+    /// Must keep the `rubyfunk-speaker` prefix (claim-staleness and the
     /// graph-driver diagnostic match on it). Ignored in monitor mode.
     ///
     /// `tap` taps that sink's monitor without minting it: the sink belongs to
@@ -259,7 +259,7 @@ impl PwAudioCapturer {
             // crash-staleness rule or the graph-driver diagnostic.
             capture: match mode {
                 CaptureMode::StreamSink => sink_node.clone(),
-                _ => format!("punktfunk-audio-{pid}-{seq}"),
+                _ => format!("rubyfunk-audio-{pid}-{seq}"),
             },
             sink: mode.owns_sink().then_some(sink_node),
             target,
@@ -276,7 +276,7 @@ impl PwAudioCapturer {
         // Stream-sink: the sink node exists before the default is claimed below. The thread
         // keeps no handle: it exits on Terminate.
         crate::ready::spawn_ready(
-            "punktfunk-pw-audio",
+            "rubyfunk-pw-audio",
             Duration::from_secs(5),
             move |ready| {
                 if let Err(e) = pw_thread(
@@ -419,7 +419,7 @@ fn null_sink_props(name: &str, channels: u32, rate_hz: u32) -> Vec<(&'static str
     vec![
         ("factory.name", "support.null-audio-sink".to_string()),
         ("node.name", name.to_string()),
-        ("node.description", "Punktfunk Stream Speaker".to_string()),
+        ("node.description", "RubyFunk Stream Speaker".to_string()),
         ("media.class", "Audio/Sink".to_string()),
         ("node.virtual", "true".to_string()),
         ("audio.rate", rate_hz.to_string()),
@@ -436,7 +436,7 @@ fn null_sink_props(name: &str, channels: u32, rate_hz: u32) -> Vec<(&'static str
     ]
 }
 
-/// Graph quantum every punktfunk PipeWire stream asks for, in frames:
+/// Graph quantum every rubyfunk PipeWire stream asks for, in frames:
 /// 240 @ 48 kHz = 5 ms, one protocol audio frame. Named so the `NODE_LATENCY`
 /// ask and the honoured-or-not check cannot drift.
 const CAPTURE_QUANTUM_FRAMES: u32 = 240;
@@ -686,19 +686,19 @@ fn create_null_sink(
     }
     let node = core
         .create_object::<pipewire::node::Node>("adapter", &props)
-        .context("create the punktfunk stream sink (support.null-audio-sink)")?;
+        .context("create the rubyfunk stream sink (support.null-audio-sink)")?;
     let listener = node
         .upcast_ref()
         .add_listener_local()
         .bound(|id| {
-            tracing::debug!(node_id = id, "punktfunk stream sink registered");
+            tracing::debug!(node_id = id, "rubyfunk stream sink registered");
         })
         .error(|_seq, res, message| {
             tracing::warn!(
                 res,
                 message,
-                "the punktfunk stream sink was not created — no desktop audio \
-                 capture until it is. Set PUNKTFUNK_STREAM_SINK=stream for the 0.30 \
+                "the rubyfunk stream sink was not created — no desktop audio \
+                 capture until it is. Set RUBYFUNK_STREAM_SINK=stream for the 0.30 \
                  topology (no created sink)"
             );
         })
@@ -795,7 +795,7 @@ fn capture_props(
             let mut p = properties! {
                 *pw::keys::MEDIA_TYPE       => "Audio",
                 *pw::keys::MEDIA_CLASS      => "Audio/Sink",
-                *pw::keys::NODE_DESCRIPTION => "Punktfunk Stream Speaker",
+                *pw::keys::NODE_DESCRIPTION => "RubyFunk Stream Speaker",
                 *pw::keys::NODE_VIRTUAL     => "true",
                 // Low on purpose, like the mic. Parked sink must not win
                 // auto default election; routing is the claim.
@@ -1035,7 +1035,7 @@ fn pw_thread(
             target.as_deref(),
             &node_latency,
         )?;
-        let stream = pw::stream::StreamBox::new(&core, "punktfunk-audio", props)
+        let stream = pw::stream::StreamBox::new(&core, "rubyfunk-audio", props)
             .context("pw audio Stream")?;
 
         let ud = CapUd::new(tx, channels, rate_hz, active, negotiated_rate);
@@ -1141,7 +1141,7 @@ fn pw_thread(
 
 /// Open a live capturer for system output. Default: host-owned stream sink claimed as
 /// the default, advertising `channels` so apps can produce real surround.
-/// `PUNKTFUNK_STREAM_SINK=0`: default-sink monitor, missing positions filled with
+/// `RUBYFUNK_STREAM_SINK=0`: default-sink monitor, missing positions filled with
 /// silence. `rate_hz` is a request; the grant is [`AudioCapturer::sample_rate`].
 pub(super) fn open_audio_capture(channels: u32, rate_hz: u32) -> Result<Box<dyn AudioCapturer>> {
     PwAudioCapturer::open(channels, rate_hz).map(|c| Box::new(c) as Box<dyn AudioCapturer>)
@@ -1165,13 +1165,13 @@ pub(super) fn per_session_sink_possible() -> bool {
     sink_capture_active()
 }
 
-/// PipeWire `Audio/Source`, the shared `punktfunk-mic`.
+/// PipeWire `Audio/Source`, the shared `rubyfunk-mic`.
 pub(super) fn open_virtual_mic(channels: u32) -> Result<Box<dyn VirtualMic>> {
     open_virtual_mic_named(channels, None)
 }
 
 /// [`open_virtual_mic`] pinned to a source `node.name` (`design/gamescope-multiuser.md`:
-/// `punktfunk-mic-{id}`, gamescope `PULSE_SOURCE`). `None` = shared `punktfunk-mic`.
+/// `rubyfunk-mic-{id}`, gamescope `PULSE_SOURCE`). `None` = shared `rubyfunk-mic`.
 pub(super) fn open_virtual_mic_named(
     channels: u32,
     source: Option<&str>,
@@ -1188,7 +1188,7 @@ pub(super) fn wiring_snapshot() -> Option<super::wiring_plan::Wiring> {
 mod tests {
     use super::*;
 
-    /// Three spellings of `PUNKTFUNK_STREAM_SINK`; anything else is the default
+    /// Three spellings of `RUBYFUNK_STREAM_SINK`; anything else is the default
     /// so a typo in a debug lever cannot be why a session has no audio.
     #[test]
     fn capture_mode_grammar() {
@@ -1241,7 +1241,7 @@ mod tests {
     fn capture_props_per_mode() {
         pipewire::init();
         let get = |mode, sink, target| {
-            let p = capture_props(mode, sink, "punktfunk-capture-1", target, "240/48000").unwrap();
+            let p = capture_props(mode, sink, "rubyfunk-capture-1", target, "240/48000").unwrap();
             let keys = [
                 "node.name",
                 "target.object",
@@ -1253,19 +1253,19 @@ mod tests {
         };
         let s = |v: &str| Some(v.to_owned());
         assert_eq!(
-            get(CaptureMode::NullSink, Some("punktfunk-speaker-1"), None),
+            get(CaptureMode::NullSink, Some("rubyfunk-speaker-1"), None),
             [
-                s("punktfunk-capture-1"),
-                s("punktfunk-speaker-1"),
+                s("rubyfunk-capture-1"),
+                s("rubyfunk-speaker-1"),
                 s("240/48000"),
                 s("true"),
                 None
             ]
         );
         assert_eq!(
-            get(CaptureMode::StreamSink, Some("punktfunk-speaker-1"), None),
+            get(CaptureMode::StreamSink, Some("rubyfunk-speaker-1"), None),
             [
-                s("punktfunk-speaker-1"),
+                s("rubyfunk-speaker-1"),
                 None,
                 s("240/48000"),
                 None,
@@ -1273,10 +1273,10 @@ mod tests {
             ]
         );
         assert_eq!(
-            get(CaptureMode::Monitor, None, Some("punktfunk-speaker-2")),
+            get(CaptureMode::Monitor, None, Some("rubyfunk-speaker-2")),
             [
-                s("punktfunk-capture-1"),
-                s("punktfunk-speaker-2"),
+                s("rubyfunk-capture-1"),
+                s("rubyfunk-speaker-2"),
                 s("240/48000"),
                 None,
                 None
@@ -1288,7 +1288,7 @@ mod tests {
     /// Created-sink invariants. None fail loudly if they silently change.
     #[test]
     fn null_sink_props_hold_their_invariants() {
-        let props = null_sink_props("punktfunk-speaker-42-0", 6, 48_000);
+        let props = null_sink_props("rubyfunk-speaker-42-0", 6, 48_000);
         let get = |k: &str| {
             props
                 .iter()
@@ -1297,7 +1297,7 @@ mod tests {
         };
         assert_eq!(get("factory.name"), Some("support.null-audio-sink"));
         assert_eq!(get("media.class"), Some("Audio/Sink"));
-        assert_eq!(get("node.name"), Some("punktfunk-speaker-42-0"));
+        assert_eq!(get("node.name"), Some("rubyfunk-speaker-42-0"));
         assert!(
             get("node.name").is_some_and(|n| n.starts_with(stream_sink::SINK_NAME_PREFIX)),
             "the claim's staleness rule matches this prefix"
@@ -1314,7 +1314,7 @@ mod tests {
         assert_eq!(get("object.linger"), None);
         assert_eq!(get("priority.driver"), None);
         // Quantum is a latency, so it scales with the rate (5 ms either way).
-        let hi = null_sink_props("punktfunk-speaker-42-1", 2, 96_000);
+        let hi = null_sink_props("rubyfunk-speaker-42-1", 2, 96_000);
         let hi_get = |k: &str| {
             hi.iter()
                 .find(|(key, _)| *key == k)

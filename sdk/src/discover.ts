@@ -31,7 +31,7 @@ export const discoverUnits = (
 	const modules = path.join(pluginsDir, "node_modules");
 	// The packages the operator actually installed — `bun add` records them as the plugins dir's
 	// own `dependencies`. This is what separates a plugin from a plugin's LIBRARY:
-	// `@punktfunk/plugin-kit` matches the `plugin-*` naming convention exactly but arrives as a
+	// `@rubyfunk/plugin-kit` matches the `plugin-*` naming convention exactly but arrives as a
 	// transitive dependency of every kit-built plugin, and running it as a unit is nonsense.
 	// `undefined` only when there is no readable `package.json` at all — a hand-assembled tree then
 	// falls back to the naming convention rather than discovering nothing. A package.json with no
@@ -70,16 +70,16 @@ export const discoverUnits = (
 	};
 	try {
 		for (const pkg of fs.readdirSync(modules).sort()) {
-			// Unscoped convention: `punktfunk-plugin-*`.
-			if (pkg.startsWith("punktfunk-plugin-")) {
+			// Unscoped convention: `rubyfunk-plugin-*`.
+			if (pkg.startsWith("rubyfunk-plugin-")) {
 				addPlugin(path.join(modules, pkg), pkg);
 				continue;
 			}
 			// Scoped convention: `<any scope>/plugin-*`. A scoped name resolves cleanly from a
-			// registry scope-map, so a plugin can depend on `@punktfunk/host` + `effect` as shared
+			// registry scope-map, so a plugin can depend on `@rubyfunk/host` + `effect` as shared
 			// (hoisted) deps rather than bundling its own copy of each.
 			//
-			// ANY scope, not just `@punktfunk`: the plugin store requires catalog entries to be
+			// ANY scope, not just `@rubyfunk`: the plugin store requires catalog entries to be
 			// scoped precisely so the scope can map to that entry's registry, so a third-party
 			// plugin necessarily arrives as `@their-scope/plugin-*`. Limiting discovery to the
 			// first-party scope would let such a plugin install and then never run.

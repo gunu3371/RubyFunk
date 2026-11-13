@@ -178,11 +178,11 @@ const WHITE: Color4f = Color4f::new(1.0, 1.0, 1.0, 1.0);
 /// Dark look, and the fallback before any palette is applied.
 const DARK_INK: Ink = Ink {
     fg: WHITE,
-    // Brand violet, dark-appearance `#8678F5`.
-    accent: Color4f::new(0.525, 0.471, 0.961, 1.0),
+    // Pink stays legible on the dark fallback field.
+    accent: Color4f::new(1.0, 0.278431, 0.482353, 1.0),
     glass: Color4f::new(0.086, 0.086, 0.125, 0.62),
     glass_low: Color4f::new(0.086, 0.086, 0.125, 0.62),
-    face: [BLACK, Color4f::new(0.525, 0.471, 0.961, 1.0)],
+    face: [BLACK, Color4f::new(1.0, 0.278431, 0.482353, 1.0)],
     shadow: 1.0,
     scrim: BLACK,
 };
@@ -1015,12 +1015,11 @@ mod tests {
     fn embedded_fonts_load() {
         let fonts = build_fonts().expect("Geist faces load");
         for w in [W::Regular, W::Medium, W::SemiBold, W::Bold] {
-            assert!(fonts.measure("Punktfunk", w, 16.0) > 0.0);
+            assert!(fonts.measure("RubyFunk", w, 16.0) > 0.0);
         }
         // Heavier faces are wider at the same size: four distinct faces, not one reused.
         assert!(
-            fonts.measure("Punktfunk", W::Bold, 16.0)
-                > fonts.measure("Punktfunk", W::Regular, 16.0)
+            fonts.measure("RubyFunk", W::Bold, 16.0) > fonts.measure("RubyFunk", W::Regular, 16.0)
         );
     }
 

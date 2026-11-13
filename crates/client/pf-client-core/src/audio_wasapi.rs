@@ -12,7 +12,7 @@
 //! Depth policy is shared `JitterPolicy` (`JitterTuning::WASAPI`).
 
 use anyhow::{anyhow, Context, Result};
-use punktfunk_core::client::NativeClient;
+use rubyfunk_core::client::NativeClient;
 use std::collections::VecDeque;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{Receiver, SyncSender, TrySendError};
@@ -30,8 +30,8 @@ const SAMPLE_RATE: usize = 48_000;
 const CAPT_CHANNELS: usize = 2;
 
 /// Named once so the decode thread and the render loop share the same de-prime fuse.
-pub(crate) const TUNING: punktfunk_core::audio::JitterTuning =
-    punktfunk_core::audio::JitterTuning::WASAPI;
+pub(crate) const TUNING: rubyfunk_core::audio::JitterTuning =
+    rubyfunk_core::audio::JitterTuning::WASAPI;
 
 #[derive(Clone, Debug)]
 pub struct AudioDevice {
@@ -164,7 +164,7 @@ fn render_engine_rate_hz() -> Option<u32> {
             // The endpoint the render thread will pick, not the default — a USB DAC and the
             // system default routinely run at different rates.
             let device =
-                pick_device(&enumerator, &Direction::Render, "PUNKTFUNK_AUDIO_SINK").ok()?;
+                pick_device(&enumerator, &Direction::Render, "RUBYFUNK_AUDIO_SINK").ok()?;
             let client = device.get_iaudioclient().ok()?;
             client.get_mixformat().ok().map(|f| f.get_samplespersec())
         })
@@ -212,17 +212,17 @@ pub struct AudioPlayer {
     recycle_rx: Receiver<Vec<f32>>,
     stop: Arc<AtomicBool>,
     thread: Option<std::thread::JoinHandle<()>>,
-    sync: Arc<punktfunk_core::audio::AudioSyncCell>,
+    sync: Arc<rubyfunk_core::audio::AudioSyncCell>,
     vitals: Arc<crate::audio_vitals::PlaybackVitals>,
 }
 
 impl AudioPlayer {
     /// Failure (no render endpoint) is survivable — the caller streams video-only. `policy` is
-    /// the session's ([`punktfunk_core::audio::AudioPlayout::jitter`]); the render thread owns
+    /// the session's ([`rubyfunk_core::audio::AudioPlayout::jitter`]); the render thread owns
     /// it from here.
     pub fn spawn(
         fmt: PlaybackFormat,
-        policy: punktfunk_core::audio::JitterPolicy,
+        policy: rubyfunk_core::audio::JitterPolicy,
     ) -> Result<AudioPlayer> {
         // 64 chunks of slack — 320 ms at Opus 5 ms, 128 ms at lossless 2 ms. A chunk COUNT,
         // not scaled to the negotiated frame, matching core's `AUDIO_QUEUE`.
@@ -232,12 +232,12 @@ impl AudioPlayer {
         let stop = Arc::new(AtomicBool::new(false));
         let (ready_tx, ready_rx) = std::sync::mpsc::sync_channel::<Result<Option<u32>>>(1);
         let stop_t = stop.clone();
-        let sync: Arc<punktfunk_core::audio::AudioSyncCell> = Arc::default();
+        let sync: Arc<rubyfunk_core::audio::AudioSyncCell> = Arc::default();
         let sync_t = sync.clone();
         let vitals: Arc<crate::audio_vitals::PlaybackVitals> = Arc::default();
         let vitals_t = vitals.clone();
         let thread = std::thread::Builder::new()
-            .name("punktfunk-audio".into())
+            .name("rubyfunk-audio".into())
             .spawn(move || {
                 if let Err(e) = render_thread(
                     pcm_rx, recycle_tx, stop_t, ready_tx, fmt, policy, sync_t, vitals_t,
@@ -280,7 +280,7 @@ impl AudioPlayer {
         self.recycle_rx.try_recv().unwrap_or_default()
     }
 
-    pub fn sync_cell(&self) -> Arc<punktfunk_core::audio::AudioSyncCell> {
+    pub fn sync_cell(&self) -> Arc<rubyfunk_core::audio::AudioSyncCell> {
         self.sync.clone()
     }
 
@@ -345,8 +345,8 @@ fn render_thread(
     stop: Arc<AtomicBool>,
     ready: SyncSender<Result<Option<u32>>>,
     fmt: PlaybackFormat,
-    mut policy: punktfunk_core::audio::JitterPolicy,
-    sync: Arc<punktfunk_core::audio::AudioSyncCell>,
+    mut policy: rubyfunk_core::audio::JitterPolicy,
+    sync: Arc<rubyfunk_core::audio::AudioSyncCell>,
     vitals: Arc<crate::audio_vitals::PlaybackVitals>,
 ) -> Result<()> {
     if let Err(e) = wasapi::initialize_mta()
@@ -420,8 +420,8 @@ fn sleep_unless_stopped(stop: &AtomicBool, total: Duration) {
 /// Open and start a shared-mode render stream at the session's format.
 fn open_render(fmt: PlaybackFormat, channels: u8) -> Result<Endpoint> {
     let enumerator = DeviceEnumerator::new().context("DeviceEnumerator")?;
-    let follows_default = std::env::var("PUNKTFUNK_AUDIO_SINK").map_or(true, |v| v.is_empty());
-    let device = pick_device(&enumerator, &Direction::Render, "PUNKTFUNK_AUDIO_SINK")
+    let follows_default = std::env::var("RUBYFUNK_AUDIO_SINK").map_or(true, |v| v.is_empty());
+    let device = pick_device(&enumerator, &Direction::Render, "RUBYFUNK_AUDIO_SINK")
         .context("render endpoint")?;
     let name = device.get_friendlyname().unwrap_or_default();
     let mut audio_client = device.get_iaudioclient().context("IAudioClient")?;
@@ -460,7 +460,7 @@ fn open_render(fmt: PlaybackFormat, channels: u8) -> Result<Endpoint> {
         &SampleType::Float,
         fmt.rate_hz as usize,
         channels as usize,
-        Some(punktfunk_core::audio::wasapi_channel_mask(channels)),
+        Some(rubyfunk_core::audio::wasapi_channel_mask(channels)),
     );
     let (default_period, _min_period) =
         audio_client.get_device_period().context("device period")?;
@@ -494,10 +494,10 @@ fn play(
     pcm_rx: &Receiver<Vec<f32>>,
     recycle_tx: &SyncSender<Vec<f32>>,
     stop: &AtomicBool,
-    sync: &punktfunk_core::audio::AudioSyncCell,
+    sync: &rubyfunk_core::audio::AudioSyncCell,
     vitals: &crate::audio_vitals::PlaybackVitals,
     ring: &mut VecDeque<f32>,
-    policy: &mut punktfunk_core::audio::JitterPolicy,
+    policy: &mut rubyfunk_core::audio::JitterPolicy,
     fmt: PlaybackFormat,
 ) -> Result<Played> {
     let channels = fmt.channels.clamp(1, 8) as usize;
@@ -559,11 +559,11 @@ fn play(
 
         let step = policy.step(ring.len(), want);
         if step.drop_front > 0 {
-            punktfunk_core::audio::crossfade_drop(ring, step.drop_front, step.crossfade);
+            rubyfunk_core::audio::crossfade_drop(ring, step.drop_front, step.crossfade);
         }
         // Deeper-ring request: duplicate one crossfaded frame, do not de-prime.
         if step.insert_front > 0 {
-            punktfunk_core::audio::crossfade_insert(ring, step.insert_front, step.crossfade);
+            rubyfunk_core::audio::crossfade_insert(ring, step.insert_front, step.crossfade);
         }
 
         out.clear();
@@ -603,7 +603,7 @@ pub struct MicStreamer {
 impl MicStreamer {
     /// `muted` is live with the capture loop (B4): keep reading, send nothing. Do not stop
     /// the `IAudioClient` — stop/start re-primes buffers and re-runs category negotiation.
-    /// `echo_cancel` is the Settings toggle; `PUNKTFUNK_NO_AEC=1` overrides it off.
+    /// `echo_cancel` is the Settings toggle; `RUBYFUNK_NO_AEC=1` overrides it off.
     pub fn spawn(
         connector: Arc<NativeClient>,
         muted: Arc<AtomicBool>,
@@ -612,7 +612,7 @@ impl MicStreamer {
         let stop = Arc::new(AtomicBool::new(false));
         let stop_t = stop.clone();
         let thread = std::thread::Builder::new()
-            .name("punktfunk-mic".into())
+            .name("rubyfunk-mic".into())
             .spawn(move || {
                 if let Err(e) = mic_thread(&connector, stop_t, muted, echo_cancel) {
                     tracing::warn!(error = %format!("{e:#}"), "mic uplink thread ended");
@@ -635,11 +635,11 @@ impl Drop for MicStreamer {
     }
 }
 
-/// Settings toggle with `PUNKTFUNK_NO_AEC=1` as a one-way override off. The hook is the
+/// Settings toggle with `RUBYFUNK_NO_AEC=1` as a one-way override off. The hook is the
 /// Communications stream category; the PipeWire twin gates its echo-cancelled source the
 /// same way.
 fn aec_enabled(echo_cancel: bool) -> bool {
-    echo_cancel && crate::env_on("PUNKTFUNK_NO_AEC") != Some(true)
+    echo_cancel && crate::env_on("RUBYFUNK_NO_AEC") != Some(true)
 }
 
 fn mic_thread(
@@ -654,11 +654,11 @@ fn mic_thread(
     crate::audio_rt::boost_and_log("wasapi-mic");
 
     // Each event drains the bounded endpoint buffer, so no backlog builds to self-heal.
-    let mut mic = punktfunk_core::audio::mic::MicEncoder::new(false)
+    let mut mic = rubyfunk_core::audio::mic::MicEncoder::new(false)
         .map_err(|e| anyhow!("opus encoder: {e}"))?;
 
     let enumerator = DeviceEnumerator::new().context("DeviceEnumerator")?;
-    let device = pick_device(&enumerator, &Direction::Capture, "PUNKTFUNK_AUDIO_SOURCE")
+    let device = pick_device(&enumerator, &Direction::Capture, "RUBYFUNK_AUDIO_SOURCE")
         .context("capture endpoint (no microphone?)")?;
     let mut audio_client = device.get_iaudioclient().context("IAudioClient")?;
     // Communications category is the only way a driver/APO echo canceller engages.

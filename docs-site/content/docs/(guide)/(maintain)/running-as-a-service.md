@@ -8,22 +8,22 @@ box.
 
 ## What the unit starts
 
-The service runs `punktfunk-host serve`: the Punktfunk plane (`punktfunk/2`) and the management
+The service runs `rubyfunk-host serve`: the RubyFunk plane (`punktfunk/2`) and the management
 API. Two more planes stay off until you turn them on under **Host** in the
-[web console](/docs/web-console), or in `~/.config/punktfunk/host.env`:
+[web console](/docs/web-console), or in `~/.config/rubyfunk/host.env`:
 
 | Plane | Setting | `host.env` | Firewall |
 |---|---|---|---|
-| Stock [Moonlight](/docs/moonlight) (GameStream) | **GameStream** | `PUNKTFUNK_GAMESTREAM=1` | open the `punktfunk-gamestream` service |
-| Browser client (preview) | **Browser streaming** | `PUNKTFUNK_WEBTRANSPORT=1` | UDP 9778, in `punktfunk-native` (`PUNKTFUNK_WEBTRANSPORT_PORT` moves it) |
+| Stock [Moonlight](/docs/moonlight) (GameStream) | **GameStream** | `RUBYFUNK_GAMESTREAM=1` | open the `rubyfunk-gamestream` service |
+| Browser client (preview) | **Browser streaming** | `RUBYFUNK_WEBTRANSPORT=1` | UDP 9778, in `rubyfunk-native` (`RUBYFUNK_WEBTRANSPORT_PORT` moves it) |
 
 Both take effect after a host restart. GameStream pairs over plain HTTP with weaker encryption, so
 turn it on only on a LAN you trust ([Security](/docs/security)).
-`systemctl --user cat punktfunk-host` shows the unit in effect, drop-ins included.
+`systemctl --user cat rubyfunk-host` shows the unit in effect, drop-ins included.
 
 ### The browser client (preview)
 
-Set it up with [Browser Client](/docs/browser-client). `PUNKTFUNK_WEBTRANSPORT_BIND` keeps the
+Set it up with [Browser Client](/docs/browser-client). `RUBYFUNK_WEBTRANSPORT_BIND` keeps the
 plane on one interface.
 
 ## A desktop you log into [#a-a-desktop-you-log-into]
@@ -32,13 +32,13 @@ The packages ship a systemd user unit. Enable it once and the host starts at eve
 
 ```sh
 systemctl --user daemon-reload             # needed on the Bazzite sysext, harmless elsewhere
-systemctl --user enable --now punktfunk-host
-systemctl --user status punktfunk-host
+systemctl --user enable --now rubyfunk-host
+systemctl --user status rubyfunk-host
 ```
 
 The host finds your live session by itself, so it needs no `host.env` and no
 `systemctl --user import-environment`. For settings, use the console or copy a template to
-`~/.config/punktfunk/host.env` — they are in `/usr/share/punktfunk/` (`/usr/share/punktfunk-host/`
+`~/.config/rubyfunk/host.env` — they are in `/usr/share/rubyfunk/` (`/usr/share/rubyfunk-host/`
 on Ubuntu); every knob is in [Configuration](/docs/configuration). A line in `host.env` locks
 that setting in the console until you delete it. Built from source?
 [Build from source](/docs/developers/build-from-source) installs the unit.
@@ -49,22 +49,22 @@ Without this drop-in, restarting Plasma or GNOME (a crash, logging out and back 
 answering but failing every session at capture. The drop-in makes a desktop restart a host restart:
 
 ```sh
-mkdir -p ~/.config/systemd/user/punktfunk-host.service.d
-# /usr/share/punktfunk-host/ on Ubuntu
-cp /usr/share/punktfunk/punktfunk-host-desktop-session.conf \
-   ~/.config/systemd/user/punktfunk-host.service.d/desktop-session.conf
+mkdir -p ~/.config/systemd/user/rubyfunk-host.service.d
+# /usr/share/rubyfunk-host/ on Ubuntu
+cp /usr/share/rubyfunk/rubyfunk-host-desktop-session.conf \
+   ~/.config/systemd/user/rubyfunk-host.service.d/desktop-session.conf
 systemctl --user daemon-reload
-systemctl --user reenable punktfunk-host
-systemctl --user restart punktfunk-host
+systemctl --user reenable rubyfunk-host
+systemctl --user restart rubyfunk-host
 ```
 
-On NixOS set `services.punktfunk.host.desktopSession = true;` instead.
+On NixOS set `services.rubyfunk.host.desktopSession = true;` instead.
 
 Skip it on a headless box (below). Sway and Hyprland never reach systemd's
 `graphical-session.target`, so the drop-in does nothing there: leave the unit disabled and start the
 host from the compositor config —
-`exec systemctl --user start punktfunk-host` (sway) or
-`exec-once = systemctl --user start punktfunk-host` (Hyprland). `niri-session` and `start-umbriel`
+`exec systemctl --user start rubyfunk-host` (sway) or
+`exec-once = systemctl --user start rubyfunk-host` (Hyprland). `niri-session` and `start-umbriel`
 do reach it, so the drop-in works under [niri](/docs/niri) and [Umbriel](/docs/umbriel).
 
 ## A headless, always-on host
@@ -87,20 +87,20 @@ that comes up at boot.
 
 ## Windows
 
-The installer registers the host as the **`PunktfunkHost`** service: `LocalSystem`, started at
+The installer registers the host as the **`RubyFunkHost`** service: `LocalSystem`, started at
 boot, so it captures the lock screen and UAC prompts with nobody logged in. Keep a host with that
 much reach on a network you trust ([Security](/docs/security)).
 
 Manage it from an elevated prompt:
 
 ```powershell
-punktfunk-host service status
-punktfunk-host service restart
+rubyfunk-host service status
+rubyfunk-host service restart
 ```
 
 Every `service` subcommand is in [Host CLI](/docs/host-cli#service-windows). The planes in
 [What the unit starts](#what-the-unit-starts) work the same way; `host.env` is
-`%ProgramData%\punktfunk\host.env`. The installer opens the firewall on Private and Domain networks
+`%ProgramData%\rubyfunk\host.env`. The installer opens the firewall on Private and Domain networks
 only; a LAN Windows calls Public needs [one more step](/docs/troubleshooting#windows-firewall).
 
 ## Verifying
@@ -108,22 +108,22 @@ only; a LAN Windows calls Public needs [one more step](/docs/troubleshooting#win
 After a reboot, from another machine:
 
 ```sh
-punktfunk reachable 192.168.1.50   # exit 0 = the host answered, 2 = it didn't
-punktfunk hosts list --probe       # every saved host, online or offline
+rubyfunk reachable 192.168.1.50   # exit 0 = the host answered, 2 = it didn't
+rubyfunk hosts list --probe       # every saved host, online or offline
 ```
 
-`punktfunk` ships with the Linux client packages and the Windows client. Any client that lists the
-host works too. No answer? Read `journalctl --user -u punktfunk-host` on the host, or
-`punktfunk-host service status` on Windows.
+`rubyfunk` ships with the Linux client packages and the Windows client. Any client that lists the
+host works too. No answer? Read `journalctl --user -u rubyfunk-host` on the host, or
+`rubyfunk-host service status` on Windows.
 
 ## GPU scheduling priority
 
 [PyroWave](/docs/pyrowave) encodes on the same GPU cores as your game, and on NVIDIA the host
 converts every frame there before the video engine encodes it. So the host asks the driver to run
 that work first. The request needs `CAP_SYS_NICE`, which every Linux install grants to a small
-helper, `punktfunk-encode-worker` — never to `punktfunk-host`.
+helper, `rubyfunk-encode-worker` — never to `rubyfunk-host`.
 
-**Never give `punktfunk-host` a capability** — not with `setcap`, a systemd `AmbientCapabilities=`
+**Never give `rubyfunk-host` a capability** — not with `setcap`, a systemd `AmbientCapabilities=`
 line or a NixOS `security.wrappers` entry. KWin can't identify a host that holds one, and every KDE
 session fails at capture with:
 
@@ -134,27 +134,27 @@ KWin does not expose zkde_screencast_unstable_v1 to this client
 Check both binaries:
 
 ```sh
-getcap /usr/bin/punktfunk-host              # should print nothing
-getcap /usr/bin/punktfunk-encode-worker     # /usr/bin/punktfunk-encode-worker cap_sys_nice=ep
-sudo setcap -r /usr/bin/punktfunk-host      # clears it; then restart the host
+getcap /usr/bin/rubyfunk-host              # should print nothing
+getcap /usr/bin/rubyfunk-encode-worker     # /usr/bin/rubyfunk-encode-worker cap_sys_nice=ep
+sudo setcap -r /usr/bin/rubyfunk-host      # clears it; then restart the host
 ```
 
-On the Bazzite image `/usr` is read-only: run `sudo punktfunk-sysext update` instead. On NixOS the
+On the Bazzite image `/usr` is read-only: run `sudo rubyfunk-sysext update` instead. On NixOS the
 module wraps the worker for you.
 
 Without the grant the stream still runs, at normal priority, but a GPU-bound game adds milliseconds
-to every frame. The host log then says `VkBridge queue at default GPU priority`. `PYROWAVE_QUEUE_PRIORITY=off` and `PUNKTFUNK_ENCODE_WORKER=off` are the opt-outs —
+to every frame. The host log then says `VkBridge queue at default GPU priority`. `PYROWAVE_QUEUE_PRIORITY=off` and `RUBYFUNK_ENCODE_WORKER=off` are the opt-outs —
 [Configuration](/docs/configuration#advanced-performance-tuning).
 
 ## Stopping and removing
 
 ```sh
-systemctl --user stop punktfunk-host        # Linux, until next login
-systemctl --user disable --now punktfunk-host
-punktfunk-host service stop                 # Windows, elevated
+systemctl --user stop rubyfunk-host        # Linux, until next login
+systemctl --user disable --now rubyfunk-host
+rubyfunk-host service stop                 # Windows, elevated
 ```
 
-`punktfunk-host service uninstall` removes the Windows service and its firewall rules; the rest of
+`rubyfunk-host service uninstall` removes the Windows service and its firewall rules; the rest of
 the install goes through **Settings → Apps**. A Linux package update restarts the running service
 for you — [Updating](/docs/updating#restart-after-a-linux-package-update). Your config
 and pairings survive all of this; [Uninstall](/docs/uninstall) clears them.

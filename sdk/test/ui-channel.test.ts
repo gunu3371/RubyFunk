@@ -23,11 +23,11 @@ beforeAll(async () => {
 			if (split < 0) return;
 			socket.off("data", onHead);
 			const text = head.subarray(0, split).toString("latin1");
-			if (!text.startsWith("GET /api/v1/plugins/demo/ui/attach ") || !/upgrade: punktfunk-ui/i.test(text)) {
+			if (!text.startsWith("GET /api/v1/plugins/demo/ui/attach ") || !/upgrade: rubyfunk-ui/i.test(text)) {
 				socket.end("HTTP/1.1 400 Bad Request\r\ncontent-length: 0\r\n\r\n");
 				return;
 			}
-			socket.write("HTTP/1.1 101 Switching Protocols\r\nConnection: upgrade\r\nUpgrade: punktfunk-ui\r\n\r\n");
+			socket.write("HTTP/1.1 101 Switching Protocols\r\nConnection: upgrade\r\nUpgrade: rubyfunk-ui\r\n\r\n");
 			parked.push(socket);
 		};
 		socket.on("data", onHead);
@@ -73,7 +73,7 @@ const down = (socket: net.Socket, method: string, pathname: string, body = "") =
 			resolve({ status, text });
 		});
 		socket.write(
-			`${method} ${pathname} HTTP/1.1\r\nhost: punktfunk.plugin\r\nauthorization: Bearer s3cret\r\n` +
+			`${method} ${pathname} HTTP/1.1\r\nhost: rubyfunk.plugin\r\nauthorization: Bearer s3cret\r\n` +
 				`content-length: ${Buffer.byteLength(body)}\r\nconnection: close\r\n\r\n${body}`,
 		);
 	});

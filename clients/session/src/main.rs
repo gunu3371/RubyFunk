@@ -1,11 +1,11 @@
-//! `punktfunk-session` — the Vulkan session binary (punktfunk-planning
+//! `rubyfunk-session` — the Vulkan session binary (rubyfunk-planning
 //! `linux-client-rearchitecture.md`, Phase 1: the software-path presenter MVP, which IS
 //! the power-user CLI build).
 //!
 //! One stream session per invocation: `--connect host[:port]` (+ `--fp HEX`,
 //! `--launch id`, `--as profile`, `--fullscreen`), exits when the session ends. Reads the same identity
 //! / known-hosts / settings stores as the desktop shell on each OS — the GTK client
-//! (`punktfunk-client`) on Linux, the WinUI client on Windows — so pairing on either side
+//! (`rubyfunk-client`) on Linux, the WinUI client on Windows — so pairing on either side
 //! makes the other connect silently. `--pair - --connect host` runs the ceremony here,
 //! with no window and no toolkit, for machines that have only a shell.
 //!
@@ -29,7 +29,7 @@ mod console;
 /// host" buttons; see `GamepadService::tap_guide`). Plain text, no JSON: `<verb>\n` in,
 /// `ok\n` / `err\n` back.
 ///
-/// The path is `$XDG_RUNTIME_DIR/punktfunk-session-ctl.sock` — inside the flatpak app
+/// The path is `$XDG_RUNTIME_DIR/rubyfunk-session-ctl.sock` — inside the flatpak app
 /// runtime dir (`…/app/$FLATPAK_ID/`) when sandboxed, the ONE runtime path a flatpak and
 /// the host see identically, which is what lets the Decky backend (outside the sandbox)
 /// reach a flatpak-run session.
@@ -46,7 +46,7 @@ mod ctl_socket {
             p.push("app");
             p.push(id);
         }
-        Some(p.join("punktfunk-session-ctl.sock"))
+        Some(p.join("rubyfunk-session-ctl.sock"))
     }
 
     /// Bind + serve on a background thread, once per process (later calls no-op). Any
@@ -130,7 +130,7 @@ mod session_main {
     use pf_client_core::orchestrate::{self, emit, exit, ResolvedSpec, SessionLine};
     use pf_client_core::session::{Dial, Probes, SessionParams};
     use pf_client_core::trust;
-    use punktfunk_core::config::{GamepadPref, Mode};
+    use rubyfunk_core::config::{GamepadPref, Mode};
     use std::sync::atomic::AtomicBool;
     use std::sync::Arc;
     use std::time::Duration;
@@ -200,7 +200,7 @@ mod session_main {
     /// same known-hosts store `--connect` reads, so pairing here is exactly what makes the
     /// later stream connect silently.
     ///
-    /// Prints the same `paired {addr}:{port} fp=…` line as `punktfunk pair`; provisioning
+    /// Prints the same `paired {addr}:{port} fp=…` line as `rubyfunk pair`; provisioning
     /// scripts read it. Present in the `--no-default-features` build too: enrolment must not
     /// be the reason an embedded image has to pull in Skia.
     fn headless_pair(pin: &str) -> u8 {
@@ -248,7 +248,7 @@ mod session_main {
 
     /// `--preset <id|name>` — the preset this one session runs with, overriding the host's own
     /// binding for this launch only (never rebinding it): the shells' "Connect with ▸ X" and a
-    /// `punktfunk://…&preset=` link both land here. Absent = honor the host's binding;
+    /// `rubyfunk://…&preset=` link both land here. Absent = honor the host's binding;
     /// `--preset ""` (or a bare `--preset`) forces the global defaults, which is how "Connect
     /// with ▸ Default settings" reaches a bound host. `--profile` is the pre-rename spelling.
     /// `--as` takes a profile id or name; the wire takes the id, so a name is looked up in the
@@ -310,7 +310,7 @@ mod session_main {
         launch: Option<String>,
         gamepad: &GamepadService,
         native: Mode,
-        display_hdr: Option<punktfunk_core::quic::HdrMeta>,
+        display_hdr: Option<rubyfunk_core::quic::HdrMeta>,
         force_software: Arc<AtomicBool>,
         vulkan: Option<pf_client_core::video::VulkanDecodeDevice>,
     ) -> SessionParams {
@@ -355,7 +355,7 @@ mod session_main {
         launch: Option<String>,
         gamepad: &GamepadService,
         native: Mode,
-        display_hdr: Option<punktfunk_core::quic::HdrMeta>,
+        display_hdr: Option<rubyfunk_core::quic::HdrMeta>,
         force_software: Arc<AtomicBool>,
         vulkan: Option<pf_client_core::video::VulkanDecodeDevice>,
     ) -> SessionParams {
@@ -391,9 +391,9 @@ mod session_main {
             );
         }
         // Windows: HDR only when the selected output is presenting HDR.
-        // `PUNKTFUNK_CLIENT_PEAK_NITS` is the headless bypass.
+        // `RUBYFUNK_CLIENT_PEAK_NITS` is the headless bypass.
         #[cfg(windows)]
-        let display_hdr = punktfunk_core::client::display_hdr_env_override().or(display_hdr);
+        let display_hdr = rubyfunk_core::client::display_hdr_env_override().or(display_hdr);
         #[cfg(windows)]
         let output_hdr = display_hdr.is_some();
         #[cfg(not(windows))]
@@ -538,14 +538,14 @@ mod session_main {
                     println!("no Vulkan physical devices");
                 }
                 for (i, a) in adapters.iter().enumerate() {
-                    // The bracketed number is the PUNKTFUNK_VK_DEVICE value, and the
+                    // The bracketed number is the RUBYFUNK_VK_DEVICE value, and the
                     // FIRST listed entry is what
                     // a default run presents on — the decoder shares that device, so
                     // on a hybrid box this line is usually the answer.
                     let kind = if a.discrete { "discrete" } else { "integrated" };
                     let marked = i == 0 && backend == "vulkan";
                     // `a.index`, NOT the loop position: this list is sorted
-                    // discrete-first, while PUNKTFUNK_VK_DEVICE indexes the raw
+                    // discrete-first, while RUBYFUNK_VK_DEVICE indexes the raw
                     // enumeration, which puts the iGPU first on some hybrids. The
                     // `i == 0` marker stays the loop position — sorted-first is what
                     // `pick_device` lands on when nothing overrides it.
@@ -584,15 +584,15 @@ mod session_main {
                     // preference does not move the presenter.
                     println!();
                     println!(
-                        "Vulkan Video decodes on the presenter's device. PUNKTFUNK_DECODER \
+                        "Vulkan Video decodes on the presenter's device. RUBYFUNK_DECODER \
                          picks the rung,"
                     );
                     println!(
-                        "not the GPU — move the presenter with PUNKTFUNK_VK_DEVICE=<index \
+                        "not the GPU — move the presenter with RUBYFUNK_VK_DEVICE=<index \
                          above> or"
                     );
                     println!(
-                        "PUNKTFUNK_VK_ADAPTER=<name substring>, which is the safer knob \
+                        "RUBYFUNK_VK_ADAPTER=<name substring>, which is the safer knob \
                          where two"
                     );
                     println!("adapters share a name.");
@@ -612,7 +612,7 @@ mod session_main {
     /// presenter's device advertises no decode queue and `auto` falls to VAAPI, which
     /// chroma-fringes on VanGogh and is unverified on Intel. Every other driver ignores
     /// both, and a driver that already decodes by default no-ops. Appended, never
-    /// clobbered, so a user's own flags survive; `PUNKTFUNK_DECODER=native-vaapi` still
+    /// clobbered, so a user's own flags survive; `RUBYFUNK_DECODER=native-vaapi` still
     /// pins VAAPI.
     ///
     /// ⚠⚠ Called from the TOP of [`run`], ahead of the `--list-adapters` / `--probe-decode`
@@ -716,7 +716,7 @@ mod session_main {
     /// Passing the five conjuncts above only says Vulkan Video EXISTS on a device; this
     /// says whether the zero-copy pipeline can be BUILT on it — a different question
     /// with, on at least one shipping driver, a different answer. Verbatim on purpose:
-    /// the Intel Arc refusal was twice diagnosed from punktfunk's own error text and
+    /// the Intel Arc refusal was twice diagnosed from rubyfunk's own error text and
     /// twice the diagnosis was wrong, and what broke it open both times was reading what
     /// the driver actually said.
     fn print_video_formats(a: &pf_presenter::vk::AdapterDecode) {
@@ -776,7 +776,7 @@ mod session_main {
         );
         // SEH last-resort: a driver AV otherwise leaves only an exit code in the shell's log.
         #[cfg(windows)]
-        punktfunk_core::crash::install();
+        rubyfunk_core::crash::install();
         // Before any Vulkan instance: gamescope's WSI layer reads WAYLAND_DISPLAY once.
         #[cfg(target_os = "linux")]
         restart_on_gamescope();
@@ -843,7 +843,7 @@ mod session_main {
         if let Some(pin_arg) = arg_value("--pair") {
             if pin_arg != "-" {
                 eprintln!(
-                    "punktfunk-session pairing accepts only `--pair -`; prefer `punktfunk pair`"
+                    "rubyfunk-session pairing accepts only `--pair -`; prefer `rubyfunk pair`"
                 );
                 return exit::CONNECT_FAILED;
             }
@@ -870,9 +870,9 @@ mod session_main {
                 })
                 .map_or_else(trust::Settings::load, |spec| spec.settings);
             for (var, value) in [
-                ("PUNKTFUNK_VK_ADAPTER", &s.adapter),
-                ("PUNKTFUNK_AUDIO_SINK", &s.speaker_device),
-                ("PUNKTFUNK_AUDIO_SOURCE", &s.mic_device),
+                ("RUBYFUNK_VK_ADAPTER", &s.adapter),
+                ("RUBYFUNK_AUDIO_SINK", &s.speaker_device),
+                ("RUBYFUNK_AUDIO_SOURCE", &s.mic_device),
             ] {
                 if std::env::var_os(var).is_none() && !value.is_empty() {
                     // SAFETY: still the single-threaded startup stretch of `run()` — the
@@ -904,11 +904,11 @@ mod session_main {
         }
         let Some(target) = arg_value("--connect") else {
             eprintln!(
-                "usage: punktfunk-session --connect host[:port] [--fp HEX] [--launch id] [--preset REF] [--as PROFILE] [--fullscreen] [--all-screens]\n\
-                 \x20      punktfunk-session --browse [host[:port]] [--mgmt PORT] [--fullscreen] [--all-screens] [--json-status] [--until-no-controller]\n\
-                 \x20      punktfunk-session --pair - --connect host[:port] [--name LABEL]\n\
+                "usage: rubyfunk-session --connect host[:port] [--fp HEX] [--launch id] [--preset REF] [--as PROFILE] [--fullscreen] [--all-screens]\n\
+                 \x20      rubyfunk-session --browse [host[:port]] [--mgmt PORT] [--fullscreen] [--all-screens] [--json-status] [--until-no-controller]\n\
+                 \x20      rubyfunk-session --pair - --connect host[:port] [--name LABEL]\n\
                  \n\
-                 Streams from a paired punktfunk host in a Vulkan window. --browse opens the\n\
+                 Streams from a paired rubyfunk host in a Vulkan window. --browse opens the\n\
                  gamepad console instead: bare --browse is the host list (discovery, PIN\n\
                  pairing, settings, wake-on-LAN); with a target it opens that host's game\n\
                  library; --until-no-controller returns once the last controller is gone\n\
@@ -1010,7 +1010,7 @@ mod session_main {
         let fullscreen = arg_flag("--fullscreen") || gaming_mode();
 
         let opts = pf_presenter::SessionOpts {
-            window_title: format!("Punktfunk · {title}"),
+            window_title: format!("RubyFunk · {title}"),
             fullscreen,
             window_pos: window_pos(),
             stats_verbosity: stats_tier(&settings),
@@ -1044,8 +1044,8 @@ mod session_main {
             // A spawned session (spec mode) reports its window; a hand-run one persists it.
             on_window_size: on_window_size(spec.is_none()),
             render_scale: settings.render_scale,
-            render_scale_max_dim: punktfunk_core::render_scale::max_dimension(&settings.codec),
-            video_fit: punktfunk_core::video_fit::VideoFit::from_name(&settings.video_fit),
+            render_scale_max_dim: rubyfunk_core::render_scale::max_dimension(&settings.codec),
+            video_fit: rubyfunk_core::video_fit::VideoFit::from_name(&settings.video_fit),
             until_no_pads: false,
         };
 
@@ -1205,7 +1205,7 @@ fn main() -> std::process::ExitCode {
 #[cfg(not(any(target_os = "linux", windows)))]
 fn main() {
     eprintln!(
-        "punktfunk-session runs on Linux and Windows — the macOS client lives in clients/apple"
+        "rubyfunk-session runs on Linux and Windows — the macOS client lives in clients/apple"
     );
     std::process::exit(2);
 }

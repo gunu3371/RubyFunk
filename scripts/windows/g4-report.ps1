@@ -14,7 +14,7 @@
 #>
 param(
   [string]$Tag = 'g4n',
-  [string]$HostLog = 'C:\ProgramData\punktfunk\logs\host.log',
+  [string]$HostLog = 'C:\ProgramData\rubyfunk\logs\host.log',
   # Where the soak's logs live. Point it at a copied-off directory to cut a run elsewhere.
   [string]$Root = 'C:\Users\Public',
   # Gaps this long or longer are criterion 1's subject (ms).
@@ -35,17 +35,17 @@ if ($SelfCheck) {
     '2026-09-03T10:04:00Z EVENT kind=run-end cycles=1 resizes=1 locks=1 sleep=False'
   ) | Set-Content (Join-Path $d "live-g4-sc.log")
   @(
-    '2026-09-03T10:00:01.0Z  INFO pf_capture::windows::idd_push::open: IDD push: PUNKTFUNK_IDD_DIAG is ON au_dump_dir=C:\Windows\Temp'
+    '2026-09-03T10:00:01.0Z  INFO pf_capture::windows::idd_push::open: IDD push: RUBYFUNK_IDD_DIAG is ON au_dump_dir=C:\Windows\Temp'
     # 790 ms hole right after the client came up: the startup artefact, must not be counted.
     '2026-09-03T10:00:06.0Z DEBUG pf_capture::windows::idd_push::stall: IDD-push capture stall - x gap_ms=790 verdict=compose-silence (dwm) etw=none etw_presents=0 etw_queue_adds=0 cursor_moved_px_during_gap=0 flow_dwm_only=true max_heartbeat_age_ms=4'
     # Ours: the drain heartbeat went stale for most of a 4 s hole.
     '2026-09-03T10:01:30.0Z DEBUG pf_capture::windows::idd_push::stall: IDD-push capture stall - x gap_ms=4000 verdict=driver-worker-stalled (heartbeat silent) etw=none etw_presents=12 etw_queue_adds=0 cursor_moved_px_during_gap=90 flow_dwm_only=false max_heartbeat_age_ms=3900'
     # Outside: DWM presented nothing and DxgKrnl brackets a display DDI.
     '2026-09-03T10:02:30.0Z DEBUG pf_capture::windows::idd_push::stall: IDD-push capture stall - x gap_ms=3000 verdict=compose-silence (the pool took no frame) etw=QueryChildStatus*2(max 900ms) etw_presents=0 etw_queue_adds=0 cursor_moved_px_during_gap=70 flow_dwm_only=false max_heartbeat_age_ms=6'
-    '2026-09-03T10:01:31.0Z  INFO punktfunk_host::native::control: pipeline rebuilt in place - telling the client the stream had a gap gap_ms=120'
+    '2026-09-03T10:01:31.0Z  INFO rubyfunk_host::native::control: pipeline rebuilt in place - telling the client the stream had a gap gap_ms=120'
     '2026-09-03T10:01:32.0Z  WARN pf_capture::windows::idd_push::health: IDD push: recovery stage stage=PresentationReset outcome=Applied'
     '2026-09-03T10:01:33.0Z  INFO pf_capture::windows::idd_push::health: IDD push: recovery episode closed outage_ms=900'
-    '2026-09-03T10:01:34.0Z  INFO punktfunk_host::bringup: session-transition trace kind=reassert-recover total_ms=556 stages=display_resized+423'
+    '2026-09-03T10:01:34.0Z  INFO rubyfunk_host::bringup: session-transition trace kind=reassert-recover total_ms=556 stages=display_resized+423'
   ) | Set-Content (Join-Path $d "hostsc.log")
   @(
     '{"t":"2026-09-03T10:00:02","ms":31,"http":200,"body":{"display":{"topology_generation":3,"pnp_leases":0}}}'
@@ -100,10 +100,10 @@ $hl = Get-Content $HostLog | ForEach-Object { $_ -replace "\x1b\[[0-9;]*m", "" }
 Emit "host.log lines in window: $(($hl | Measure-Object).Count)"
 
 # The ETW/probe leg is criterion 1's whole evidence base; a run without it cannot answer it.
-$diagOn = ($hl | Where-Object { $_ -match 'PUNKTFUNK_IDD_DIAG is ON' } | Measure-Object).Count
+$diagOn = ($hl | Where-Object { $_ -match 'RUBYFUNK_IDD_DIAG is ON' } | Measure-Object).Count
 $etwOff = ($hl | Where-Object { $_ -match 'DxgKrnl ETW session unavailable' } | Measure-Object).Count
 Emit "diagnostics: IDD_DIAG sessions=$diagOn etw_unavailable_warnings=$etwOff"
-if ($diagOn -eq 0) { Emit 'WARNING: no session ran with PUNKTFUNK_IDD_DIAG - criterion 1 cannot be attributed' }
+if ($diagOn -eq 0) { Emit 'WARNING: no session ran with RUBYFUNK_IDD_DIAG - criterion 1 cannot be attributed' }
 
 $stalls = $hl | Where-Object { $_ -match 'IDD-push capture stall' } | ForEach-Object {
   $etw = if ($_ -match 'etw=(.*?)\s+etw_presents=') { $Matches[1] } else { Field $_ 'etw' }

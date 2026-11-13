@@ -1,8 +1,8 @@
 <#
-  Persist the punktfunk Windows-host build environment (Machine scope, run once, elevated).
+  Persist the rubyfunk Windows-host build environment (Machine scope, run once, elevated).
 
   After this, deploy-host.ps1 needs only the VS toolchain (it loads vcvars64.bat itself).
-  These are BUILD-time vars; runtime config lives in C:\ProgramData\punktfunk\host.env.
+  These are BUILD-time vars; runtime config lives in C:\ProgramData\rubyfunk\host.env.
 
     powershell -ExecutionPolicy Bypass -File scripts\windows\setup-build-env.ps1
 #>

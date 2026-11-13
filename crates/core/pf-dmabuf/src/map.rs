@@ -93,7 +93,7 @@ mod tests {
     #[test]
     fn maps_a_prefix_in_either_mode() {
         for share in [Share::Shared, Share::Private] {
-            let f = memfd(b"punktfunk");
+            let f = memfd(b"rubyfunk");
             let map = ReadMap::new(f.as_fd(), 4, share).expect("map");
             drop(f);
             assert_eq!(map.bytes(), b"punk");

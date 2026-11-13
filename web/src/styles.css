@@ -9,21 +9,7 @@
    Tailwind 4 scan so their utilities aren't purged. */
 @source "../node_modules/@unom/ui/dist/**/*.{js,mjs}";
 
-/* ── Punktfunk brand · violet product chrome ────────────────────────────────
-   Two themes on one violet identity: LIGHT (lavender docs surface — the same
-   palette the design/Scalar reference uses: white bg, faint-violet cards/borders,
-   #6c5bf3 brand) is the :root default; DARK (the violet-tinted app-icon chrome
-   #141019 / #1c1530, #a79ff8 brand) is the `.dark` override. The live console
-   pins `<html class="dark">` so it stays dark by default — removing or toggling
-   that class (e.g. Storybook's theme switch) yields light. The token set feeds
-   BOTH @unom/ui's semantic contract (--brand/--primary/--accent/--neutral/
-   --main…) and the shadcn-style tokens the console's primitives + routes use
-   (--background/--card/--muted…), mapped onto one palette so both render the
-   same identity.
-
-   Brand constants and the surface tokens that are pure indirections
-   (--main, --neutral*, --error → other tokens) live in :root only — CSS resolves
-   var() per-theme at use time, so .dark overrides just the raw values. */
+/* RubyFunk defaults. Desktop and custom accent overrides follow below. */
 :root {
 	--radius: 0.625rem;
 
@@ -32,33 +18,33 @@
 	   always toward white is what left the wordmark at 1.13:1 in light mode. */
 	--pf-tint-end: black;
 	/* The console's own page colour, untinted. Surfaces are mixed from it toward the
-	   accent, which is what the literals below always were — with the violet baked in. */
+	   accent, which is what the literals below always were — with the ruby baked in. */
 	--pf-page: #ffffff;
 
-	/* Brand — the violet lens mark (from the Punktfunk app icon). Ordered by distance
+	/* Brand — the ruby lens mark (from the RubyFunk app icon). Ordered by distance
 	   from the page, not by lightness: --pf-highlight carries the wordmark. */
-	--pf-brand: #6c5bf3; /* deep violet — primary on light */
-	--pf-brand-light: color-mix(in oklab, #6c5bf3 55%, var(--pf-tint-end));
-	--pf-highlight: color-mix(in oklab, #6c5bf3 15%, var(--pf-tint-end));
-	--pf-glow: rgb(108 91 243 / 0.45); /* the lens mark's drop shadow */
+	--pf-brand: #c41242; /* ruby — primary on light */
+	--pf-brand-light: color-mix(in oklab, #c41242 55%, var(--pf-tint-end));
+	--pf-highlight: color-mix(in oklab, #c41242 15%, var(--pf-tint-end));
+	--pf-glow: rgb(196 18 66 / 0.45); /* the lens mark's drop shadow */
 
-	/* Surfaces — light · lavender (white bg, faint-violet cards/borders). */
+	/* Surfaces — light · rose (white bg, faint-rose cards/borders). */
 	--background: #ffffff;
-	--foreground: #1b1430;
-	--card: #f6f2ff;
-	--card-foreground: #1b1430;
+	--foreground: #2b1720;
+	--card: #fff5f8;
+	--card-foreground: #2b1720;
 	--popover: #ffffff;
-	--popover-foreground: #1b1430;
-	--muted: #f1ecfd;
-	--muted-foreground: #6f6a86;
-	--secondary: #ece6fb;
-	--secondary-foreground: #1b1430;
+	--popover-foreground: #2b1720;
+	--muted: #f8edf1;
+	--muted-foreground: #75636c;
+	--secondary: #f3e3ea;
+	--secondary-foreground: #2b1720;
 	/* shadcn `accent` = subtle hover surface; also @unom/ui's card ring colour,
-     so we tint it toward the brand violet (the same in both themes). */
+     so we tint it toward the brand ruby (the same in both themes). */
 	--accent: var(--pf-brand);
 	--accent-foreground: #ffffff;
-	--border: #e4dcf7;
-	--input: #e4dcf7;
+	--border: #e9ced8;
+	--input: #e9ced8;
 	--ring: var(--pf-brand);
 
 	/* Primary = the brand (buttons, active nav, default badges). */
@@ -92,32 +78,35 @@
 	--radius-card-min: var(--radius);
 }
 
-/* Dark · the violet-tinted app-icon chrome. Overrides only the raw values —
+/* Dark · the ruby-tinted app-icon chrome. Overrides only the raw values —
    the indirection tokens in :root resolve to these automatically. */
 .dark {
 	--pf-tint-end: white;
-	--pf-page: #141019;
+	--pf-page: #180d13;
 	/* Measured against the dark chrome; kept as literals so it does not drift. */
-	--pf-brand-light: #a79ff8;
-	--pf-highlight: #d2c9fb;
+	--pf-brand-light: #ff477b;
+	--brand: var(--pf-brand-light);
+	--accent-foreground: #180d13;
+	--accent: var(--pf-brand-light);
+	--pf-highlight: #ece8ec;
 
-	--background: #141019;
+	--background: #180d13;
 	--foreground: oklch(0.985 0 0);
-	--card: #1c1530;
+	--card: #210e18;
 	--card-foreground: oklch(0.985 0 0);
-	--popover: #1c1530;
+	--popover: #210e18;
 	--popover-foreground: oklch(0.985 0 0);
-	--muted: #1f1830;
-	--muted-foreground: oklch(0.728 0.03 286);
-	--secondary: #241c3d;
+	--muted: #29151f;
+	--muted-foreground: #c0aeb6;
+	--secondary: #331a26;
 	--secondary-foreground: oklch(0.985 0 0);
-	--border: #2a2148;
-	--input: #2a2148;
+	--border: #512637;
+	--input: #512637;
 	--ring: var(--pf-brand-light);
 
-	/* Lighter violet reads better against the dark surface. */
+	/* Pink reads better against the dark surface. */
 	--primary: var(--pf-brand-light);
-	--primary-foreground: #141019;
+	--primary-foreground: #180d13;
 
 	--success: oklch(0.7 0.15 160);
 	--warning: oklch(0.78 0.16 75);
@@ -168,9 +157,9 @@
 	--pf-highlight: color-mix(in oklab, var(--pf-accent) 15%, var(--pf-tint-end));
 	--pf-glow: color-mix(in oklab, var(--pf-accent) 45%, transparent);
 
-	/* Surfaces follow the accent too. They always were accent-tinted — #f6f2ff is 4%
-	   violet over white — the violet was just baked into the literal, so picking a red
-	   accent left every card and border violet. A desktop that publishes a real palette
+	/* Surfaces follow the accent too. They always were accent-tinted — #fff5f8 is 4%
+	   ruby over white — the ruby was just baked into the literal, so picking a red
+	   accent left every card and border ruby. A desktop that publishes a real palette
 	   overrides all of this: [data-omarchy] comes after.
 
 	   Toward the accent ITSELF, not the accent dulled toward the page's far end: the latter
@@ -189,7 +178,7 @@
 	/* NOT a wash of the accent. `--accent` is the card's ring as well as its hover
 	   surface, and the hover already dilutes it to 30% at the call site — so a token
 	   diluted here too left every unselected card with no visible outline. :root does
-	   the same thing with the brand violet, which is what this follows. */
+	   the same thing with the brand ruby, which is what this follows. */
 	--accent: var(--pf-accent);
 }
 

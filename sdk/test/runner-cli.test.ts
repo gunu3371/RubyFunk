@@ -1,4 +1,4 @@
-// The shipped entry point's idle contract: `punktfunk-scripting` with nothing to run must PARK,
+// The shipped entry point's idle contract: `rubyfunk-scripting` with nothing to run must PARK,
 // not spin. `Effect.runFork` registers nothing with the event loop (the keep-alive lives in
 // `Runtime.makeRunMain`, which runner-cli deliberately doesn't use), and a bun process whose only
 // pending work is an unresolved promise busy-loops instead of blocking — so in the runner's own
@@ -63,14 +63,14 @@ test.skipIf(process.platform !== "linux")(
 	"a plugin on a box with no bwrap ends the runner with the refusal status",
 	async () => {
 		const root = path.join(ROOT, "refused");
-		const pkg = path.join(root, "plugins", "node_modules", "punktfunk-plugin-demo");
+		const pkg = path.join(root, "plugins", "node_modules", "rubyfunk-plugin-demo");
 		for (const dir of [pkg, path.join(root, "scripts"), path.join(root, "no-bwrap")])
 			fs.mkdirSync(dir, { recursive: true });
 		const files = {
 			"package.json": JSON.stringify({
-				name: "punktfunk-plugin-demo",
+				name: "rubyfunk-plugin-demo",
 				main: "index.js",
-				punktfunk: { schema: 1, id: "demo" },
+				rubyfunk: { schema: 1, id: "demo" },
 			}),
 			"index.js": "export default {};",
 		};
@@ -93,8 +93,8 @@ test.skipIf(process.platform !== "linux")(
 				env: {
 					...process.env,
 					PATH: path.join(root, "no-bwrap"),
-					PUNKTFUNK_CONFIG_DIR: root,
-					PUNKTFUNK_PLUGIN_SANDBOX: "on",
+					RUBYFUNK_CONFIG_DIR: root,
+					RUBYFUNK_PLUGIN_SANDBOX: "on",
 				},
 				stdout: "pipe",
 				stderr: "pipe",
@@ -102,7 +102,7 @@ test.skipIf(process.platform !== "linux")(
 		);
 		expect(await proc.exited).toBe(SANDBOX_REFUSED_EXIT);
 		expect(await new Response(proc.stderr).text()).toContain(
-			"stopping instead of running punktfunk-plugin-demo",
+			"stopping instead of running rubyfunk-plugin-demo",
 		);
 		expect(fs.existsSync(path.join(root, "plugin-state", "runner.refused"))).toBe(true);
 	},

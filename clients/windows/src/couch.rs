@@ -2,7 +2,7 @@
 //! controller-driven client — host list, discovery, PIN pairing, settings, Wake-on-LAN,
 //! library) and mirror its exit code.
 //!
-//! Shared by BOTH couch entry points — `punktfunk-console.exe`, which needs its own
+//! Shared by BOTH couch entry points — `rubyfunk-console.exe`, which needs its own
 //! executable because an MSIX `<Application>` cannot pass arguments, and this shell's
 //! `--console` flag — so the spawn flags below are stated once. They were stated in neither
 //! until 2026-08-27, which is why both Start-menu tiles opened a black console window that
@@ -11,11 +11,11 @@
 use pf_client_core::orchestrate::session_binary;
 use std::process::{Command, Stdio};
 
-/// Run `punktfunk-session --browse` (fullscreen unless `--windowed`) and exit with the
+/// Run `rubyfunk-session --browse` (fullscreen unless `--windowed`) and exit with the
 /// child's code, so whatever supervises this process sees the real result. Never returns.
 pub(crate) fn run_browse() -> ! {
     use std::os::windows::process::CommandExt as _;
-    // `punktfunk-session` keeps the CONSOLE subsystem for its stdout contract, and both couch
+    // `rubyfunk-session` keeps the CONSOLE subsystem for its stdout contract, and both couch
     // entry points are GUI processes with no console to lend it — so without this flag Windows
     // mints one, and the couch UI comes up in front of a black terminal window.
     const CREATE_NO_WINDOW: u32 = 0x0800_0000;

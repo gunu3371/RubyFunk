@@ -29,7 +29,7 @@ label and its options and knows what to pick. If it needs a paragraph, it is not
   only what Automatic owns.
 - **No hidden state across sessions.** Behaviour that silently depends on an earlier session is
   a setting the player cannot see.
-- **Operator and diagnostic knobs are not player settings.** They are `PUNKTFUNK_*` env vars or
+- **Operator and diagnostic knobs are not player settings.** They are `RUBYFUNK_*` env vars or
   host settings.
 - **One setting, every client that has the feature.** Shared key and wording (`docs/writing.md`
   §4b). A setting that exists on one client only needs a reason that platform alone has.

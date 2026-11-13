@@ -1,4 +1,4 @@
-# Static file server for the punktfunk Nix binary cache, on unom-1 (the Hetzner Cloud box) —
+# Static file server for the rubyfunk Nix binary cache, on unom-1 (the Hetzner Cloud box) —
 # the same shape as packaging/flatpak/server, because a Nix cache and an OSTree repo are both
 # just immutable files behind a web server. Caddy on that SAME box terminates TLS for
 # nix.unom.io and reverse_proxies to localhost:3250, exactly as it already does for

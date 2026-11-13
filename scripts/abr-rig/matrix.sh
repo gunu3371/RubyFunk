@@ -24,7 +24,7 @@ PROFILE=wifi_tv_probe_damage
 cell() {
   local tag=$1 kbps=$2 answer=$3 recovery=$4
   for r in $(seq "$REPEATS"); do
-    PUNKTFUNK_ABR_PROBE_KBPS=$kbps PF_RIG_KEYFRAME_ANSWER=$answer \
+    RUBYFUNK_ABR_PROBE_KBPS=$kbps PF_RIG_KEYFRAME_ANSWER=$answer \
       PF_RIG_RECOVERY_MS=$recovery \
       "$HERE/run.sh" "$PROFILE" "$SECONDS_RUN" > "$OUT/$tag-$r.run" 2>&1 ||
       { echo "$tag run $r FAILED — see $OUT/$tag-$r.run"; continue; }
@@ -50,5 +50,5 @@ cell default-slow 2000000 wave:16 300
 
 echo
 echo "baseline row for the same scenario:"
-head -1 "$HERE/../../crates/core/punktfunk-core/src/abr/sim/baseline.tsv"
-grep -h "^$PROFILE	" "$HERE/../../crates/core/punktfunk-core/src/abr/sim/baseline.tsv" | sed 's/^/sim  /'
+head -1 "$HERE/../../crates/core/rubyfunk-core/src/abr/sim/baseline.tsv"
+grep -h "^$PROFILE	" "$HERE/../../crates/core/rubyfunk-core/src/abr/sim/baseline.tsv" | sed 's/^/sim  /'

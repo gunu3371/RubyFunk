@@ -1,8 +1,8 @@
-# punktfunk — Linux client
+# rubyfunk — Linux client
 
-`punktfunk-client` is the relm4/GTK4/libadwaita **shell**: hosts, pairing and trust, settings, the
+`rubyfunk-client` is the relm4/GTK4/libadwaita **shell**: hosts, pairing and trust, settings, the
 desktop library page. It does not stream. Every session runs in the sibling
-[`punktfunk-session`](../session/) Vulkan binary, which the shell spawns — `--connect` and
+[`rubyfunk-session`](../session/) Vulkan binary, which the shell spawns — `--connect` and
 `--browse` exec it directly, so the Decky wrapper keeps working unchanged.
 
 Rust end to end, no C ABI. The UI-agnostic plumbing — session pump, the native decode ladder,
@@ -20,9 +20,9 @@ needed: libva and the Vulkan loader are opened at runtime, so hardware decode is
 box you run on, not the one you build on.
 
 ```sh
-cargo run -p punktfunk-client-linux                             # the app
-cargo run -p punktfunk-client-linux -- --connect HOST[:PORT]    # straight to a stream
-cargo run -p punktfunk-client-linux -- --browse HOST            # the gamepad library launcher
+cargo run -p rubyfunk-client-linux                             # the app
+cargo run -p rubyfunk-client-linux -- --connect HOST[:PORT]    # straight to a stream
+cargo run -p rubyfunk-client-linux -- --browse HOST            # the gamepad library launcher
 ```
 
 Headless paths stay in the shell: `--pair - --connect host[:port]` (PIN on stdin), `--wake`, and

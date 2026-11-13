@@ -1,4 +1,4 @@
-//! Host-side input injection: [`punktfunk_core::input::InputEvent`] → compositor or OS input.
+//! Host-side input injection: [`rubyfunk_core::input::InputEvent`] → compositor or OS input.
 //!
 //! Headless Sway sets `WLR_LIBINPUT_NO_DEVICES=1`, so kernel `uinput` is never a seat device.
 //! Injection uses wlroots virtual-input (`zwlr_virtual_pointer_manager_v1` +
@@ -7,12 +7,12 @@
 //! box layout (`pf_host_config::layout` — `XKB_DEFAULT_*`, then `localectl`) and modifiers
 //! are tracked so the compositor resolves shifted keysyms.
 //!
-//! Consumes `punktfunk_core::input` and `pf-driver-proto`. Not the orchestrator.
+//! Consumes `rubyfunk_core::input` and `pf-driver-proto`. Not the orchestrator.
 
 // Per-OS backends are defined before any target uses them.
 #![allow(dead_code)]
 use anyhow::Result;
-use punktfunk_core::input::{InputEvent, InputKind};
+use rubyfunk_core::input::{InputEvent, InputKind};
 
 #[path = "inject/keymap.rs"]
 mod keymap;
@@ -297,7 +297,7 @@ mod aim_tests {
 /// Pin absolute coordinates to a specific output. `None` keeps size-matching.
 ///
 /// Host-level, not per-session: the injector is host-lifetime and every session shares it, so
-/// a per-session write would re-aim every other pointer. Fine for `PUNKTFUNK_CAPTURE_MONITOR`
+/// a per-session write would re-aim every other pointer. Fine for `RUBYFUNK_CAPTURE_MONITOR`
 /// (host-wide pin; `design/per-monitor-portal-capture.md`). Do not call from a session path.
 ///
 /// The wlroots backend ignores this and aims via `stream_output::set_stream_output`, which
@@ -328,7 +328,7 @@ fn session_backend() -> Option<Backend> {
     *SESSION_BACKEND.read().unwrap_or_else(|e| e.into_inner())
 }
 
-/// The [`Backend`] an id names, in every spelling `PUNKTFUNK_INPUT_BACKEND` accepts.
+/// The [`Backend`] an id names, in every spelling `RUBYFUNK_INPUT_BACKEND` accepts.
 /// Shared by that knob and [`set_backend_id`], so the two cannot drift.
 #[cfg(target_os = "linux")]
 fn backend_from_id(id: &str) -> Option<Backend> {
@@ -345,8 +345,8 @@ fn backend_from_id(id: &str) -> Option<Backend> {
 /// Point input at the backend this session's video resolved to; the two must not diverge.
 /// `id` is `pf_vdisplay::input_backend_id` (`gamescope`/`kwin`/`libei`/`wlr`/`wlr-layout`).
 ///
-/// Host-threaded, not `PUNKTFUNK_INPUT_BACKEND`. Call wherever a session compositor is
-/// decided. The operator-pinned `PUNKTFUNK_COMPOSITOR` path deliberately does not, so that
+/// Host-threaded, not `RUBYFUNK_INPUT_BACKEND`. Call wherever a session compositor is
+/// decided. The operator-pinned `RUBYFUNK_COMPOSITOR` path deliberately does not, so that
 /// knob stays in charge.
 #[cfg(target_os = "linux")]
 pub fn set_backend_id(id: &str) {
@@ -373,7 +373,7 @@ pub fn set_backend_id(_id: &str) {}
 /// `org.gnome.Mutter.RemoteDesktop` (`libei_ei_source`), so headless-capable.
 ///
 /// Order: live [`set_backend_id`] (from `pf_vdisplay::input_backend_id`), then
-/// `PUNKTFUNK_INPUT_BACKEND`, then `PUNKTFUNK_COMPOSITOR`, then the session's desktop name.
+/// `RUBYFUNK_INPUT_BACKEND`, then `RUBYFUNK_COMPOSITOR`, then the session's desktop name.
 /// Env rungs run only before a session publishes (and on the operator-pinned path, which
 /// publishes nothing), so a live stream never `getenv`s — see [`SESSION_BACKEND`].
 #[cfg(target_os = "linux")]
@@ -381,12 +381,12 @@ pub fn default_backend() -> Backend {
     if let Some(b) = session_backend() {
         return b;
     }
-    if let Ok(v) = std::env::var("PUNKTFUNK_INPUT_BACKEND") {
+    if let Ok(v) = std::env::var("RUBYFUNK_INPUT_BACKEND") {
         match backend_from_id(&v) {
             Some(b) => return b,
             None => tracing::warn!(
                 value = v.trim(),
-                "unknown PUNKTFUNK_INPUT_BACKEND — auto-detecting"
+                "unknown RUBYFUNK_INPUT_BACKEND — auto-detecting"
             ),
         }
     }
@@ -500,11 +500,11 @@ pub fn scroll_supported() -> bool {
 
 /// Full-fidelity stylus (`HOST_CAP_PEN`). Linux only: [`pen::VirtualPen`] uinput tablet.
 /// Probe is "can we open the kernel's /dev/uinput" (same permission as virtual gamepads) plus
-/// the `PUNKTFUNK_PEN` row. A seat's proxy there refuses a tablet. Welcome-time; clients
+/// the `RUBYFUNK_PEN` row. A seat's proxy there refuses a tablet. Welcome-time; clients
 /// without the bit fold pen into touch/pointer.
 #[cfg(target_os = "linux")]
 pub fn pen_supported() -> bool {
-    if !pf_host_config::row_bool("PUNKTFUNK_PEN") {
+    if !pf_host_config::row_bool("RUBYFUNK_PEN") {
         return false;
     }
     let node = std::path::Path::new("/dev/uinput");
@@ -512,11 +512,11 @@ pub fn pen_supported() -> bool {
 }
 
 /// Synthetic PT_PEN/PT_TOUCH on Win10 1809+. Probe creates then destroys a PT_PEN device.
-/// Same `PUNKTFUNK_PEN` kill-switch. Result also stands in for PT_TOUCH (both APIs arrived
+/// Same `RUBYFUNK_PEN` kill-switch. Result also stands in for PT_TOUCH (both APIs arrived
 /// in 1809).
 #[cfg(target_os = "windows")]
 pub fn pen_supported() -> bool {
-    if !pf_host_config::row_bool("PUNKTFUNK_PEN") {
+    if !pf_host_config::row_bool("RUBYFUNK_PEN") {
         return false;
     }
     pen::synthetic_pen_available()
@@ -602,7 +602,7 @@ pub enum VhciVerdict {
 ///
 /// Probed whatever the Deck, SC2 and DualSense gates say: a client can always ask for a
 /// Switch 2 pad, which has no other USB transport.
-/// `60-punktfunk.rules` `chgrp punktfunk` + `chmod 0660`, so only a process that actually
+/// `60-rubyfunk.rules` `chgrp rubyfunk` + `chmod 0660`, so only a process that actually
 /// carries the group gets `W_OK`.
 #[cfg(target_os = "linux")]
 pub fn vhci_probe() -> VhciVerdict {
@@ -1074,7 +1074,7 @@ pub mod usbip;
 #[cfg(target_os = "linux")]
 #[path = "inject/linux/usbip_relay.rs"]
 pub mod usbip_relay;
-/// Byte-level tracing of the USB/IP socket (`PUNKTFUNK_USBIP_TRACE`). A framing bug in that
+/// Byte-level tracing of the USB/IP socket (`RUBYFUNK_USBIP_TRACE`). A framing bug in that
 /// stream is only visible as damage the kernel notices later, so the wire itself has to be
 /// recoverable.
 #[cfg(target_os = "linux")]
@@ -1104,11 +1104,11 @@ pub mod gamepad {
         pub fn new() -> Self {
             GamepadManager
         }
-        pub fn handle(&mut self, _ev: &punktfunk_core::input::GamepadEvent) {}
+        pub fn handle(&mut self, _ev: &rubyfunk_core::input::GamepadEvent) {}
         pub fn pump_rumble(&mut self, _send: impl FnMut(u16, u16, u16, u16, u16)) {}
     }
 }
-/// "Punktfunk Pen" uinput virtual tablet — per-session stylus the native pen plane injects
+/// "RubyFunk Pen" uinput virtual tablet — per-session stylus the native pen plane injects
 /// through.
 #[cfg(target_os = "linux")]
 #[path = "inject/linux/pen.rs"]
@@ -1145,7 +1145,7 @@ pub mod pen {
         pub fn create() -> Result<VirtualPen> {
             bail!("no pen injection backend on this platform")
         }
-        pub fn apply_batch(&mut self, _transitions: &[punktfunk_core::quic::PenTransition]) {}
+        pub fn apply_batch(&mut self, _transitions: &[rubyfunk_core::quic::PenTransition]) {}
     }
 }
 #[cfg(target_os = "linux")]

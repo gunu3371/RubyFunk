@@ -220,10 +220,7 @@ impl DetailPage {
                 }
             });
         }
-        let link_row = action_row(
-            "Copy Link",
-            "A punktfunk:// link that connects to this host",
-        );
+        let link_row = action_row("Copy Link", "A rubyfunk:// link that connects to this host");
         {
             let ctx = ctx.clone();
             link_row.connect_activated(move |_| {
@@ -446,8 +443,8 @@ impl DetailPage {
         self.default_row.set_active(live.is_default);
         self.default_row.set_subtitle(match live.start_in {
             StartIn::Hosts => "Used when Start in opens the Library or a stream",
-            StartIn::Library => "Punktfunk opens on its library",
-            StartIn::Stream => "Punktfunk connects to it on launch",
+            StartIn::Library => "RubyFunk opens on its library",
+            StartIn::Stream => "RubyFunk connects to it on launch",
         });
         self.forget_row.set_visible(pinned);
 

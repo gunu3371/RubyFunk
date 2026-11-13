@@ -12,7 +12,7 @@
 //! own clocks.
 //!
 //! The `APerformanceHint_*` API arrived in NDK **API level 33**. minSdk is 31, so we CANNOT link the
-//! symbols directly: a `libpunktfunk_android.so` carrying an unresolved
+//! symbols directly: a `librubyfunk_android.so` carrying an unresolved
 //! `APerformanceHint_createSession` import fails to load on API 31/32 devices
 //! (`System.loadLibrary` throws) even if the code path is never taken. Instead we resolve the
 //! entry points from `libandroid.so` with `dlsym` at runtime — absent on < 33 ⇒

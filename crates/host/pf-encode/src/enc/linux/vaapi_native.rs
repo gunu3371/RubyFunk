@@ -62,7 +62,7 @@ pub struct NativeVaapiEncoder {
     ingest: CpuIngest,
     /// The part of each picture this session encodes ([`Encoder::set_input_crop`]).
     crop: Option<[u32; 4]>,
-    /// `PUNKTFUNK_VAAPI_DUMP=<file>`: every access unit, appended, for a decoder to look at.
+    /// `RUBYFUNK_VAAPI_DUMP=<file>`: every access unit, appended, for a decoder to look at.
     dump: Option<std::fs::File>,
 }
 
@@ -443,7 +443,7 @@ impl Encoder for NativeVaapiEncoder {
             }
             FramePayload::Cuda(_) => bail!(
                 "a CUDA frame reached the VAAPI encoder — that payload is NVENC-only; unset \
-                 PUNKTFUNK_ZEROCOPY or do not pin PUNKTFUNK_ENCODER=vaapi-native on an NVIDIA host"
+                 RUBYFUNK_ZEROCOPY or do not pin RUBYFUNK_ENCODER=vaapi-native on an NVIDIA host"
             ),
             FramePayload::Pixelless => {
                 bail!("the VAAPI encoder needs pixels; got a pixel-less frame")

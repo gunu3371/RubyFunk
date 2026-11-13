@@ -2,13 +2,13 @@
 //!
 //! One snapshot over the shared grant vocabulary. The preset name is derived from
 //! the mask, never stored (`design/per-client-access.md`). Mid-session
-//! [`AccessUpdate`](punktfunk_core::quic::AccessUpdate) replaces the snapshot
+//! [`AccessUpdate`](rubyfunk_core::quic::AccessUpdate) replaces the snapshot
 //! (latest wins). Apple and Android clients copy these labels and the
 //! derive-not-store rule rather than linking this crate.
 //!
 //! Presentation only. Tests in this module pin the labels, chip text, and notices.
 
-use punktfunk_core::quic::{
+use rubyfunk_core::quic::{
     normalize_legacy_full, GRANT_ALL, GRANT_PRESET_CONTROLLER_ONLY, GRANT_PRESET_VIEW_ONLY,
 };
 use std::time::{Duration, Instant};
@@ -20,13 +20,13 @@ fn effective_mask(grants: u32) -> u32 {
     normalize_legacy_full(grants) & GRANT_ALL
 }
 
-/// Client snapshot of the host [`Welcome`](punktfunk_core::quic::Welcome)
-/// advert, replaced by each [`AccessUpdate`](punktfunk_core::quic::AccessUpdate)
+/// Client snapshot of the host [`Welcome`](rubyfunk_core::quic::Welcome)
+/// advert, replaced by each [`AccessUpdate`](rubyfunk_core::quic::AccessUpdate)
 /// (latest wins). Default is full and permanent: an old host's Welcome
 /// renders with no chip and every control enabled.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct SessionAccess {
-    /// Grant bitmask ([`punktfunk_core::quic::GRANT_GAMEPAD`] family).
+    /// Grant bitmask ([`rubyfunk_core::quic::GRANT_GAMEPAD`] family).
     pub grants: u32,
     /// When this access ends, on the CLIENT's monotonic clock; `None` = permanent.
     /// Monotonic so the chip's countdown never jumps with a wall-clock step.
@@ -44,7 +44,7 @@ impl Default for SessionAccess {
 
 impl SessionAccess {
     /// Grants plus deadline from the connector, moved onto this process's monotonic clock.
-    pub fn from_connector(c: &punktfunk_core::client::NativeClient) -> SessionAccess {
+    pub fn from_connector(c: &rubyfunk_core::client::NativeClient) -> SessionAccess {
         let deadline = match c.access_expires_in_secs() {
             0 => None,
             secs => Some(Instant::now() + Duration::from_secs(secs.into())),
@@ -126,7 +126,7 @@ pub fn update_notice(prev_grants: u32, next: &SessionAccess, now: Instant) -> Op
 #[cfg(test)]
 mod tests {
     use super::*;
-    use punktfunk_core::quic::{GRANT_CLIPBOARD, GRANT_GAMEPAD, GRANT_KEYBOARD, GRANT_POINTER};
+    use rubyfunk_core::quic::{GRANT_CLIPBOARD, GRANT_GAMEPAD, GRANT_KEYBOARD, GRANT_POINTER};
 
     #[test]
     fn labels_derive_from_the_mask_per_the_design() {
@@ -136,7 +136,7 @@ mod tests {
         assert_eq!(preset_label(GRANT_GAMEPAD | GRANT_CLIPBOARD), "Custom");
         assert_eq!(preset_label(GRANT_ALL & !GRANT_KEYBOARD), "Custom");
         assert_eq!(
-            preset_label(punktfunk_core::quic::GRANT_ALL_PRE_POWER),
+            preset_label(rubyfunk_core::quic::GRANT_ALL_PRE_POWER),
             "Full control"
         );
         assert_eq!(preset_label(GRANT_ALL | (1 << 20)), "Full control");
@@ -145,7 +145,7 @@ mod tests {
     /// The level core writes for each mask; the web console and Kotlin replay the same file.
     #[test]
     fn labels_match_the_core_grant_vectors() {
-        let raw = include_str!("../../../core/punktfunk-core/testdata/grant-vectors.json");
+        let raw = include_str!("../../../core/rubyfunk-core/testdata/grant-vectors.json");
         let file: serde_json::Value = serde_json::from_str(raw).expect("grant-vectors.json parses");
         for case in file["masks"].as_array().expect("masks array") {
             let mask = case["mask"].as_u64().expect("mask") as u32;

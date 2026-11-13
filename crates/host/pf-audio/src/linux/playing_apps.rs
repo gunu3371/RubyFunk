@@ -52,7 +52,7 @@ fn app_name(binary: Option<&str>, name: Option<&str>) -> Option<String> {
         .flatten()
         .map(|s| s.trim().to_ascii_lowercase())
         .find(|s| !s.is_empty() && !s.contains(','))
-        .filter(|s| s != "punktfunk-host")
+        .filter(|s| s != "rubyfunk-host")
 }
 
 #[cfg(test)]
@@ -72,6 +72,6 @@ mod tests {
         assert_eq!(app_name(Some(""), None), None);
         // A comma would split into two entries in the env form of the list.
         assert_eq!(app_name(Some("a,b"), None), None);
-        assert_eq!(app_name(Some("punktfunk-host"), None), None);
+        assert_eq!(app_name(Some("rubyfunk-host"), None), None);
     }
 }

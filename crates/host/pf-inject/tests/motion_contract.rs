@@ -22,10 +22,10 @@ use pf_inject::hori_proto::HoriState;
 use pf_inject::steam_proto::SteamState;
 use pf_inject::steam_remap::motion_wire_to_deck;
 use pf_inject::switch_proto::SwitchState;
-use punktfunk_core::input::gamepad::{
+use rubyfunk_core::input::gamepad::{
     MOTION_ACCEL_LSB_PER_G, MOTION_GYRO_LSB_PER_DEG_S, MOTION_NEUTRAL_ACCEL,
 };
-use punktfunk_core::quic::RichInput;
+use rubyfunk_core::quic::RichInput;
 
 /// Sony IMU-calibration feature report (DualSense `0x05`, USB DualShock 4 `0x02`):
 /// report id, three signed bias words, six **interleaved** per-axis `plus`/`minus`

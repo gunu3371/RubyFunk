@@ -7,7 +7,7 @@ Deck installer, the sysext builders). This reads each recipe and fails when a ch
 the matrix does not, or omits what it does. A grant it cannot attribute to a known binary fails
 too. scripts/ci/assert-cap-matrix.sh checks the host and worker rows on the built package.
 
-packaging/linux/punktfunk.sysusers is the group matrix. The deb, rpm, Arch and Steam Deck
+packaging/linux/rubyfunk.sysusers is the group matrix. The deb, rpm, Arch and Steam Deck
 recipes must install it, NixOS must declare the same groups, and no script or rule may create,
 join or name a group it lacks.
 
@@ -25,26 +25,26 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 MATRIX = "packaging/linux/capabilities.txt"
 GATE = "scripts/ci/assert-cap-matrix.sh"
-SYSUSERS = "packaging/linux/punktfunk.sysusers"
+SYSUSERS = "packaging/linux/rubyfunk.sysusers"
 NIX_MODULE = "packaging/nix/nixos-module.nix"
 # Recipes that install the sysusers file, by the text they must hold.
 GROUP_RECIPES = ["packaging/debian/build-deb.sh", "packaging/debian/build-client-deb.sh",
-                 "packaging/rpm/punktfunk.spec", "packaging/arch/PKGBUILD",
+                 "packaging/rpm/rubyfunk.spec", "packaging/arch/PKGBUILD",
                  "scripts/steamdeck/lib.sh"]
 PAYLOAD = "packaging/linux/payload.txt"
 # The seats recipes CI can't build, and the payload files each may leave out.
 SEATS_RECIPES = {
     # The module orders user@ after the supervisor itself.
-    "packaging/nix/packages.nix": {"50-punktfunk-seats.conf"},
+    "packaging/nix/packages.nix": {"50-rubyfunk-seats.conf"},
     "scripts/steamdeck/door.sh": set(),
 }
 # Created on first use by door-helper and the seat supervisor, so no package ships them.
-RUNTIME_GROUPS = {"punktfunk-games"}
+RUNTIME_GROUPS = {"rubyfunk-games"}
 # Groups the distribution provides.
 DISTRO_GROUPS = {"input", "root"}
-HOST = "punktfunk-host"
-WORKER = "punktfunk-encode-worker"
-GAMESCOPE = "punktfunk-gamescope"
+HOST = "rubyfunk-host"
+WORKER = "rubyfunk-encode-worker"
+GAMESCOPE = "rubyfunk-gamescope"
 
 
 def strip_comments(text):
@@ -59,7 +59,7 @@ def caps_norm(caps):
 
 
 def binary_of(target, variables):
-    """The punktfunk binary a setcap target names, by literal path or by shell variable."""
+    """The rubyfunk binary a setcap target names, by literal path or by shell variable."""
     target = target.strip("'\"")
     for var, binary in variables.items():
         if re.search(r"\$\{?%s\b" % var, target):
@@ -112,7 +112,7 @@ CHANNELS = {
     "nix": (None, [(["packaging/nix/*.nix"], read_nix, {})]),
     "steamdeck": (None, [(["scripts/steamdeck/*.sh"], read_setcap,
                           {"BIN": HOST, "WORKER": WORKER, "GS_BIN": GAMESCOPE})]),
-    "source": ([GAMESCOPE], [(["packaging/gamescope/build-punktfunk-gamescope.sh"], read_setcap,
+    "source": ([GAMESCOPE], [(["packaging/gamescope/build-rubyfunk-gamescope.sh"], read_setcap,
                               {"DEST": GAMESCOPE})]),
     "sysext-arch": (None, [(["packaging/arch/build-sysext.sh"], read_seal, {})]),
     "sysext-bazzite": (None, [(["packaging/bazzite/build-sysext.sh"], read_seal, {})]),
@@ -279,25 +279,25 @@ def self_test():
     expect("caps spellings", [caps_norm(c) for c in ("CAP_SYS_NICE+ep", ep, "(none)", "")],
            [ep, ep, "-", "-"])
     sh = """\
-# setcap 'cap_sys_nice=ep' /usr/bin/punktfunk-host   <- a comment
-setcap -r /usr/bin/punktfunk-host 2>/dev/null || true
-  setcap 'cap_sys_nice=ep' usr/bin/punktfunk-encode-worker 2>/dev/null || true
+# setcap 'cap_sys_nice=ep' /usr/bin/rubyfunk-host   <- a comment
+setcap -r /usr/bin/rubyfunk-host 2>/dev/null || true
+  setcap 'cap_sys_nice=ep' usr/bin/rubyfunk-encode-worker 2>/dev/null || true
 sudo setcap "CAP_SYS_NICE=eip" "$GS_BIN" || warn x
 sudo setcap cap_sys_nice=ep ${WORKER}
 """
     expect("setcap", read_setcap(sh, {"GS_BIN": GAMESCOPE, "WORKER": WORKER}),
            [(WORKER, ep), (GAMESCOPE, eip), (WORKER, ep)])
     spec = """\
-# %caps(cap_sys_nice=ep) %{_bindir}/punktfunk-host
+# %caps(cap_sys_nice=ep) %{_bindir}/rubyfunk-host
 # Declared with %%caps rather than a %%post setcap
-%{_bindir}/punktfunk-host
-%caps(cap_sys_nice=ep) %{_bindir}/punktfunk-encode-worker
+%{_bindir}/rubyfunk-host
+%caps(cap_sys_nice=ep) %{_bindir}/rubyfunk-encode-worker
 """
     expect("rpm", read_rpm(spec, {}), [(WORKER, ep)])
     nix = """\
-      # security.wrappers.punktfunk-host = { capabilities = "cap_sys_nice=ep"; };
-      security.wrappers.punktfunk-encode-worker = {
-        source = "${cfg.host.package}/bin/punktfunk-encode-worker";
+      # security.wrappers.rubyfunk-host = { capabilities = "cap_sys_nice=ep"; };
+      security.wrappers.rubyfunk-encode-worker = {
+        source = "${cfg.host.package}/bin/rubyfunk-encode-worker";
         capabilities = "cap_sys_nice=ep";
         owner = "root";
       };
@@ -317,38 +317,38 @@ sudo setcap cap_sys_nice=ep ${WORKER}
     expect("host granted", len(compare(matrix, "rpm", ok + [(HOST, ep)])), 1)
     expect("worker changed in one channel", len(compare(matrix, "deb", [(WORKER, eip)])), 1)
     expect("worker grant removed", len(compare(matrix, "nix", [])), 1)
-    expect("unknown binary", len(compare(matrix, "deb", ok + [("punktfunk-tray", ep)])), 1)
+    expect("unknown binary", len(compare(matrix, "deb", ok + [("rubyfunk-tray", ep)])), 1)
     expect("worker twice, two ways", len(compare(matrix, "deb", ok + [(WORKER, eip)])), 1)
 
-    const = {"HOST_REL": "usr/bin/punktfunk-host", "WORKER_REL": "usr/bin/punktfunk-encode-worker",
+    const = {"HOST_REL": "usr/bin/rubyfunk-host", "WORKER_REL": "usr/bin/rubyfunk-encode-worker",
              "WANT_WORKER_CAPS": ep}
     expect("gate agrees", gate_errors(matrix, const), [])
     expect("gate caps drift", len(gate_errors(matrix, {**const, "WANT_WORKER_CAPS": eip})), 1)
     expect("gate path drift", len(gate_errors(matrix, {**const, "HOST_REL": "usr/bin/x"})), 1)
     expect("matrix host capped", len(gate_errors(read_matrix(f"{HOST} {ep}\n{WORKER} {ep}\n"), const)), 1)
-    expect("gate reader", GATE_CONST.findall("HOST_REL='usr/bin/punktfunk-host'\nWANT_WORKER_CAPS='x'\n"),
-           [("HOST_REL", "usr/bin/punktfunk-host"), ("WANT_WORKER_CAPS", "x")])
+    expect("gate reader", GATE_CONST.findall("HOST_REL='usr/bin/rubyfunk-host'\nWANT_WORKER_CAPS='x'\n"),
+           [("HOST_REL", "usr/bin/rubyfunk-host"), ("WANT_WORKER_CAPS", "x")])
 
-    users = "# c\ng punktfunk -\ng punktfunk-update -\n"
-    expect("sysusers", SYSUSERS_GROUP.findall(users), ["punktfunk", "punktfunk-update"])
-    expect("nix groups", NIX_GROUP.findall("users.groups.input = { };\nusers.groups.punktfunk = { };\n"),
-           ["input", "punktfunk"])
-    nix_ok = {"input", "punktfunk", "punktfunk-update"}
-    texts = {"a.sh": "getent group x || groupadd --system punktfunk\n# groupadd old\n"
-                     "groupadd punktfunk-games\nif ensure_group punktfunk; then\n"
-                     'usermod -aG input "$USER"\nusermod -aG punktfunk-games u\n',
-             "a.rules": 'GROUP="input"\nRUN+="chgrp punktfunk /x"\n# GROUP="old"\n'}
+    users = "# c\ng rubyfunk -\ng rubyfunk-update -\n"
+    expect("sysusers", SYSUSERS_GROUP.findall(users), ["rubyfunk", "rubyfunk-update"])
+    expect("nix groups", NIX_GROUP.findall("users.groups.input = { };\nusers.groups.rubyfunk = { };\n"),
+           ["input", "rubyfunk"])
+    nix_ok = {"input", "rubyfunk", "rubyfunk-update"}
+    texts = {"a.sh": "getent group x || groupadd --system rubyfunk\n# groupadd old\n"
+                     "groupadd rubyfunk-games\nif ensure_group rubyfunk; then\n"
+                     'usermod -aG input "$USER"\nusermod -aG rubyfunk-games u\n',
+             "a.rules": 'GROUP="input"\nRUN+="chgrp rubyfunk /x"\n# GROUP="old"\n'}
     expect("groups agree", group_errors(users, nix_ok, texts), [])
-    expect("nix lacks a group", len(group_errors(users, nix_ok - {"punktfunk-update"}, {})), 1)
+    expect("nix lacks a group", len(group_errors(users, nix_ok - {"rubyfunk-update"}, {})), 1)
     expect("nix adds a group", len(group_errors(users, nix_ok | {"extra"}, {})), 1)
     for name, text in (("groupadd", "groupadd --system x\n"), ("ensure_group", "ensure_group x\n"),
                        ("usermod", 'sudo usermod -aG x "$USER"\n'), ("udev GROUP", 'GROUP="plugdev"\n'),
                        ("chgrp", "chgrp x /sys/a\n"), ("polkit", 'subject.isInGroup("x")\n'),
-                       ("a rule needs the group to exist", 'GROUP="punktfunk-games"\n')):
+                       ("a rule needs the group to exist", 'GROUP="rubyfunk-games"\n')):
         expect(f"unlisted group: {name}", len(group_errors(users, nix_ok, {"b": text})), 1)
 
-    payload = "# c\nhost usr/bin/punktfunk-host\nseats usr/libexec/punktfunk/door-helper\n" \
-              "seats usr/lib/systemd/system/user@.service.d/50-punktfunk-seats.conf\n"
+    payload = "# c\nhost usr/bin/rubyfunk-host\nseats usr/libexec/rubyfunk/door-helper\n" \
+              "seats usr/lib/systemd/system/user@.service.d/50-rubyfunk-seats.conf\n"
     nix = "packaging/nix/packages.nix"
     expect("seats named", seats_errors(payload, {nix: "install door-helper\n"}), [])
     expect("seats file missing", len(seats_errors(payload, {nix: "# door-helper\n"})), 1)

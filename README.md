@@ -14,7 +14,7 @@ palette, platform sources and regeneration commands.
 The upstream project information follows.
 
 <p align="center">
-  <img src="assets/punktfunk-logo.svg" alt="Punktfunk" width="320" />
+  <img src="assets/rubyfunk-logo.svg" alt="RubyFunk" width="320" />
 </p>
 
 <p align="center"><b>Low-latency desktop and game streaming with first-class Linux and Windows hosts.</b></p>
@@ -24,7 +24,7 @@ or TV. Each client gets **its own virtual display at its own native resolution a
 so a laptop at 1080p60 and a TV at 4K can stream from one box at once without rearranging your real
 monitors.
 
-📖 **[docs.punktfunk.unom.io](https://docs.punktfunk.unom.io)** —
+📖 **[Upstream documentation](https://docs.punktfunk.unom.io)** —
 [How it works](https://docs.punktfunk.unom.io/docs/how-it-works) ·
 [Quick start](https://docs.punktfunk.unom.io/docs/quickstart) ·
 [Support matrix](https://docs.punktfunk.unom.io/docs/support-matrix) (what works where) ·
@@ -41,7 +41,7 @@ monitors.
   monitors; turn several devices into monitors of one desktop. Presets in the console —
   [Virtual displays](https://docs.punktfunk.unom.io/docs/virtual-displays).
 - **A real virtual display on Windows, too.** Linux uses per-compositor virtual outputs; Windows
-  gets the same on-the-fly display from Punktfunk's own signed IddCx driver (`pf-vdisplay`) — no
+  gets the same on-the-fly display from RubyFunk's own signed IddCx driver (`pf-vdisplay`) — no
   dummy HDMI plug, no Desktop Duplication or WGC screen-scraping, and it survives the secure desktop
   (UAC, lock screen).
 - **GPU end to end.** Frames reach the encoder with no CPU copies (dmabuf → CUDA/Vulkan → NVENC on
@@ -72,8 +72,8 @@ curl -fsSL https://punktfunk.unom.io/install.sh | sh
 On **Windows 11 22H2+** it's a signed installer (host + virtual-display and gamepad drivers):
 
 ```powershell
-winget source add -n punktfunk https://winget.punktfunk.unom.io -t Microsoft.Rest
-winget install unom.PunktfunkHost
+winget source add -n rubyfunk https://winget.punktfunk.unom.io -t Microsoft.Rest
+winget install gunu3371.RubyFunkHost
 ```
 
 Prefer to add the repo yourself? Every platform has a one-page guide — apt, dnf, pacman, the Bazzite
@@ -88,12 +88,12 @@ uninstalling are [/docs/updating](https://docs.punktfunk.unom.io/docs/updating) 
 |---|---|
 | Mac | The **Apple app** — notarized DMG, or TestFlight |
 | iPhone, iPad, Apple TV | The **Apple app** on the [App Store](https://apps.apple.com/app/id6779991756) |
-| Linux desktop / laptop | **`punktfunk-client`** — Flatpak (any distro), or apt / rpm / pacman |
+| Linux desktop / laptop | **`rubyfunk-client`** — Flatpak (any distro), or apt / rpm / pacman |
 | Steam Deck | The **Decky plugin** in Gaming Mode; the Flatpak in Desktop Mode |
 | Android phone or TV | The **Android app** on Google Play |
-| Windows | Native **`punktfunk-client`** — signed installer (portable zip and MSIX too) |
+| Windows | Native **`rubyfunk-client`** — signed installer (portable zip and MSIX too) |
 | LG webOS TV | **`pf-webos`**, a community client in its own repo |
-| Scripts and launchers | **`punktfunk`**, the headless CLI in the Linux client packages |
+| Scripts and launchers | **`rubyfunk`**, the headless CLI in the Linux client packages |
 | Anything else | **Moonlight** over GameStream |
 
 Every client discovers hosts automatically and does a one-time
@@ -132,14 +132,14 @@ additional terms or conditions. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### Third-party components
 
-Punktfunk's own source is MIT/Apache-2.0. Shipped binaries additionally link third-party components
+RubyFunk's own source is MIT/Apache-2.0. Shipped binaries additionally link third-party components
 under their own (permissive) licenses — see [`THIRD-PARTY-NOTICES.txt`](THIRD-PARTY-NOTICES.txt)
 (regenerate with `scripts/gen-third-party-notices.sh`). Nothing links FFmpeg any more: host encode
 went native in 2026-09, and the clients decode natively.
 
 ### Trademarks
 
-Punktfunk is an independent project and is **not affiliated with, endorsed by, or sponsored by**
+RubyFunk is an independent project and is **not affiliated with, endorsed by, or sponsored by**
 NVIDIA, Microsoft, Sony, Valve, or the Moonlight project. "GameStream", "Moonlight", "Xbox",
 "DualSense", "DualShock", and "PlayStation" are trademarks of their respective owners and are used
 here only to describe interoperability.

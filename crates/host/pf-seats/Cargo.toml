@@ -1,7 +1,7 @@
 # The seat supervisor (design/multi-seat-product.md). The core builds and tests on every
-# platform. Windows runs it inside the punktfunk service behind a SYSTEM-only pipe and adds
+# platform. Windows runs it inside the rubyfunk service behind a SYSTEM-only pipe and adds
 # accounts, credentials and job-contained seat hosts; the RDP keeper links IronRDP and builds
-# apart, in crates/host/pf-seat-keeper. Linux runs it as the root `punktfunk-seats` daemon behind a
+# apart, in crates/host/pf-seat-keeper. Linux runs it as the root `rubyfunk-seats` daemon behind a
 # Unix socket and starts one systemd unit per seat.
 [package]
 name = "pf-seats"
@@ -28,7 +28,7 @@ zeroize = "1"
 # link, `process` names the uid the state directory must belong to and `thread` drops the login
 # helper's child to its person, all through safe wrappers, so this half denies unsafe code except
 # in `linux::pam`, `linux::login` and one call of `linux::handover`. `pam` loads libpam at run time,
-# since this crate is linked into `punktfunk-host` too and only the seat daemon may need the
+# since this crate is linked into `rubyfunk-host` too and only the seat daemon may need the
 # library. PAM frees the answers its conversation returns with `free()`, so they come from
 # libc's own allocator.
 [target.'cfg(unix)'.dependencies]

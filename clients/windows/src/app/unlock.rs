@@ -10,7 +10,7 @@ use pf_client_core::library::HostApi;
 use pf_client_core::profiles::{ListedProfile, UnlockNeed};
 use pf_client_core::unlock::{self, DeviceKey, Gate};
 use pf_fluent::Palette;
-use punktfunk_core::quic::v2::msg::{ProfileUnlock, Zeroizing};
+use rubyfunk_core::quic::v2::msg::{ProfileUnlock, Zeroizing};
 use std::rc::Rc;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
@@ -110,7 +110,7 @@ pub(crate) fn after_refusal(
             let (Some(row), Some(box_fp)) = (row, pin) else {
                 st.call(error.unwrap_or_else(|| {
                     pf_client_core::trust::connect_reject_message(
-                        punktfunk_core::reject::RejectReason::ProfileLocked,
+                        rubyfunk_core::reject::RejectReason::ProfileLocked,
                     )
                 }));
                 return ss.call(Screen::Hosts);

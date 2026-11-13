@@ -5,14 +5,14 @@ use super::{config_dir, save_paired, Paired};
 #[cfg(windows)]
 use anyhow::Context as _;
 use anyhow::{anyhow, Result};
-use punktfunk_core::client::NativeClient;
-use punktfunk_core::quic::endpoint;
+use rubyfunk_core::client::NativeClient;
+use rubyfunk_core::quic::endpoint;
 
 /// Persistent mTLS identity, generated once and presented on every connect.
 ///
 /// The private key is owner-only wherever the directory is. Unix uses mode 0600.
 /// Windows drops inherited ACEs and grants the owner, including when
-/// `PUNKTFUNK_CONFIG_DIR` points outside `%APPDATA%`.
+/// `RUBYFUNK_CONFIG_DIR` points outside `%APPDATA%`.
 pub fn load_or_create_identity() -> Result<(String, String)> {
     let dir = config_dir()?;
     let (cp, kp) = (dir.join("client-cert.pem"), dir.join("client-key.pem"));
@@ -112,9 +112,9 @@ fn lock_identity_perms(dir: &std::path::Path, key: &std::path::Path) {
     let _ = std::fs::set_permissions(key, std::fs::Permissions::from_mode(0o600));
 }
 
-/// Label a host files this client under. Re-export of `punktfunk_core::client::device_name`.
+/// Label a host files this client under. Re-export of `rubyfunk_core::client::device_name`.
 pub fn device_name() -> String {
-    punktfunk_core::client::device_name()
+    rubyfunk_core::client::device_name()
 }
 
 /// SPAKE2 PIN ceremony. `device_name` is the label the host stores; 90 s covers a
@@ -125,7 +125,7 @@ pub fn pair_with_host(
     identity: &(String, String),
     pin: &str,
     device_name: &str,
-) -> std::result::Result<[u8; 32], punktfunk_core::PunktfunkError> {
+) -> std::result::Result<[u8; 32], rubyfunk_core::RubyFunkError> {
     NativeClient::pair(
         addr,
         port,
@@ -146,7 +146,7 @@ pub fn pair_and_save(
     device_name: &str,
     name: &str,
     mac: &[String],
-) -> std::result::Result<Paired, punktfunk_core::PunktfunkError> {
+) -> std::result::Result<Paired, rubyfunk_core::RubyFunkError> {
     pair_with_host(addr, port, identity, pin, device_name)
         .map(|fp| save_paired(name, addr, port, fp, mac))
 }
@@ -165,7 +165,7 @@ pub fn request_access_to_host(
     pin: Option<[u8; 32]>,
     device_name: &str,
     cancel: Option<std::sync::Arc<std::sync::atomic::AtomicBool>>,
-) -> std::result::Result<[u8; 32], punktfunk_core::PunktfunkError> {
+) -> std::result::Result<[u8; 32], rubyfunk_core::RubyFunkError> {
     NativeClient::request_access(
         addr,
         port,

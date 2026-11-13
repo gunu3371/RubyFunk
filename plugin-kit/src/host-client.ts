@@ -3,7 +3,7 @@
 // typing happens one level up (reconcile.ts owns the wire schemas). Only the plain `pf`
 // object crosses the plugin boundary, so no Effect values are shared with the runner's
 // bundled effect instance.
-import type { Punktfunk } from "@punktfunk/host";
+import type { RubyFunk } from "@rubyfunk/host";
 import { Context, Effect, Layer } from "effect";
 import { HostRequestError } from "./errors.js";
 
@@ -18,16 +18,16 @@ export interface HostClientService {
 	 * Escape hatch for SDK helpers that take the facade directly (`servePluginUi`).
 	 * Never share this with code that could leak Effect values back to the runner.
 	 */
-	readonly facade: Punktfunk;
+	readonly facade: RubyFunk;
 }
 
 export class HostClient extends Context.Service<
 	HostClient,
 	HostClientService
->()("@punktfunk/plugin-kit/HostClient") {}
+>()("@rubyfunk/plugin-kit/HostClient") {}
 
 /** Wrap the facade the runner hands to `main` (or `connect()` in the CLI/dev paths). */
-export const hostClientFromFacade = (pf: Punktfunk): Layer.Layer<HostClient> =>
+export const hostClientFromFacade = (pf: RubyFunk): Layer.Layer<HostClient> =>
 	Layer.succeed(HostClient)({
 		request: (method, path, body) =>
 			Effect.tryPromise({
@@ -46,7 +46,7 @@ export interface PluginInfoService {
 export class PluginInfo extends Context.Service<
 	PluginInfo,
 	PluginInfoService
->()("@punktfunk/plugin-kit/PluginInfo") {}
+>()("@rubyfunk/plugin-kit/PluginInfo") {}
 
 export const pluginInfoLayer = (
 	info: PluginInfoService,

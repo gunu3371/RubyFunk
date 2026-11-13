@@ -6,7 +6,7 @@
 //!
 //! Numbers match Apple `GamepadMenuInput`. Tests in this file pin the cadence.
 
-use punktfunk_core::config::GamepadPref;
+use rubyfunk_core::config::GamepadPref;
 use std::time::{Duration, Instant};
 
 /// 0.5 of full scale — Apple `GamepadMenuInput`.

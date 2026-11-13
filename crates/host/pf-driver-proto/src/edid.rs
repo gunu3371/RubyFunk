@@ -4,7 +4,7 @@
 //! from that CTA block; without it the monitor is SDR-only whatever the IddCx adapter's FP16 /
 //! wide-gamut / 10-bit caps say.
 //!
-//! Identity: manufacturer "PNK", product name "Punktfunk" (the 0xFC descriptor Windows shows), and
+//! Identity: manufacturer "PNK", product name "RubyFunk" (the 0xFC descriptor Windows shows), and
 //! a per-monitor serial at base offset 0x0C that [`get_serial`] reads back out of the EDID the OS
 //! hands to the mode callbacks. No HDMI Vendor-Specific Data Block: a VSDB carries physical-sink
 //! facts (CEC address, TMDS limits) a virtual display does not have, and Windows drives the
@@ -144,7 +144,7 @@ const BASE: [u8; 128] = [
     0x45, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1E,
     0x00, 0x00, 0x00, 0xFD, 0x08, 0x17, 0xF0, 0x0F, // range-limits: offsets H-max+255, 23-240 Hz, min-H 15 kHz...
     0xFF, 0xFF, 0x00, 0x0A, 0x20, 0x20, 0x20, 0x20, // ...max-H 510 kHz, max clock 2550 MHz (150 was below the driver's own 1080p120 default)
-    0x20, 0x20, 0x00, 0x00, 0x00, 0xFC, 0x00, 0x50, // name descriptor "Punktfunk"
+    0x20, 0x20, 0x00, 0x00, 0x00, 0xFC, 0x00, 0x50, // name descriptor "RubyFunk"
     0x75, 0x6E, 0x6B, 0x74, 0x66, 0x75, 0x6E, 0x6B,
     0x0A, 0x20, 0x20, 0x20, 0x00, 0x00, 0x00, 0x00, // empty 4th descriptor...
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

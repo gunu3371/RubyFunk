@@ -5,7 +5,7 @@
 use super::{pw_setup, stream_sink, Terminate};
 use crate::{MicBackendStats, VirtualMic, SAMPLE_RATE};
 use anyhow::{anyhow, Context, Result};
-use punktfunk_core::audio::spa_positions;
+use rubyfunk_core::audio::spa_positions;
 use std::collections::VecDeque;
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::mpsc::{sync_channel, Receiver};
@@ -53,7 +53,7 @@ struct MicRingShared {
 impl PwMicSource {
     /// A 1- or 2-channel source under a caller-chosen `node.name`, so isolation can
     /// pin nested apps (`PULSE_SOURCE`) to this session's uplink.
-    /// `None` = shared `punktfunk-mic`. PipeWire 1.4 never assigns a driver to
+    /// `None` = shared `rubyfunk-mic`. PipeWire 1.4 never assigns a driver to
     /// a non-default `Audio/Source` recorded by target — per-session mic needs
     /// the 1.6 daemon; on 1.4 the election losers read silence.
     pub fn open_named(channels: u32, source_name: Option<&str>) -> Result<PwMicSource> {
@@ -71,7 +71,7 @@ impl PwMicSource {
         // PipeWire not running is an open error (pump backoff), not an instantly-dead
         // instance the pump would churn on. The thread keeps no handle: it exits on Terminate.
         crate::ready::spawn_ready(
-            "punktfunk-pw-mic",
+            "rubyfunk-pw-mic",
             Duration::from_secs(5),
             move |ready| {
                 if let Err(e) = mic_pw_thread(
@@ -272,7 +272,7 @@ fn mic_pw_thread(
                 *pw::keys::MEDIA_TYPE        => "Audio",
                 *pw::keys::MEDIA_CLASS       => "Audio/Source",
                 *pw::keys::NODE_NAME         => node_name,
-                *pw::keys::NODE_DESCRIPTION  => "Punktfunk Remote Microphone",
+                *pw::keys::NODE_DESCRIPTION  => "RubyFunk Remote Microphone",
                 // ~5 ms quantum (one Opus frame) so recorders get low-latency chunks.
                 *pw::keys::NODE_LATENCY      => "240/48000",
                 // Lose default-source election: a session claims the default

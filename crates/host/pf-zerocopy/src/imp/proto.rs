@@ -1,5 +1,5 @@
 //! Request/reply vocabulary between the PipeWire capture thread and the isolated GPU-import
-//! worker (`punktfunk-encode-worker zerocopy-worker`, or `punktfunk-host zerocopy-worker`
+//! worker (`rubyfunk-encode-worker zerocopy-worker`, or `rubyfunk-host zerocopy-worker`
 //! without it; `design/zerocopy-worker-isolation.md`).
 //!
 //! Transport is [`super::ipc`] (SEQPACKET + `SCM_RIGHTS`); this module versions the body
@@ -23,7 +23,7 @@ pub const WORKSPACE_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub enum ImportKind {
     /// Tiled dmabuf → EGL/GL de-tile blit → BGRx CUDA buffer.
     Tiled,
-    /// Tiled dmabuf → EGL/GL NV12 convert → two-plane CUDA buffer (`PUNKTFUNK_NV12`).
+    /// Tiled dmabuf → EGL/GL NV12 convert → two-plane CUDA buffer (`RUBYFUNK_NV12`).
     TiledNv12,
     /// LINEAR dmabuf → Vulkan bridge → BGRx CUDA buffer (gamescope's only offer).
     Linear,

@@ -34,7 +34,7 @@ echo "== build =="
 "$HERE/run.sh" nowall_720p 1 > "$OUT/ps-build.run" 2>&1
 echo "  build rc=$?"
 # The ramp's per-step lines and the drain guard's are debug.
-export RUST_LOG=${RUST_LOG:-info,punktfunk_core::abr=debug}
+export RUST_LOG=${RUST_LOG:-info,rubyfunk_core::abr=debug}
 
 echo "== 9e: loss-free LAN, ramp steps whole =="
 for r in 1 2 3; do row "ps-lan-$r" nowall_720p 60 1; done

@@ -8,7 +8,7 @@
 //!
 //! Per segment it prints what went in (wire events, distance) beside what the window got on
 //! the vertical axis: the `axis_source` seen, Σ`axis`, Σ`value120`, stops, and cadence.
-//! `PUNKTFUNK_INPUT_BACKEND` picks the injector like it does for the host.
+//! `RUBYFUNK_INPUT_BACKEND` picks the injector like it does for the host.
 //!
 //! `--listen N` injects nothing and records a real client for N seconds. `--inject-at WxH`
 //! opens no window: the script lands on whatever app sits at the centre of a desktop that
@@ -31,8 +31,8 @@ fn main() {
 #[cfg(target_os = "linux")]
 mod linux {
     use anyhow::{bail, Context, Result};
-    use punktfunk_core::input::scroll::{ScrollEvent, ScrollPhase, ScrollSource, SCROLL_SCALE};
-    use punktfunk_core::input::{InputEvent, InputKind, SCROLL_FLAG_PRECISE};
+    use rubyfunk_core::input::scroll::{ScrollEvent, ScrollPhase, ScrollSource, SCROLL_SCALE};
+    use rubyfunk_core::input::{InputEvent, InputKind, SCROLL_FLAG_PRECISE};
     use rustix::event::{poll, PollFd, PollFlags, Timespec};
     use std::collections::BTreeSet;
     use std::sync::atomic::{AtomicBool, Ordering};
@@ -345,7 +345,7 @@ mod linux {
         };
         let surface = comp.create_surface(&qh, ());
         let top = wm.get_xdg_surface(&surface, &qh, ()).get_toplevel(&qh, ());
-        top.set_title("punktfunk scroll-probe".into());
+        top.set_title("rubyfunk scroll-probe".into());
         top.set_fullscreen(None);
         surface.commit();
         app.surface = Some(surface);

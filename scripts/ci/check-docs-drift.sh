@@ -8,12 +8,12 @@
 #   1. docs-site/public/openapi.json must be a byte-for-byte copy of api/openapi.json. The
 #      snapshot is a manual `cp` (docs-site/README.md); it sat stale on main for weeks once,
 #      publishing an /api reference missing the whole self-update surface.
-#   2. Every PUNKTFUNK_* or PFVD_* (the virtual display driver's) variable the docs mention
+#   2. Every RUBYFUNK_* or PFVD_* (the virtual display driver's) variable the docs mention
 #      must still exist somewhere in the tree
 #      (docs describing a removed knob is drift a reader pays for). Historical records —
 #      docs/releases/, CHANGELOG.md — don't count as existence: a knob that lives only in old
 #      release notes is gone.
-#   3. Ratchet: no NEW PUNKTFUNK_* or PFVD_* env var may appear in code without a docs mention.
+#   3. Ratchet: no NEW RUBYFUNK_* or PFVD_* env var may appear in code without a docs mention.
 #      150 or so internal/debug knobs (the PFVD_* probe knobs among them) are deliberately
 #      undocumented today, so this can't be a hard list —
 #      but a NEW knob must either be documented in docs-site (configuration.md or the page
@@ -21,7 +21,7 @@
 #      a decision instead of an accident. A baseline line whose knob left the code or got
 #      documented only prints a note; the C header names in cbindgen.toml are not knobs.
 #   4. Every command the host-cli.md tables list must still exist as a string literal in
-#      crates/host/punktfunk-host (same "docs describing removed things" class as gate 2).
+#      crates/host/rubyfunk-host (same "docs describing removed things" class as gate 2).
 #   5. data/platforms.json (the single source for install/port facts that docs, the website
 #      download page and the guided installer consume) must parse, and docs-site/src/data/
 #      platforms.json — the snapshot the <Install/> and <Ports/> MDX components render from
@@ -64,7 +64,7 @@ if [ "$(cksum < api/openapi.json)" != "$(cksum < docs-site/public/openapi.json)"
 fi
 
 # ---------------------------------------------------------------- gate 2: docs env vars exist
-git grep -ohE '(PUNKTFUNK|PFVD)_[A-Z0-9_]+' -- docs-site/content | sort -u > "$tmp/docs-vars"
+git grep -ohE '(RUBYFUNK|PFVD)_[A-Z0-9_]+' -- docs-site/content | sort -u > "$tmp/docs-vars"
 while IFS= read -r var; do
     # Read by another repository; listed with its owner.
     grep -qx "$var" scripts/ci/docs-external-env.txt && continue
@@ -77,15 +77,15 @@ done < "$tmp/docs-vars"
 # ---------------------------------------------------------------- gate 3: undocumented ratchet
 # Quoted occurrences only: env reads are quoted string literals; bare identifiers are
 # Rust constants / C symbols, not knobs. cbindgen.toml quotes every name it gives the C header
-# (PUNKTFUNK_FEATURE_*, the ABI constants); no process reads those from its environment.
+# (RUBYFUNK_FEATURE_*, the ABI constants); no process reads those from its environment.
 # The committed baseline enumerates today's undocumented set so a violation names the new knob.
 baseline=scripts/ci/docs-undocumented-env-baseline.txt
 sort -u "$baseline" > "$tmp/baseline"   # re-sort under our LC_ALL=C, whatever locale wrote it
-git grep -ohE '"(PUNKTFUNK|PFVD)_[A-Z0-9_]+"' -- ':!docs-site' ':!*.md' ':!*cbindgen.toml' | tr -d '"' | sort -u > "$tmp/code-vars"
+git grep -ohE '"(RUBYFUNK|PFVD)_[A-Z0-9_]+"' -- ':!docs-site' ':!*.md' ':!*cbindgen.toml' | tr -d '"' | sort -u > "$tmp/code-vars"
 comm -23 "$tmp/code-vars" "$tmp/docs-vars" > "$tmp/undocumented"
 comm -23 "$tmp/undocumented" "$tmp/baseline" > "$tmp/new-undocumented"
 if [ -s "$tmp/new-undocumented" ]; then
-    echo "::error::new PUNKTFUNK_* or PFVD_* vars are neither documented in docs-site nor in the baseline:"
+    echo "::error::new RUBYFUNK_* or PFVD_* vars are neither documented in docs-site nor in the baseline:"
     sed 's/^/  /' "$tmp/new-undocumented"
     echo "Document each in docs-site (configuration.md or the page owning the feature), or — for a deliberately internal knob — add it to $baseline in the same commit."
     fail=1
@@ -102,8 +102,8 @@ fi
 grep -E '^\|' 'docs-site/content/docs/(reference)/host-cli.md' | awk -F'|' '{print $2}' \
     | grep -oE '`[a-z0-9-]+`|`--[a-z-]+`' | tr -d '`' | sort -u > "$tmp/cli-cmds"
 while IFS= read -r cmd; do
-    if ! git grep -qF "\"$cmd\"" -- crates/host/punktfunk-host; then
-        echo "::error::host-cli.md documents \`$cmd\` but crates/host/punktfunk-host has no \"$cmd\" literal — removed or renamed; fix the docs page"
+    if ! git grep -qF "\"$cmd\"" -- crates/host/rubyfunk-host; then
+        echo "::error::host-cli.md documents \`$cmd\` but crates/host/rubyfunk-host has no \"$cmd\" literal — removed or renamed; fix the docs page"
         fail=1
     fi
 done < "$tmp/cli-cmds"
@@ -127,12 +127,12 @@ if [ "$(cksum < data/platforms.json)" != "$(cksum < docs-site/src/data/platforms
 fi
 
 # ---------------------------------------------------------------- gate 6: the installer stub stays dumb
-# scripts/install.sh is a stub: it downloads punktfunk-setup, verifies its sha256 and execs it
+# scripts/install.sh is a stub: it downloads rubyfunk-setup, verifies its sha256 and execs it
 # (design/installer-v2.md D1). Its whole value is being boring, so this checks that it still is.
 #
 # The install lines moved with the behaviour. The binary embeds data/platforms.json and generates
 # its commands from it, so they are verbatim by construction rather than by a substring check —
-# crates/install/punktfunk-setup/tests/plan_goldens.rs asserts it, and the detection and channel matrices
+# crates/install/rubyfunk-setup/tests/plan_goldens.rs asserts it, and the detection and channel matrices
 # that used to live below are now scripts/ci/check-installer-behavior.sh, run in the rust lane
 # where a binary can be built.
 if ! sh -n scripts/install.sh; then
@@ -145,8 +145,8 @@ if ! grep -q 'checksum mismatch' scripts/install.sh; then
     fail=1
 fi
 # The override installer-smoke drives the PR's own binary with.
-if ! grep -q 'PUNKTFUNK_SETUP_BIN' scripts/install.sh; then
-    echo "::error::scripts/install.sh lost the PUNKTFUNK_SETUP_BIN override"
+if ! grep -q 'RUBYFUNK_SETUP_BIN' scripts/install.sh; then
+    echo "::error::scripts/install.sh lost the RUBYFUNK_SETUP_BIN override"
     fail=1
 fi
 # The stub owns no options. A flag parsed here is a flag a years-old cached stub would not know,
@@ -164,8 +164,8 @@ elif command -v node >/dev/null 2>&1; then
 fi
 
 # ------------------------------------------------- gate 7: the web console's host-readiness gate
-# scripts/web-init.sh is what stops punktfunk-web.service from starting before the host has written
-# the files it cannot start without. `After=punktfunk-host.service` never did that (the host is
+# scripts/web-init.sh is what stops rubyfunk-web.service from starting before the host has written
+# the files it cannot start without. `After=rubyfunk-host.service` never did that (the host is
 # Type=simple), and the console's first enable on a fresh install failed at the systemd level as a
 # result — field report 2026-08-28, Omarchy. Run the real script against a faked config dir.
 wi="$tmp/web-init"
@@ -193,16 +193,16 @@ web_init_case() {
         fail=1
     fi
 }
-seed_token() { printf 'PUNKTFUNK_MGMT_TOKEN=deadbeef\n' > "$1/punktfunk/mgmt-token"; }
+seed_token() { printf 'RUBYFUNK_MGMT_TOKEN=deadbeef\n' > "$1/rubyfunk/mgmt-token"; }
 # $2 is the filename PREFIX: "native-" for the current identity, "" for the legacy pair.
-seed_pair() { printf 'cert\n' > "$1/punktfunk/$2cert.pem"; printf 'key\n' > "$1/punktfunk/$2key.pem"; }
+seed_pair() { printf 'cert\n' > "$1/rubyfunk/$2cert.pem"; printf 'key\n' > "$1/rubyfunk/$2key.pem"; }
 
 # A bare config dir: nothing the console needs. It must WAIT, then give up cleanly (exit 0, so the
 # console still starts and its Restart backstop takes over) — never fail the unit.
-mkdir -p "$wi/empty/punktfunk"
+mkdir -p "$wi/empty/rubyfunk"
 run_web_init 1 "$wi/empty"
 web_init_case "nothing written yet" wait
-case "$wi_out" in *'waiting for punktfunk-host'*) ;; *)
+case "$wi_out" in *'waiting for rubyfunk-host'*) ;; *)
     echo "::error::web-init.sh never announced the wait — the sleep path did not run:"
     printf '%s\n' "$wi_out" | sed 's/^/    /'
     fail=1 ;;
@@ -212,14 +212,14 @@ esac
 # cert LAST (inside mgmt::run), so a gate that waits for the token alone still hands the console a
 # directory with no cert to listen with — it just moves the failure. Token present, cert absent
 # must still WAIT.
-mkdir -p "$wi/token-only/punktfunk"
+mkdir -p "$wi/token-only/rubyfunk"
 seed_token "$wi/token-only"
 run_web_init 1 "$wi/token-only"
 web_init_case "token written, identity cert not yet" wait
 
 # Everything present: return immediately, no sleeping. This is every start after the host's first
 # run, so it has to be free.
-mkdir -p "$wi/native/punktfunk"
+mkdir -p "$wi/native/rubyfunk"
 seed_token "$wi/native"
 seed_pair "$wi/native" native-
 run_web_init 30 "$wi/native"
@@ -229,7 +229,7 @@ web_init_case "token + native identity present" ready
 # A host that never took the identity split serves the LEGACY pair and has no native-*.pem at all
 # (crate::identity / web/nitro-entry/tls-paths.mjs). Waiting for a file it will never write would
 # stall the console on every upgraded box.
-mkdir -p "$wi/legacy/punktfunk"
+mkdir -p "$wi/legacy/rubyfunk"
 seed_token "$wi/legacy"
 seed_pair "$wi/legacy" ""
 run_web_init 30 "$wi/legacy"
@@ -237,7 +237,7 @@ web_init_case "token + legacy identity present" ready
 
 # The property the whole gate is for: it must NOTICE the files arriving and stop waiting, rather
 # than sleeping out its whole budget. Written in the host's real order (token, then cert).
-mkdir -p "$wi/late/punktfunk"
+mkdir -p "$wi/late/rubyfunk"
 (
     sleep 2
     seed_token "$wi/late"
@@ -252,39 +252,39 @@ if [ "$wi_secs" -lt 2 ] || [ "$wi_secs" -ge 30 ]; then
 fi
 # ------------------------------------- the bind line, which decides whether the console disappears
 #
-# web-init.sh names PUNKTFUNK_UI_BIND in host.env once. A missing line becomes the LAN default on
+# web-init.sh names RUBYFUNK_UI_BIND in host.env once. A missing line becomes the LAN default on
 # a fresh box and an upgrade alike, and a line the operator wrote is never touched.
-bind_of() { sed -n 's/^PUNKTFUNK_UI_BIND=//p' "$1/punktfunk/host.env" 2>/dev/null | tail -n1; }
+bind_of() { sed -n 's/^RUBYFUNK_UI_BIND=//p' "$1/rubyfunk/host.env" 2>/dev/null | tail -n1; }
 bind_case() {
     _got=$(bind_of "$2")
     [ "$_got" = "$3" ] && return
-    echo "::error::web-init.sh ($1): PUNKTFUNK_UI_BIND is '$_got', expected '$3'"
+    echo "::error::web-init.sh ($1): RUBYFUNK_UI_BIND is '$_got', expected '$3'"
     fail=1
 }
 
-mkdir -p "$wi/bind-fresh/punktfunk"
+mkdir -p "$wi/bind-fresh/rubyfunk"
 seed_token "$wi/bind-fresh"
 seed_pair "$wi/bind-fresh" native-
 run_web_init 1 "$wi/bind-fresh"
 bind_case "fresh install" "$wi/bind-fresh" 0.0.0.0
 
-mkdir -p "$wi/bind-upgrade/punktfunk"
+mkdir -p "$wi/bind-upgrade/rubyfunk"
 seed_token "$wi/bind-upgrade"
 seed_pair "$wi/bind-upgrade" native-
-printf 'PUNKTFUNK_UI_PASSWORD=hunter2\n' > "$wi/bind-upgrade/punktfunk/web-password"
+printf 'RUBYFUNK_UI_PASSWORD=hunter2\n' > "$wi/bind-upgrade/rubyfunk/web-password"
 run_web_init 1 "$wi/bind-upgrade"
 bind_case "upgrade" "$wi/bind-upgrade" 0.0.0.0
 
 # An operator's answer is never rewritten, and a second run never appends a second line.
-mkdir -p "$wi/bind-set/punktfunk"
+mkdir -p "$wi/bind-set/rubyfunk"
 seed_token "$wi/bind-set"
 seed_pair "$wi/bind-set" native-
-printf 'PUNKTFUNK_UI_BIND=100.64.0.3\n' > "$wi/bind-set/punktfunk/host.env"
+printf 'RUBYFUNK_UI_BIND=100.64.0.3\n' > "$wi/bind-set/rubyfunk/host.env"
 run_web_init 1 "$wi/bind-set"
 run_web_init 1 "$wi/bind-set"
 bind_case "an existing line wins" "$wi/bind-set" 100.64.0.3
-_n=$(grep -c '^PUNKTFUNK_UI_BIND=' "$wi/bind-set/punktfunk/host.env")
-[ "$_n" = 1 ] || { echo "::error::web-init.sh wrote PUNKTFUNK_UI_BIND $_n times"; fail=1; }
+_n=$(grep -c '^RUBYFUNK_UI_BIND=' "$wi/bind-set/rubyfunk/host.env")
+[ "$_n" = 1 ] || { echo "::error::web-init.sh wrote RUBYFUNK_UI_BIND $_n times"; fail=1; }
 
 rm -rf "$wi"
 

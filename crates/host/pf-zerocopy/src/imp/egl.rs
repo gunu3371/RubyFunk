@@ -35,7 +35,7 @@ use gl::*;
 /// NVIDIA PCI vendor: the render node this importer falls back to when CUDA cannot name its own.
 const PCI_VENDOR_NVIDIA: u32 = 0x10de;
 
-/// NVIDIA DRM render node: `PUNKTFUNK_ZEROCOPY_RENDER_NODE`, else the node on CUDA device 0's
+/// NVIDIA DRM render node: `RUBYFUNK_ZEROCOPY_RENDER_NODE`, else the node on CUDA device 0's
 /// PCI slot, else the first `/dev/dri/renderD*` whose sysfs PCI vendor is NVIDIA, else
 /// `/dev/dri/renderD128`.
 ///
@@ -45,7 +45,7 @@ const PCI_VENDOR_NVIDIA: u32 = 0x10de;
 /// helper follows the operator VAAPI preference, which may name the iGPU.
 fn nvidia_render_node() -> std::path::PathBuf {
     use std::path::{Path, PathBuf};
-    if let Some(p) = std::env::var_os("PUNKTFUNK_ZEROCOPY_RENDER_NODE").filter(|s| !s.is_empty()) {
+    if let Some(p) = std::env::var_os("RUBYFUNK_ZEROCOPY_RENDER_NODE").filter(|s| !s.is_empty()) {
         return PathBuf::from(p);
     }
     let cuda_slot = cuda::device_pci_bus_id().ok();

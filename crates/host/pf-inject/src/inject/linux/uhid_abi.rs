@@ -218,7 +218,7 @@ impl UhidDevice {
             .custom_flags(libc::O_NONBLOCK)
             .open(UHID_PATH)
             .with_context(|| {
-                format!("open {UHID_PATH} (is the 60-punktfunk.rules uhid rule installed + are you in 'input'?)")
+                format!("open {UHID_PATH} (is the 60-rubyfunk.rules uhid rule installed + are you in 'input'?)")
             })?;
         let mut dev = UhidDevice {
             fd,

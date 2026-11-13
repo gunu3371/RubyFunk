@@ -1,6 +1,6 @@
 ---
 title: Bazzite
-description: Install the Punktfunk host on Bazzite (or any Fedora Atomic spin) as a sysext — no layering, no reboot — and stream both Gaming Mode and the desktop.
+description: Install the RubyFunk host on Bazzite (or any Fedora Atomic spin) as a sysext — no layering, no reboot — and stream both Gaming Mode and the desktop.
 ---
 
 Install the host on **Bazzite** or another Fedora Atomic spin. Bazzite already ships the GPU driver,
@@ -19,9 +19,9 @@ and it survives OS updates.
 
 <Install platform="bazzite" />
 
-This installs the host, the console, the tray, the plugin runner and the HDR `punktfunk-gamescope`
-build. `sudo punktfunk-sysext update` updates it and restarts the services, or use the
-[console](/docs/updating); `sudo punktfunk-sysext status` shows the installed build.
+This installs the host, the console, the tray, the plugin runner and the HDR `rubyfunk-gamescope`
+build. `sudo rubyfunk-sysext update` updates it and restarts the services, or use the
+[console](/docs/updating); `sudo rubyfunk-sysext status` shows the installed build.
 
 ## 2. Let it use your controllers
 
@@ -30,7 +30,7 @@ and back in**:
 
 ```sh
 ujust add-user-to-input-group add    # virtual gamepads
-sudo usermod -aG punktfunk "$USER"   # virtual Steam Deck controller
+sudo usermod -aG rubyfunk "$USER"   # virtual Steam Deck controller
 ```
 
 ## 3. Start it
@@ -39,7 +39,7 @@ Enable the services and linger from a terminal in the desktop session. Without l
 waits for a login that a headless box never gets:
 
 ```sh
-systemctl --user enable --now punktfunk-host punktfunk-web
+systemctl --user enable --now rubyfunk-host rubyfunk-web
 sudo loginctl enable-linger "$USER"
 ```
 
@@ -47,7 +47,7 @@ To stream the **KDE desktop** (Gaming Mode needs neither step): log out and back
 session once, then seed the input grant so the host doesn't wait on a dialog nobody answers:
 
 ```sh
-bash /usr/share/punktfunk/bazzite/kde-desktop-setup.sh
+bash /usr/share/rubyfunk/bazzite/kde-desktop-setup.sh
 ```
 
 ## 4. Open the firewall
@@ -57,11 +57,11 @@ the console for other devices:
 
 ```sh
 sudo firewall-cmd --reload   # load the service definitions the image installed
-sudo firewall-cmd --permanent --add-service=punktfunk-native --add-service=punktfunk-web
+sudo firewall-cmd --permanent --add-service=rubyfunk-native --add-service=rubyfunk-web
 sudo firewall-cmd --reload
 ```
 
-For [Moonlight](/docs/moonlight), also add `punktfunk-gamestream` ([Ports & firewall](/docs/ports)).
+For [Moonlight](/docs/moonlight), also add `rubyfunk-gamestream` ([Ports & firewall](/docs/ports)).
 
 **Next:** [Quick Start, step 3](/docs/quickstart#3-open-the-web-console): open the console and pair
 a device.
@@ -76,4 +76,4 @@ a device.
   [Updating](/docs/updating#bazzite-sysext-channels-rollback-and-rebases). Remove:
   [Uninstall](/docs/uninstall#bazzite--fedora-atomic-systemd-sysext).
 - Already layered with `rpm-ostree`? Install the sysext, which takes over at once, then
-  `sudo rpm-ostree uninstall punktfunk punktfunk-web && systemctl reboot`.
+  `sudo rpm-ostree uninstall rubyfunk rubyfunk-web && systemctl reboot`.

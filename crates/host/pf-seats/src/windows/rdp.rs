@@ -1,6 +1,6 @@
 //! The trusted RDP leaf pin, stored in the seat root.
 //!
-//! `punktfunk-seat-keeper trust` records the SHA-256 of TermService's TLS leaf here. The
+//! `rubyfunk-seat-keeper trust` records the SHA-256 of TermService's TLS leaf here. The
 //! supervisor reads it into every keeper's bootstrap, and the keeper refuses any other leaf
 //! before CredSSP can send a credential. A changed leaf is never stored without `replace`:
 //! turning seats on is the operator's yes, and the supervisor refuses to start a keeper
@@ -57,7 +57,7 @@ pub(super) fn load_pin(root: &SecretRoot) -> WinResult<[u8; 32]> {
     load_pin_optional(root)?.ok_or_else(|| {
         backend_error(
             "rdp_pin_missing",
-            "RDP certificate pin is missing; run 'punktfunk-seat-keeper trust' elevated",
+            "RDP certificate pin is missing; run 'rubyfunk-seat-keeper trust' elevated",
         )
     })
 }

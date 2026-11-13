@@ -5,7 +5,7 @@
 //!
 //! Capture is packed RGB (dmabuf/CPU). The backend imports it, runs on-GPU RGB→4:2:0 compute CSC,
 //! then encodes: 8-bit BT.709 (`rgb2yuv.comp`) or 10-bit BT.2020 (`rgb2yuv10.comp` + HEVC Main10).
-//! Opt-in via `PUNKTFUNK_VULKAN_ENCODE`; gated to HEVC/AV1 plus a device that advertises the encode
+//! Opt-in via `RUBYFUNK_VULKAN_ENCODE`; gated to HEVC/AV1 plus a device that advertises the encode
 //! op. AV1 encode structs that pinned `ash 0.38` predates live in `vk_av1_encode.rs`.
 //! Evidence: `design/vkenc-probe-harness`.
 // UNSAFE-LINT EXEMPTION: raw ash/Vulkan Video against an app-owned DPB. Wrapping each call would
@@ -188,7 +188,7 @@ fn intra_refresh_chain(
 
 /// Whether this session may run a row-based intra refresh wave. Needs the extension, its
 /// feature, `BLOCK_ROW_BASED`, regions independent of our single slice, a cycle of at least 2
-/// and one active reference. `PUNKTFUNK_INTRA_REFRESH=0` opts out. `Err` is the log reason.
+/// and one active reference. `RUBYFUNK_INTRA_REFRESH=0` opts out. `Err` is the log reason.
 fn intra_refresh_caps(
     advertised: bool,
     feature: bool,
@@ -196,7 +196,7 @@ fn intra_refresh_caps(
 ) -> std::result::Result<IntraRefreshCaps, &'static str> {
     use super::vk_intra_refresh as vir;
     if !crate::rfi::wave_enabled() {
-        return Err("off(PUNKTFUNK_INTRA_REFRESH=0)");
+        return Err("off(RUBYFUNK_INTRA_REFRESH=0)");
     }
     if !advertised {
         return Err("unsupported(extension not advertised)");
@@ -230,7 +230,7 @@ struct RgbDirect {
     /// ALIGNED `codedExtent` (EFC would read past it). Each frame copies into a per-slot ALIGNED
     /// BGRA staging image with edge rows/columns duplicated, then encodes from there.
     padded: bool,
-    /// Unaligned-mode default (`PUNKTFUNK_VULKAN_RGB_TRUE_EXTENT=0` falls back to `padded`):
+    /// Unaligned-mode default (`RUBYFUNK_VULKAN_RGB_TRUE_EXTENT=0` falls back to `padded`):
     /// import the visible-size buffer and pass TRUE-SIZE source `codedExtent`. RADV programs
     /// nonzero firmware padding from it (Mesa ≥ 24.2 `session_init` from
     /// `srcPictureResource.codedExtent`; see [`OpenSpec::native_nv12`]).
@@ -331,13 +331,13 @@ fn log_rgb_direct_source(
             ) =>
                 "active(true-extent: unaligned mode, direct import with the true-size \
                  source codedExtent — RADV firmware padding covers the alignment rows; \
-                 PUNKTFUNK_VULKAN_RGB_TRUE_EXTENT=0 restores the padded copy)",
+                 RUBYFUNK_VULKAN_RGB_TRUE_EXTENT=0 restores the padded copy)",
             (_, _, Some(RgbDirect { padded: false, .. })) => "active",
             (_, _, Some(RgbDirect { padded: true, .. })) =>
                 "active(padded-copy: mode is not 64x16-aligned — staging blit + edge \
                  duplication instead of the direct import)",
             (Ok(_), false, None) => match rgb_request {
-                Some(false) => "available(off: PUNKTFUNK_VULKAN_RGB_DIRECT=0)",
+                Some(false) => "available(off: RUBYFUNK_VULKAN_RGB_DIRECT=0)",
                 _ =>
                     "available(off: this session composites the pointer, which EFC \
                      cannot — a cursor channel or a compositor that embeds it restores \
@@ -1015,7 +1015,7 @@ struct Frame {
     csc_sem: vk::Semaphore, // compute → encode, this frame only
     fence: vk::Fence,
     query_pool: vk::QueryPool,
-    // `PUNKTFUNK_PERF` timestamps: [0]=batch start, [1]=end. Null otherwise.
+    // `RUBYFUNK_PERF` timestamps: [0]=batch start, [1]=end. Null otherwise.
     ts_pool: vk::QueryPool,
     // Pool existence is not proof it was written: padded-RGB CPU-upload records its own
     // command buffer and writes none. Reading an unreset query with `WAIT` is undefined.
@@ -1163,7 +1163,7 @@ pub struct VulkanVideoEncoder {
     /// Resolved quality level ([`Knobs::vulkan_quality`], clamped). First-frame
     /// `ENCODE_QUALITY_LEVEL` and session-parameters must match.
     quality_level: u32,
-    /// `PUNKTFUNK_PERF` timestamp period (ns). 0.0 = disabled or unsupported.
+    /// `RUBYFUNK_PERF` timestamp period (ns). 0.0 = disabled or unsupported.
     ts_period_ns: f64,
     perf_at: std::time::Instant,
     /// The window's slowest import, submit, wait and read, with the stall warning's clock.
@@ -1224,7 +1224,7 @@ unsafe impl Send for VulkanVideoEncoder {}
 impl VulkanVideoEncoder {
     /// Open a session. `cursor_blend` means the encoder may receive cursor bitmaps to composite.
     /// EFC cannot blend, so those sessions default to CSC; everywhere else RGB-direct is the
-    /// default wherever the probe passes. `PUNKTFUNK_VULKAN_RGB_DIRECT` overrides both ways
+    /// default wherever the probe passes. `RUBYFUNK_VULKAN_RGB_DIRECT` overrides both ways
     /// (see [`Knobs::vulkan_rgb_direct`]).
     pub fn open(
         codec: Codec,
@@ -1264,7 +1264,7 @@ impl VulkanVideoEncoder {
         // negotiation promised the client a composited pointer.
         if cursor_blend && knobs.vulkan_rgb_direct == Some(true) {
             tracing::info!(
-                "PUNKTFUNK_VULKAN_RGB_DIRECT=1 ignored for this session — it composites the \
+                "RUBYFUNK_VULKAN_RGB_DIRECT=1 ignored for this session — it composites the \
                  pointer, which the EFC front-end cannot; using the compute-CSC path"
             );
         }
@@ -1501,7 +1501,7 @@ impl VulkanVideoEncoder {
                 .context("no compute queue")?;
             (fam as u32, qf[fam].timestamp_valid_bits)
         };
-        // `PUNKTFUNK_PERF`. `ts_period_ns==0.0` keeps timestamp sites off the hot path.
+        // `RUBYFUNK_PERF`. `ts_period_ns==0.0` keeps timestamp sites off the hot path.
         let ts_period_ns = if pf_host_config::config().perf && compute_ts_bits > 0 {
             instance
                 .get_physical_device_properties(pd)
@@ -1581,7 +1581,7 @@ impl VulkanVideoEncoder {
         tracing::info!(
             quality_level,
             max_quality_levels,
-            "vulkan-encode: quality level (0 = fastest preset; PUNKTFUNK_VULKAN_QUALITY overrides)"
+            "vulkan-encode: quality level (0 = fastest preset; RUBYFUNK_VULKAN_QUALITY overrides)"
         );
         let (rc_mode, vbv_ms, bitrate) = rc_plan(
             rate_control_modes,

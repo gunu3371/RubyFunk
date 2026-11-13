@@ -21,7 +21,7 @@ use std::time::Duration;
 const BUDGET: Duration = Duration::from_secs(2);
 
 /// Name the probe asks Umbriel to destroy. Nothing ever creates it.
-const PROBE_NAME: &str = "punktfunk-probe";
+const PROBE_NAME: &str = "rubyfunk-probe";
 
 /// Umbriel's answer to a request it could not parse.
 const MALFORMED: &str = "malformed request";
@@ -341,8 +341,8 @@ mod tests {
     #[test]
     fn only_an_unknown_command_means_an_umbriel_too_old() {
         assert!(unknown_command("unknown command: output-destroy"));
-        assert!(!unknown_command("not a virtual output: punktfunk-probe"));
-        assert!(!unknown_command("unknown output: punktfunk-probe"));
+        assert!(!unknown_command("not a virtual output: rubyfunk-probe"));
+        assert!(!unknown_command("unknown output: rubyfunk-probe"));
     }
 
     #[test]

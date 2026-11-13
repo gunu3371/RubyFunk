@@ -1,9 +1,9 @@
 //! DXGI adapter enumeration for the Settings "GPU" picker.
 //!
-//! Streaming (decode + present) runs in the spawned `punktfunk-session` binary; the shell only
+//! Streaming (decode + present) runs in the spawned `rubyfunk-session` binary; the shell only
 //! needs the list of real (hardware) adapters to offer on a multi-GPU box (a hybrid laptop or an
 //! eGPU). The picked adapter description is persisted (`crate::trust::Settings::adapter`) and read
-//! by the session child at connect (`PUNKTFUNK_VK_ADAPTER` remains the session binary's env
+//! by the session child at connect (`RUBYFUNK_VK_ADAPTER` remains the session binary's env
 //! override).
 
 use windows::core::Interface;
@@ -49,7 +49,7 @@ fn all_adapters() -> Vec<IDXGIAdapter> {
 ///
 /// **Deduplicated by description**, because the description IS the identity everywhere
 /// downstream: the pick is persisted as that string (`Settings::adapter`) and matched by
-/// name in the session binary (`PUNKTFUNK_VK_ADAPTER`). So two entries with the same name
+/// name in the session binary (`RUBYFUNK_VK_ADAPTER`). So two entries with the same name
 /// are one selectable choice however many times DXGI enumerates them — listing it twice
 /// only offers the user a meaningless coin flip. Seen live on an Intel Arc laptop
 /// (2026-07-19), whose Vulkan ICD likewise enumerates the one physical iGPU twice.

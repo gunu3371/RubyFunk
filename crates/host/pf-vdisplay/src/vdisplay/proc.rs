@@ -618,7 +618,7 @@ mod tests {
         const BYTES: usize = 1024 * 1024;
         let mut cmd = Command::new("sh");
         cmd.arg("-c")
-            .arg(format!("yes punktfunk | head -c {BYTES}; echo done >&2"));
+            .arg(format!("yes rubyfunk | head -c {BYTES}; echo done >&2"));
         let out = output_within(&mut cmd, Duration::from_secs(20)).expect("must not time out");
         assert!(out.status.success(), "helper failed: {:?}", out.status);
         assert_eq!(out.stdout.len(), BYTES, "stdout was truncated");
@@ -633,9 +633,9 @@ mod tests {
     fn a_grandchild_holding_the_pipe_does_not_park_the_caller() {
         let started = Instant::now();
         let mut cmd = Command::new("sh");
-        cmd.arg("-c").arg("sleep 30 & echo punktfunk");
+        cmd.arg("-c").arg("sleep 30 & echo rubyfunk");
         let out = output_within(&mut cmd, Duration::from_secs(10)).expect("the helper exited");
-        assert_eq!(String::from_utf8_lossy(&out.stdout).trim(), "punktfunk");
+        assert_eq!(String::from_utf8_lossy(&out.stdout).trim(), "rubyfunk");
         assert!(
             started.elapsed() < Duration::from_secs(5),
             "the call waited on the grandchild's EOF (took {:?})",
@@ -673,13 +673,10 @@ mod tests {
         let st = status_within(&mut Command::new("true"), Duration::from_secs(5)).expect("ran");
         assert!(st.success());
 
-        let out = output_within(
-            Command::new("echo").arg("punktfunk"),
-            Duration::from_secs(5),
-        )
-        .expect("ran");
+        let out = output_within(Command::new("echo").arg("rubyfunk"), Duration::from_secs(5))
+            .expect("ran");
         assert!(out.status.success());
-        assert_eq!(String::from_utf8_lossy(&out.stdout).trim(), "punktfunk");
+        assert_eq!(String::from_utf8_lossy(&out.stdout).trim(), "rubyfunk");
     }
 }
 
@@ -979,12 +976,12 @@ mod tests_windows {
         assert!(st.success());
 
         let out = output_within(
-            Command::new("cmd").args(["/c", "echo punktfunk"]),
+            Command::new("cmd").args(["/c", "echo rubyfunk"]),
             Duration::from_secs(5),
         )
         .expect("ran");
         assert!(out.status.success());
-        assert_eq!(String::from_utf8_lossy(&out.stdout).trim(), "punktfunk");
+        assert_eq!(String::from_utf8_lossy(&out.stdout).trim(), "rubyfunk");
     }
 
     /// A scratch directory for the tree test's marker files, removed on drop.

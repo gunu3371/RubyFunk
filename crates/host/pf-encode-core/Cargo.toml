@@ -8,7 +8,7 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license = "MIT OR Apache-2.0"
-description = "punktfunk video encode contract: the Encoder trait and the policy its backends share."
+description = "rubyfunk video encode contract: the Encoder trait and the policy its backends share."
 publish = false
 
 [dependencies]

@@ -4,7 +4,7 @@
 # here instead; the image is content-keyed and rebuilt only when the ci/ tree changes
 # (docker.yml `builders`).
 #
-#   docker build -f ci/android-ci.Dockerfile -t punktfunk-android-ci ci
+#   docker build -f ci/android-ci.Dockerfile -t rubyfunk-android-ci ci
 #
 # Version pins mirror what android.yml installed via sdkmanager: AGP 9.4 wants JDK 17–21;
 # cmake;3.22.1 because kit/build.gradle.kts prepends $ANDROID_SDK/cmake/3.22.1/bin to PATH

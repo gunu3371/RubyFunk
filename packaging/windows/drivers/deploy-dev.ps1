@@ -17,7 +17,7 @@
 
   Re-deploying needs a HIGHER DriverVer than the installed one or pnputil silently keeps the old binary —
   hence the 9.9.MMdd.HHmm scheme (also what the installer build uses; a later-minute dev redeploy wins).
-  If the host service is running it holds the driver: `punktfunk-host service stop`, deploy, then start it.
+  If the host service is running it holds the driver: `rubyfunk-host service stop`, deploy, then start it.
 .PARAMETER Install
   Also add the driver package to the store + (if absent) create the Root\pf_vdisplay devnode via nefconc.
   Needs an ELEVATED shell.
@@ -72,7 +72,7 @@ Write-Host "staged + signed pf-vdisplay (new tree)  DriverVer=$ver  ->  $Stage"
 if ($Install) {
     & pnputil /add-driver $stagedInf /install
     $present = Get-PnpDevice -EA SilentlyContinue |
-        Where-Object { $_.InstanceId -match 'PF_VDISPLAY' -or $_.FriendlyName -match 'punktfunk Virtual Display' }
+        Where-Object { $_.InstanceId -match 'PF_VDISPLAY' -or $_.FriendlyName -match 'rubyfunk Virtual Display' }
     if (-not $present) {
         if (-not (Test-Path $Nefconc)) { throw "nefconc not found: $Nefconc" }
         & $Nefconc --create-device-node --hardware-id 'root\pf_vdisplay' --class-name Display --class-guid '{4d36e968-e325-11ce-bfc1-08002be10318}' | Out-Null

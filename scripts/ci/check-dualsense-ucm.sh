@@ -70,7 +70,7 @@ ucm() { ALSA_CONFIG_UCM2="$TREE" alsaucm -c pftest "$@" 2>&1 | grep -v 'no sound
 before="$(ucm set _verb Default list _devices | grep -c 'SpeakerHaptic' || true)"
 
 cp -a "$OVERLAY/USB-Audio/." "$TREE/USB-Audio/"
-find "$TREE/USB-Audio/Punktfunk" -name '*.conf' -exec sed -i.bak -e 's|${CardId}|Controller|g' {} +
+find "$TREE/USB-Audio/RubyFunk" -name '*.conf' -exec sed -i.bak -e 's|${CardId}|Controller|g' {} +
 find "$TREE" -name '*.conf.bak' -delete
 
 after="$(ucm set _verb Default list _devices || true)"

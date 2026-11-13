@@ -1,29 +1,29 @@
 {
-  "$comment": "Cross-language contract for the punktfunk:// grammar (design/client-deep-links.md §2). The Rust (crates/client/pf-client-core/src/deeplink.rs), Swift (PunktfunkShared/DeepLink.swift) and Kotlin parsers each run every case in their own test suite, so the three cannot drift into three different security postures. `expect` fields absent from a case must parse as absent; `emit` is the canonical URL the parsed link must serialise back to (note that pf:// never round-trips — it is an accepted input alias, never an output). `error` is the stable refusal code, not a message. `profile` is the pre-rename spelling of `preset`: it still parses (`preset` wins wherever it sits), and emitters write both so an older parser keeps the preset. `as` names the profile to play as (design/profiles-and-seats.md §10.2).",
+  "$comment": "Cross-language contract for the rubyfunk:// grammar (design/client-deep-links.md §2). The Rust (crates/client/pf-client-core/src/deeplink.rs), Swift (RubyFunkShared/DeepLink.swift) and Kotlin parsers each run every case in their own test suite, so the three cannot drift into three different security postures. `expect` fields absent from a case must parse as absent; `emit` is the canonical URL the parsed link must serialise back to (note that pf:// never round-trips — it is an accepted input alias, never an output). `error` is the stable refusal code, not a message. `profile` is the pre-rename spelling of `preset`: it still parses (`preset` wins wherever it sits), and emitters write both so an older parser keeps the preset. `as` names the profile to play as (design/profiles-and-seats.md §10.2).",
   "version": 2,
   "cases": [
     {
       "name": "apple-shipped-uuid",
-      "url": "punktfunk://connect/11111111-2222-4333-8444-555555555555",
+      "url": "rubyfunk://connect/11111111-2222-4333-8444-555555555555",
       "expect": {
         "route": "connect",
         "host_ref": "11111111-2222-4333-8444-555555555555"
       },
-      "emit": "punktfunk://connect/11111111-2222-4333-8444-555555555555"
+      "emit": "rubyfunk://connect/11111111-2222-4333-8444-555555555555"
     },
     {
       "name": "apple-shipped-launch",
-      "url": "punktfunk://connect/11111111-2222-4333-8444-555555555555?launch=steam:570",
+      "url": "rubyfunk://connect/11111111-2222-4333-8444-555555555555?launch=steam:570",
       "expect": {
         "route": "connect",
         "host_ref": "11111111-2222-4333-8444-555555555555",
         "launch": "steam:570"
       },
-      "emit": "punktfunk://connect/11111111-2222-4333-8444-555555555555?launch=steam:570"
+      "emit": "rubyfunk://connect/11111111-2222-4333-8444-555555555555?launch=steam:570"
     },
     {
       "name": "bare-reference-without-a-route",
-      "url": "punktfunk://11111111-2222-4333-8444-555555555555",
+      "url": "rubyfunk://11111111-2222-4333-8444-555555555555",
       "expect": {
         "route": "connect",
         "host_ref": "11111111-2222-4333-8444-555555555555"
@@ -31,7 +31,7 @@
     },
     {
       "name": "scheme-case-is-ignored",
-      "url": "PunktFunk://CONNECT/Desk",
+      "url": "RuByFuNk://CONNECT/Desk",
       "expect": {
         "route": "connect",
         "host_ref": "Desk"
@@ -44,11 +44,11 @@
         "route": "connect",
         "host_ref": "Desk"
       },
-      "emit": "punktfunk://connect/Desk"
+      "emit": "rubyfunk://connect/Desk"
     },
     {
       "name": "trailing-slash-tolerated",
-      "url": "punktfunk://connect/Desk/",
+      "url": "rubyfunk://connect/Desk/",
       "expect": {
         "route": "connect",
         "host_ref": "Desk"
@@ -56,7 +56,7 @@
     },
     {
       "name": "address-reference-with-port",
-      "url": "punktfunk://connect/192.168.1.50:9777",
+      "url": "rubyfunk://connect/192.168.1.50:9777",
       "expect": {
         "route": "connect",
         "host_ref": "192.168.1.50:9777"
@@ -64,16 +64,16 @@
     },
     {
       "name": "percent-encoded-host-name",
-      "url": "punktfunk://connect/Wohnzimmer%20PC",
+      "url": "rubyfunk://connect/Wohnzimmer%20PC",
       "expect": {
         "route": "connect",
         "host_ref": "Wohnzimmer PC"
       },
-      "emit": "punktfunk://connect/Wohnzimmer%20PC"
+      "emit": "rubyfunk://connect/Wohnzimmer%20PC"
     },
     {
       "name": "self-emitted-full-form",
-      "url": "punktfunk://connect/11111111-2222-4333-8444-555555555555?fp=cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc&host=192.168.1.50:7777&launch=steam:570&preset=aaaaaaaaaaaa&profile=aaaaaaaaaaaa",
+      "url": "rubyfunk://connect/11111111-2222-4333-8444-555555555555?fp=cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc&host=192.168.1.50:7777&launch=steam:570&preset=aaaaaaaaaaaa&profile=aaaaaaaaaaaa",
       "expect": {
         "route": "connect",
         "host_ref": "11111111-2222-4333-8444-555555555555",
@@ -83,11 +83,11 @@
         "launch": "steam:570",
         "preset": "aaaaaaaaaaaa"
       },
-      "emit": "punktfunk://connect/11111111-2222-4333-8444-555555555555?fp=cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc&host=192.168.1.50:7777&launch=steam:570&preset=aaaaaaaaaaaa&profile=aaaaaaaaaaaa"
+      "emit": "rubyfunk://connect/11111111-2222-4333-8444-555555555555?fp=cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc&host=192.168.1.50:7777&launch=steam:570&preset=aaaaaaaaaaaa&profile=aaaaaaaaaaaa"
     },
     {
       "name": "fingerprint-is-normalised-to-lowercase",
-      "url": "punktfunk://connect/Desk?fp=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "url": "rubyfunk://connect/Desk?fp=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
       "expect": {
         "route": "connect",
         "host_ref": "Desk",
@@ -96,7 +96,7 @@
     },
     {
       "name": "host-parameter-defaults-to-9777",
-      "url": "punktfunk://connect/Desk?host=192.168.1.50",
+      "url": "rubyfunk://connect/Desk?host=192.168.1.50",
       "expect": {
         "route": "connect",
         "host_ref": "Desk",
@@ -106,7 +106,7 @@
     },
     {
       "name": "host-parameter-ipv6-bracketed",
-      "url": "punktfunk://connect/Desk?host=%5B::1%5D:7777",
+      "url": "rubyfunk://connect/Desk?host=%5B::1%5D:7777",
       "expect": {
         "route": "connect",
         "host_ref": "Desk",
@@ -116,7 +116,7 @@
     },
     {
       "name": "wake-route-parses",
-      "url": "punktfunk://wake/Desk",
+      "url": "rubyfunk://wake/Desk",
       "expect": {
         "route": "wake",
         "host_ref": "Desk"
@@ -124,7 +124,7 @@
     },
     {
       "name": "browse-route-parses",
-      "url": "punktfunk://browse/Desk",
+      "url": "rubyfunk://browse/Desk",
       "expect": {
         "route": "browse",
         "host_ref": "Desk"
@@ -132,27 +132,27 @@
     },
     {
       "name": "legacy-profile-parameter-is-a-preset",
-      "url": "punktfunk://connect/Desk?profile=Work",
+      "url": "rubyfunk://connect/Desk?profile=Work",
       "expect": {
         "route": "connect",
         "host_ref": "Desk",
         "preset": "Work"
       },
-      "emit": "punktfunk://connect/Desk?preset=Work&profile=Work"
+      "emit": "rubyfunk://connect/Desk?preset=Work&profile=Work"
     },
     {
       "name": "preset-by-name",
-      "url": "punktfunk://connect/Desk?preset=Work",
+      "url": "rubyfunk://connect/Desk?preset=Work",
       "expect": {
         "route": "connect",
         "host_ref": "Desk",
         "preset": "Work"
       },
-      "emit": "punktfunk://connect/Desk?preset=Work&profile=Work"
+      "emit": "rubyfunk://connect/Desk?preset=Work&profile=Work"
     },
     {
       "name": "as-names-the-profile-beside-the-preset",
-      "url": "punktfunk://connect/couch-pc?as=Kid&launch=steam:570&profile=Work",
+      "url": "rubyfunk://connect/couch-pc?as=Kid&launch=steam:570&profile=Work",
       "expect": {
         "route": "connect",
         "host_ref": "couch-pc",
@@ -163,7 +163,7 @@
     },
     {
       "name": "preset-wins-over-the-legacy-spelling",
-      "url": "punktfunk://connect/Desk?profile=Old&preset=New",
+      "url": "rubyfunk://connect/Desk?profile=Old&preset=New",
       "expect": {
         "route": "connect",
         "host_ref": "Desk",
@@ -172,7 +172,7 @@
     },
     {
       "name": "preset-wins-even-when-it-comes-first",
-      "url": "punktfunk://connect/Desk?preset=New&profile=Old",
+      "url": "rubyfunk://connect/Desk?preset=New&profile=Old",
       "expect": {
         "route": "connect",
         "host_ref": "Desk",
@@ -181,7 +181,7 @@
     },
     {
       "name": "an-empty-preset-falls-back-to-the-legacy-spelling",
-      "url": "punktfunk://connect/Desk?preset=&profile=Work",
+      "url": "rubyfunk://connect/Desk?preset=&profile=Work",
       "expect": {
         "route": "connect",
         "host_ref": "Desk",
@@ -190,7 +190,7 @@
     },
     {
       "name": "unknown-parameters-are-ignored",
-      "url": "punktfunk://connect/Desk?bogus=1&launch=steam:1",
+      "url": "rubyfunk://connect/Desk?bogus=1&launch=steam:1",
       "expect": {
         "route": "connect",
         "host_ref": "Desk",
@@ -199,7 +199,7 @@
     },
     {
       "name": "empty-parameter-is-absent-not-an-error",
-      "url": "punktfunk://connect/Desk?launch=&profile=Work",
+      "url": "rubyfunk://connect/Desk?launch=&profile=Work",
       "expect": {
         "route": "connect",
         "host_ref": "Desk",
@@ -208,7 +208,7 @@
     },
     {
       "name": "first-occurrence-of-a-parameter-wins",
-      "url": "punktfunk://connect/Desk?fp=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&fp=cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "url": "rubyfunk://connect/Desk?fp=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&fp=cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
       "expect": {
         "route": "connect",
         "host_ref": "Desk",
@@ -217,7 +217,7 @@
     },
     {
       "name": "fragment-is-dropped",
-      "url": "punktfunk://connect/Desk#whatever",
+      "url": "rubyfunk://connect/Desk#whatever",
       "expect": {
         "route": "connect",
         "host_ref": "Desk"
@@ -225,7 +225,7 @@
     },
     {
       "name": "a-query-hidden-in-the-fragment-is-not-parsed",
-      "url": "punktfunk://connect/Desk#?launch=steam:570",
+      "url": "rubyfunk://connect/Desk#?launch=steam:570",
       "expect": {
         "route": "connect",
         "host_ref": "Desk"
@@ -233,13 +233,13 @@
     },
     {
       "name": "non-ascii-label-survives-the-round-trip",
-      "url": "punktfunk://connect/Desk?name=B%C3%BCro%20%C2%B7%20Mac",
+      "url": "rubyfunk://connect/Desk?name=B%C3%BCro%20%C2%B7%20Mac",
       "expect": {
         "route": "connect",
         "host_ref": "Desk",
         "name": "Büro · Mac"
       },
-      "emit": "punktfunk://connect/Desk?name=B%C3%BCro%20%C2%B7%20Mac"
+      "emit": "rubyfunk://connect/Desk?name=B%C3%BCro%20%C2%B7%20Mac"
     },
     {
       "name": "another-scheme-is-not-ours",
@@ -248,127 +248,127 @@
     },
     {
       "name": "scheme-without-authority-is-not-ours",
-      "url": "punktfunk:/connect/Desk",
+      "url": "rubyfunk:/connect/Desk",
       "error": "not-our-scheme"
     },
     {
       "name": "pairing-is-never-a-route",
-      "url": "punktfunk://pair/1234",
+      "url": "rubyfunk://pair/1234",
       "error": "pair-refused"
     },
     {
       "name": "bare-pair-is-refused-too",
-      "url": "punktfunk://pair",
+      "url": "rubyfunk://pair",
       "error": "pair-refused"
     },
     {
       "name": "undefined-route-refuses",
-      "url": "punktfunk://teardown/Desk",
+      "url": "rubyfunk://teardown/Desk",
       "error": "unknown-route"
     },
     {
       "name": "route-without-a-host-reference",
-      "url": "punktfunk://connect/",
+      "url": "rubyfunk://connect/",
       "error": "missing-host-ref"
     },
     {
       "name": "bare-route-word-is-not-a-host-reference",
-      "url": "punktfunk://connect",
+      "url": "rubyfunk://connect",
       "error": "missing-host-ref"
     },
     {
       "name": "truncated-percent-escape",
-      "url": "punktfunk://connect/Desk%2",
+      "url": "rubyfunk://connect/Desk%2",
       "error": "bad-escape"
     },
     {
       "name": "non-hex-percent-escape",
-      "url": "punktfunk://connect/De%zzsk",
+      "url": "rubyfunk://connect/De%zzsk",
       "error": "bad-escape"
     },
     {
       "name": "invalid-utf8-escape",
-      "url": "punktfunk://connect/De%FFsk",
+      "url": "rubyfunk://connect/De%FFsk",
       "error": "bad-escape"
     },
     {
       "name": "newline-smuggled-into-the-reference",
-      "url": "punktfunk://connect/Desk%0A",
+      "url": "rubyfunk://connect/Desk%0A",
       "error": "control-char"
     },
     {
       "name": "nul-byte-smuggled-into-the-reference",
-      "url": "punktfunk://connect/Desk%00",
+      "url": "rubyfunk://connect/Desk%00",
       "error": "control-char"
     },
     {
       "name": "fingerprint-too-short",
-      "url": "punktfunk://connect/Desk?fp=abc",
+      "url": "rubyfunk://connect/Desk?fp=abc",
       "error": "bad-fingerprint"
     },
     {
       "name": "fingerprint-not-hex",
-      "url": "punktfunk://connect/Desk?fp=zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+      "url": "rubyfunk://connect/Desk?fp=zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
       "error": "bad-fingerprint"
     },
     {
       "name": "fingerprint-fullwidth-digit",
-      "url": "punktfunk://connect/Desk?fp=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa%EF%BC%90",
+      "url": "rubyfunk://connect/Desk?fp=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa%EF%BC%90",
       "error": "bad-fingerprint"
     },
     {
       "name": "host-parameter-with-an-unparsable-port",
-      "url": "punktfunk://connect/Desk?host=box:notaport",
+      "url": "rubyfunk://connect/Desk?host=box:notaport",
       "error": "bad-host-param"
     },
     {
       "name": "launch-id-with-a-space",
-      "url": "punktfunk://connect/Desk?launch=steam%20570",
+      "url": "rubyfunk://connect/Desk?launch=steam%20570",
       "error": "bad-launch-id"
     },
     {
       "name": "launch-id-with-a-quote",
-      "url": "punktfunk://connect/Desk?launch=%22evil%22",
+      "url": "rubyfunk://connect/Desk?launch=%22evil%22",
       "error": "bad-launch-id"
     },
     {
       "name": "launch-id-with-a-shell-metacharacter",
-      "url": "punktfunk://connect/Desk?launch=steam:570%60id%60",
+      "url": "rubyfunk://connect/Desk?launch=steam:570%60id%60",
       "error": "bad-launch-id"
     },
     {
       "name": "launch-id-that-reads-as-a-flag",
-      "url": "punktfunk://connect/Desk?launch=--browse",
+      "url": "rubyfunk://connect/Desk?launch=--browse",
       "error": "bad-launch-id"
     },
     {
       "name": "launch-id-over-the-cap",
-      "url": "punktfunk://connect/Desk?launch=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "url": "rubyfunk://connect/Desk?launch=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "error": "param-too-long"
     },
     {
       "name": "preset-reference-over-the-cap",
-      "url": "punktfunk://connect/Desk?preset=ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+      "url": "rubyfunk://connect/Desk?preset=ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
       "error": "param-too-long"
     },
     {
       "name": "profile-reference-over-the-cap",
-      "url": "punktfunk://connect/Desk?profile=ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+      "url": "rubyfunk://connect/Desk?profile=ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
       "error": "param-too-long"
     },
     {
       "name": "name-over-the-cap",
-      "url": "punktfunk://connect/Desk?name=nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+      "url": "rubyfunk://connect/Desk?name=nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
       "error": "param-too-long"
     },
     {
       "name": "host-reference-over-the-cap",
-      "url": "punktfunk://connect/hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
+      "url": "rubyfunk://connect/hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
       "error": "param-too-long"
     },
     {
       "name": "url-over-the-total-cap",
-      "url": "punktfunk://connect/Desk?name=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "url": "rubyfunk://connect/Desk?name=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "error": "too-long"
     }
   ]

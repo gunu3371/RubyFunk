@@ -14,7 +14,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { UI_DIR } from "./ui-forward.js";
 
-/** A plugin's `punktfunk` block — the half of it a sandbox is built from. */
+/** A plugin's `rubyfunk` block — the half of it a sandbox is built from. */
 export interface PluginManifest {
 	schema?: number;
 	id?: string;
@@ -30,13 +30,13 @@ export interface PluginManifest {
 /** An id names the plugin's state dir and socket: one lowercase path component. */
 const PLUGIN_ID = /^[a-z0-9][a-z0-9-]{0,63}$/;
 
-/** Read `package.json`'s `punktfunk` block, or `undefined` when there is none or its id is unusable. */
+/** Read `package.json`'s `rubyfunk` block, or `undefined` when there is none or its id is unusable. */
 export const readManifest = (packageDir: string): PluginManifest | undefined => {
 	try {
 		const pkg = JSON.parse(
 			fs.readFileSync(path.join(packageDir, "package.json"), "utf8"),
-		) as { punktfunk?: PluginManifest };
-		const m = pkg.punktfunk;
+		) as { rubyfunk?: PluginManifest };
+		const m = pkg.rubyfunk;
 		return m && m.schema === 1 && typeof m.id === "string" && PLUGIN_ID.test(m.id)
 			? m
 			: undefined;
@@ -73,7 +73,7 @@ export interface SandboxPaths {
 	bun: string;
 	runner: string;
 	home: string;
-	/** The host's config dir (`PUNKTFUNK_CONFIG_DIR`), which no plugin may bind. */
+	/** The host's config dir (`RUBYFUNK_CONFIG_DIR`), which no plugin may bind. */
 	configDir: string;
 	/** A plugin without network: the runner's dir its UI socket goes in, and the forwarded port. */
 	ui?: { dir: string; port: number };
@@ -193,18 +193,18 @@ export const bwrapArgv = (
 		argv.push("--ro-bind", "/nix/store", "/nix/store");
 		argv.push("--ro-bind-try", "/run/current-system", "/run/current-system");
 	}
-	// Where `pluginStateDir(<id>)` resolves inside: `PUNKTFUNK_CONFIG_DIR/plugin-state/<id>`.
+	// Where `pluginStateDir(<id>)` resolves inside: `RUBYFUNK_CONFIG_DIR/plugin-state/<id>`.
 	argv.push(
 		"--bind",
 		paths.stateDir,
-		path.join("/run/punktfunk/plugin-state", path.basename(paths.stateDir)),
+		path.join("/run/rubyfunk/plugin-state", path.basename(paths.stateDir)),
 	);
-	argv.push("--ro-bind", paths.tokenFile, "/run/punktfunk/plugin-token");
-	argv.push("--bind", paths.socket, "/run/punktfunk/host.sock");
+	argv.push("--ro-bind", paths.tokenFile, "/run/rubyfunk/plugin-token");
+	argv.push("--bind", paths.socket, "/run/rubyfunk/host.sock");
 	// Its own loopback is unreachable, so its UI listens where the runner can forward to.
 	if (paths.ui && !manifest.network) {
 		argv.push("--bind", paths.ui.dir, UI_DIR);
-		argv.push("--setenv", "PUNKTFUNK_UI_PORT", String(paths.ui.port));
+		argv.push("--setenv", "RUBYFUNK_UI_PORT", String(paths.ui.port));
 	}
 	// What it said it needs. `-try` so an uninstalled launcher's dir is simply absent rather
 	// than a sandbox that refuses to start.
@@ -265,7 +265,7 @@ const destinations = (argv: readonly string[]): string[] => {
 /**
  * A root no manifest or grant may bind: the host's processes, devices, the session bus and
  * runtime sockets, the home or anything above it, keys, and the host's config dir (`configDir`,
- * and `~/.config/punktfunk*` wherever the config lives) or anything above it, which holds every
+ * and `~/.config/rubyfunk*` wherever the config lives) or anything above it, which holds every
  * plugin's token. Checked on the path and on what it resolves to in the runner's view. The
  * host's `refusal_rule` is the other half; path-refusal-vectors.json pins the two.
  */
@@ -277,12 +277,12 @@ export const refusedRoot = (abs: string, home: string, configDir: string): boole
 			p === "/" ||
 			above(h) ||
 			above(c) ||
-			above(path.join(h, ".config", "punktfunk")) ||
+			above(path.join(h, ".config", "rubyfunk")) ||
 			under(c) ||
 			["/proc", "/sys", "/dev"].some(under) ||
 			(under("/run") && !p.startsWith("/run/media/")) ||
 			[".ssh", ".gnupg"].some((d) => under(path.join(h, d))) ||
-			p.startsWith(path.join(h, ".config", "punktfunk"))
+			p.startsWith(path.join(h, ".config", "rubyfunk"))
 		);
 	};
 	const real = (p: string) => {
@@ -349,14 +349,14 @@ export const sandboxEnv = (
 ): Record<string, string> => ({
 	// The REAL home, which is where a `~/...` read is bound. A plugin finds its declared paths
 	// with os.homedir(); pointing this at the state dir sends every scanner somewhere empty.
-	// Writable state is PUNKTFUNK_CONFIG_DIR's job, not this one's.
+	// Writable state is RUBYFUNK_CONFIG_DIR's job, not this one's.
 	HOME: home,
 	// sbin: Debian ships VirtualHere's client there. The system profile is NixOS's /usr/bin.
 	PATH: "/usr/bin:/bin:/usr/local/bin:/usr/sbin:/sbin:/run/current-system/sw/bin",
-	PUNKTFUNK_CONFIG_DIR: "/run/punktfunk",
+	RUBYFUNK_CONFIG_DIR: "/run/rubyfunk",
 	// Reached through the supervisor's socket, so plain HTTP with no credential of its own.
-	PUNKTFUNK_MGMT_URL: "http://punktfunk.host",
-	PUNKTFUNK_MGMT_UNIX: "/run/punktfunk/host.sock",
+	RUBYFUNK_MGMT_URL: "http://punktfunk.host",
+	RUBYFUNK_MGMT_UNIX: "/run/rubyfunk/host.sock",
 	...extra,
 });
 
@@ -422,13 +422,13 @@ const PROBE_BINDS: readonly string[] = [
  *  Do not realpath: Nix `true` is a symlink onto the coreutils multicall binary. */
 /**
  * The host binary beside the runner bundle: `<install>\scripting\runner-cli.js` and
- * `<install>\punktfunk-host.exe`, which `plugins spawn` runs a plugin's AppContainer through.
+ * `<install>\rubyfunk-host.exe`, which `plugins spawn` runs a plugin's AppContainer through.
  */
 export const hostExe = (): string =>
 	path.resolve(
-		path.dirname(process.env.PUNKTFUNK_RUNNER_ENTRY ?? process.argv[1] ?? ""),
+		path.dirname(process.env.RUBYFUNK_RUNNER_ENTRY ?? process.argv[1] ?? ""),
 		"..",
-		"punktfunk-host.exe",
+		"rubyfunk-host.exe",
 	);
 
 const whichTrue = (): string => {
@@ -469,7 +469,7 @@ export const sandboxProbe = (
 		// The host binary beside the runner is the AppContainer's door; the installer puts both.
 		return fs.existsSync(hostExe())
 			? { ok: true }
-			: { ok: false, reason: `${hostExe()} is missing — reinstall punktfunk, or set PUNKTFUNK_PLUGIN_SANDBOX=off` };
+			: { ok: false, reason: `${hostExe()} is missing — reinstall rubyfunk, or set RUBYFUNK_PLUGIN_SANDBOX=off` };
 	}
 	if (platform !== "linux") {
 		return { ok: false, reason: "sandboxing is Linux-only here" };
@@ -494,7 +494,7 @@ export const sandboxProbe = (
 			ok: false,
 			reason: probe.signal
 				? `bwrap was killed by ${probe.signal} before it could report`
-				: "bubblewrap (bwrap) is not installed — install it, or set PUNKTFUNK_PLUGIN_SANDBOX=off",
+				: "bubblewrap (bwrap) is not installed — install it, or set RUBYFUNK_PLUGIN_SANDBOX=off",
 		};
 	}
 	const line = (probe.stderr ?? "").split("\n")[0]?.trim();

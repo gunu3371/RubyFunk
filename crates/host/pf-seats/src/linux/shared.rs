@@ -15,7 +15,7 @@
 //!   the plugins' grants and the firmware they staged. The door serves it to every client, and
 //!   each seat's trust copy takes it from here.
 //! - `seats/hosts/<id>/mgmt-token` is the token the box presents to that seat host's loopback
-//!   API. It belongs to the `punktfunk` user, not the seat group: every seat user is a member.
+//!   API. It belongs to the `rubyfunk` user, not the seat group: every seat user is a member.
 
 use super::accounts::{is_ordinary, Passwd};
 use super::session::PRIVATE_DIRS;
@@ -35,7 +35,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 /// The box's pairing list: who a seat host admits. A person's seat gets it filtered.
-const PAIRED: &str = "punktfunk1-paired.json";
+const PAIRED: &str = "rubyfunk1-paired.json";
 
 /// Box files a seat host reads; any may not exist yet. Never the box's identity: a seat host
 /// mints its own, and clients reach it through the pin the box's `Redirect` carries.
@@ -100,7 +100,7 @@ pub(super) fn games_dir(state: &Path) -> PathBuf {
     state.join("games")
 }
 
-/// The box's library, the door's `PUNKTFUNK_LIBRARY_DIR` (`punktfunk-door.service`).
+/// The box's library, the door's `RUBYFUNK_LIBRARY_DIR` (`rubyfunk-door.service`).
 pub(super) fn box_library_dir(state: &Path) -> PathBuf {
     state.join("library")
 }
@@ -125,10 +125,10 @@ pub(super) fn host_dir(state: &Path, id: &SeatId) -> PathBuf {
     hosts_dir(state).join(id.as_str())
 }
 
-/// The owner of a seat's token file: the `punktfunk` user's `(uid, gid)` when it exists, else
+/// The owner of a seat's token file: the `rubyfunk` user's `(uid, gid)` when it exists, else
 /// root, so the box host reads it as itself and no seat user can.
-pub(super) fn token_owner(punktfunk: Option<&Passwd>) -> (u32, u32) {
-    punktfunk.map_or((0, 0), |user| (user.uid, user.gid))
+pub(super) fn token_owner(rubyfunk: Option<&Passwd>) -> (u32, u32) {
+    rubyfunk.map_or((0, 0), |user| (user.uid, user.gid))
 }
 
 /// Writes `line` as the seat's token file, `0600` in a `0700` directory, both owned by `owner`.
@@ -211,7 +211,7 @@ fn check_owned(path: &Path, forbidden: u32) -> std::io::Result<()> {
     Ok(())
 }
 
-/// The shared games library: group `punktfunk-games`, setgid, with a default ACL so a file one
+/// The shared games library: group `rubyfunk-games`, setgid, with a default ACL so a file one
 /// seat creates is writable by the others. Every seat writes in it, so each folder is opened
 /// through the one above it without following a link, and changed through its own handle;
 /// `setfacl` gets each as `/proc/<pid>/fd/<n>`, which names that folder whatever its path holds.
@@ -587,7 +587,7 @@ pub(super) fn pin_dir(state: &Path, id: &SeatId) -> PathBuf {
 /// while the host has none. `home` is a seat user's or the owner's, so it goes through
 /// [`safe_open`].
 pub(super) fn copy_pin(home: &Path, dst: &Path) -> std::io::Result<()> {
-    copy_cert(home, &[".config", "punktfunk"], dst)
+    copy_cert(home, &[".config", "rubyfunk"], dst)
 }
 
 /// [`copy_pin`] for a person's row, whose host keeps its identity in the row's own
@@ -867,7 +867,7 @@ pub(super) fn refresh_box_library(
     reader: Reader,
 ) -> Result<bool, BackendError> {
     let io = |what: &str, e| io_err("box_library", what, e);
-    let config = safe_open::dir(home).and_then(|at| safe_open::walk(at, &[".config", "punktfunk"]));
+    let config = safe_open::dir(home).and_then(|at| safe_open::walk(at, &[".config", "rubyfunk"]));
     let src = match config {
         Ok(Some(src)) => src,
         Ok(None) => return Ok(false),
@@ -884,7 +884,7 @@ pub(super) fn refresh_box_library(
 }
 
 /// Brings the box's library in a seat's trust copy level with [`box_library_dir`]: the seat's
-/// `PUNKTFUNK_LIBRARY_DIR`. Never the owner's row, whose host writes the library it reads.
+/// `RUBYFUNK_LIBRARY_DIR`. Never the owner's row, whose host writes the library it reads.
 pub(super) fn refresh_seat_library(
     state: &Path,
     id: &SeatId,
@@ -1485,7 +1485,7 @@ mod tests {
             "clientregistry.blob",
             "local.vdf",
             "loginusers.vdf",
-            ".punktfunk-seats",
+            ".rubyfunk-seats",
         ] {
             assert!(crate::steam::skipped(skipped), "{skipped}");
         }
@@ -1650,7 +1650,7 @@ mod tests {
     fn the_box_library_follows_the_owner_into_each_seat() {
         let temp = tempfile::tempdir().unwrap();
         let (home, state) = (temp.path().join("home"), temp.path().join("state"));
-        let config = home.join(".config/punktfunk");
+        let config = home.join(".config/rubyfunk");
         std::fs::create_dir_all(config.join("library-metadata")).unwrap();
         std::fs::create_dir(&state).unwrap();
         std::fs::write(config.join("library.json"), r#"{"entries":[]}"#).unwrap();
@@ -1771,7 +1771,7 @@ mod tests {
             temp.path().join("state"),
             temp.path().join("box"),
         );
-        let config = home.join(".config/punktfunk");
+        let config = home.join(".config/rubyfunk");
         std::fs::create_dir_all(&config).unwrap();
         std::fs::create_dir_all(&state).unwrap();
         std::fs::create_dir_all(&box_dir).unwrap();
@@ -1808,7 +1808,7 @@ mod tests {
     fn the_box_library_survives_a_missing_home_and_refuses_a_link() {
         let temp = tempfile::tempdir().unwrap();
         let (home, state) = (temp.path().join("home"), temp.path().join("state"));
-        let config = home.join(".config/punktfunk");
+        let config = home.join(".config/rubyfunk");
         std::fs::create_dir_all(&config).unwrap();
         std::fs::create_dir(&state).unwrap();
         std::fs::write(config.join("library.json"), "{}").unwrap();
@@ -1842,14 +1842,14 @@ mod tests {
         }
         let gid = own_gid(&box_dir);
         let reader = Reader::group(gid);
-        std::fs::write(box_dir.join("punktfunk1-paired.json"), "[1]").unwrap();
+        std::fs::write(box_dir.join("rubyfunk1-paired.json"), "[1]").unwrap();
         std::fs::write(box_dir.join("profiles.json"), "{}").unwrap();
         assert!(refresh_trust(&box_dir, &state, &id(), reader).unwrap());
         let trust = trust_dir(&state, &id());
 
         // A second link makes the paired list unreadable to the copy; profiles still follow.
         std::fs::hard_link(
-            box_dir.join("punktfunk1-paired.json"),
+            box_dir.join("rubyfunk1-paired.json"),
             temp.path().join("backup"),
         )
         .unwrap();
@@ -1857,7 +1857,7 @@ mod tests {
         let error = refresh_trust(&box_dir, &state, &id(), reader).unwrap_err();
         assert_eq!(error.code, "trust_copy");
         assert_eq!(
-            std::fs::read_to_string(trust.join("punktfunk1-paired.json")).unwrap(),
+            std::fs::read_to_string(trust.join("rubyfunk1-paired.json")).unwrap(),
             "[1]"
         );
         assert_eq!(
@@ -1867,7 +1867,7 @@ mod tests {
 
         let gone = temp.path().join("gone");
         assert!(!refresh_trust(&gone, &state, &id(), reader).unwrap());
-        assert!(trust.join("punktfunk1-paired.json").exists());
+        assert!(trust.join("rubyfunk1-paired.json").exists());
         assert!(trust.join("profiles.json").exists());
     }
 
@@ -1889,13 +1889,13 @@ mod tests {
     }
 
     #[test]
-    fn the_token_belongs_to_the_punktfunk_user_when_there_is_one() {
+    fn the_token_belongs_to_the_rubyfunk_user_when_there_is_one() {
         let user = Passwd {
-            name: "punktfunk".into(),
+            name: "rubyfunk".into(),
             uid: 972,
             gid: 969,
             gecos: String::new(),
-            home: PathBuf::from("/var/lib/punktfunk"),
+            home: PathBuf::from("/var/lib/rubyfunk"),
         };
         assert_eq!(token_owner(Some(&user)), (972, 969));
         assert_eq!(token_owner(None), (0, 0));
@@ -1909,15 +1909,15 @@ mod tests {
         let box_dir = temp.path();
         let me = std::fs::metadata(box_dir).unwrap();
         let owner = (me.uid(), me.gid());
-        write_host_token(box_dir, &id(), "PUNKTFUNK_MGMT_TOKEN=aa\n", owner).unwrap();
-        write_host_token(box_dir, &id(), "PUNKTFUNK_MGMT_TOKEN=bb\n", owner).unwrap();
+        write_host_token(box_dir, &id(), "RUBYFUNK_MGMT_TOKEN=aa\n", owner).unwrap();
+        write_host_token(box_dir, &id(), "RUBYFUNK_MGMT_TOKEN=bb\n", owner).unwrap();
         let dir = host_dir(box_dir, &id());
         assert_eq!(mode(&dir), 0o700);
         assert_eq!(mode(&hosts_dir(box_dir)), 0o711);
         assert_eq!(mode(&dir.join("mgmt-token")), 0o600);
         assert_eq!(
             std::fs::read_to_string(dir.join("mgmt-token")).unwrap(),
-            "PUNKTFUNK_MGMT_TOKEN=bb\n"
+            "RUBYFUNK_MGMT_TOKEN=bb\n"
         );
         assert!(!dir.join("mgmt-token.tmp").exists());
         remove_seat_dirs(box_dir, &id()).unwrap();
@@ -2022,7 +2022,7 @@ mod tests {
         };
         let users = [
             user("root", 0, "", true),
-            user("seat", 975, "punktfunk-seat=0123", true),
+            user("seat", 975, "rubyfunk-seat=0123", true),
             user("late", 1002, "", true),
             user("bare", 1000, "", false),
             user("early", 1001, "", true),
@@ -2107,7 +2107,7 @@ mod tests {
         use super::super::safe_open::tests::{fifo, within};
         let temp = tempfile::tempdir().unwrap();
         let (home, pin) = (temp.path().join("home"), temp.path().join("pin"));
-        let config = home.join(".config/punktfunk");
+        let config = home.join(".config/rubyfunk");
         std::fs::create_dir_all(&config).unwrap();
         fifo(&config.join("native-cert.pem"));
         let (h, p) = (home.clone(), pin.clone());

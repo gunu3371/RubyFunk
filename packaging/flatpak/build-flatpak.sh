@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the punktfunk Linux client as a single-file `.flatpak` bundle.
+# Build the rubyfunk Linux client as a single-file `.flatpak` bundle.
 #
 # Works on the Steam Deck (org.flatpak.Builder from Flathub, user-scope, NO root) and on any
 # Linux box with flatpak + flatpak-builder. The CI does the same steps (.gitea/workflows/flatpak.yml).
@@ -8,7 +8,7 @@
 #   flatpak install --user -y flathub org.flatpak.Builder
 # Then run this script from the repo root:
 #   bash packaging/flatpak/build-flatpak.sh
-# Output: dist/punktfunk-client-<version>.flatpak  (install with `flatpak install --user <file>`)
+# Output: dist/rubyfunk-client-<version>.flatpak  (install with `flatpak install --user <file>`)
 #
 # Env knobs:
 #   VERSION=...        version string for the bundle name (default: git describe / 0.0.1-dev)
@@ -30,8 +30,8 @@ set -euo pipefail
 ROOTDIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOTDIR"
 
-APP_ID="io.unom.punktfunk"
-MANIFEST="packaging/flatpak/io.unom.punktfunk.yml"
+APP_ID="io.github.gunu3371.rubyfunk"
+MANIFEST="packaging/flatpak/io.github.gunu3371.rubyfunk.yml"
 VERSION="${VERSION:-$(git describe --tags --always --dirty 2>/dev/null || echo 0.0.1-dev)}"
 VERSION="${VERSION#v}"
 # `flatpak --default-arch` reports flatpak's own name for this machine (x86_64 / aarch64).
@@ -39,7 +39,7 @@ ARCH="${ARCH:-$(flatpak --default-arch 2>/dev/null || uname -m)}"
 BRANCH="${BRANCH:-stable}"
 # Arch-suffixed so an x86_64 and an aarch64 bundle can sit in dist/ together instead of the
 # second silently overwriting the first. (CI composes its own published filename.)
-BUNDLE="dist/punktfunk-client-${VERSION}-${ARCH}.flatpak"
+BUNDLE="dist/rubyfunk-client-${VERSION}-${ARCH}.flatpak"
 
 # --- pick a flatpak-builder (host binary, or the org.flatpak.Builder flatpak on the Deck) ---
 if [ -n "${BUILDER:-}" ]; then
@@ -90,14 +90,14 @@ else
     || { echo "error: $GEN does not match the pin for $GEN_REF — rm it and re-run" >&2; exit 1; }
   # Needs python3 + aiohttp + tomlkit. On a host that lacks them (e.g. the Deck), generate on the
   # Mac / a dev box instead and rsync the result next to the manifest (reused by the branch above).
-  # Prune the microsoft/windows-rs git crates first (punktfunk-client-windows only) — otherwise
+  # Prune the microsoft/windows-rs git crates first (rubyfunk-client-windows only) — otherwise
   # flatpak-builder full-clones that multi-GB repo and fills the disk. See prune-windows-lock.py.
   python3 packaging/flatpak/prune-windows-lock.py Cargo.lock /tmp/Cargo.flatpak.lock
   python3 "$GEN" /tmp/Cargo.flatpak.lock -o packaging/flatpak/cargo-sources.json
 fi
 
 # --- build into a local ostree repo, then export a single-file bundle --------------------
-# The manifest's cargo step stamps this into the binaries (PUNKTFUNK_BUILD_VERSION).
+# The manifest's cargo step stamps this into the binaries (RUBYFUNK_BUILD_VERSION).
 printf '%s\n' "$VERSION" > packaging/flatpak/VERSION
 echo "==> flatpak-builder ($APP_ID, version $VERSION, arch $ARCH)"
 # --default-branch=stable matches CI / the hosted repo ref, so a locally-built install can also

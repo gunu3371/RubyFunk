@@ -1,4 +1,4 @@
-# Shared Gitea Release helpers for the punktfunk Windows CI workflows (pwsh / PowerShell 7).
+# Shared Gitea Release helpers for the rubyfunk Windows CI workflows (pwsh / PowerShell 7).
 #
 # Dot-source it, then call Ensure-GiteaRelease / Upsert-GiteaAsset:
 #   . scripts/ci/gitea-release.ps1
@@ -9,7 +9,7 @@
 #
 # Env (Gitea Actions sets the first two automatically):
 #   GITHUB_SERVER_URL   e.g. https://git.unom.io
-#   GITHUB_REPOSITORY   e.g. unom/punktfunk
+#   GITHUB_REPOSITORY   e.g. unom/rubyfunk
 #   GITEA_TOKEN         a PAT with repository (release) write scope — set from secrets.REGISTRY_TOKEN
 #                       (must carry write:repository, not only write:package)
 

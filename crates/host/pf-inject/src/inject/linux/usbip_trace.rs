@@ -1,4 +1,4 @@
-//! Byte-level tracing for the USB/IP transport (`PUNKTFUNK_USBIP_TRACE`).
+//! Byte-level tracing for the USB/IP transport (`RUBYFUNK_USBIP_TRACE`).
 //!
 //! USB/IP is a framed byte stream on one TCP socket; each frame's length
 //! lives inside the frame. A write whose byte count disagrees with its
@@ -13,7 +13,7 @@
 //! does.
 //!
 //! ```text
-//! PUNKTFUNK_USBIP_TRACE=/tmp/pad punktfunk-host pad-usbip-test --seconds 5
+//! RUBYFUNK_USBIP_TRACE=/tmp/pad rubyfunk-host pad-usbip-test --seconds 5
 //! ```
 //!
 //! yields `/tmp/pad.<label>.rx` (kernel → us), `.tx` (us → kernel), `.idx`.
@@ -28,7 +28,7 @@ use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 
 /// One prefix per attached device.
 pub fn trace_prefix(label: &str) -> Option<String> {
-    let base = std::env::var("PUNKTFUNK_USBIP_TRACE").ok()?;
+    let base = std::env::var("RUBYFUNK_USBIP_TRACE").ok()?;
     if base.is_empty() || base == "0" {
         return None;
     }

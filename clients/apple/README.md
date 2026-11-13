@@ -1,12 +1,12 @@
-# punktfunk — Apple client (macOS · iOS · iPadOS · tvOS · visionOS)
+# rubyfunk — Apple client (macOS · iOS · iPadOS · tvOS · visionOS)
 
 One SwiftUI codebase for Mac, iPhone, iPad, Apple TV and Apple Vision Pro. Networking and protocol — QUIC control
-plane, UDP data plane, FEC, AES-GCM, Opus, cert pinning — are the shared Rust `punktfunk-core`,
-statically linked as `PunktfunkCore.xcframework`; this package is the Swift half: decode, present,
+plane, UDP data plane, FEC, AES-GCM, Opus, cert pinning — are the shared Rust `rubyfunk-core`,
+statically linked as `RubyFunkCore.xcframework`; this package is the Swift half: decode, present,
 input, UI.
 
-`PunktfunkKit` is the reusable library (the C-ABI wrapper, the two presenters, input and gamepad
-capture, discovery); `PunktfunkClient` is the app, including the gamepad UI a connected controller
+`RubyFunkKit` is the reusable library (the C-ABI wrapper, the two presenters, input and gamepad
+capture, discovery); `RubyFunkClient` is the app, including the gamepad UI a connected controller
 swaps the whole home for. What the app can do for a user is
 [the docs site](https://docs.punktfunk.unom.io/docs/install-client)'s job, not this file's.
 
@@ -16,25 +16,25 @@ Xcode 26.5 / Swift 6.3. Build the Rust core into an xcframework first:
 
 ```sh
 rustup target add aarch64-apple-darwin x86_64-apple-darwin
-bash scripts/build-xcframework.sh     # → clients/apple/PunktfunkCore.xcframework
+bash scripts/build-xcframework.sh     # → clients/apple/RubyFunkCore.xcframework
 #   BUILD_IOS=1 / BUILD_TVOS=1 / BUILD_VISIONOS=1 add those slices
 
 cd clients/apple
-open Punktfunk.xcodeproj              # the real app: ⌘R
-swift run PunktfunkClient             # or the unbundled dev shell
+open RubyFunk.xcodeproj              # the real app: ⌘R
+swift run RubyFunkClient             # or the unbundled dev shell
 swift build && swift test             # units + loopback/remote (self-skip without a host)
 ```
 
 tvOS and visionOS slices are tier-3 Rust targets built from source:
 `rustup toolchain install nightly && rustup component add rust-src --toolchain nightly`.
-visionOS is a destination of the `Punktfunk-iOS` scheme.
+visionOS is a destination of the `RubyFunk-iOS` scheme.
 
 Against a host:
 
 ```sh
-bash test-loopback.sh                 # builds punktfunk-host synthetic-source and byte-verifies frames
-PUNKTFUNK_REMOTE_HOST=<ip> swift test --filter RemoteFirstLightTests
-PUNKTFUNK_AUTOCONNECT=<ip> PUNKTFUNK_MODE=1280x720x60 swift run PunktfunkClient
+bash test-loopback.sh                 # builds rubyfunk-host synthetic-source and byte-verifies frames
+RUBYFUNK_REMOTE_HOST=<ip> swift test --filter RemoteFirstLightTests
+RUBYFUNK_AUTOCONNECT=<ip> RUBYFUNK_MODE=1280x720x60 swift run RubyFunkClient
 ```
 
 ## Local macOS signing
@@ -42,17 +42,17 @@ PUNKTFUNK_AUTOCONNECT=<ip> PUNKTFUNK_MODE=1280x720x60 swift run PunktfunkClient
 F13–F19 use the same Windows VK codes through NSEvent and GCKeyboard. macOS sends
 keyboard events through NSEvent; GCKeyboard forwarding stays disabled to avoid duplicates.
 
-For an ad-hoc macOS build, add `PUNKTFUNK_LOCAL_KEYCHAIN` to
+For an ad-hoc macOS build, add `RUBYFUNK_LOCAL_KEYCHAIN` to
 `SWIFT_ACTIVE_COMPILATION_CONDITIONS` and build with `CODE_SIGNING_ALLOWED=NO`.
 Sign the finished app with the local sandbox entitlements:
 
 ```sh
-codesign --force --deep --sign - --entitlements clients/apple/local-macos.entitlements /path/to/Punktfunk.app
-codesign --verify --deep --strict /path/to/Punktfunk.app
+codesign --force --deep --sign - --entitlements clients/apple/local-macos.entitlements /path/to/RubyFunk.app
+codesign --verify --deep --strict /path/to/RubyFunk.app
 ```
 
 The build condition stores pairing credentials in the login keychain under
-`io.unom.punktfunk.local`. It keeps the identity used by the earlier local F13–F19
+`io.github.gunu3371.rubyfunk.local`. It keeps the identity used by the earlier local F13–F19
 build. Distribution builds keep their existing keychain service and access groups.
 Local builds require separate pairing from distribution builds. Ad-hoc signing has
 no provisioning-profile expiry; it supplies neither Developer ID trust nor notarization.
@@ -64,7 +64,7 @@ bash scripts/build-packed444-macos.sh
 ```
 
 It rebuilds the matching XCFramework, runs `Packed444Tests`, then builds and signs
-`target/validation/mac-client/Build/Products/Debug/Punktfunk.app` with the local keychain
+`target/validation/mac-client/Build/Products/Debug/RubyFunk.app` with the local keychain
 condition above. A skipped Metal test is not a GPU pass. Streaming still needs a matching
 Windows AMF host and protocol-10 driver.
 

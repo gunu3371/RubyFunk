@@ -29,7 +29,7 @@ Steam friends, behind any router.
 2. You create a lobby and share UDP `9777`, without remapping. Add TCP `47990` if the
    friend should browse your game library.
 3. The friend joins with your share code or from the friends list, accepts the ports, and adds
-   `127.0.0.1:9777` as a host in their Punktfunk client.
+   `127.0.0.1:9777` as a host in their RubyFunk client.
 4. [Admit them as a guest](#admit-them-as-a-guest).
 
 ## Tailscale
@@ -53,7 +53,7 @@ them reach every port on it, so step 2 matters.
 
    Add `47990` only if the friend should browse your game library.
 3. The friend adds `100.x.y.z:9777` as a host, or opens a
-   [link](/docs/presets-and-links#punktfunk-links) you send: `punktfunk://connect/100.x.y.z:9777`.
+   [link](/docs/presets-and-links#rubyfunk-links) you send: `rubyfunk://connect/100.x.y.z:9777`.
 4. [Admit them as a guest](#admit-them-as-a-guest).
 
 ## Admit them as a guest
@@ -77,7 +77,7 @@ checks the host's identity. Copy the **Deep link** from **Host** → **Connect a
 in your public address:
 
 ```
-punktfunk://connect/<id>?host=203.0.113.5&fp=<64 hex>
+rubyfunk://connect/<id>?host=203.0.113.5&fp=<64 hex>
 ```
 
 Strangers will knock once the port is open. An unpaired device gets nothing. A knock from the
@@ -98,8 +98,8 @@ stream captures Discord's playback. In **Host** → **Audio**:
   Mumble then play on your speakers and stay out of the stream.
 - **Voice chat apps**: add your browser (`firefox`) if you use Discord in a browser tab.
 
-The same settings in `host.env` are `PUNKTFUNK_AUDIO_OUTPUT_MODE=host_and_client`,
-`PUNKTFUNK_AUDIO_VOICE_CHAT=host` and `PUNKTFUNK_AUDIO_VOICE_APPS=firefox`. On Windows this needs
+The same settings in `host.env` are `RUBYFUNK_AUDIO_OUTPUT_MODE=host_and_client`,
+`RUBYFUNK_AUDIO_VOICE_CHAT=host` and `RUBYFUNK_AUDIO_VOICE_APPS=firefox`. On Windows this needs
 Steam installed: the host builds its silent audio output from Steam's streaming drivers. To keep
 one friend from hearing the game at all, mute their session on the **Home** page.
 

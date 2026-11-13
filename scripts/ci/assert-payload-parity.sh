@@ -2,10 +2,10 @@
 # Assert that a BUILT Linux package ships every path packaging/linux/payload.txt names for it.
 #
 # deb, rpm and pacman each spell their payload out by hand (packaging/debian/build-*.sh,
-# packaging/rpm/punktfunk.spec, packaging/arch/PKGBUILD). payload.txt is the part they share; this
+# packaging/rpm/rubyfunk.spec, packaging/arch/PKGBUILD). payload.txt is the part they share; this
 # reads each artifact through assert-cap-matrix.sh's payload readers and names every listed path
-# the artifact lacks. pacman has no /usr/libexec, so usr/libexec/punktfunk/ reads
-# usr/lib/punktfunk/ for a .pkg.tar.*, except in seats, which keeps /usr/libexec.
+# the artifact lacks. pacman has no /usr/libexec, so usr/libexec/rubyfunk/ reads
+# usr/lib/rubyfunk/ for a .pkg.tar.*, except in seats, which keeps /usr/libexec.
 #
 # Usage:
 #   scripts/ci/assert-payload-parity.sh <artifact> [<artifact> ...]
@@ -22,7 +22,7 @@ PAYLOAD="$HERE/../../packaging/linux/payload.txt"
 # paths <package> <artifact name>: payload.txt's paths for <package>, read through the pacman
 # relocation when the name is a pacman package.
 paths() {
-  local relocate='s#^usr/libexec/punktfunk/#usr/lib/punktfunk/#'
+  local relocate='s#^usr/libexec/rubyfunk/#usr/lib/rubyfunk/#'
   case "$2" in *.pkg.tar.*) [ "$1" != seats ] || relocate='' ;; *) relocate='' ;; esac
   awk -v p="$1" '$1 == p { print $2 }' "$PAYLOAD" | sed -e "$relocate"
 }
@@ -69,12 +69,12 @@ self_test() {
     else printf '  FAIL  %s: missing=%s (wanted %s)\n' "$1" "${got:-<none>}" "${4:-<none>}"; failures=$((failures + 1)); fi
   }
   _case "complete deb" x.deb "$host" ""
-  _case "rpm without its sysctl" x.rpm "$(grep -vx usr/lib/sysctl.d/99-punktfunk-net.conf <<<"$host")" \
-    usr/lib/sysctl.d/99-punktfunk-net.conf
+  _case "rpm without its sysctl" x.rpm "$(grep -vx usr/lib/sysctl.d/99-rubyfunk-net.conf <<<"$host")" \
+    usr/lib/sysctl.d/99-rubyfunk-net.conf
   _case "pacman reads libexec as lib" x.pkg.tar.zst \
-    "$(sed 's#^usr/libexec/punktfunk/#usr/lib/punktfunk/#' <<<"$host")" ""
+    "$(sed 's#^usr/libexec/rubyfunk/#usr/lib/rubyfunk/#' <<<"$host")" ""
   _case "pacman with libexec unrelocated" x.pkg.tar.zst "$host" \
-    "$(grep '^usr/libexec/punktfunk/' <<<"$host" | sed 's#^usr/libexec/#usr/lib/#')"
+    "$(grep '^usr/libexec/rubyfunk/' <<<"$host" | sed 's#^usr/libexec/#usr/lib/#')"
   local seats; seats="$(awk '$1 == "seats" { print $2 }' "$PAYLOAD")"
   if [ -n "$(missing_paths seats x.pkg.tar.zst "$seats")" ]; then
     printf '  FAIL  %s\n' "pacman keeps libexec for seats"; failures=$((failures + 1))
@@ -84,9 +84,9 @@ self_test() {
 
   # The pacman reader, through a real archive: "./" and directory entries must not hide a path.
   t="$(mktemp -d)"
-  mkdir -p "$t/s/usr/bin"; : > "$t/s/usr/bin/punktfunk-host"
+  mkdir -p "$t/s/usr/bin"; : > "$t/s/usr/bin/rubyfunk-host"
   (cd "$t/s" && tar -cf "$t/x.pkg.tar.zst" ./usr)
-  if payload_listing "$t/x.pkg.tar.zst" | grep -qx usr/bin/punktfunk-host; then
+  if payload_listing "$t/x.pkg.tar.zst" | grep -qx usr/bin/rubyfunk-host; then
     printf '  ok    %s\n' "reader strips ./ from a tar listing"
   else
     printf '  FAIL  %s\n' "reader strips ./ from a tar listing"; failures=$((failures + 1))

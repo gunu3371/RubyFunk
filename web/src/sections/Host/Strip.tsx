@@ -35,7 +35,7 @@ export const HostStrip: FC<{
 	const params = new URLSearchParams({ host: h.local_ip });
 	if (h.fingerprint) params.set("fp", h.fingerprint);
 	// No port: clients default to 9777, the same as typing the address by hand.
-	const deepLink = `punktfunk://connect/${h.uniqueid}?${params}`;
+	const deepLink = `rubyfunk://connect/${h.uniqueid}?${params}`;
 	const s = update.state.data;
 	return (
 		<Card>

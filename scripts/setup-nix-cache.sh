@@ -180,7 +180,7 @@ finish() {
 }
 
 # ──────────────────────────────────────────────────────────────────────────
-# STAGES — bring the punktfunk Nix binary cache at https://nix.unom.io live.
+# STAGES — bring the rubyfunk Nix binary cache at https://nix.unom.io live.
 #
 # Everything here is a step only a human can take: merging an infra PR, running an apply,
 # dispatching a deploy. The wizard opens each page, says exactly what to do, and then
@@ -199,9 +199,9 @@ TOTAL_STAGES=4
 
 CACHE_HOST="nix.unom.io"
 CACHE_PORT=3250
-KEY_NAME="punktfunk-cache-1"
+KEY_NAME="rubyfunk-cache-1"
 GITEA="https://git.unom.io"
-GITEA_REPO="$GITEA/unom/punktfunk"
+GITEA_REPO="$GITEA/unom/rubyfunk"
 INFRA_REPO="$GITEA/unom/infra"
 
 # probe PATH — HTTP status for a path on the cache, or 000 if it cannot be reached at all.
@@ -219,7 +219,7 @@ nix_key() {
   fi
 }
 
-banner "punktfunk Nix binary cache — bring-up"
+banner "rubyfunk Nix binary cache — bring-up"
 
 # ── 1 ─────────────────────────────────────────────────────────────────────
 stage "Ingress — DNS + the Caddy vhost (unom/infra)"

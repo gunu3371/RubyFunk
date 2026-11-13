@@ -1,12 +1,12 @@
 #!/bin/sh
-# punktfunk-seat@.service ExecStopPost=+ (root): kills the logind session the runner recorded,
+# rubyfunk-seat@.service ExecStopPost=+ (root): kills the logind session the runner recorded,
 # so nothing a seat started outlives its unit. pam_systemd moves the runner's processes into
 # session-N.scope, where stopping the unit can't reach them.
 #
 # The session file is written by the seat user, so it is data, not a command: it must be a bare
 # session id, and that session must belong to the seat user being stopped.
 user=$1
-file=/run/punktfunk-seat-$user/session
+file=/run/rubyfunk-seat-$user/session
 id=$(head -c 32 "$file" 2>/dev/null | tr -d '\n')
 case $id in
 '' | *[!0-9a-z]*) exit 0 ;;

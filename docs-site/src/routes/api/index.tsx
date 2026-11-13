@@ -13,18 +13,18 @@ export const Route = createFileRoute('/api/')({
   component: ApiReference,
   head: () => ({
     meta: [
-      { title: 'Punktfunk — Management API Reference' },
+      { title: 'RubyFunk — Management API Reference' },
       {
         name: 'description',
         content:
-          'Interactive reference for the Punktfunk host management REST API (OpenAPI).',
+          'Interactive reference for the RubyFunk host management REST API (OpenAPI).',
       },
     ],
     links: [{ rel: 'stylesheet', href: scalarCss }],
   }),
 })
 
-// The full Punktfunk theme rolled out onto Scalar — the same dark-violet (and
+// The full RubyFunk theme rolled out onto Scalar — the same dark-violet (and
 // light-lavender) product chrome as the docs/management console.
 //
 // IMPORTANT: Scalar toggles `.light-mode` / `.dark-mode` on `document.body`,
@@ -45,23 +45,23 @@ body.dark-mode {
   --scalar-radius-xl: 0.875rem;
 }
 
-/* ── Dark — the violet-tinted app-icon chrome (bg #141019 / cards #1c1530). ── */
+/* ── Dark — the violet-tinted app-icon chrome (bg #180d13 / cards #210e18). ── */
 body.dark-mode {
-  --scalar-background-1: #141019;
-  --scalar-background-2: #1c1530;
+  --scalar-background-1: #180d13;
+  --scalar-background-2: #210e18;
   --scalar-background-3: #221a36;
-  --scalar-background-accent: #6c5bf32e;
+  --scalar-background-accent: #c412422e;
   --scalar-border-color: #2a2148;
 
   --scalar-color-1: #f4f2fb;
   --scalar-color-2: #b7b1c9;
   --scalar-color-3: #8a85a0;
-  --scalar-color-accent: #a79ff8;
+  --scalar-color-accent: #ff477b;
 
-  --scalar-link-color: #a79ff8;
+  --scalar-link-color: #ff477b;
   --scalar-link-color-hover: #c8c0fb;
 
-  --scalar-button-1: #6c5bf3;
+  --scalar-button-1: #c41242;
   --scalar-button-1-color: #ffffff;
   --scalar-button-1-hover: #5d4ee0;
 
@@ -69,18 +69,18 @@ body.dark-mode {
   --scalar-sidebar-color-1: #e9e6f4;
   --scalar-sidebar-color-2: #9a94ad;
   --scalar-sidebar-color-active: #c8c0fb;
-  --scalar-sidebar-item-hover-background: #6c5bf31f;
+  --scalar-sidebar-item-hover-background: #c412421f;
   --scalar-sidebar-item-hover-color: #f4f2fb;
-  --scalar-sidebar-item-active-background: #6c5bf333;
+  --scalar-sidebar-item-active-background: #c4124233;
   --scalar-sidebar-border-color: #241c3d;
-  --scalar-sidebar-search-background: #1c1530;
+  --scalar-sidebar-search-background: #210e18;
   --scalar-sidebar-search-border-color: #2a2148;
   --scalar-sidebar-search-color: #9a94ad;
   --scalar-sidebar-indent-border: #2a2148;
-  --scalar-sidebar-indent-border-active: #6c5bf3;
+  --scalar-sidebar-indent-border-active: #c41242;
   --scalar-sidebar-indent-border-hover: #463a78;
 
-  --scalar-header-background-1: #141019;
+  --scalar-header-background-1: #180d13;
   --scalar-header-color-1: #f4f2fb;
   --scalar-header-border-color: #2a2148;
 
@@ -92,7 +92,7 @@ body.dark-mode {
   --scalar-color-yellow: #fbbf24;
   --scalar-color-blue: #60a5fa;
   --scalar-color-orange: #fb923c;
-  --scalar-color-purple: #a79ff8;
+  --scalar-color-purple: #ff477b;
 }
 
 /* ── Light — the lavender docs surface (bg #f0ebff / white content). ── */
@@ -100,18 +100,18 @@ body.light-mode {
   --scalar-background-1: #ffffff;
   --scalar-background-2: #f6f2ff;
   --scalar-background-3: #ece6fb;
-  --scalar-background-accent: #6c5bf31a;
+  --scalar-background-accent: #c412421a;
   --scalar-border-color: #e4dcf7;
 
   --scalar-color-1: #1b1430;
   --scalar-color-2: #4a4368;
   --scalar-color-3: #6f6a86;
-  --scalar-color-accent: #6c5bf3;
+  --scalar-color-accent: #c41242;
 
-  --scalar-link-color: #6c5bf3;
+  --scalar-link-color: #c41242;
   --scalar-link-color-hover: #5d4ee0;
 
-  --scalar-button-1: #6c5bf3;
+  --scalar-button-1: #c41242;
   --scalar-button-1-color: #ffffff;
   --scalar-button-1-hover: #5d4ee0;
 
@@ -119,15 +119,15 @@ body.light-mode {
   --scalar-sidebar-color-1: #1b1430;
   --scalar-sidebar-color-2: #6f6a86;
   --scalar-sidebar-color-active: #5d4ee0;
-  --scalar-sidebar-item-hover-background: #6c5bf314;
+  --scalar-sidebar-item-hover-background: #c4124214;
   --scalar-sidebar-item-hover-color: #1b1430;
-  --scalar-sidebar-item-active-background: #6c5bf322;
+  --scalar-sidebar-item-active-background: #c4124222;
   --scalar-sidebar-border-color: #e4dcf7;
   --scalar-sidebar-search-background: #ffffff;
   --scalar-sidebar-search-border-color: #e4dcf7;
   --scalar-sidebar-search-color: #6f6a86;
   --scalar-sidebar-indent-border: #e4dcf7;
-  --scalar-sidebar-indent-border-active: #6c5bf3;
+  --scalar-sidebar-indent-border-active: #c41242;
   --scalar-sidebar-indent-border-hover: #c9bdf0;
 
   --scalar-header-background-1: #ffffff;
@@ -142,7 +142,7 @@ body.light-mode {
   --scalar-color-yellow: #d97706;
   --scalar-color-blue: #2563eb;
   --scalar-color-orange: #ea580c;
-  --scalar-color-purple: #6c5bf3;
+  --scalar-color-purple: #c41242;
 }
 `
 
@@ -191,7 +191,7 @@ function ApiReference() {
       url: '/openapi.json',
       darkMode: isDark,
       hideDarkModeToggle: true,
-      metaData: { title: 'Punktfunk Management API' },
+      metaData: { title: 'RubyFunk Management API' },
       hideDownloadButton: false,
       customCss: SCALAR_CSS,
     }),
@@ -200,13 +200,13 @@ function ApiReference() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      {/* Slim branded bar so the reference stays inside the Punktfunk identity
+      {/* Slim branded bar so the reference stays inside the RubyFunk identity
           and links back into the docs. */}
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-fd-border px-4 md:px-6">
         <Link
           to="/docs/$"
           params={{ _splat: '' }}
-          aria-label="Punktfunk documentation"
+          aria-label="RubyFunk documentation"
           className="flex items-center gap-2 no-underline"
         >
           <BrandMark className="size-6" />

@@ -7,7 +7,7 @@
 //! grid-latency rule, so a frame costs the jitter this link shows, up to one period where the
 //! tail is one. Under `smooth` it is 1–3 deep on the snapping cushion.
 
-use punktfunk_core::phase::{CadenceClock, CadenceHealth, CadenceTuning};
+use rubyfunk_core::phase::{CadenceClock, CadenceHealth, CadenceTuning};
 use std::collections::VecDeque;
 
 use super::{Counters, PresentPriority};

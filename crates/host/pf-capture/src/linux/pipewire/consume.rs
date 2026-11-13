@@ -55,7 +55,7 @@ impl FenceWaitStats {
         self.buckets[idx] += 1;
     }
 
-    /// One taken frame. Every 300 under `PUNKTFUNK_PERF`, the line: about 5 s at 60 fps.
+    /// One taken frame. Every 300 under `RUBYFUNK_PERF`, the line: about 5 s at 60 fps.
     pub(in crate::linux) fn took(&mut self, t: &super::Taken) {
         use pf_dmabuf::fence::WaitOutcome;
         self.record(t.waited.as_micros() as u64);

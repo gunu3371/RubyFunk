@@ -1,10 +1,10 @@
-//! The `punktfunk://` URL grammar: one parser/emitter for every native client
-//! (`design/client-deep-links.md`). Swift (`PunktfunkShared/DeepLink.swift`) and
+//! The `rubyfunk://` URL grammar: one parser/emitter for every native client
+//! (`design/client-deep-links.md`). Swift (`RubyFunkShared/DeepLink.swift`) and
 //! Kotlin keep their own ports; all three consume
 //! `clients/shared/deeplink-vectors.json`.
 //!
 //! ```text
-//! punktfunk://connect/<host-ref>[?fp=<64-hex>][&host=<addr[:port]>][&launch=<id>]
+//! rubyfunk://connect/<host-ref>[?fp=<64-hex>][&host=<addr[:port]>][&launch=<id>]
 //!                               [&preset=<ref>][&as=<profile>][&name=<label>]
 //! ```
 //!
@@ -72,7 +72,7 @@ pub struct DeepLink {
 /// Rejection codes shared with the Swift/Kotlin ports via `clients/shared/deeplink-vectors.json`.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ParseError {
-    /// Not `punktfunk://` / `pf://` — ignore, do not warn.
+    /// Not `rubyfunk://` / `pf://` — ignore, do not warn.
     NotOurScheme,
     TooLong,
     UnknownRoute(String),
@@ -110,11 +110,11 @@ impl ParseError {
     /// Names the failing reference so a shortcut never streams with the wrong settings.
     pub fn message(&self) -> String {
         match self {
-            ParseError::NotOurScheme => "That isn't a Punktfunk link.".into(),
+            ParseError::NotOurScheme => "That isn't a RubyFunk link.".into(),
             ParseError::TooLong => "That link is too long to be genuine.".into(),
-            ParseError::UnknownRoute(r) => format!("Punktfunk links can't do \"{r}\"."),
+            ParseError::UnknownRoute(r) => format!("RubyFunk links can't do \"{r}\"."),
             ParseError::PairRefused => {
-                "Pairing can't be done from a link — pair the host in Punktfunk first.".into()
+                "Pairing can't be done from a link — pair the host in RubyFunk first.".into()
             }
             ParseError::MissingHostRef => "That link doesn't say which host to use.".into(),
             ParseError::BadEscape | ParseError::ControlChar => {
@@ -128,9 +128,9 @@ impl ParseError {
     }
 }
 
-/// `punktfunk`, or its `pf` input alias, in any case.
+/// `rubyfunk`, or its `pf` input alias, in any case.
 fn our_scheme(scheme: &str) -> bool {
-    scheme.eq_ignore_ascii_case("punktfunk") || scheme.eq_ignore_ascii_case("pf")
+    scheme.eq_ignore_ascii_case("rubyfunk") || scheme.eq_ignore_ascii_case("pf")
 }
 
 /// Whether a command-line argument is a link addressed to us. [`parse`] validates it.
@@ -158,7 +158,7 @@ pub fn parse(url: &str) -> Result<DeepLink, ParseError> {
     let path = path.trim_end_matches('/');
     let (route_word, host_ref_raw) = match path.split_once('/') {
         Some((r, h)) => (r, h),
-        // Bare path is a host-ref unless it is a route word: `punktfunk://pair` must refuse,
+        // Bare path is a host-ref unless it is a route word: `rubyfunk://pair` must refuse,
         // not hunt for a host named "pair".
         None if is_route_word(path) => (path, ""),
         None => ("connect", path),
@@ -247,11 +247,11 @@ pub fn parse(url: &str) -> Result<DeepLink, ParseError> {
 }
 
 impl DeepLink {
-    /// Always `punktfunk://`, never the `pf://` alias. Self-emitted links carry the stable
+    /// Always `rubyfunk://`, never the `pf://` alias. Self-emitted links carry the stable
     /// id and `host`+`fp` so a wiped store still resolves.
     pub fn to_url(&self) -> String {
         let mut s = format!(
-            "punktfunk://{}/{}",
+            "rubyfunk://{}/{}",
             self.route.as_str(),
             encode(&self.host_ref)
         );
@@ -299,9 +299,10 @@ impl DeepLink {
     pub fn for_host(host: &KnownHost, launch: Option<&str>, preset: Option<&str>) -> DeepLink {
         DeepLink {
             route: Route::Connect,
-            host_ref: host.id.clone().unwrap_or_else(|| {
-                punktfunk_core::discovery::join_host_port(&host.addr, host.port)
-            }),
+            host_ref: host
+                .id
+                .clone()
+                .unwrap_or_else(|| rubyfunk_core::discovery::join_host_port(&host.addr, host.port)),
             fp: (!host.fp_hex.is_empty()).then(|| host.fp_hex.clone()),
             host: Some((host.addr.clone(), host.port)),
             launch: launch
@@ -359,7 +360,7 @@ pub enum HostResolution {
 /// literal → `host=` recovery.
 ///
 /// Only the record id is unguessable, so only it is [`HostResolution::Known`].
-/// `.desktop` files register `x-scheme-handler/punktfunk`, so any web page can
+/// `.desktop` files register `x-scheme-handler/rubyfunk`, so any web page can
 /// hand this a guessable name or LAN address; those are [`HostResolution::Confirm`].
 ///
 /// Returns an index, not a borrow, so callers can rekey / touch-last-used.
@@ -600,23 +601,23 @@ mod tests {
     #[test]
     fn refusals_are_specific() {
         assert_eq!(parse("https://example.com/"), Err(ParseError::NotOurScheme));
-        assert_eq!(parse("punktfunk:/connect/x"), Err(ParseError::NotOurScheme));
+        assert_eq!(parse("rubyfunk:/connect/x"), Err(ParseError::NotOurScheme));
         assert_eq!(
-            parse(&format!("punktfunk://connect/{}", "a".repeat(MAX_URL_LEN))),
+            parse(&format!("rubyfunk://connect/{}", "a".repeat(MAX_URL_LEN))),
             Err(ParseError::TooLong)
         );
-        assert_eq!(parse("punktfunk://pair/1234"), Err(ParseError::PairRefused));
+        assert_eq!(parse("rubyfunk://pair/1234"), Err(ParseError::PairRefused));
         assert_eq!(
-            parse("punktfunk://teardown/host"),
+            parse("rubyfunk://teardown/host"),
             Err(ParseError::UnknownRoute("teardown".into()))
         );
         assert_eq!(
-            parse("punktfunk://connect/"),
+            parse("rubyfunk://connect/"),
             Err(ParseError::MissingHostRef)
         );
         assert_eq!(
             parse(&format!(
-                "punktfunk://connect/{}",
+                "rubyfunk://connect/{}",
                 "n".repeat(MAX_HOST_REF_LEN + 1)
             )),
             Err(ParseError::ParamTooLong("host-ref"))
@@ -651,26 +652,26 @@ mod tests {
         let r = |url: &str| resolve_host(&parse(url).unwrap(), &known);
 
         assert_eq!(
-            r("punktfunk://connect/11111111-2222-4333-8444-555555555555"),
+            r("rubyfunk://connect/11111111-2222-4333-8444-555555555555"),
             HostResolution::Known(0)
         );
-        assert_eq!(r("punktfunk://connect/desk"), HostResolution::Confirm(0));
-        assert_eq!(r("punktfunk://connect/couch"), HostResolution::Ambiguous);
+        assert_eq!(r("rubyfunk://connect/desk"), HostResolution::Confirm(0));
+        assert_eq!(r("rubyfunk://connect/couch"), HostResolution::Ambiguous);
         assert_eq!(
-            r("punktfunk://connect/192.168.1.50"),
+            r("rubyfunk://connect/192.168.1.50"),
             HostResolution::Confirm(0)
         );
         assert_eq!(
-            r("punktfunk://connect/192.168.1.50:9777"),
+            r("rubyfunk://connect/192.168.1.50:9777"),
             HostResolution::Confirm(0)
         );
         assert_eq!(
-            r("punktfunk://connect/00000000-0000-4000-8000-000000000000?host=192.168.1.50"),
+            r("rubyfunk://connect/00000000-0000-4000-8000-000000000000?host=192.168.1.50"),
             HostResolution::Confirm(0)
         );
         assert_eq!(
             r(&format!(
-                "punktfunk://connect/10.0.0.9:7000?name=Studio&fp={fp}"
+                "rubyfunk://connect/10.0.0.9:7000?name=Studio&fp={fp}"
             )),
             HostResolution::Unknown {
                 addr: "10.0.0.9".into(),
@@ -680,7 +681,7 @@ mod tests {
             }
         );
         assert_eq!(
-            r("punktfunk://connect/nas.local"),
+            r("rubyfunk://connect/nas.local"),
             HostResolution::Unknown {
                 addr: "nas.local".into(),
                 port: DEFAULT_PORT,
@@ -690,17 +691,17 @@ mod tests {
         );
         // Stale record id is not a hostname; without `host=` there is nothing to dial.
         assert_eq!(
-            r("punktfunk://connect/00000000-0000-4000-8000-000000000000"),
+            r("rubyfunk://connect/00000000-0000-4000-8000-000000000000"),
             HostResolution::Unresolvable
         );
         assert_eq!(
-            r("punktfunk://connect/Basement%20PC"),
+            r("rubyfunk://connect/Basement%20PC"),
             HostResolution::Unresolvable
         );
 
-        let link = parse(&format!("punktfunk://connect/desk?fp={}", "b".repeat(64))).unwrap();
+        let link = parse(&format!("rubyfunk://connect/desk?fp={}", "b".repeat(64))).unwrap();
         assert!(link.pin_conflict(&known.hosts[0]));
-        assert!(!parse(&format!("punktfunk://connect/desk?fp={fp}"))
+        assert!(!parse(&format!("rubyfunk://connect/desk?fp={fp}"))
             .unwrap()
             .pin_conflict(&known.hosts[0]));
         // Empty stored pin: nothing to contradict.
@@ -721,17 +722,17 @@ mod tests {
         let r = |url: &str| resolve_host(&parse(url).unwrap(), &known);
 
         assert_eq!(
-            r("punktfunk://connect/11111111-2222-4333-8444-555555555555"),
+            r("rubyfunk://connect/11111111-2222-4333-8444-555555555555"),
             HostResolution::Known(0)
         );
         for guess in [
-            "punktfunk://connect/desk",
-            "punktfunk://connect/DESK",
-            "punktfunk://connect/192.168.1.50",
-            "punktfunk://connect/192.168.1.50:9777",
+            "rubyfunk://connect/desk",
+            "rubyfunk://connect/DESK",
+            "rubyfunk://connect/192.168.1.50",
+            "rubyfunk://connect/192.168.1.50:9777",
             // Extra params do not upgrade a guess to one-click.
-            "punktfunk://connect/desk?launch=steam:570",
-            "punktfunk://connect/00000000-0000-4000-8000-000000000000?host=192.168.1.50",
+            "rubyfunk://connect/desk?launch=steam:570",
+            "rubyfunk://connect/00000000-0000-4000-8000-000000000000?host=192.168.1.50",
         ] {
             assert_eq!(r(guess), HostResolution::Confirm(0), "{guess}");
         }
@@ -760,7 +761,7 @@ mod tests {
         };
         let r = |url: &str| resolve_host(&parse(url).unwrap(), &known);
 
-        let at = |fp: &str| format!("punktfunk://connect/192.168.1.50?fp={fp}");
+        let at = |fp: &str| format!("rubyfunk://connect/192.168.1.50?fp={fp}");
         assert_eq!(r(&at(&windows)), HostResolution::Confirm(0));
         assert_eq!(r(&at(&linux)), HostResolution::Confirm(1));
         assert_eq!(
@@ -775,7 +776,7 @@ mod tests {
         // A stale id recovering through `host=` lands on the pin's own record too.
         assert_eq!(
             r(&format!(
-                "punktfunk://connect/00000000-0000-4000-8000-000000000000\
+                "rubyfunk://connect/00000000-0000-4000-8000-000000000000\
                  ?host=192.168.1.50&fp={linux}"
             )),
             HostResolution::Confirm(1)
@@ -796,7 +797,7 @@ mod tests {
         let url = link.to_url();
         assert_eq!(
             url,
-            "punktfunk://connect/11111111-2222-4333-8444-555555555555\
+            "rubyfunk://connect/11111111-2222-4333-8444-555555555555\
              ?fp=cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\
              &host=192.168.1.50:7777&launch=steam:570&preset=aaaaaaaaaaaa&profile=aaaaaaaaaaaa"
         );
@@ -846,7 +847,7 @@ mod tests {
         };
         assert!(link
             .to_url()
-            .starts_with("punktfunk://connect/Wohnzimmer%20PC?"));
+            .starts_with("rubyfunk://connect/Wohnzimmer%20PC?"));
         assert_eq!(parse(&link.to_url()).unwrap(), link);
     }
 

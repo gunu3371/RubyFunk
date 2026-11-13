@@ -9,14 +9,14 @@
 //! network and decode jitter. On API 31/32 the release is ASAP and only the budget uses the
 //! measured period.
 //!
-//! `adb shell setprop debug.punktfunk.presenter arrival` selects the arrival path instead: the
+//! `adb shell setprop debug.rubyfunk.presenter arrival` selects the arrival path instead: the
 //! newest ready buffer releases at once, unbudgeted — the on-device A/B needs no rebuild. The
 //! user-facing escape hatch stays the "Low-latency mode" toggle.
 
 use ndk::data_space::DataSpace;
 use ndk::media::media_codec::MediaCodec;
 use ndk::native_window::NativeWindow;
-use punktfunk_core::quic::ColorInfo;
+use rubyfunk_core::quic::ColorInfo;
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
@@ -35,10 +35,10 @@ use crate::present::{
 };
 use crate::sys::{now_monotonic_ns, sysprop};
 
-/// `debug.punktfunk.latch_margin_us` (0..=8000 µs): PIN the submit margin for a sweep —
+/// `debug.rubyfunk.latch_margin_us` (0..=8000 µs): PIN the submit margin for a sweep —
 /// setprop + stream restart, no rebuild. Unset/invalid = `None` = the adaptive default.
 fn latch_margin_ns() -> Option<i64> {
-    let us = sysprop(c"debug.punktfunk.latch_margin_us")?
+    let us = sysprop(c"debug.rubyfunk.latch_margin_us")?
         .parse::<i64>()
         .ok()?;
     (0..=8_000).contains(&us).then_some(us * 1_000)
@@ -220,7 +220,7 @@ impl Timeline {
             "presenter: latch margin {}us{}",
             budget.margin_ns() / 1_000,
             if budget.margin_pinned() {
-                " (debug.punktfunk.latch_margin_us pin)"
+                " (debug.rubyfunk.latch_margin_us pin)"
             } else {
                 " (adaptive — widens on latch misses)"
             }

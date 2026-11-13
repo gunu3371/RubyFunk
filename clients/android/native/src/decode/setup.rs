@@ -4,8 +4,8 @@ use crate::sys::{set_thread_nice, sysprop};
 use ndk::media::media_codec::MediaCodec;
 use ndk::media::media_format::MediaFormat;
 use ndk::native_window::NativeWindow;
-use punktfunk_core::client::NativeClient;
-use punktfunk_core::config::Mode;
+use rubyfunk_core::client::NativeClient;
+use rubyfunk_core::config::Mode;
 use std::ffi::c_void;
 use std::time::Duration;
 
@@ -15,15 +15,15 @@ use std::time::Duration;
 /// emitted HEVC).
 pub(crate) fn codec_mime(codec: u8) -> &'static str {
     match codec {
-        punktfunk_core::quic::CODEC_H264 => "video/avc",
-        punktfunk_core::quic::CODEC_AV1 => "video/av01",
+        rubyfunk_core::quic::CODEC_H264 => "video/avc",
+        rubyfunk_core::quic::CODEC_AV1 => "video/av01",
         _ => "video/hevc",
     }
 }
 
 /// The codec the host resolved, as every overlay names it: empty for an id this build does not
 /// know, which the stream notification leaves out.
-pub(crate) use punktfunk_core::hud::codec_label;
+pub(crate) use rubyfunk_core::hud::codec_label;
 
 /// Create the decoder: prefer the specific codec Kotlin ranked from `MediaCodecList`
 /// (`from_codec_name`), falling back to the platform's default decoder for the MIME
@@ -212,14 +212,14 @@ pub(super) fn try_set_frame_rate(window: &NativeWindow, frame_rate: f32, always:
     }
 }
 
-/// Serialize [`HdrMeta`](punktfunk_core::quic::HdrMeta) into Android's `KEY_HDR_STATIC_INFO`
+/// Serialize [`HdrMeta`](rubyfunk_core::quic::HdrMeta) into Android's `KEY_HDR_STATIC_INFO`
 /// (`hdr-static-info`) layout: a 25-byte CTA-861.3 / `HDRStaticInfo.Type1` blob — descriptor id 0,
 /// then primaries in **R, G, B** order, white point, max/min display luminance, MaxCLL, MaxFALL, all
 /// **little-endian** `u16`. Two conversions vs our wire form: HdrMeta stores primaries in ST.2086
 /// **G, B, R** order (reorder to R, G, B), and `max_display_mastering_luminance` is in 0.0001-cd/m²
 /// units while Android wants **whole nits** (min stays 0.0001-nit). Chromaticities (1/50000) and
 /// MaxCLL/MaxFALL (nits) match 1:1.
-pub(super) fn android_hdr_static_info(m: &punktfunk_core::quic::HdrMeta) -> [u8; 25] {
+pub(super) fn android_hdr_static_info(m: &rubyfunk_core::quic::HdrMeta) -> [u8; 25] {
     let [g, b_, r] = m.display_primaries; // ST.2086 G, B, R
     let max_nits = (m.max_display_mastering_luminance / 10_000).min(u16::MAX as u32) as u16;
     let min_units = m.min_display_mastering_luminance.min(u16::MAX as u32) as u16;
@@ -250,7 +250,7 @@ pub(super) fn android_hdr_static_info(m: &punktfunk_core::quic::HdrMeta) -> [u8;
 /// otherwise. The Surface DataSpace (applied on the format change) carries transfer/primaries
 /// regardless — this adds the luminance the tone-mapper needs. `None` on an SDR session.
 /// The newest entry, not the first: the host follows its generic baseline with the source's grade.
-pub(super) fn hdr_static(client: &NativeClient) -> Option<punktfunk_core::quic::HdrMeta> {
+pub(super) fn hdr_static(client: &NativeClient) -> Option<rubyfunk_core::quic::HdrMeta> {
     if !client.video_format().color.is_hdr() {
         return None;
     }
@@ -275,8 +275,8 @@ pub(super) fn hdr_static(client: &NativeClient) -> Option<punktfunk_core::quic::
 /// returns each output when the input is consumed, with a fence that signals when the pixels are
 /// written. Opt-in until the glass gain is measured; the `pf.present` line's `fenceTailMs` is
 /// the codec time the HUD `decode` then no longer sees.
-/// `adb shell setprop debug.punktfunk.low_latency_key mtk-boost`.
-pub(super) const LOW_LATENCY_KEY_PROP: &std::ffi::CStr = c"debug.punktfunk.low_latency_key";
+/// `adb shell setprop debug.rubyfunk.low_latency_key mtk-boost`.
+pub(super) const LOW_LATENCY_KEY_PROP: &std::ffi::CStr = c"debug.rubyfunk.low_latency_key";
 
 /// The Qualcomm output-fence keys fit a Codec2 Qualcomm decoder on Android 13+. Only
 /// `CCodecBufferChannel` since 13 forwards the codec's fence to the consumer; earlier releases
@@ -316,7 +316,7 @@ pub(super) fn low_latency_format(
     mode: &Mode,
     codec_name: &str,
     keys: Option<bool>,
-    hdr_static: Option<&punktfunk_core::quic::HdrMeta>,
+    hdr_static: Option<&rubyfunk_core::quic::HdrMeta>,
 ) -> MediaFormat {
     let mut format = MediaFormat::new();
     format.set_str("mime", mime);

@@ -11,11 +11,11 @@
 
 use crate::audio;
 use crate::video::{DecodedFrame, DecodedImage, Decoder};
-use punktfunk_core::client::{ConnectParams, Decoded, NativeClient};
-use punktfunk_core::config::{CompositorPref, GamepadPref, Mode};
-pub use punktfunk_core::reject::WAKE_SETTLE;
-use punktfunk_core::session::Frame;
-use punktfunk_core::PunktfunkError;
+use rubyfunk_core::client::{ConnectParams, Decoded, NativeClient};
+use rubyfunk_core::config::{CompositorPref, GamepadPref, Mode};
+pub use rubyfunk_core::reject::WAKE_SETTLE;
+use rubyfunk_core::session::Frame;
+use rubyfunk_core::RubyFunkError;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -38,7 +38,7 @@ pub struct SessionParams {
     /// fact: this box filters it, then the host may still answer Opus — read
     /// `NativeClient::audio_codec` / `_sample_rate_hz` / `_bits` for what landed.
     /// `String` so an unknown settings-file value resolves to Opus rather than refusing
-    /// a connect. `PUNKTFUNK_AUDIO_HIRES` overrides it (`requested_audio_format`).
+    /// a connect. `RUBYFUNK_AUDIO_HIRES` overrides it (`requested_audio_format`).
     pub audio_format: String,
     /// Soft `quic::CODEC_*` bit (`0` = auto). The host honors it when it can; the
     /// resolved codec drives the decoder.
@@ -48,18 +48,18 @@ pub struct SessionParams {
     /// fresh Hello is the only lever.
     pub exclude_codecs: u8,
     /// Advertised `quic::VIDEO_CAP_*` bits. Default is 10-bit + HDR; `0` when the user
-    /// turned HDR off. The host still gates the upgrade behind `PUNKTFUNK_10BIT`.
+    /// turned HDR off. The host still gates the upgrade behind `RUBYFUNK_10BIT`.
     pub video_caps: u8,
     /// The Full chroma switch as set. `video_caps` holds 4:4:4 only when HEVC 4:4:4
     /// decodes here; a PyroWave session asks on this alone, as it decodes 4:4:4 on any GPU.
     pub want_444: bool,
     /// This panel's HDR volume, riding `Hello::display_hdr` into the host EDID so apps
-    /// tone-map here. `None` = unknown/SDR. `PUNKTFUNK_CLIENT_PEAK_NITS` synthesizes a
+    /// tone-map here. `None` = unknown/SDR. `RUBYFUNK_CLIENT_PEAK_NITS` synthesizes a
     /// BT.2020 volume at that peak.
-    pub display_hdr: Option<punktfunk_core::quic::HdrMeta>,
+    pub display_hdr: Option<rubyfunk_core::quic::HdrMeta>,
     pub mic_enabled: bool,
     /// Echo cancellation on the uplink. Ignored when `mic_enabled` is false;
-    /// `PUNKTFUNK_NO_AEC=1` forces it off.
+    /// `RUBYFUNK_NO_AEC=1` forces it off.
     pub echo_cancel: bool,
     /// DualSense voice-coil haptics (0xD1 kind 0). With `pad_speaker` it gates
     /// `CLIENT_CAP_PAD_AUDIO` and the pad-audio renderer thread.
@@ -74,12 +74,12 @@ pub struct SessionParams {
     pub keep_host_audio: bool,
     /// How the presenter fills the window; rides the Hello so a host framing the picture for
     /// another device reframes it for this one.
-    pub video_fit: punktfunk_core::video_fit::VideoFit,
+    pub video_fit: rubyfunk_core::video_fit::VideoFit,
     /// Advertise `CLIENT_CAP_CURSOR`: this embedder draws the host cursor locally, so
     /// the host may stop compositing it. Only set when it actually draws — advertising
     /// without rendering streams with no visible cursor.
     pub cursor_forward: bool,
-    /// Decoder preference; `PUNKTFUNK_DECODER` overrides — see `video::Decoder::new`.
+    /// Decoder preference; `RUBYFUNK_DECODER` overrides — see `video::Decoder::new`.
     pub decoder: String,
     /// Library id for the host to launch (`"steam:570"`); `None` = desktop session.
     pub launch: Option<String>,
@@ -101,7 +101,7 @@ pub struct SessionParams {
     /// sets it on the re-dial, and a pump that finds it set pauses 2 s before dialing.
     pub settle_until: Option<Instant>,
     /// How long the pump waits before it dials. A redial after [`SessionEvent::Lost`] waits
-    /// out `PunktfunkEndReason::redial_delay`; zero on any other dial.
+    /// out `RubyFunkEndReason::redial_delay`; zero on any other dial.
     pub redial_wait: Duration,
     /// Presenter raises this when it can't display the decoder's hardware frames. The pump
     /// demotes the decoder off that rung and re-requests a keyframe. Decode still succeeds
@@ -127,7 +127,7 @@ pub struct SessionParams {
     /// Show how to leave when this stream starts.
     pub exit_hint: bool,
     /// Hold the screen awake for the whole stream; off, only while the player's input is recent
-    /// ([`punktfunk_core::client::holds_screen_awake`]).
+    /// ([`rubyfunk_core::client::holds_screen_awake`]).
     pub keep_awake: bool,
     /// Quick-action ring blob this launch resolved; empty = the platform default. Per launch
     /// like the tier, so a browse-mode presenter shows a ring edited between streams.
@@ -150,7 +150,7 @@ pub struct SessionParams {
     pub render_scale_max_dim: u32,
     /// Every monitor the stream shows, the window's first; empty for one. Further screens'
     /// frames come through [`start_screen`].
-    pub screens: Vec<punktfunk_core::quic::v2::msg::Screen>,
+    pub screens: Vec<rubyfunk_core::quic::v2::msg::Screen>,
     /// The player wants a host screen per monitor ([`Settings::all_screens`](crate::trust::Settings::all_screens)):
     /// the stream asks for them and keeps asking as monitors come and go. Only an embedder that
     /// opens a window per screen reads it.
@@ -159,7 +159,7 @@ pub struct SessionParams {
     pub prompts_unlock: bool,
     /// The unlock the next dial sends, taken by it. Clones share the slot, so a re-dial sends
     /// none.
-    pub unlock: Arc<std::sync::Mutex<Option<punktfunk_core::quic::v2::msg::ProfileUnlock>>>,
+    pub unlock: Arc<std::sync::Mutex<Option<rubyfunk_core::quic::v2::msg::ProfileUnlock>>>,
 }
 
 /// Host, pin, launch, and budget for one dial.
@@ -181,7 +181,7 @@ pub struct Dial {
 pub struct Probes {
     pub mode: Mode,
     pub vulkan: Option<crate::video::VulkanDecodeDevice>,
-    pub display_hdr: Option<punktfunk_core::quic::HdrMeta>,
+    pub display_hdr: Option<rubyfunk_core::quic::HdrMeta>,
     /// This display can present HDR. Caps and the panel volume also require the
     /// HDR setting. A panel volume may still be absent.
     pub hdr_enabled: bool,
@@ -250,7 +250,7 @@ impl SessionParams {
             pad_speaker: settings.pad_speaker.clone(),
             clipboard,
             keep_host_audio: settings.keep_host_audio,
-            video_fit: punktfunk_core::video_fit::VideoFit::from_name(&settings.video_fit),
+            video_fit: rubyfunk_core::video_fit::VideoFit::from_name(&settings.video_fit),
             cursor_forward: settings.mouse_mode() == crate::trust::MouseMode::Desktop,
             decoder: settings.decoder.clone(),
             launch: dial.launch,
@@ -269,7 +269,7 @@ impl SessionParams {
             advanced_stats: settings.advanced_stats,
             // The desktop overlay's own corner is top left.
             stats_corner: settings.hud_corner(crate::trust::HudCorner::TopLeft),
-            stats_scale: punktfunk_core::hud::stats_scale(settings.stats_scale_pct),
+            stats_scale: rubyfunk_core::hud::stats_scale(settings.stats_scale_pct),
             exit_hint: settings.exit_hint,
             keep_awake: settings.keep_awake,
             overlay_actions: settings.overlay_actions.clone(),
@@ -283,7 +283,7 @@ impl SessionParams {
             fullscreen: settings.fullscreen_on_stream || settings.fullscreen_always(),
             match_window: settings.match_window,
             render_scale: settings.render_scale,
-            render_scale_max_dim: punktfunk_core::render_scale::max_dimension(&settings.codec),
+            render_scale_max_dim: rubyfunk_core::render_scale::max_dimension(&settings.codec),
             screens: Vec::new(),
             shows_screens: settings.all_screens(),
             prompts_unlock: false,
@@ -292,17 +292,17 @@ impl SessionParams {
     }
 
     /// `refused`, `frames` frames in, reads as a host still waking
-    /// ([`punktfunk_core::reject::wake_redial_delay`]); the window ends at `settle_until`.
+    /// ([`rubyfunk_core::reject::wake_redial_delay`]); the window ends at `settle_until`.
     pub fn not_ready(
         &self,
-        refused: Option<punktfunk_core::reject::RejectReason>,
+        refused: Option<rubyfunk_core::reject::RejectReason>,
         frames: u64,
     ) -> bool {
         let left = |t: Instant| t.saturating_duration_since(Instant::now());
         let since_first = self
             .settle_until
             .map(|t| WAKE_SETTLE.saturating_sub(left(t)));
-        punktfunk_core::reject::wake_redial_delay(self.auto_wake, refused, frames > 0, since_first)
+        rubyfunk_core::reject::wake_redial_delay(self.auto_wake, refused, frames > 0, since_first)
             .is_some()
     }
 }
@@ -331,11 +331,11 @@ pub enum SessionEvent {
     Failed {
         msg: String,
         trust_rejected: bool,
-        refused: Option<punktfunk_core::reject::RejectReason>,
+        refused: Option<rubyfunk_core::reject::RejectReason>,
     },
     Ended(Option<String>),
-    /// The link died mid-session (`PunktfunkEndReason::Lost`). Terminal like [`Self::Ended`],
-    /// whose sentence it carries; the embedder redials on `PunktfunkEndReason::redial_delay`'s
+    /// The link died mid-session (`RubyFunkEndReason::Lost`). Terminal like [`Self::Ended`],
+    /// whose sentence it carries; the embedder redials on `RubyFunkEndReason::redial_delay`'s
     /// schedule, and one that does not ends as for [`Self::Ended`].
     Lost(Option<String>),
     /// The host answered but couldn't start the stream, and [`SessionParams::not_ready`] held.
@@ -440,7 +440,7 @@ pub struct SessionHandle {
 }
 
 pub fn start(params: SessionParams) -> SessionHandle {
-    punktfunk_core::client::set_thread_boost(crate::audio_rt::boost_core_thread);
+    rubyfunk_core::client::set_thread_boost(crate::audio_rt::boost_core_thread);
     let (ev_tx, ev_rx) = async_channel::unbounded();
     // Tiny frame queue, newest wins: force_send displaces the oldest when the UI lags.
     let (frame_tx, frame_rx) = async_channel::bounded(2);
@@ -449,7 +449,7 @@ pub fn start(params: SessionParams) -> SessionHandle {
     let mic = MicControl::default();
     let mic_w = mic.clone();
     let thread = std::thread::Builder::new()
-        .name("punktfunk-session".into())
+        .name("rubyfunk-session".into())
         .spawn(move || pump(params, ev_tx, frame_tx, stop_w, mic_w))
         .expect("spawn session thread");
     SessionHandle {
@@ -462,7 +462,7 @@ pub fn start(params: SessionParams) -> SessionHandle {
 }
 
 /// The client's present and latency clock: the same wall-clock basis the host stamps `pts_ns` in.
-pub use punktfunk_core::quic::wall_clock_ns as now_ns;
+pub use rubyfunk_core::quic::wall_clock_ns as now_ns;
 
 // Audio-format vocabulary lives in `audio_format` so the Skia console can read it on
 // Android, where nothing else in this file compiles. Re-exported so desktop callers'
@@ -473,7 +473,7 @@ pub use crate::audio_format::{
 };
 
 /// Lossless format this client asks the host for — `Some((rate_hz, bits))` when on,
-/// `None` for Opus. The environment wins: `PUNKTFUNK_AUDIO_HIRES` overrides `setting`.
+/// `None` for Opus. The environment wins: `RUBYFUNK_AUDIO_HIRES` overrides `setting`.
 ///
 /// Grammar: `1`/`true`/`on`/`yes` → 96 kHz/24-bit; `96000` → that rate at 24-bit;
 /// `<48000|96000>/<16|24>` → an explicit pair (`48000/16` is the cheapest lossless
@@ -485,7 +485,7 @@ pub use crate::audio_format::{
 /// defeat a UI switch.
 fn requested_audio_format(setting: &str) -> Option<(u32, u8)> {
     resolve_audio_format(
-        std::env::var("PUNKTFUNK_AUDIO_HIRES").ok().as_deref(),
+        std::env::var("RUBYFUNK_AUDIO_HIRES").ok().as_deref(),
         setting,
     )
 }
@@ -505,7 +505,7 @@ fn resolve_audio_format(env: Option<&str>, setting: &str) -> Option<(u32, u8)> {
             tracing::warn!(
                 value = %raw,
                 setting,
-                "PUNKTFUNK_AUDIO_HIRES is not a format this client can ask for — use 1, \
+                "RUBYFUNK_AUDIO_HIRES is not a format this client can ask for — use 1, \
                  96000, 0, or <48000|96000>/<16|24>; ignoring it and using the audio-format \
                  setting instead"
             );
@@ -532,7 +532,7 @@ enum AudioRequest {
 /// Parse half of [`requested_audio_format`], testable without touching the process
 /// environment.
 fn parse_audio_format(raw: &str) -> AudioRequest {
-    use punktfunk_core::audio::pcm::{BITS_16, BITS_24};
+    use rubyfunk_core::audio::pcm::{BITS_16, BITS_24};
     let v = raw.trim().to_ascii_lowercase();
     match v.as_str() {
         "" | "0" | "off" | "false" | "no" => return AudioRequest::Legacy,
@@ -568,17 +568,17 @@ struct ConnectPlan {
 }
 
 fn connect_plan(params: &SessionParams) -> ConnectPlan {
-    // `PUNKTFUNK_PREFER_PYROWAVE=1`: the host only ever picks PyroWave when the
+    // `RUBYFUNK_PREFER_PYROWAVE=1`: the host only ever picks PyroWave when the
     // client names it as `preferred_codec`.
     #[allow(unused_mut)]
     let mut preferred = params.preferred_codec;
     #[cfg(all(any(target_os = "linux", windows), feature = "pyrowave"))]
-    if crate::env_on("PUNKTFUNK_PREFER_PYROWAVE") == Some(true) {
+    if crate::env_on("RUBYFUNK_PREFER_PYROWAVE") == Some(true) {
         if params.vulkan.as_ref().is_some_and(|v| v.pyrowave_decode) {
-            preferred = punktfunk_core::quic::CODEC_PYROWAVE;
+            preferred = rubyfunk_core::quic::CODEC_PYROWAVE;
         } else {
             tracing::warn!(
-                "PUNKTFUNK_PREFER_PYROWAVE=1 but the presenter device failed the pyrowave probe — keeping the normal codec preference"
+                "RUBYFUNK_PREFER_PYROWAVE=1 but the presenter device failed the pyrowave probe — keeping the normal codec preference"
             );
         }
     }
@@ -597,12 +597,12 @@ fn connect_plan(params: &SessionParams) -> ConnectPlan {
     ) & !params.exclude_codecs;
     // Gated on the codec actually being advertised, so a failed probe or a retry that
     // dropped it falls back to the HEVC-gated caps.
-    let pyrowave = preferred == punktfunk_core::quic::CODEC_PYROWAVE
-        && advertised_codecs & punktfunk_core::quic::CODEC_PYROWAVE != 0;
+    let pyrowave = preferred == rubyfunk_core::quic::CODEC_PYROWAVE
+        && advertised_codecs & rubyfunk_core::quic::CODEC_PYROWAVE != 0;
     // PyroWave decodes 4:4:4 on any GPU, so it asks on the switch alone. The host pins
     // its rate from the chroma it grants.
     let video_caps = if pyrowave && params.want_444 {
-        params.video_caps | punktfunk_core::quic::VIDEO_CAP_444
+        params.video_caps | rubyfunk_core::quic::VIDEO_CAP_444
     } else {
         params.video_caps
     };
@@ -629,7 +629,7 @@ fn connect_plan(params: &SessionParams) -> ConnectPlan {
 /// it from the audio format pair being specified, the one rule that keeps 48 kHz/16-bit
 /// lossless askable.
 fn client_caps(params: &SessionParams, pad_audio_on: bool) -> u8 {
-    use punktfunk_core::quic::{
+    use rubyfunk_core::quic::{
         CLIENT_CAP_CURSOR, CLIENT_CAP_KEEP_HOST_AUDIO, CLIENT_CAP_PAD_AUDIO,
     };
     let bit = |on: bool, cap: u8| if on { cap } else { 0 };
@@ -682,14 +682,14 @@ fn dial(
         audio_rate_hz,
         audio_bits,
         // Legacy coupling: this client decodes either, and only NDL-class sinks need the other.
-        audio_layout: punktfunk_core::audio::AudioLayout::Legacy,
+        audio_layout: rubyfunk_core::audio::AudioLayout::Legacy,
         video_fit: params.video_fit,
         // The audio thread reopens its plane on a packet in a new format.
         reopens_audio: true,
         video_codecs: plan.advertised_codecs,
         preferred_codec: plan.preferred,
-        // Env hatch wins so an A/B run can pin an exact peak (`PUNKTFUNK_CLIENT_PEAK_NITS`).
-        display_hdr: punktfunk_core::client::display_hdr_env_override().or(params.display_hdr),
+        // Env hatch wins so an A/B run can pin an exact peak (`RUBYFUNK_CLIENT_PEAK_NITS`).
+        display_hdr: rubyfunk_core::client::display_hdr_env_override().or(params.display_hdr),
         client_caps: client_caps(params, plan.pad_audio_on),
         // Slice-progressive delivery: off — every rung here is fed whole AUs.
         frame_parts: false,
@@ -703,7 +703,7 @@ fn dial(
         pin: params.pin,
         identity: Some(params.identity.clone()),
         preset: params.preset_id.as_deref().and_then(|id| {
-            punktfunk_core::quic::SessionPreset::new(id, params.preset.as_deref().unwrap_or(""))
+            rubyfunk_core::quic::SessionPreset::new(id, params.preset.as_deref().unwrap_or(""))
         }),
         // What a network check found this host wants, kept on its record: the ask is per
         // host, and a host that does not read it streams as it always has.
@@ -734,21 +734,21 @@ fn dial(
     })
     .map(Arc::new)
     .map_err(|e| {
-        let trust_rejected = matches!(e, PunktfunkError::Crypto);
+        let trust_rejected = matches!(e, RubyFunkError::Crypto);
         let refused = match e {
-            PunktfunkError::Rejected(reason, _) => Some(reason),
+            RubyFunkError::Rejected(reason, _) => Some(reason),
             _ => None,
         };
         let not_ready = params.not_ready(refused, 0);
         let msg = match e {
-            PunktfunkError::Crypto => {
+            RubyFunkError::Crypto => {
                 "Host identity rejected — wrong fingerprint, or the host requires pairing"
                     .to_string()
             }
-            PunktfunkError::Timeout => "Connection timed out".to_string(),
+            RubyFunkError::Timeout => "Connection timed out".to_string(),
             // Host said why it turned us away — show that verbatim: "denied on the
             // host" and "timed out" call for different next steps.
-            PunktfunkError::Rejected(reason, said) => {
+            RubyFunkError::Rejected(reason, said) => {
                 crate::trust::reject_message(reason, Some(&said))
             }
             other => {
@@ -789,8 +789,8 @@ fn open_decoder(
     allow(unused_variables)
 )]
 fn open_decoder_for(
-    format: &punktfunk_core::quic::VideoFormat,
-    mode: punktfunk_core::config::Mode,
+    format: &rubyfunk_core::quic::VideoFormat,
+    mode: rubyfunk_core::config::Mode,
     decoder: &str,
     vulkan: Option<&crate::video::VulkanDecodeDevice>,
     connector: &NativeClient,
@@ -800,7 +800,7 @@ fn open_decoder_for(
     // only through the explicit preference above, so failing here is failing an
     // opted-in experiment.
     #[cfg(all(any(target_os = "linux", windows), feature = "pyrowave"))]
-    let built = if format.codec == punktfunk_core::quic::CODEC_PYROWAVE {
+    let built = if format.codec == rubyfunk_core::quic::CODEC_PYROWAVE {
         // Wavelet bitstream has no VUI: the format's colour signalling is the stream's
         // colour contract, and the resolved chroma sizes the plane ring.
         let color = crate::video::ColorDesc {
@@ -815,7 +815,7 @@ fn open_decoder_for(
                 mode.width,
                 mode.height,
                 connector.shard_payload as usize,
-                format.chroma_format == punktfunk_core::quic::CHROMA_IDC_444,
+                format.chroma_format == rubyfunk_core::quic::CHROMA_IDC_444,
                 color,
                 format.bit_depth >= 10,
             ),
@@ -832,7 +832,7 @@ fn open_decoder_for(
 }
 
 /// The picture shape a decoder for `format` is built for.
-fn stream_format_of(format: &punktfunk_core::quic::VideoFormat) -> crate::video::StreamFormat {
+fn stream_format_of(format: &rubyfunk_core::quic::VideoFormat) -> crate::video::StreamFormat {
     crate::video::StreamFormat {
         chroma_format_idc: format.chroma_format,
         bit_depth: format.bit_depth,
@@ -854,7 +854,7 @@ fn amd_vulkan_hdr_notice(
     crate::video::amd_vulkan_hdr_driver_notice(
         driver,
         decoder.on_native_vulkan(),
-        connector.color.transfer == punktfunk_core::quic::ColorInfo::TRC_PQ,
+        connector.color.transfer == rubyfunk_core::quic::ColorInfo::TRC_PQ,
     )
 }
 
@@ -901,7 +901,7 @@ fn spawn_plane_threads(
     // Host without clipboard capability returns immediately. Also gated by the
     // session's CLIPBOARD grant — without it the host coordinator never starts.
     let clipboard_thread = (settings.clipboard
-        && access.allows(punktfunk_core::quic::GRANT_CLIPBOARD))
+        && access.allows(rubyfunk_core::quic::GRANT_CLIPBOARD))
     .then(|| {
         let c = connector.clone();
         let s = stop.clone();
@@ -913,7 +913,7 @@ fn spawn_plane_threads(
     .flatten();
     // `set_live` makes the chord real. Disabled settings, failed capture, or no
     // MIC grant leaves it false because the host would drop uplink datagrams.
-    let mic_uplink = (settings.mic_enabled && access.allows(punktfunk_core::quic::GRANT_MIC))
+    let mic_uplink = (settings.mic_enabled && access.allows(rubyfunk_core::quic::GRANT_MIC))
         .then(|| {
             audio::MicStreamer::spawn(connector.clone(), mic.flag(), settings.echo_cancel)
                 .map_err(|e| tracing::warn!(error = %e, "mic uplink disabled"))
@@ -1110,14 +1110,14 @@ fn screen_pump(
     while !stop.load(Ordering::SeqCst) {
         let frame = match connector.next_screen_frame(screen, Duration::from_millis(20)) {
             Ok(frame) => frame,
-            Err(PunktfunkError::NoFrame) => continue,
+            Err(RubyFunkError::NoFrame) => continue,
             Err(_) => return,
         };
         let changed = frame
             .new_format
             .filter(|f| decoder.is_none() || current != Some(*f));
         if let Some(format) = changed {
-            let kept = format.codec != punktfunk_core::quic::CODEC_PYROWAVE
+            let kept = format.codec != rubyfunk_core::quic::CODEC_PYROWAVE
                 && decoder
                     .as_mut()
                     .is_some_and(|d| d.reformat(format.codec, stream_format_of(&format)).is_ok());
@@ -1179,7 +1179,7 @@ fn pump(
         ..
     } = plan;
     let pause = match params.settle_until {
-        Some(_) => punktfunk_core::reject::WAKE_REDIAL_PAUSE.max(params.redial_wait),
+        Some(_) => rubyfunk_core::reject::WAKE_REDIAL_PAUSE.max(params.redial_wait),
         None => params.redial_wait,
     };
     let until = Instant::now() + pause;
@@ -1237,21 +1237,21 @@ fn pump(
         },
     );
 
-    // `PUNKTFUNK_DEBUG_RECONFIGURE=WxH@HZ:SECS` — request one mid-stream mode
+    // `RUBYFUNK_DEBUG_RECONFIGURE=WxH@HZ:SECS` — request one mid-stream mode
     // switch N seconds in, so a headless session can exercise the resize path.
     let pump_start = Instant::now();
-    let debug_reconfig = std::env::var("PUNKTFUNK_DEBUG_RECONFIGURE")
+    let debug_reconfig = std::env::var("RUBYFUNK_DEBUG_RECONFIGURE")
         .ok()
         .and_then(|s| {
             let parsed = parse_debug_reconfigure(&s);
             if parsed.is_none() {
-                tracing::warn!(value = %s, "PUNKTFUNK_DEBUG_RECONFIGURE not understood (want WxH@HZ:SECS) — ignored");
+                tracing::warn!(value = %s, "RUBYFUNK_DEBUG_RECONFIGURE not understood (want WxH@HZ:SECS) — ignored");
             }
             parsed
         });
     let mut p = Pump {
         in_flight: None,
-        // This is what the host sent. `PUNKTFUNK_AU_FAULT` injects one level down, so
+        // This is what the host sent. `RUBYFUNK_AU_FAULT` injects one level down, so
         // a faulted run's fixture is the clean bitstream and will not replay the damage.
         au_dump: crate::au_dump::AuDump::from_env(connector.codec),
         notices: WindowNotices::default(),
@@ -1271,7 +1271,7 @@ fn pump(
         fd_wake: None,
         lent_au_memory: None,
         wants_decode: connector.wants_decode_latency(),
-        marks_repeats: connector.host_caps2() & punktfunk_core::quic::HOST_CAP2_REPEAT_MARK != 0,
+        marks_repeats: connector.host_caps2() & rubyfunk_core::quic::HOST_CAP2_REPEAT_MARK != 0,
         advertised_codecs,
         connector,
         mic,
@@ -1321,7 +1321,7 @@ struct Pump {
     asked_off: u8,
     /// Set when the host refused setup before any frame while it may still be waking.
     not_ready: bool,
-    /// The `PUNKTFUNK_DEBUG_RECONFIGURE` switch still to send, and when.
+    /// The `RUBYFUNK_DEBUG_RECONFIGURE` switch still to send, and when.
     debug_reconfig: Option<(Mode, Duration)>,
     pump_start: Instant,
     access: crate::access::SessionAccess,
@@ -1331,7 +1331,7 @@ struct Pump {
     #[cfg(target_os = "linux")]
     fd_wake: Option<std::sync::mpsc::Sender<std::os::fd::OwnedFd>>,
     /// The decoder's in-place AU memory as lent to the connector; a resize can bring a new one.
-    lent_au_memory: Option<Arc<dyn punktfunk_core::au::AuMemory>>,
+    lent_au_memory: Option<Arc<dyn rubyfunk_core::au::AuMemory>>,
     /// Report decode stage to ABR only when armed. Constant for the session.
     wants_decode: bool,
     /// Host marks a re-encoded hold (`USER_FLAG_REPEAT`); an older host never sets the bit.
@@ -1396,8 +1396,8 @@ impl Pump {
                     Pass::Skip => continue,
                     Pass::End(end) => return end,
                 },
-                Err(PunktfunkError::NoFrame) => {}
-                Err(PunktfunkError::Closed) => return self.on_closed(),
+                Err(RubyFunkError::NoFrame) => {}
+                Err(RubyFunkError::Closed) => return self.on_closed(),
                 Err(e) => {
                     tracing::warn!(error = %e, "session pump failed");
                     return Some("The stream stopped unexpectedly".to_string());
@@ -1413,13 +1413,13 @@ impl Pump {
         }
     }
 
-    /// Send the `PUNKTFUNK_DEBUG_RECONFIGURE` mode switch once its delay has passed.
+    /// Send the `RUBYFUNK_DEBUG_RECONFIGURE` mode switch once its delay has passed.
     fn debug_reconfigure(&mut self) {
         if let Some((mode, delay)) = self.debug_reconfig {
             if self.pump_start.elapsed() >= delay {
                 tracing::info!(
                     ?mode,
-                    "PUNKTFUNK_DEBUG_RECONFIGURE: requesting mid-stream mode switch"
+                    "RUBYFUNK_DEBUG_RECONFIGURE: requesting mid-stream mode switch"
                 );
                 if let Err(e) = self.connector.request_mode(mode) {
                     tracing::warn!(error = ?e, "debug mode switch request failed");
@@ -1442,7 +1442,7 @@ impl Pump {
         let prev = self.access;
         self.access = crate::access::SessionAccess::from_connector(&self.connector);
         let notice = crate::access::update_notice(prev.grants, &self.access, Instant::now());
-        let mic_on = self.params.mic_enabled && self.access.allows(punktfunk_core::quic::GRANT_MIC);
+        let mic_on = self.params.mic_enabled && self.access.allows(rubyfunk_core::quic::GRANT_MIC);
         let uplink = &mut self.planes.mic_uplink;
         if !mic_on && uplink.is_some() {
             tracing::info!("MIC grant removed mid-session — stopping the mic uplink");
@@ -1609,8 +1609,8 @@ impl Pump {
     /// on before this one is handed on or queued.
     fn on_decoded(&mut self, image: DecodedImage, frame: &Frame, received_ns: u64) {
         let evidence = image.anchor_evidence();
-        if evidence == punktfunk_core::reanchor::AnchorEvidence::ReferencesDamaged
-            && frame.flags & punktfunk_core::packet::USER_FLAG_RECOVERY_ANCHOR != 0
+        if evidence == rubyfunk_core::reanchor::AnchorEvidence::ReferencesDamaged
+            && frame.flags & rubyfunk_core::packet::USER_FLAG_RECOVERY_ANCHOR != 0
         {
             tracing::debug!(
                 "refused a host recovery anchor: this AU predicts from a picture this decoder \
@@ -1656,7 +1656,7 @@ impl Pump {
             received_ns,
             pts_ns: frame.pts_ns,
             repeat: self.marks_repeats
-                && frame.flags & punktfunk_core::packet::USER_FLAG_REPEAT != 0,
+                && frame.flags & rubyfunk_core::packet::USER_FLAG_REPEAT != 0,
             image: present.then_some(image),
         };
         // This AU is submitted; the one before it goes on first, in order.
@@ -1677,7 +1677,7 @@ impl Pump {
     /// The connector closed. `None` means normal finish to every embedder; only an
     /// ending that went wrong carries a message.
     fn on_closed(&mut self) -> Option<String> {
-        use punktfunk_core::client::PunktfunkEndReason as End;
+        use rubyfunk_core::client::RubyFunkEndReason as End;
         // A typed mid-session rejection names itself — access expiry would
         // otherwise file under HostError as "the host ended with an error".
         if let Some(reason) = self.connector.end_reject() {
@@ -1723,9 +1723,9 @@ impl Pump {
         // Back to heap memory: the next decoder lends its own ring, and this one can go.
         if self.lent_au_memory.take().is_some() {
             self.connector
-                .set_au_memory(Arc::new(punktfunk_core::au::HeapPool::default()));
+                .set_au_memory(Arc::new(rubyfunk_core::au::HeapPool::default()));
         }
-        let lost = self.connector.end_reason() == punktfunk_core::client::PunktfunkEndReason::Lost
+        let lost = self.connector.end_reason() == rubyfunk_core::client::RubyFunkEndReason::Lost
             && self.connector.end_reject().is_none();
         let last = match self.codec_fallback.take() {
             Some(ev) => ev,
@@ -1797,7 +1797,7 @@ struct WindowNotices {
     overrun_secs: u32,
     overrun_noticed: bool,
     /// The last launch verdict turned into a notice: each verdict is said once.
-    launch_told: Option<punktfunk_core::quic::LaunchOutcome>,
+    launch_told: Option<rubyfunk_core::quic::LaunchOutcome>,
 }
 
 impl WindowNotices {
@@ -1810,7 +1810,7 @@ impl WindowNotices {
         decoded: u64,
         pin_kbps: u32,
         mode: Mode,
-        launch: Option<punktfunk_core::quic::LaunchOutcome>,
+        launch: Option<rubyfunk_core::quic::LaunchOutcome>,
     ) -> Vec<String> {
         let mut notices = Vec::new();
         if pin_kbps != 0 && !self.pin_noticed {
@@ -1924,12 +1924,12 @@ fn spawn_audio(
     stop: Arc<AtomicBool>,
 ) -> Option<std::thread::JoinHandle<()>> {
     std::thread::Builder::new()
-        .name("punktfunk-audio-rx".into())
+        .name("rubyfunk-audio-rx".into())
         .spawn(move || {
             // Best-effort priority for the decode leg. Lateness is absorbed by the
             // ring, but a thread descheduled past ring depth is a drought. Refusal
             // leaves the thread as it was (`audio_rt`).
-            crate::audio_rt::boost_and_log("punktfunk-audio-rx");
+            crate::audio_rt::boost_and_log("rubyfunk-audio-rx");
             let mut fmt = connector.audio_format();
             let mut first = None;
             while let Some(next) = play_audio(&connector, &stop, fmt, first.take()) {
@@ -1951,10 +1951,10 @@ fn spawn_audio(
 fn play_audio(
     connector: &NativeClient,
     stop: &AtomicBool,
-    fmt: punktfunk_core::audio::plane::PlaneFormat,
-    first: Option<punktfunk_core::client::AudioPacket>,
-) -> Option<punktfunk_core::client::AudioPacket> {
-    let mut first = first.map(|pkt| punktfunk_core::client::AudioPacket {
+    fmt: rubyfunk_core::audio::plane::PlaneFormat,
+    first: Option<rubyfunk_core::client::AudioPacket>,
+) -> Option<rubyfunk_core::client::AudioPacket> {
+    let mut first = first.map(|pkt| rubyfunk_core::client::AudioPacket {
         new_format: None,
         ..pkt
     });
@@ -1964,7 +1964,7 @@ fn play_audio(
     // Opus-decode a `0xD3` payload (noise) or wait forever for `0xC9` (silence).
     if !matches!(
         fmt.codec,
-        punktfunk_core::quic::AUDIO_CODEC_OPUS | punktfunk_core::quic::AUDIO_CODEC_PCM
+        rubyfunk_core::quic::AUDIO_CODEC_OPUS | rubyfunk_core::quic::AUDIO_CODEC_PCM
     ) {
         tracing::warn!(
             codec = fmt.codec,
@@ -1973,7 +1973,7 @@ fn play_audio(
         return None;
     }
     // Depth is the unpack stride and anything but 16 unpacks as 24. Warn rather than refuse.
-    if fmt.is_pcm() && !punktfunk_core::audio::pcm::depth_is_supported(fmt.bits) {
+    if fmt.is_pcm() && !rubyfunk_core::audio::pcm::depth_is_supported(fmt.bits) {
         tracing::warn!(
             bits = fmt.bits,
             "the host resolved a lossless depth this plane does not define — unpacking \
@@ -1981,7 +1981,7 @@ fn play_audio(
         );
     }
     // An unknown Opus coupling is refused too: a wrong pairing plays the wrong speakers.
-    let mut dec = punktfunk_core::audio::plane::PlaneDecoder::new(&fmt)
+    let mut dec = rubyfunk_core::audio::plane::PlaneDecoder::new(&fmt)
         .map_err(|e| tracing::warn!(error = %e, "audio decoder unavailable — streaming video-only"))
         .ok()?;
     let (channels, rate_hz, frame_us) = (fmt.channels, fmt.rate_hz, fmt.frame_us);
@@ -1993,7 +1993,7 @@ fn play_audio(
         frame_us,
         "negotiated audio format"
     );
-    let playout = punktfunk_core::audio::AudioPlayout {
+    let playout = rubyfunk_core::audio::AudioPlayout {
         tuning: audio::TUNING,
         format: fmt,
     };
@@ -2008,8 +2008,8 @@ fn play_audio(
     .map_err(|e| tracing::warn!(error = %e, "audio disabled"))
     .ok()?;
     // A/V sync. This thread holds the packet's host capture `pts_ns`, the ring
-    // depth, and the video e2e figure. `PUNKTFUNK_NO_AV_SYNC` is the escape hatch.
-    let av_sync_enabled = crate::env_on("PUNKTFUNK_NO_AV_SYNC") != Some(true);
+    // depth, and the video e2e figure. `RUBYFUNK_NO_AV_SYNC` is the escape hatch.
+    let av_sync_enabled = crate::env_on("RUBYFUNK_NO_AV_SYNC") != Some(true);
     let sync_cell = player.sync_cell();
     // Device-callback counters. Logged from this thread, on wall clock — the
     // PipeWire callback runs on the graph's realtime loop and formats nothing.
@@ -2041,7 +2041,7 @@ fn play_audio(
     let mut frame_samples = 0usize;
     let mut av = playout.sync();
     if !av_sync_enabled {
-        tracing::info!("A/V sync disabled by PUNKTFUNK_NO_AV_SYNC");
+        tracing::info!("A/V sync disabled by RUBYFUNK_NO_AV_SYNC");
     }
     // Drought concealment. A seq gap is concealed when a later packet
     // arrives; when the wire goes quiet nothing arrives to reveal it.
@@ -2103,9 +2103,9 @@ fn play_audio(
                 buffer_ms_out.store(fmt.samples_ms(depth), Ordering::Relaxed);
                 if av_sync_enabled {
                     let ve2e = video_e2e.load(Ordering::Relaxed);
-                    let o = punktfunk_core::audio::AvSyncObservation {
+                    let o = rubyfunk_core::audio::AvSyncObservation {
                         pts_ns: pkt.pts_ns,
-                        now_local_ns: punktfunk_core::client::now_realtime_ns(),
+                        now_local_ns: rubyfunk_core::client::now_realtime_ns(),
                         clock_offset_ns: connector.clock_offset_now_ns(),
                         buffered_ahead: depth,
                         output_latency_ns: sync_cell.output_latency_ns(),
@@ -2146,7 +2146,7 @@ fn play_audio(
                     ),
                 }
             }
-            Err(PunktfunkError::NoFrame) => {
+            Err(RubyFunkError::NoFrame) => {
                 // Nothing on the wire. If the ring is draining, conceal at one
                 // frame per tick — this arm fires every frame time, the rate
                 // the callback drains at. `frame_samples` is 0 until first decode.
@@ -2164,7 +2164,7 @@ fn play_audio(
     None
 }
 
-/// `PUNKTFUNK_DEBUG_RECONFIGURE`: `WxH@HZ:SECS` → request that mode SECS seconds in.
+/// `RUBYFUNK_DEBUG_RECONFIGURE`: `WxH@HZ:SECS` → request that mode SECS seconds in.
 fn parse_debug_reconfigure(s: &str) -> Option<(Mode, Duration)> {
     let (mode_s, secs_s) = s.split_once(':')?;
     let (res, hz) = mode_s.split_once('@')?;
@@ -2185,7 +2185,7 @@ mod tests {
     /// `CLIENT_CAP_AUDIO_HIRES`.
     #[test]
     fn the_hires_opt_in_parses_the_spellings_it_documents() {
-        use punktfunk_core::audio::pcm::{BITS_16, BITS_24};
+        use rubyfunk_core::audio::pcm::{BITS_16, BITS_24};
         for off in ["", "0", "off", "false", "no", "  Off  "] {
             assert_eq!(parse_audio_format(off), AudioRequest::Legacy, "{off:?}");
         }
@@ -2252,7 +2252,7 @@ mod tests {
     /// on this client while the preset keeps working on the others.
     #[test]
     fn the_audio_format_setting_speaks_the_cross_client_spellings() {
-        use punktfunk_core::audio::pcm::BITS_24;
+        use rubyfunk_core::audio::pcm::BITS_24;
         assert_eq!(AUDIO_FORMAT_OPUS, "opus");
         assert_eq!(AUDIO_FORMAT_LOSSLESS_48, "lossless48");
         assert_eq!(AUDIO_FORMAT_LOSSLESS_96, "lossless96");
@@ -2281,12 +2281,12 @@ mod tests {
         assert_eq!(audio_format_wire(""), None);
     }
 
-    /// `PUNKTFUNK_AUDIO_HIRES` overrides the setting in both directions. Unset leaves
+    /// `RUBYFUNK_AUDIO_HIRES` overrides the setting in both directions. Unset leaves
     /// the setting alone. A typo is ignored rather than read as "off" — that would
     /// silently defeat a UI choice.
     #[test]
     fn the_env_override_beats_the_setting_in_both_directions() {
-        use punktfunk_core::audio::pcm::{BITS_16, BITS_24};
+        use rubyfunk_core::audio::pcm::{BITS_16, BITS_24};
 
         assert_eq!(resolve_audio_format(None, AUDIO_FORMAT_OPUS), None);
         assert_eq!(
@@ -2422,7 +2422,7 @@ mod tests {
     /// Each launch verdict is said once; one that needs no words says nothing.
     #[test]
     fn each_launch_verdict_is_said_once() {
-        use punktfunk_core::quic::{LaunchOutcome, LaunchOutcomeKind};
+        use rubyfunk_core::quic::{LaunchOutcome, LaunchOutcomeKind};
         let mut w = WindowNotices::default();
         let spawned = LaunchOutcome::new(LaunchOutcomeKind::Spawned, "Started.");
         assert!(w.tick(0, 0, 0, mode_1080p(), Some(spawned)).is_empty());
@@ -2449,7 +2449,7 @@ mod tests {
     #[test]
     fn an_exhausted_codec_produces_a_retry_event_and_moves_the_counter() {
         use crate::video::RungLoss;
-        use punktfunk_core::quic::{CODEC_AV1, CODEC_H264, CODEC_HEVC};
+        use rubyfunk_core::quic::{CODEC_AV1, CODEC_H264, CODEC_HEVC};
         let _guard = FALLBACK_COUNTER.lock().unwrap_or_else(|e| e.into_inner());
         let before = codec_fallbacks();
 
@@ -2506,7 +2506,7 @@ mod tests {
     #[test]
     fn the_retrys_exclusion_resolves_to_exactly_its_advertised_caps() {
         use crate::video::RungLoss;
-        use punktfunk_core::quic::{CODEC_AV1, CODEC_H264, CODEC_HEVC, CODEC_PYROWAVE};
+        use rubyfunk_core::quic::{CODEC_AV1, CODEC_H264, CODEC_HEVC, CODEC_PYROWAVE};
         let _guard = FALLBACK_COUNTER.lock().unwrap_or_else(|e| e.into_inner());
         for advertised in 0u8..16 {
             for negotiated in [CODEC_H264, CODEC_HEVC, CODEC_AV1, CODEC_PYROWAVE] {
@@ -2538,7 +2538,7 @@ mod tests {
     #[test]
     fn only_a_last_rung_refusal_is_exhausted() {
         use crate::video::NoSoftwareRung;
-        use punktfunk_core::quic::{CODEC_H264, CODEC_HEVC};
+        use rubyfunk_core::quic::{CODEC_H264, CODEC_HEVC};
         let _guard = FALLBACK_COUNTER.lock().unwrap_or_else(|e| e.into_inner());
         let advertised = CODEC_H264 | CODEC_HEVC;
         let before = codec_fallbacks();
@@ -2564,7 +2564,7 @@ mod tests {
     /// words: the codec, never the cause.
     #[test]
     fn a_decoder_that_cannot_start_ends_with_a_plain_message() {
-        use punktfunk_core::quic::{CODEC_H264, CODEC_HEVC};
+        use rubyfunk_core::quic::{CODEC_H264, CODEC_HEVC};
         let e = anyhow::anyhow!("openh264 init");
         match decode_end(&e, CODEC_H264, CODEC_H264 | CODEC_HEVC) {
             SessionEvent::Ended(Some(msg)) => {

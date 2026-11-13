@@ -60,7 +60,7 @@ describe("socketFetch", () => {
 			body: JSON.stringify({ hello: 1 }),
 		});
 		expect(resp.status).toBe(200);
-		expect(resp.headers.get("x-seen-host")).toBe("punktfunk.host");
+		expect(resp.headers.get("x-seen-host")).toBe("rubyfunk.host");
 		expect(await resp.json()).toEqual({ method: "POST", auth: "Bearer t", body: '{"hello":1}' });
 	});
 

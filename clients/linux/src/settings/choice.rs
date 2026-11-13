@@ -351,7 +351,7 @@ mod tests {
     /// mode: cell sync + change callback. Needs a display AND its own process: `--ignored` alone
     /// starts every display test in one process, and GTK refuses a second init from a second
     /// thread. Run it by name on a session box:
-    /// `cargo test -p punktfunk-client-linux -- --ignored choice_row_modes`.
+    /// `cargo test -p rubyfunk-client-linux -- --ignored choice_row_modes`.
     #[test]
     #[ignore = "needs a Wayland/X display"]
     fn choice_row_modes() {

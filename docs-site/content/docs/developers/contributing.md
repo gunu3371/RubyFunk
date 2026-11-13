@@ -73,10 +73,10 @@ These are checked in, and CI fails when the committed copy drifts:
 
 | File | Regenerate |
 |---|---|
-| `include/punktfunk_core.h`, `include/punktfunk_console.h` | `cargo run -p gen-headers` |
-| `api/openapi.json` | `cargo run -p punktfunk-host -- openapi > api/openapi.json` |
+| `include/rubyfunk_core.h`, `include/rubyfunk_console.h` | `cargo run -p gen-headers` |
+| `api/openapi.json` | `cargo run -p rubyfunk-host -- openapi > api/openapi.json` |
 | `docs-site/public/openapi.json` | `cp api/openapi.json docs-site/public/openapi.json` |
-| `sdk/src/gen/punktfunk.ts` | `cd sdk && bun run gen` |
+| `sdk/src/gen/rubyfunk.ts` | `cd sdk && bun run gen` |
 | `docs-site/src/data/platforms.json` | `cp data/platforms.json docs-site/src/data/platforms.json` |
 | `THIRD-PARTY-NOTICES.txt` (and the clients' copies) | `bash scripts/gen-third-party-notices.sh` |
 | `web/bun.nix`, `sdk/bun.nix` | `sh scripts/ci/check-bun-nix.sh --fix` |
@@ -99,8 +99,8 @@ Every user-facing fact has one home, and everything else links to it:
 When a change moves a user-facing fact, update the page that owns it in the same pull request. How
 to write a page: [docs/writing.md §4c](https://git.unom.io/unom/punktfunk/src/branch/main/docs/writing.md#4c-docs-pages).
 CI checks the textual half: `check-docs-drift.sh` (the OpenAPI and `platforms.json` snapshots,
-`PUNKTFUNK_*` names the docs mention, host commands in [Host CLI](/docs/host-cli)) and
-`check-docs-links.sh` (page links, heading anchors, relative file links). A new `PUNKTFUNK_*`
+`RUBYFUNK_*` names the docs mention, host commands in [Host CLI](/docs/host-cli)) and
+`check-docs-links.sh` (page links, heading anchors, relative file links). A new `RUBYFUNK_*`
 variable needs a docs mention, or the baseline in `scripts/ci/docs-undocumented-env-baseline.txt`
 raised in the same commit.
 

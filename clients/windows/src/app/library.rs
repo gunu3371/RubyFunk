@@ -6,7 +6,7 @@
 //! ("Browse library…"); picking a title starts a normal stream carrying `--launch id` —
 //! the host launches the app during the connect handshake.
 //!
-//! Poster bytes land in a small disk cache (`%LOCALAPPDATA%\punktfunk\art-cache`), which the
+//! Poster bytes land in a small disk cache (`%LOCALAPPDATA%\rubyfunk\art-cache`), which the
 //! `Image` loads them from: revisits (and offline browsing) are instant.
 //!
 //! The fetch and the art stream complete on worker threads into the root's [`LibraryState`];
@@ -232,11 +232,11 @@ pub(crate) fn start_fetch(ctx: &Arc<AppCtx>, set_library: &AsyncSetState<Library
         .ok();
 }
 
-/// `%LOCALAPPDATA%\punktfunk\art-cache` — poster bytes by game id, so revisits skip the
+/// `%LOCALAPPDATA%\rubyfunk\art-cache` — poster bytes by game id, so revisits skip the
 /// network entirely. Small (one poster per library entry); no eviction yet.
 fn art_cache_dir() -> Option<PathBuf> {
     let base = std::env::var_os("LOCALAPPDATA")?;
-    Some(PathBuf::from(base).join("punktfunk").join("art-cache"))
+    Some(PathBuf::from(base).join("rubyfunk").join("art-cache"))
 }
 
 /// The cache filename for a game id (`steam:570` → `steam_570.img`) — ids are short and
@@ -267,7 +267,7 @@ const MENU_COPY_LINK: &str = "Copy link";
 /// Only on a title this device launched and the host still runs.
 const MENU_END_GAME: &str = "End game";
 
-/// One title's self-emitted `punktfunk://` link: this page's host with the game's own
+/// One title's self-emitted `rubyfunk://` link: this page's host with the game's own
 /// `launch=` id attached, so the URL boots straight into that title rather than the desktop.
 /// Built from the STORE — the stable id and the fingerprint live there, not on the target —
 /// which is what makes a link taken here identical to one taken off the host tile.
@@ -666,7 +666,7 @@ fn end_game_dialog(
             };
             let (se, ctx2, set_library) = (se.clone(), ctx2.clone(), set_library.clone());
             let _ = std::thread::Builder::new()
-                .name("punktfunk-endgame".into())
+                .name("rubyfunk-endgame".into())
                 .spawn(move || {
                     let target = ctx2.shared.target.lock().unwrap().clone();
                     let pin = target

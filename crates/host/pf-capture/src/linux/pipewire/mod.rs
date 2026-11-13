@@ -40,7 +40,7 @@ use std::sync::mpsc::SyncSender;
 /// negotiate the wrong pod family (black screen).
 #[derive(Clone)]
 struct CaptureOpts {
-    /// `false` forces CPU mmap even when `PUNKTFUNK_ZEROCOPY` is set — the
+    /// `false` forces CPU mmap even when `RUBYFUNK_ZEROCOPY` is set — the
     /// session plan does that when 4:4:4 has no zero-copy convert (`SessionPlan::output_format`).
     allow_zerocopy: bool,
     /// Tiled dmabufs convert via `ImportKind::Tiled444`, not NV12/RGB.
@@ -133,7 +133,7 @@ struct UserData {
     pts_reported: std::time::Instant,
     /// `CLOCK_REALTIME − CLOCK_MONOTONIC`, ns. Re-sampled each 30 s window; clocks drift by µs.
     rt_minus_mono_ns: i64,
-    /// `PUNKTFUNK_CAPTURE_HDR_PTS=0` puts the wire back on the delivery stamp unconditionally.
+    /// `RUBYFUNK_CAPTURE_HDR_PTS=0` puts the wire back on the delivery stamp unconditionally.
     hdr_pts_enabled: bool,
     /// Negotiated pool depth from `add_buffer`/`remove_buffer`. Budget for a deeper encode pipeline.
     pool: PoolCensus,

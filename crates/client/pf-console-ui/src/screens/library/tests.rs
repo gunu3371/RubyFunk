@@ -1292,7 +1292,7 @@ fn dump_library() {
                 800,
                 &fonts,
                 Some("Xbox Wireless Controller"),
-                Some(punktfunk_core::config::GamepadPref::Xbox360),
+                Some(rubyfunk_core::config::GamepadPref::Xbox360),
                 &[],
             );
         }

@@ -4,7 +4,7 @@
 //!
 //! TermService opens and closes a listener as its key appears and goes, so nothing restarts.
 //! The DLL loads into every process of a seat session at that process's bitness: the x64 build
-//! goes to `System32\punktfunk` and the x86 one to `SysWOW64\punktfunk` under one name, which
+//! goes to `System32\rubyfunk` and the x86 one to `SysWOW64\rubyfunk` under one name, which
 //! WOW64 redirects. A new build gets a new name, since a loaded one cannot be replaced.
 
 use super::enable::run;
@@ -18,7 +18,7 @@ use winreg::{RegKey, RegValue};
 const WINSTATIONS: &str = r"SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations";
 const STOCK: &str = "RDP-Tcp";
 /// Set on the listener this module writes; [`remove`] deletes no other.
-const MARKER: &str = "PunktfunkSeatListener";
+const MARKER: &str = "RubyFunkSeatListener";
 /// Values the seat listener sets itself rather than copying.
 const OWN_VALUES: [&str; 4] = [
     "fEnableWinStation",
@@ -28,8 +28,8 @@ const OWN_VALUES: [&str; 4] = [
 ];
 const DLL: &str = "pf_seat_audio";
 const RULES: [(&str, &str); 2] = [
-    ("punktfunk seat listener (TCP)", "TCP"),
-    ("punktfunk seat listener (UDP)", "UDP"),
+    ("rubyfunk seat listener (TCP)", "TCP"),
+    ("rubyfunk seat listener (UDP)", "UDP"),
 ];
 /// Every address but loopback. The `Remote Desktop` rules name port 3389 only.
 const NOT_LOOPBACK: &str = "0.0.0.0-126.255.255.255,128.0.0.0-255.255.255.255,::,\
@@ -83,11 +83,11 @@ pub(super) fn remove() {
 }
 
 fn native_dir() -> PathBuf {
-    PathBuf::from(pf_paths::system32("punktfunk"))
+    PathBuf::from(pf_paths::system32("rubyfunk"))
 }
 
 fn wow_dir() -> PathBuf {
-    PathBuf::from(pf_paths::syswow64("punktfunk"))
+    PathBuf::from(pf_paths::syswow64("rubyfunk"))
 }
 
 /// Copy both builds from `{app}\seat-audio` under a name that changes with their content, and
@@ -204,7 +204,7 @@ fn write_listener(dll: &Path) -> std::io::Result<()> {
     let marker = ours.get_value::<u32, _>(MARKER).ok();
     if marker != Some(1) && ours.enum_values().next().is_some() {
         return Err(std::io::Error::other(format!(
-            "a listener named {LISTENER} exists and is not punktfunk's"
+            "a listener named {LISTENER} exists and is not rubyfunk's"
         )));
     }
     set(&ours, MARKER, &1_u32.to_reg_value())?;

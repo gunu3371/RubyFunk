@@ -1,7 +1,7 @@
 //! Headless keyboard/mouse/touch on KWin via `org_kde_kwin_fake_input`.
 //!
 //! KWin advertises this restricted global only to a client whose installed `.desktop`
-//! lists it under `X-KDE-Wayland-Interfaces` (`io.unom.punktfunk.host.desktop`). Binding
+//! lists it under `X-KDE-Wayland-Interfaces` (`io.github.gunu3371.rubyfunk.host.desktop`). Binding
 //! is the grant — no RemoteDesktop portal and no "Allow remote control?" dialog — so it
 //! works with nobody at the seat. Connect on the session `$WAYLAND_DISPLAY`. Keys are
 //! raw Linux evdev codes; KWin maps them through the session keymap (no keymap upload).
@@ -22,7 +22,7 @@ use crate::head_pick::{self, HeadFacts};
 use crate::plan::{Abs, Op, Plan};
 use crate::scroll::{ScrollBackend, ScrollMapper, ScrollOp};
 use anyhow::{Context, Result};
-use punktfunk_core::input::InputKind;
+use rubyfunk_core::input::InputKind;
 use std::time::{Duration, Instant};
 use wayland_client::protocol::wl_output::{self, WlOutput};
 use wayland_client::protocol::wl_registry::{self, WlRegistry};
@@ -327,12 +327,12 @@ impl KwinFakeInjector {
 
         let fake = state.fake.clone().context(
             "KWin does not expose org_kde_kwin_fake_input to this client — install the host's \
-             .desktop (io.unom.punktfunk.host.desktop, X-KDE-Wayland-Interfaces) and re-login so \
+             .desktop (io.github.gunu3371.rubyfunk.host.desktop, X-KDE-Wayland-Interfaces) and re-login so \
              KWin authorizes it (the grant is cached per-exe on first connect), or this is not a \
              KWin session",
         )?;
         // Legacy handshake; an interface-authorized client is accepted with no dialog.
-        fake.authenticate("Punktfunk".into(), "remote streaming input".into());
+        fake.authenticate("RubyFunk".into(), "remote streaming input".into());
         queue
             .roundtrip(&mut state)
             .context("fake_input authenticate roundtrip")?;

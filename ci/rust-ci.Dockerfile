@@ -2,7 +2,7 @@
 # (PipeWire 1.6). Used by .gitea/workflows/ci.yml as the job container; rebuilt+pushed
 # by .gitea/workflows/docker.yml.
 #
-#   docker build -f ci/rust-ci.Dockerfile -t punktfunk-rust-ci ci
+#   docker build -f ci/rust-ci.Dockerfile -t rubyfunk-rust-ci ci
 #
 # The workspace links real system libs at build time:
 # PipeWire, Opus, GL/EGL/GBM — and libcuda, which has no real driver here; the
@@ -23,14 +23,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpipewire-0.3-dev libopus-dev libwayland-dev libxkbcommon-dev \
     # zerocopy link deps (GL via libglvnd, EGL, GBM)
     libgl-dev libegl-dev libgbm-dev \
-    # punktfunk-client-linux (GTK4/libadwaita shell, SDL3 gamepads)
+    # rubyfunk-client-linux (GTK4/libadwaita shell, SDL3 gamepads)
     libgtk-4-dev libadwaita-1-dev libsdl3-dev \
     # No libvulkan-dev: nothing in the workspace compiles or links against Vulkan (pyrowave-sys
     # bindgens its own vendored headers, and both host and client reach Vulkan through ash, which
     # dlopens the loader), so neither the build nor deb.yml's dpkg-shlibdeps ever asks for it.
     && rm -rf /var/lib/apt/lists/*
 
-# bun — builds the punktfunk-web console in deb.yml, which vendors it into punktfunk-bun.
+# bun — builds the rubyfunk-web console in deb.yml, which vendors it into rubyfunk-bun.
 # ci.yml's web/docs jobs use the oven/bun image instead. The pin lives in ci/bun.env.
 COPY bun.env install-bun.sh /tmp/
 RUN sh /tmp/install-bun.sh && rm /tmp/bun.env /tmp/install-bun.sh

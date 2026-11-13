@@ -1,4 +1,4 @@
-//! The capture worker's control channel: the host and one `punktfunk-capture-worker` over a
+//! The capture worker's control channel: the host and one `rubyfunk-capture-worker` over a
 //! pair of pipes, host → worker and worker → host.
 //!
 //! The worker is a second place an encode session runs, so the two encode messages carry the

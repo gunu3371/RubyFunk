@@ -1,13 +1,13 @@
 {
-	"name": "Punktfunk",
-	"short_name": "Punktfunk",
-	"description": "Management console for a punktfunk streaming host.",
+	"name": "RubyFunk",
+	"short_name": "RubyFunk",
+	"description": "Management console for a rubyfunk streaming host.",
 	"start_url": "/",
 	"scope": "/",
 	"display": "standalone",
 	"orientation": "any",
-	"background_color": "#0a0a0f",
-	"theme_color": "#6c5bf3",
+	"background_color": "#180d13",
+	"theme_color": "#c41242",
 	"icons": [
 		{
 			"src": "/favicon.svg",

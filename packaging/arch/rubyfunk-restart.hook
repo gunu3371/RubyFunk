@@ -1,0 +1,15 @@
+# Restart the running host, web console, plugin runner, seat supervisor and door once the
+# transaction is done.
+[Trigger]
+Operation = Upgrade
+Type = Package
+Target = rubyfunk-host
+Target = rubyfunk-seats
+Target = rubyfunk-web
+Target = rubyfunk-scripting
+Target = rubyfunk-bun
+
+[Action]
+Description = Restarting the rubyfunk services...
+When = PostTransaction
+Exec = /usr/lib/rubyfunk/restart-user-units

@@ -3,7 +3,7 @@
 // which would add a runtime dependency to every plugin for what is a five-verb ops tool.
 // A plugin CLI is `<bin> <command> [args...]` — this dispatcher gives that shape the same
 // ManagedRuntime + layer graph as the plugin entry, so commands reuse the exact services.
-import { connect, type Punktfunk } from "@punktfunk/host";
+import { connect, type RubyFunk } from "@rubyfunk/host";
 import { Effect, Layer, ManagedRuntime } from "effect";
 import { HostRequestError } from "./errors.js";
 import {
@@ -25,7 +25,7 @@ export interface CliCommand<R> {
 }
 
 /** A HostClient whose calls fail — the offline lane for host-free commands. */
-const offlineFacade = (name: string): Punktfunk =>
+const offlineFacade = (name: string): RubyFunk =>
 	({
 		request: async (method: string, path: string) => {
 			throw new Error(
@@ -33,7 +33,7 @@ const offlineFacade = (name: string): Punktfunk =>
 			);
 		},
 		close: () => {},
-	}) as unknown as Punktfunk;
+	}) as unknown as RubyFunk;
 
 const usage = <R>(
 	def: { name: string; version?: string },
@@ -42,7 +42,7 @@ const usage = <R>(
 	const rows = Object.entries(commands)
 		.map(([cmd, c]) => `  ${cmd.padEnd(12)} ${c.summary}`)
 		.join("\n");
-	return `${def.name}${def.version ? ` ${def.version}` : ""}\n\nUsage: punktfunk-plugin-${def.name} <command> [args...]\n\nCommands:\n${rows}\n`;
+	return `${def.name}${def.version ? ` ${def.version}` : ""}\n\nUsage: rubyfunk-plugin-${def.name} <command> [args...]\n\nCommands:\n${rows}\n`;
 };
 
 /**
@@ -80,7 +80,7 @@ export const runPluginCli = async <E, R>(opts: {
 		process.exitCode ??= 0;
 	} catch (e) {
 		const hint =
-			e instanceof HostRequestError ? " (is the Punktfunk host running?)" : "";
+			e instanceof HostRequestError ? " (is the RubyFunk host running?)" : "";
 		console.error(`${opts.def.name}: ${name} failed: ${e}${hint}`);
 		process.exitCode = 1;
 	} finally {

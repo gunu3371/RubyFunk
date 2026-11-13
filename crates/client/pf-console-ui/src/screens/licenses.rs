@@ -1,5 +1,5 @@
 //! Open-source licences, drawn by the console on every platform that shows the row. The
-//! console's own texts are compiled in: Punktfunk's licence and the Geist typeface it
+//! console's own texts are compiled in: RubyFunk's licence and the Geist typeface it
 //! embeds, whose OFL has to travel with it. Each host adds what it bundles
 //! ([`LicenseSection`]), asked for with [`ConsoleCmd::LoadLicenses`] when the screen opens.
 //!
@@ -104,10 +104,10 @@ impl LicensesScreen {
                 });
             }
         };
-        push(Style::Title, &format!("Punktfunk {}", crate::VERSION));
+        push(Style::Title, &format!("RubyFunk {}", crate::VERSION));
         push(
             Style::Body,
-            "Punktfunk is licensed under MIT OR Apache-2.0, at your option.",
+            "RubyFunk is licensed under MIT OR Apache-2.0, at your option.",
         );
         push(Style::Body, "");
         push(Style::Heading, "MIT License");

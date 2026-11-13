@@ -1,6 +1,6 @@
 ---
 title: How It Works
-description: The ideas behind Punktfunk — a virtual display per client, how frames reach the wire, the two protocols, and pairing.
+description: The ideas behind RubyFunk — a virtual display per client, how frames reach the wire, the two protocols, and pairing.
 ---
 
 What happens between your host and your device, in the words the rest of these docs use.
@@ -21,7 +21,7 @@ own mode.
 | **[niri](/docs/niri)** | A virtual output created over niri's IPC; needs the biri fork |
 | **[Umbriel](/docs/umbriel)** | A virtual output created over Umbriel's IPC |
 | **[sway, scroll](/docs/sway)** | A headless output added over the compositor's IPC |
-| **Windows** | Punktfunk's own display driver, which also shows the secure desktop (UAC, lock screen) |
+| **Windows** | RubyFunk's own display driver, which also shows the secure desktop (UAC, lock screen) |
 
 On Linux you can stream one of your real monitors instead — see
 [Virtual displays](/docs/virtual-displays#stream-a-real-monitor-instead).
@@ -35,7 +35,7 @@ Captured frames stay on the GPU all the way into the encoder. Which encoder runs
 | **NVIDIA** | NVENC | NVENC |
 | **AMD** | Vulkan Video for HEVC and AV1, VAAPI for H.264 | AMF |
 | **Intel** | Vulkan Video for HEVC and AV1, VAAPI for H.264 | QSV |
-| **Other** | Software H.264, only if you set `PUNKTFUNK_ENCODER=software` | Media Foundation |
+| **Other** | Software H.264, only if you set `RUBYFUNK_ENCODER=software` | Media Foundation |
 
 Client and host then agree on a codec: **HEVC** unless the client asks for another, **AV1** where
 both sides support it, **H.264** on the software encoder, and **[PyroWave](/docs/pyrowave)** when
@@ -44,7 +44,7 @@ your client all support it. The full breakdown is in the [Support matrix](/docs/
 
 ## Two protocols
 
-- **punktfunk/2** — Punktfunk's own protocol: control, video and audio over one encrypted QUIC
+- **punktfunk/2** — RubyFunk's own protocol: control, video and audio over one encrypted QUIC
   port, with forward error correction on the video. The [native clients](/docs/clients) (Apple, Android, Linux,
   Windows) use it. It is always on.
 - **GameStream** — the protocol [Moonlight](/docs/moonlight) speaks, so any Moonlight client

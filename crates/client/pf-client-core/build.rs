@@ -1,5 +1,5 @@
 //! Names the two platform gates the modules repeat. `portable` lists the same families as the
-//! per-target dependency tables in Cargo.toml that declare punktfunk-core.
+//! per-target dependency tables in Cargo.toml that declare rubyfunk-core.
 
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");

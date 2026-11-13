@@ -28,15 +28,15 @@
 	</array>
 	<key>NSBonjourServices</key>
 	<array>
-		<string>_punktfunk._udp</string>
+		<string>_rubyfunk._udp</string>
 	</array>
 	<!-- CoreBluetooth: the Steam Controller 2 as-is passthrough (Sc2BleLink) reads an OS-paired
 	     SC2's custom Valve GATT service, on all three app targets. Both keys so older iOS
 	     releases (which read the Peripheral key) get a string too. -->
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Bluetooth lets Punktfunk read your Steam Controller and pass it through to the streaming PC.</string>
+	<string>Bluetooth lets RubyFunk read your Steam Controller and pass it through to the streaming PC.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Bluetooth lets Punktfunk read your Steam Controller and pass it through to the streaming PC.</string>
+	<string>Bluetooth lets RubyFunk read your Steam Controller and pass it through to the streaming PC.</string>
 	<!-- NOTE: there is deliberately NO NSAppTransportSecurity dict here. ATS stays fully ON.
 	     The host is self-signed at a user-supplied address, which default ATS can never accept
 	     (it exempts only .local, unqualified names, and RFC1918/link-local literals — notably NOT
@@ -65,17 +65,17 @@
 	     (SafeDisplay.coversHousing), which is the audit this key asserts. -->
 	<key>NSPrefersDisplaySafeAreaCompatibilityMode</key>
 	<false/>
-	<!-- Deep links: punktfunk://connect/<host-uuid>[?launch=<GameEntry.id>]. Emitted by the
+	<!-- Deep links: rubyfunk://connect/<host-uuid>[?launch=<GameEntry.id>]. Emitted by the
 	     launcher widget and Siri/Shortcuts; routed by ContentView.onOpenURL into the existing
 	     connect path. Shared across all three targets (tvOS/macOS accept it harmlessly). -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>io.unom.punktfunk.deeplink</string>
+			<string>io.github.gunu3371.rubyfunk.deeplink</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>punktfunk</string>
+				<string>rubyfunk</string>
 			</array>
 		</dict>
 	</array>

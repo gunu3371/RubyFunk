@@ -6,7 +6,7 @@ use super::{
     container_guid_from_blob, hid_instance_from_interface_path, pick_pad_endpoint,
     EndpointCandidate, TIER_A_PADS,
 };
-use punktfunk_core::audio::pad_mix::PAD_CHANNELS;
+use rubyfunk_core::audio::pad_mix::PAD_CHANNELS;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;

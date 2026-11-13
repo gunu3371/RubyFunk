@@ -1,5 +1,5 @@
 //! Hide/restore the shell's top-level window around a spawned session, so exactly ONE
-//! Punktfunk window is visible at a time: the spawned stream/browse window IS the app
+//! RubyFunk window is visible at a time: the spawned stream/browse window IS the app
 //! while it runs (hidden = no taskbar entry, no Alt-Tab ghost), and the shell reappears
 //! the moment the child exits — every exit path funnels through the spawn reader's
 //! `Exited` event (clean end, error, crash, Disconnect kill), so the shell can never stay

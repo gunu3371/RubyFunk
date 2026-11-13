@@ -25,7 +25,7 @@ pub const FRAME_BYTES: usize = CHANNELS * 2;
 /// 8192 frames ≈ 170 ms: a power of two, far beyond one 10 ms engine period.
 pub const RING_FRAMES: u64 = 8192;
 /// The dedicated Remote Desktop listener whose sessions get pad endpoints.
-pub const LISTENER: &str = "punktfunk-tcp";
+pub const LISTENER: &str = "rubyfunk-tcp";
 /// Its loopback port. The keeper falls back to 3389 when nothing listens here.
 pub const LISTENER_PORT: u16 = 3390;
 
@@ -102,16 +102,16 @@ impl RingHeader {
     }
 }
 
-/// `Global\punktfunk-seat-pad-<session>-<slot>`: the ownership event.
+/// `Global\rubyfunk-seat-pad-<session>-<slot>`: the ownership event.
 #[must_use]
 pub fn owner_name(session: u32, slot: u8) -> alloc::string::String {
-    alloc::format!("Global\\punktfunk-seat-pad-{session}-{slot}")
+    alloc::format!("Global\\rubyfunk-seat-pad-{session}-{slot}")
 }
 
-/// `Global\punktfunk-seat-pad-<session>-<slot>-pcm`: the ring section.
+/// `Global\rubyfunk-seat-pad-<session>-<slot>-pcm`: the ring section.
 #[must_use]
 pub fn ring_name(session: u32, slot: u8) -> alloc::string::String {
-    alloc::format!("Global\\punktfunk-seat-pad-{session}-{slot}-pcm")
+    alloc::format!("Global\\rubyfunk-seat-pad-{session}-{slot}-pcm")
 }
 
 /// The slot's bare endpoint GUID. AudioEndpointBuilder prefixes `{3.0.0.<session hex>}.`.
@@ -198,8 +198,8 @@ mod tests {
 
     #[test]
     fn names_carry_session_and_slot() {
-        assert_eq!(owner_name(5, 2), "Global\\punktfunk-seat-pad-5-2");
-        assert_eq!(ring_name(5, 2), "Global\\punktfunk-seat-pad-5-2-pcm");
+        assert_eq!(owner_name(5, 2), "Global\\rubyfunk-seat-pad-5-2");
+        assert_eq!(ring_name(5, 2), "Global\\rubyfunk-seat-pad-5-2-pcm");
     }
 
     #[test]

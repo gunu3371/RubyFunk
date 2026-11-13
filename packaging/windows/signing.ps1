@@ -138,7 +138,7 @@ function Resolve-SigningMode {
     else {
         $signing.Mode = 'selfsigned'
         Write-Host "no MSIX_CERT_PFX_B64 -> generating an ephemeral self-signed cert (subject $Publisher)"
-        if (-not $signing.Password) { $signing.Password = 'punktfunk' }
+        if (-not $signing.Password) { $signing.Password = 'rubyfunk' }
         $tmp = New-SelfSignedCertificate -Type Custom -Subject $Publisher `
             -KeyUsage DigitalSignature -FriendlyName $FriendlyName `
             -CertStoreLocation 'Cert:\CurrentUser\My' `

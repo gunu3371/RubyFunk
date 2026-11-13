@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# punktfunk seat runner: a headless desktop, then a stock `punktfunk-host serve` on it.
+# rubyfunk seat runner: a headless desktop, then a stock `rubyfunk-host serve` on it.
 #
-# punktfunk-seat@.service runs this as the seat's user inside a logind session. The seat contract
-# (PUNKTFUNK_SEAT_*, the ports, the trust dir, PUNKTFUNK_MGMT_TOKEN) arrives in the environment.
+# rubyfunk-seat@.service runs this as the seat's user inside a logind session. The seat contract
+# (RUBYFUNK_SEAT_*, the ports, the trust dir, RUBYFUNK_MGMT_TOKEN) arrives in the environment.
 # The desktop mirrors scripts/headless/run-headless-kde.sh; without kwin_wayland the host starts
 # gamescope itself.
 #
@@ -18,31 +18,31 @@
 # the owner's in a `background` session, another person's in the unit's `user` class, which a
 # shutdown at the machine counts as another user's session. It leaves their user manager, their
 # config and their PipeWire alone: the desktop and the host sit on a bus of their own, and the
-# person's own punktfunk-host and punktfunk-kde-session stand down while this runs (their units
-# have ConditionPathExists= on the runtime directory). Two variables say so. PUNKTFUNK_SEAT_OWNER=1 is the box owner's row, which
-# also takes the owner's host.env and stops the owner's own user units. PUNKTFUNK_SEAT_OWN_ACCOUNT=1
+# person's own rubyfunk-host and rubyfunk-kde-session stand down while this runs (their units
+# have ConditionPathExists= on the runtime directory). Two variables say so. RUBYFUNK_SEAT_OWNER=1 is the box owner's row, which
+# also takes the owner's host.env and stops the owner's own user units. RUBYFUNK_SEAT_OWN_ACCOUNT=1
 # is another person's row: a contract seat's host on their account, with no owner's settings and
 # none of their processes stopped. The seat contract wins over any file.
 set -u
 
-HOST="${PUNKTFUNK_HOST_BIN:-/usr/bin/punktfunk-host}"
-SIZE="${PUNKTFUNK_SEAT_SIZE:-1920x1080}"
+HOST="${RUBYFUNK_HOST_BIN:-/usr/bin/rubyfunk-host}"
+SIZE="${RUBYFUNK_SEAT_SIZE:-1920x1080}"
 W="${SIZE%x*}"
 H="${SIZE#*x}"
 
 # Only the host gets the management token; kwin, plasmashell and games never see it.
-TOKEN="${PUNKTFUNK_MGMT_TOKEN:-}"
-unset PUNKTFUNK_MGMT_TOKEN
+TOKEN="${RUBYFUNK_MGMT_TOKEN:-}"
+unset RUBYFUNK_MGMT_TOKEN
 
 if [[ -z "${XDG_SESSION_ID:-}" || -z "${RUNTIME_DIRECTORY:-}" ]]; then
-    echo "seat-session: no logind session or runtime directory; run it from punktfunk-seat@.service" >&2
+    echo "seat-session: no logind session or runtime directory; run it from rubyfunk-seat@.service" >&2
     exit 1
 fi
 printf '%s\n' "$XDG_SESSION_ID" >"$RUNTIME_DIRECTORY/session"
 
-OWNER="${PUNKTFUNK_SEAT_OWNER:-}"
+OWNER="${RUBYFUNK_SEAT_OWNER:-}"
 # The person's own account: the owner's row, or another person's.
-OWN="${PUNKTFUNK_SEAT_OWN_ACCOUNT:-$OWNER}"
+OWN="${RUBYFUNK_SEAT_OWN_ACCOUNT:-$OWNER}"
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=$XDG_RUNTIME_DIR/bus}"
 
@@ -95,20 +95,20 @@ EOF
     return 0
 }
 
-# The owner's settings, under the seat contract: the files PUNKTFUNK_OWNER_ENV names (a NixOS
+# The owner's settings, under the seat contract: the files RUBYFUNK_OWNER_ENV names (a NixOS
 # module's settings, which its user unit takes as EnvironmentFile), then host.env. The contract's
 # variables keep the values the supervisor wrote. A file the owner can't read is skipped.
 load_owner_settings() {
     local file key extra=()
     local -A keep=()
-    read -ra extra <<<"${PUNKTFUNK_OWNER_ENV:-}"
-    for key in PUNKTFUNK_SEAT_SESSION PUNKTFUNK_SEAT_ID PUNKTFUNK_SEAT_OWNER PUNKTFUNK_TRUST_DIR \
-        PUNKTFUNK_PAIRING PUNKTFUNK_NATIVE_PORT PUNKTFUNK_MGMT_BIND PUNKTFUNK_MDNS \
-        PUNKTFUNK_WEBTRANSPORT PUNKTFUNK_WEBTRANSPORT_PORT PUNKTFUNK_WEBTRANSPORT_ORIGINS; do
+    read -ra extra <<<"${RUBYFUNK_OWNER_ENV:-}"
+    for key in RUBYFUNK_SEAT_SESSION RUBYFUNK_SEAT_ID RUBYFUNK_SEAT_OWNER RUBYFUNK_TRUST_DIR \
+        RUBYFUNK_PAIRING RUBYFUNK_NATIVE_PORT RUBYFUNK_MGMT_BIND RUBYFUNK_MDNS \
+        RUBYFUNK_WEBTRANSPORT RUBYFUNK_WEBTRANSPORT_PORT RUBYFUNK_WEBTRANSPORT_ORIGINS; do
         keep[$key]="${!key-}"
     done
     set -a
-    for file in "${extra[@]}" "$HOME/.config/punktfunk/host.env"; do
+    for file in "${extra[@]}" "$HOME/.config/rubyfunk/host.env"; do
         # shellcheck disable=SC1090
         [[ -r "$file" ]] && . "$file" 2>/dev/null
     done
@@ -145,7 +145,7 @@ start_private_portal() {
     echo "seat-session: no xdg-desktop-portal found; input and capture need it" >&2
 }
 
-# A login with the password (`punktfunk-seats login`) leaves the KDE wallet waiting for this
+# A login with the password (`rubyfunk-seats login`) leaves the KDE wallet waiting for this
 # session's bus and compositor, which exist by now. Plasma's autostart doesn't run here; its
 # entry names the distro's script.
 unlock_wallet() {
@@ -167,7 +167,7 @@ unlock_wallet() {
 
 # Marks the headless host as serving once its management port answers, for the supervisor.
 mark_ready_when_serving() {
-    local port="${PUNKTFUNK_MGMT_BIND##*:}"
+    local port="${RUBYFUNK_MGMT_BIND##*:}"
     (
         until (: >"/dev/tcp/127.0.0.1/$port") 2>/dev/null; do sleep 0.5; done
         : >"$RUNTIME_DIRECTORY/ready"
@@ -182,14 +182,14 @@ start_kwin() {
     # The row shares the user's runtime dir, where a headless KDE session holds wayland-kde.
     # A taken name makes kwin exit.
     export WAYLAND_DISPLAY=wayland-pf-seat KWIN_WAYLAND_NO_PERMISSION_CHECKS=1
-    export PUNKTFUNK_COMPOSITOR="${PUNKTFUNK_COMPOSITOR:-kwin}"
-    export PUNKTFUNK_VIDEO_SOURCE="${PUNKTFUNK_VIDEO_SOURCE:-virtual}"
-    export PUNKTFUNK_INPUT_BACKEND="${PUNKTFUNK_INPUT_BACKEND:-libei}"
-    export PUNKTFUNK_KWIN_VIRTUAL_PRIMARY="${PUNKTFUNK_KWIN_VIRTUAL_PRIMARY:-1}"
+    export RUBYFUNK_COMPOSITOR="${RUBYFUNK_COMPOSITOR:-kwin}"
+    export RUBYFUNK_VIDEO_SOURCE="${RUBYFUNK_VIDEO_SOURCE:-virtual}"
+    export RUBYFUNK_INPUT_BACKEND="${RUBYFUNK_INPUT_BACKEND:-libei}"
+    export RUBYFUNK_KWIN_VIRTUAL_PRIMARY="${RUBYFUNK_KWIN_VIRTUAL_PRIMARY:-1}"
 
     [[ -n "$OWN" ]] && start_private_bus
     # Under the 0700 runtime dir: the DISPLAY detection below reads this file.
-    local log="$XDG_RUNTIME_DIR/punktfunk-kwin.log"
+    local log="$XDG_RUNTIME_DIR/rubyfunk-kwin.log"
     : >"$log"
     chmod 600 "$log"
     # kwin hands the apps it starts its public X display; their output lands in the log.
@@ -241,23 +241,23 @@ start_kwin() {
         DBUS_SESSION_BUS_ADDRESS ${DISPLAY:+DISPLAY} 2>/dev/null || true
 
     # Pre-authorised RemoteDesktop grant: without it the portal asks a question nobody answers.
-    local share=/usr/share/punktfunk/headless db="$HOME/.local/share/flatpak/db/kde-authorized"
-    # The Debian host package keeps this data under punktfunk-host.
-    [[ -d $share ]] || share=/usr/share/punktfunk-host/headless
+    local share=/usr/share/rubyfunk/headless db="$HOME/.local/share/flatpak/db/kde-authorized"
+    # The Debian host package keeps this data under rubyfunk-host.
+    [[ -d $share ]] || share=/usr/share/rubyfunk-host/headless
     if [[ ! -s "$db" && -s "$share/kde-authorized" ]]; then
         mkdir -p "$(dirname "$db")" && cp "$share/kde-authorized" "$db"
     fi
     # The virtual speaker the host captures; PipeWire reads its config at start.
-    local sink="$HOME/.config/pipewire/pipewire.conf.d/50-punktfunk-sink.conf"
-    if [[ ! -s "$sink" && -s "$share/punktfunk-sink.conf" ]]; then
-        mkdir -p "$(dirname "$sink")" && cp "$share/punktfunk-sink.conf" "$sink"
+    local sink="$HOME/.config/pipewire/pipewire.conf.d/50-rubyfunk-sink.conf"
+    if [[ ! -s "$sink" && -s "$share/rubyfunk-sink.conf" ]]; then
+        mkdir -p "$(dirname "$sink")" && cp "$share/rubyfunk-sink.conf" "$sink"
         systemctl --user restart pipewire 2>/dev/null || true
     fi
     # xdg-desktop-portal needs graphical-session.target, which refuses a manual start by default.
     local dropin="$HOME/.config/systemd/user/graphical-session.target.d"
-    if [[ ! -f "$dropin/10-punktfunk-headless.conf" ]]; then
+    if [[ ! -f "$dropin/10-rubyfunk-headless.conf" ]]; then
         mkdir -p "$dropin"
-        printf '[Unit]\nRefuseManualStart=no\n' >"$dropin/10-punktfunk-headless.conf"
+        printf '[Unit]\nRefuseManualStart=no\n' >"$dropin/10-rubyfunk-headless.conf"
         systemctl --user daemon-reload 2>/dev/null || true
     fi
     systemctl --user start graphical-session.target 2>/dev/null || true
@@ -283,7 +283,7 @@ if [[ -n "$OWNER" ]]; then
     load_owner_settings
     # The owner's own host must not hold the row's ports. Nothing streams their headless desktop
     # while it is down, and a second desktop takes single-instance apps such as Steam.
-    systemctl --user stop punktfunk-host.service punktfunk-kde-session.service 2>/dev/null || true
+    systemctl --user stop rubyfunk-host.service rubyfunk-kde-session.service 2>/dev/null || true
     mark_ready_when_serving
 fi
 install_switch_commands
@@ -291,16 +291,16 @@ if command -v kwin_wayland >/dev/null 2>&1; then
     start_kwin
 else
     [[ -n "$OWN" ]] && start_private_bus
-    export PUNKTFUNK_COMPOSITOR=gamescope
+    export RUBYFUNK_COMPOSITOR=gamescope
 fi
 
 # The host restarts on its own, backing off while it fails, for as long as the desktop lives. A
-# desktop that dies ends the seat and the unit's Restart= starts it over. PUNKTFUNK_SEAT_HEADLESS
+# desktop that dies ends the seat and the unit's Restart= starts it over. RUBYFUNK_SEAT_HEADLESS
 # tells the owner's host it runs here, not at the desk, so Game Mode is its own.
 delay=1
 while alive; do
     started=$SECONDS
-    PUNKTFUNK_SEAT_HEADLESS=1 PUNKTFUNK_MGMT_TOKEN="$TOKEN" "$HOST" serve &
+    RUBYFUNK_SEAT_HEADLESS=1 RUBYFUNK_MGMT_TOKEN="$TOKEN" "$HOST" serve &
     wait $!
     echo "seat-session: host exited with $?; restarting in ${delay}s" >&2
     # This loop outlives the host, so systemd won't reap what a dead host started. Its gamescope

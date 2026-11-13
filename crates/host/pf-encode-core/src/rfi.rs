@@ -386,13 +386,13 @@ pub fn plan_frame(state: Recovery, pending: Pending, policy: &RecoveryPolicy) ->
     }
 }
 
-/// `PUNKTFUNK_INTRA_REFRESH=0` keeps the IDR on every backend. The same knob at `1` opts the
+/// `RUBYFUNK_INTRA_REFRESH=0` keeps the IDR on every backend. The same knob at `1` opts the
 /// Windows periodic wave in (`policy::intra_refresh_requested`); unset is this wave alone.
 pub fn wave_enabled() -> bool {
     crate::knobs::get().intra_refresh != 2
 }
 
-/// `PUNKTFUNK_IR_PERIOD_FRAMES=<frames>` pins the cycle for a measurement: the one wave-length
+/// `RUBYFUNK_IR_PERIOD_FRAMES=<frames>` pins the cycle for a measurement: the one wave-length
 /// knob, shared with the periodic wave's length (`policy::intra_refresh_period`).
 pub fn pinned_cycle() -> Option<u32> {
     match crate::knobs::get().ir_period_frames {

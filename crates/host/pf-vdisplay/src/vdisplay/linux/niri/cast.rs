@@ -55,7 +55,7 @@ pub(crate) fn start(output: &str, hw_cursor: bool) -> Result<(u32, Box<dyn Send>
     let stop_thread = stop.clone();
     let output_thread = output.to_string();
     thread::Builder::new()
-        .name("punktfunk-niri-cast".into())
+        .name("rubyfunk-niri-cast".into())
         .spawn(move || cast_thread(setup_tx, stopped_tx, stop_thread, output_thread, hw_cursor))
         .context("spawn the niri cast thread")?;
     // Built before the wait so a timeout still stops the thread.

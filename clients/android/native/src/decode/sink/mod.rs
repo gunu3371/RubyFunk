@@ -13,7 +13,7 @@ mod surface_view;
 
 use ndk::media::media_codec::MediaCodec;
 use ndk::native_window::NativeWindow;
-use punktfunk_core::quic::ColorInfo;
+use rubyfunk_core::quic::ColorInfo;
 
 pub(super) use asc::AscSink;
 pub(super) use surface_view::PresentMeter;
@@ -90,10 +90,10 @@ pub(super) trait Sink {
     fn into_stale_layer(self: Box<Self>) -> Option<Layer>;
 }
 
-/// The session's presentation intent, or the `debug.punktfunk.present_priority` override:
+/// The session's presentation intent, or the `debug.rubyfunk.present_priority` override:
 /// `latency`, `smooth` or `smooth:N` (N = 1..=3). An on-device A/B without a settings round trip.
 pub(super) fn priority(opts: &DecodeOptions) -> PresentPriority {
-    match sysprop(c"debug.punktfunk.present_priority").as_deref() {
+    match sysprop(c"debug.rubyfunk.present_priority").as_deref() {
         Some("latency") => PresentPriority::Latency,
         Some(s) if s.starts_with("smooth") => PresentPriority::resolve(
             1,
@@ -105,14 +105,14 @@ pub(super) fn priority(opts: &DecodeOptions) -> PresentPriority {
     }
 }
 
-/// Whether the latency cushion covers the late tail (`debug.punktfunk.cushion_tail`, default
+/// Whether the latency cushion covers the late tail (`debug.rubyfunk.cushion_tail`, default
 /// on): a jitter spike then costs its own height for a second instead of a dropped frame.
 pub(super) fn cushion_tail() -> bool {
-    sysprop(c"debug.punktfunk.cushion_tail").is_none_or(|v| v != "0")
+    sysprop(c"debug.rubyfunk.cushion_tail").is_none_or(|v| v != "0")
 }
 
 /// The sink this codec presents through: the ASC sink bring-up created, else the SurfaceView
-/// timeline presenter, or its arrival path under `debug.punktfunk.presenter=arrival`. `window`
+/// timeline presenter, or its arrival path under `debug.rubyfunk.presenter=arrival`. `window`
 /// and `color` give the SurfaceView window the negotiated colour before the first frame.
 pub(super) fn select(
     asc: Option<AscSink>,
@@ -124,7 +124,7 @@ pub(super) fn select(
     if let Some(a) = asc {
         return Box::new(a);
     }
-    if sysprop(c"debug.punktfunk.presenter").as_deref() == Some("arrival") {
+    if sysprop(c"debug.rubyfunk.presenter").as_deref() == Some("arrival") {
         log::info!("decode: presenter = arrival (sysprop) — legacy immediate release");
         return Box::new(SurfaceViewSink::arrival(window, color));
     }
@@ -191,10 +191,10 @@ impl Downrate {
 
 /// Whether the ASurfaceControl backend is selected: ON everywhere but ChromeOS. ARC latches the
 /// child layer and signals its present fence, yet Chrome can leave it undrawn, and nothing on
-/// the Android side can tell. `debug.punktfunk.present_backend` overrides both ways: `surfaceview`
+/// the Android side can tell. `debug.rubyfunk.present_backend` overrides both ways: `surfaceview`
 /// forces the SurfaceView presenter, `asc` forces this backend on ChromeOS.
 pub(crate) fn asc_backend_selected(chromeos: bool) -> bool {
-    match sysprop(c"debug.punktfunk.present_backend").as_deref() {
+    match sysprop(c"debug.rubyfunk.present_backend").as_deref() {
         Some("surfaceview") => false,
         Some("asc") => true,
         _ => !chromeos,

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Status-bar icon for the ongoing-session notification: the Punktfunk silhouette, the same two
+  Status-bar icon for the ongoing-session notification: the RubyFunk silhouette, the same two
   overlapping circles as the launcher's monochrome layer. Its own file rather than a reuse of
   `ic_launcher_monochrome`, because an adaptive-icon layer carries the launcher's safe-zone
   padding — dropped into a 24dp status-bar slot the mark comes out small and off-centre. The

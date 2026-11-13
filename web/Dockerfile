@@ -1,13 +1,13 @@
-# punktfunk management console — TanStack Start built with Bun, served by the Nitro `bun`
+# rubyfunk management console — TanStack Start built with Bun, served by the Nitro `bun`
 # preset bundle. Build context is the REPO ROOT (orval generates the API client from
 # api/openapi.json, referenced as ../api/openapi.json from web/):
 #
-#   docker build -f web/Dockerfile -t punktfunk-web .
+#   docker build -f web/Dockerfile -t rubyfunk-web .
 #
-# Runtime: PORT (default 47992) and PUNKTFUNK_MGMT_URL (upstream management API the Nitro
+# Runtime: PORT (default 47992) and RUBYFUNK_MGMT_URL (upstream management API the Nitro
 # server proxies /api to; see web/server/routes).
 #
-# TWO ports, not one. The console also listens on PUNKTFUNK_UI_PLUGIN_PORT (default PORT + 1 =
+# TWO ports, not one. The console also listens on RUBYFUNK_UI_PLUGIN_PORT (default PORT + 1 =
 # 47993) and serves plugin UIs from there — a different origin, so a plugin's own code cannot act
 # as the logged-in operator on the console's origin. Publish BOTH (`-p 47992:47992 -p
 # 47993:47993`): the browser loads the frame from the second port directly, so a container that

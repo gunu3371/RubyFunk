@@ -25,14 +25,14 @@ Icon Composer document for macOS and iOS.
 
 | Surface | Sources consumed by the build or package |
 | --- | --- |
-| README | `assets/punktfunk-logo.svg` |
+| README | `assets/rubyfunk-logo.svg` |
 | Web | `web/src/components/{brand-mark,wordmark,logo}.tsx`, `web/public/favicon.svg` |
 | Docs site | `docs-site/public/favicon.svg` |
-| macOS and iOS | `clients/apple/App/punktfunk_Logo.icon/` |
+| macOS and iOS | `clients/apple/App/rubyfunk_Logo.icon/` |
 | tvOS and visionOS | Icon stacks and About images in `clients/apple/App/Assets.xcassets/` |
-| Windows executables and installers | `packaging/windows/branding/punktfunk.ico` |
+| Windows executables and installers | `packaging/windows/branding/rubyfunk.ico` |
 | Windows MSIX | `clients/windows/packaging/assets/*.png` |
-| Windows tray | `packaging/windows/branding/punktfunk-tray-*.ico` |
+| Windows tray | `packaging/windows/branding/rubyfunk-tray-*.ico` |
 | Linux packages and tray | `packaging/linux/icons/hicolor/` |
 | Android launcher | `clients/android/app/src/main/res/drawable/ic_launcher_foreground.xml`, `values/colors.xml` under the same `res/` directory |
 | Android TV | `clients/android/app/src/main/res/drawable-*/tv_banner.png` |
@@ -57,7 +57,7 @@ For tvOS layers, Top Shelf and tvOS About images, use macOS with Xcode's Icon Co
 ```sh
 ICTOOL="/Applications/Xcode.app/Contents/Applications/Icon Composer.app/Contents/Executables/ictool" \
   swift scripts/render-tvos-icon.swift \
-  "$PWD/clients/apple/App/punktfunk_Logo.icon" \
+  "$PWD/clients/apple/App/rubyfunk_Logo.icon" \
   "$PWD/clients/apple/App/Assets.xcassets/App Icon & Top Shelf Image.brandassets"
 ```
 
@@ -69,3 +69,15 @@ Android TV banners and Steam artwork also need their checked-in images updated.
 
 Preserve vector paths, image dimensions, transparency and ICO frame sizes. Inspect small
 icons and light/dark appearances. Build and inspect the target package before distributing it.
+
+## App identity
+
+All platforms use the RubyFunk name and the `io.github.gunu3371.rubyfunk` namespace.
+See [identifiers](identifiers.md) before installing over an existing Punktfunk setup.
+
+## Interface accents
+
+Light controls use ruby `#C41242` with white text; dark controls use pink `#FF477B`
+with dark text. Apple widgets and Live Activities share these semantic accents.
+The default gamepad backdrop uses the existing Ruby palette. Saved palette selections,
+Android Material You and desktop/custom web accents keep their existing behavior.

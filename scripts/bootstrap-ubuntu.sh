@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bootstrap an Ubuntu (24.04 "noble") NVIDIA-GPU VM to build/run the punktfunk Linux host
+# Bootstrap an Ubuntu (24.04 "noble") NVIDIA-GPU VM to build/run the rubyfunk Linux host
 # and the M0 capture spike (headless Sway/wlroots -> PipeWire -> NVENC).
 #
 # Assumes the NVIDIA driver is ALREADY installed (verify-only). Installs: rustup toolchain,

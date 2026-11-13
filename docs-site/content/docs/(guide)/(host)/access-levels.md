@@ -87,7 +87,7 @@ requests are never restricted; they shape only that device's own stream.
 > what it sees. A guest on a shared desktop watches and hears everything, notifications included.
 
 - **Moonlight devices** always have full control. The console shows **Full (ungoverned)**.
-- **Older Punktfunk clients** are enforced the same way but can't explain it: no access chip, no
+- **Older RubyFunk clients** are enforced the same way but can't explain it: no access chip, no
   expiry warnings, and an ungranted keyboard does nothing. If a guest says their keyboard is dead,
   check their access, then their client version.
 

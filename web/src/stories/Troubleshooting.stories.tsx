@@ -27,15 +27,15 @@ const TAKEOVER_FAIL = check({
 	id: "takeover_privilege",
 	status: "fail",
 	severity: "critical",
-	summary: "User “enrico” is not in the “punktfunk” group",
+	summary: "User “enrico” is not in the “rubyfunk” group",
 	impact:
 		"Streams that need the managed takeover cannot stop sddm.service, so every one of them degrades to mirroring this machine's own session instead. With the panel off that looks like a black screen on every connect, and nothing else reports it.",
 	remedy: {
-		text: "Add the user to the “punktfunk” group, then restart the computer. The same group gates the virtual Steam Deck pad's usbip nodes, which can present arbitrary emulated USB devices — join it only on a machine you trust.",
-		command: "sudo usermod -aG punktfunk enrico",
+		text: "Add the user to the “rubyfunk” group, then restart the computer. The same group gates the virtual Steam Deck pad's usbip nodes, which can present arbitrary emulated USB devices — join it only on a machine you trust.",
+		command: "sudo usermod -aG rubyfunk enrico",
 		relogin_required: true,
 	},
-	params: { user: "enrico", group: "punktfunk", dm: "sddm.service" },
+	params: { user: "enrico", group: "rubyfunk", dm: "sddm.service" },
 	since_unix: 1_750_000_000,
 });
 
@@ -44,14 +44,14 @@ const VHCI_RELOGIN = check({
 	id: "virtual_deck_vhci",
 	status: "fail",
 	severity: "warning",
-	summary: "The group “punktfunk” was granted but this session predates it",
+	summary: "The group “rubyfunk” was granted but this session predates it",
 	impact:
 		"The virtual Steam Deck controller cannot attach, so Steam Input never sees it — in Game Mode that means nothing can be navigated with a pad.",
 	remedy: {
 		text: "Restart the computer. The membership is already recorded, but the host's services started before it and keep their old groups until a restart — logging out is not enough.",
 		relogin_required: true,
 	},
-	params: { group: "punktfunk", user: "enrico" },
+	params: { group: "rubyfunk", user: "enrico" },
 });
 
 const UINPUT_OK = check({

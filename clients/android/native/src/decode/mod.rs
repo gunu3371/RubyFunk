@@ -39,7 +39,7 @@ pub(crate) use sink::asc_backend_selected;
 
 use crate::input_stall::NoOutput;
 use ndk::native_window::NativeWindow;
-use punktfunk_core::client::NativeClient;
+use rubyfunk_core::client::NativeClient;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use std::time::Instant;
@@ -74,7 +74,7 @@ pub(crate) const NO_VIDEO_PATIENCE: std::time::Duration = std::time::Duration::f
 /// versus "I am drowning in frames I cannot drain" — so while this was also 2000 ms the host
 /// confidently reported the wrong one, and a black-screen field case was diagnosed as a slow decoder
 /// for days (2026-08-20). Keeping the value in core is what stops the two drifting back together.
-const NO_VIDEO_RETRY: std::time::Duration = punktfunk_core::client::NO_VIDEO_RETRY;
+const NO_VIDEO_RETRY: std::time::Duration = rubyfunk_core::client::NO_VIDEO_RETRY;
 
 /// The backstops the decode loop runs once a pass: a decoder that owes output ([`NoOutput`])
 /// and a session that never received an AU ([`NO_VIDEO_PATIENCE`]). Each reports to core,
@@ -169,7 +169,7 @@ pub(crate) struct DecodeOptions {
     ///
     /// ⚠ Only a seed: `preferredDisplayModeId` is a REQUEST the system may refuse, so the mode
     /// named here is not necessarily the one the panel ends up in. The measured timeline spacing
-    /// corrects it in both directions ([`punktfunk_core::phase::PanelGrid`]).
+    /// corrects it in both directions ([`rubyfunk_core::phase::PanelGrid`]).
     pub panel_hz: i32,
     /// The video `SurfaceView`'s LIVE on-screen pixel size (the aspect-fitted display footprint),
     /// packed by [`crate::session::pack_surface_size`] and re-reported by Kotlin on every
@@ -231,7 +231,7 @@ pub fn run(
     stats: Arc<crate::stats::VideoStats>,
     opts: DecodeOptions,
 ) {
-    if client.codec == punktfunk_core::quic::CODEC_PYROWAVE {
+    if client.codec == rubyfunk_core::quic::CODEC_PYROWAVE {
         crate::pyro::run(client, window, shutdown, stats, opts);
         return;
     }

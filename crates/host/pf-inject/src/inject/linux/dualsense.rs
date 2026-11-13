@@ -3,7 +3,7 @@
 //! `hid-playstation` binds VID `054C` / PID `0CE6` (Edge: `0DF2`) and exposes the full HID
 //! surface: gamepad, motion, touchpad, lightbar, player LEDs, adaptive triggers. This module
 //! writes input report `0x01` and reads output report `0x02` (rumble / LED / trigger feedback)
-//! as [`punktfunk_core::quic::HidOutput`].
+//! as [`rubyfunk_core::quic::HidOutput`].
 //!
 //! Descriptor, feature blobs, [`DsState`], `0x01` serializer and `0x02` parser live in
 //! [`super::dualsense_proto`] (shared with the Windows UMDF backend). The uinput X-Box-360
@@ -19,7 +19,7 @@ use crate::pad_broker::PadKind;
 use crate::uhid_abi::{Identity, UhidDevice, UhidEvent};
 use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
-use punktfunk_core::quic::RichInput;
+use rubyfunk_core::quic::RichInput;
 
 /// CREATE2 identity: DualSense vs Edge. Same codec; Edge is PID, descriptor, and `buttons[2]`.
 pub struct DsUhidIdentity {
@@ -61,9 +61,9 @@ impl DsUhidIdentity {
 pub(crate) fn identity(index: u8, id: &DsUhidIdentity) -> Identity {
     Identity {
         bus: crate::uhid_abi::BUS_USB,
-        name: format!("Punktfunk {} {index}", id.name),
-        phys: format!("punktfunk/{}/{index}", id.phys),
-        uniq: format!("punktfunk-{}-{index}", id.slug),
+        name: format!("RubyFunk {} {index}", id.name),
+        phys: format!("rubyfunk/{}/{index}", id.phys),
+        uniq: format!("rubyfunk-{}-{index}", id.slug),
         rdesc: id.rdesc,
         vendor: DS_VENDOR,
         product: id.product,
@@ -135,7 +135,7 @@ pub enum DsTransport {
     Uhid(DualSensePad),
 }
 
-/// Try usbip (`vhci_hcd` + `punktfunk` write on sysfs `attach`); else UHID.
+/// Try usbip (`vhci_hcd` + `rubyfunk` write on sysfs `attach`); else UHID.
 /// Opt-in: [`crate::dualsense_usbip::usbip_preferred`].
 fn open_transport(idx: u8) -> Result<DsTransport> {
     if crate::dualsense_usbip::usbip_preferred() {
@@ -156,7 +156,7 @@ fn open_transport(idx: u8) -> Result<DsTransport> {
 
 /// DualSense [`PadProto`]: transport + [`DsState`] + handshake. Slot table / heartbeat live in [`UhidManager`].
 pub struct DsLinuxProto {
-    /// Steam back-grip fold. DualSense has no HID slot; `PUNKTFUNK_STEAM_REMAP=paddles=…`, default drop.
+    /// Steam back-grip fold. DualSense has no HID slot; `RUBYFUNK_STEAM_REMAP=paddles=…`, default drop.
     remap: crate::steam_remap::RemapConfig,
 }
 
@@ -193,7 +193,7 @@ impl PadProto for DsLinuxProto {
         open_transport(idx)
     }
 
-    fn merge_frame(&self, prev: &DsState, f: &punktfunk_core::input::GamepadFrame) -> DsState {
+    fn merge_frame(&self, prev: &DsState, f: &rubyfunk_core::input::GamepadFrame) -> DsState {
         let buttons = crate::steam_remap::fold_paddles(f.buttons, self.remap.paddles);
         DsState::merge_frame(prev, f, buttons)
     }
@@ -231,7 +231,7 @@ impl PadProto for DsLinuxProto {
     }
 }
 
-/// Session DualSense pads (`PUNKTFUNK_GAMEPAD=dualsense`). Analog of [`GamepadManager`](super::gamepad::GamepadManager).
+/// Session DualSense pads (`RUBYFUNK_GAMEPAD=dualsense`). Analog of [`GamepadManager`](super::gamepad::GamepadManager).
 ///
 /// Touch/motion arrive on `apply_rich`, buttons on `handle`. [`UhidManager`] merges and heartbeats
 /// report `0x01` — `hid-playstation`/Proton/SDL treat a multi-second gap as unplug.
@@ -265,7 +265,7 @@ impl PadProto for DsEdgeLinuxProto {
     }
 
     /// Same merge as DualSense, but paddles land on `buttons[2]` (rebuilt every frame, no persistence).
-    fn merge_frame(&self, prev: &DsState, f: &punktfunk_core::input::GamepadFrame) -> DsState {
+    fn merge_frame(&self, prev: &DsState, f: &rubyfunk_core::input::GamepadFrame) -> DsState {
         let mut s = DsState::merge_frame(prev, f, f.buttons);
         s.buttons[2] |= edge_paddle_bits(f.buttons);
         s
@@ -295,13 +295,13 @@ impl PadProto for DsEdgeLinuxProto {
     }
 }
 
-/// Session Edge pads: `PUNKTFUNK_GAMEPAD=edge`, or a client's paddle-bearing pad kind.
+/// Session Edge pads: `RUBYFUNK_GAMEPAD=edge`, or a client's paddle-bearing pad kind.
 pub type DualSenseEdgeManager = UhidManager<DsEdgeLinuxProto>;
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use punktfunk_core::quic::HidOutput;
+    use rubyfunk_core::quic::HidOutput;
     use std::os::fd::AsFd;
     use std::time::{Duration, Instant};
 
@@ -403,7 +403,7 @@ mod tests {
     /// Kernel feedback: evdev FF (ff-memless → UHID_OUTPUT) and hidraw report `0x02` (the only
     /// adaptive-trigger path). Two pads must have distinct pairing uniqs or SDL/Steam dedup them.
     #[test]
-    #[ignore = "creates real /dev/uhid devices; needs hid-playstation, the input group, and the 60-punktfunk.rules hidraw rules"]
+    #[ignore = "creates real /dev/uhid devices; needs hid-playstation, the input group, and the 60-rubyfunk.rules hidraw rules"]
     fn feedback_flows_via_evdev_ff_and_hidraw() {
         let mut pad0 = DualSensePad::open(0, &DsUhidIdentity::dualsense()).expect("open pad 0");
         let mut pad1 = DualSensePad::open(1, &DsUhidIdentity::dualsense()).expect("open pad 1");
@@ -417,17 +417,17 @@ mod tests {
             let _ = pad1.write_state(&st);
             let hidraws = hidraw_devices();
             let has = |name: &str| hidraws.iter().any(|(n, _, _)| n == name);
-            if find_nodes("Punktfunk DualSense 0")
+            if find_nodes("RubyFunk DualSense 0")
                 .iter()
                 .any(|(_, n)| has_ff(n))
-                && has("Punktfunk DualSense 0")
-                && has("Punktfunk DualSense 1")
+                && has("RubyFunk DualSense 0")
+                && has("RubyFunk DualSense 1")
             {
                 break;
             }
             std::thread::sleep(Duration::from_millis(4));
         }
-        let nodes = find_nodes("Punktfunk DualSense 0");
+        let nodes = find_nodes("RubyFunk DualSense 0");
         assert!(
             !nodes.is_empty(),
             "hid-playstation did not bind the uhid device"
@@ -448,8 +448,8 @@ mod tests {
                 .unwrap_or_else(|| panic!("no hidraw for {name} in {hidraws:?}"))
         };
         assert_ne!(
-            uniq("Punktfunk DualSense 0"),
-            uniq("Punktfunk DualSense 1"),
+            uniq("RubyFunk DualSense 0"),
+            uniq("RubyFunk DualSense 1"),
             "pads share one pairing MAC — SDL/Steam will dedup them into one controller"
         );
 
@@ -468,7 +468,7 @@ mod tests {
 
         let hr = hidraws
             .iter()
-            .find(|(n, _, _)| n == "Punktfunk DualSense 0")
+            .find(|(n, _, _)| n == "RubyFunk DualSense 0")
             .map(|(_, _, d)| d.clone())
             .unwrap();
         let mut rep = [0u8; 48];
@@ -493,7 +493,7 @@ mod tests {
             .unwrap_or_else(|e| {
                 panic!(
                     "cannot write {hr} as this user ({e}) — Steam/SDL would be equally blocked; \
-                     are the 60-punktfunk.rules hidraw rules installed?"
+                     are the 60-rubyfunk.rules hidraw rules installed?"
                 )
             });
         let (levels, hidout) = collect(&mut pad0, &st, 1000);

@@ -10,7 +10,7 @@
 //! game, so [`HidoutDedup::renewals`] re-emits latched state every [`RENEW_EVERY`].
 //! Tests in this file pin the contract.
 
-use punktfunk_core::quic::HidOutput;
+use rubyfunk_core::quic::HidOutput;
 use std::time::{Duration, Instant};
 
 /// Interval for re-emitting latched 0xCD state when the game's value has not changed.

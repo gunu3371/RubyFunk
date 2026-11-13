@@ -20,7 +20,7 @@ cd "$(dirname "$0")/.."
 MASTERS=assets/os-icons
 GTK=clients/linux/data/icons/scalable/actions
 WIN=clients/windows/assets/os
-APPLE=clients/apple/Sources/PunktfunkKit/Resources/OsIcons.xcassets
+APPLE=clients/apple/Sources/RubyFunkKit/Resources/OsIcons.xcassets
 
 # The Windows shell has no vector element and no theme-aware tint, so its PNGs bake in one
 # colour. That colour is WHITE, because the shell draws these in exactly one place: the host
@@ -88,5 +88,5 @@ python3 scripts/gen_os_mark_table.py
 echo
 log "Remember: a NEW token also has to be added to each client's shipped-token list —"
 log "  clients/linux/src/ui_hosts.rs, clients/linux/data/resources.gresource.xml,"
-log "  clients/windows/src/app/os_icons.rs, clients/apple/.../PunktfunkKit/OsIcon.swift."
+log "  clients/windows/src/app/os_icons.rs, clients/apple/.../RubyFunkKit/OsIcon.swift."
 log "  (The generated registries need no list — they ship whatever masters exist.)"

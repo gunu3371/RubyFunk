@@ -418,7 +418,7 @@ fn import(
 ) -> Result<Planes> {
     // Test hook: fault every import so demotion is exercisable without a broken driver.
     if fault == Some(HwFault::Import) {
-        bail!("injected import failure (PUNKTFUNK_HW_FAULT=import)");
+        bail!("injected import failure (RUBYFUNK_HW_FAULT=import)");
     }
     let (luma_fmt, chroma_fmt, chroma_full_res) = match frame.fourcc {
         DRM_FORMAT_NV12 => (vk::Format::R8_UNORM, vk::Format::R8G8_UNORM, false),

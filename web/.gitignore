@@ -12,7 +12,7 @@ src/routeTree.gen.ts
 src/api/gen
 src/paraglide
 
-# local env (PUNKTFUNK_UI_PASSWORD etc.)
+# local env (RUBYFUNK_UI_PASSWORD etc.)
 .env
 
 # Paraglide/inlang machine-local cache:

@@ -49,7 +49,7 @@ def check(name: str, cond: bool):
 # `flatpak run --command=X <app-id> ARGS` — everything after the app id is the APP's argv, so
 # an app id that drifts left silently turns our flags into the client's. This is the shape the
 # deleted _session_argv used and the one thing about it that is easy to get wrong.
-main._client_argv = lambda: ["/usr/bin/flatpak", "run", "--arch=x86_64", "io.unom.punktfunk"]
+main._client_argv = lambda: ["/usr/bin/flatpak", "run", "--arch=x86_64", "io.github.gunu3371.rubyfunk"]
 main._flatpak = lambda: "/usr/bin/flatpak"
 check(
     "cli argv: flatpak form, app id last",
@@ -58,8 +58,8 @@ check(
         "/usr/bin/flatpak",
         "run",
         "--arch=x86_64",
-        "--command=punktfunk",
-        "io.unom.punktfunk",
+        "--command=rubyfunk",
+        "io.github.gunu3371.rubyfunk",
     ],
 )
 
@@ -73,22 +73,22 @@ import shutil  # noqa: E402
 shutil.rmtree("/tmp/pf-test-native", ignore_errors=True)
 tmp = Path("/tmp/pf-test-native/bin")
 tmp.mkdir(parents=True, exist_ok=True)
-(tmp / "punktfunk-client").write_text("")
-main._client_argv = lambda: [str(tmp / "punktfunk-client")]
+(tmp / "rubyfunk-client").write_text("")
+main._client_argv = lambda: [str(tmp / "rubyfunk-client")]
 check("cli argv: native without a sibling CLI is None", main._cli_argv() is None)
-(tmp / "punktfunk").write_text("")
-check("cli argv: native sibling found", main._cli_argv() == [str(tmp / "punktfunk")])
+(tmp / "rubyfunk").write_text("")
+check("cli argv: native sibling found", main._cli_argv() == [str(tmp / "rubyfunk")])
 
 # ---- _flatpak_ref: the branch must be NAMED, always ---------------------------------------
 #
 # The bug this exists to prevent: every client-update query used to name no branch, and the
-# punktfunk remote publishes `stable` AND `canary` — so `flatpak remote-info <origin>
-# io.unom.punktfunk` failed with "Multiple branches available", the check swallowed the failure,
+# rubyfunk remote publishes `stable` AND `canary` — so `flatpak remote-info <origin>
+# io.github.gunu3371.rubyfunk` failed with "Multiple branches available", the check swallowed the failure,
 # and the panel reported the client up to date forever. One branch INSTALLED is not enough to
 # make the query unambiguous; the ambiguity lives on the remote.
 shutil.rmtree("/tmp/pf-test-home", ignore_errors=True)
 # An arm install (Steam Frame): the resolver must look under the installed arch, not uname's.
-_fp_root = Path("/tmp/pf-test-home/.local/share/flatpak/app/io.unom.punktfunk/aarch64")
+_fp_root = Path("/tmp/pf-test-home/.local/share/flatpak/app/io.github.gunu3371.rubyfunk/aarch64")
 main._flatpak = lambda: "/usr/bin/flatpak"
 main._client_argv = _real_client_argv  # undo the fixture patches above
 
@@ -108,13 +108,13 @@ check("ref: a branch dir without `active` is leftovers, not an install", main._f
 _install_branch("canary")
 ref = main._flatpak_ref()
 check("ref: the single installed branch is used", ref == {
-    "scope": "--user", "branch": "canary", "arch": "aarch64", "app_id": "io.unom.punktfunk",
-    "ref": "io.unom.punktfunk//canary",
+    "scope": "--user", "branch": "canary", "arch": "aarch64", "app_id": "io.github.gunu3371.rubyfunk",
+    "ref": "io.github.gunu3371.rubyfunk//canary",
 })
 check(
     "ref: the launcher pins that branch, app id still LAST",
     main._client_argv() == [
-        "/usr/bin/flatpak", "run", "--arch=aarch64", "--branch=canary", "io.unom.punktfunk",
+        "/usr/bin/flatpak", "run", "--arch=aarch64", "--branch=canary", "io.github.gunu3371.rubyfunk",
     ],
 )
 # The pin must survive _cli_argv's rewrite, or the CLI runs a different build than the GUI.
@@ -122,7 +122,7 @@ check(
     "ref: --command= is inserted before the app id, keeping the pin",
     main._cli_argv() == [
         "/usr/bin/flatpak", "run", "--arch=aarch64", "--branch=canary",
-        "--command=punktfunk", "io.unom.punktfunk",
+        "--command=rubyfunk", "io.github.gunu3371.rubyfunk",
     ],
 )
 
@@ -142,17 +142,17 @@ Path("/tmp/pf-test-home").mkdir(parents=True)
 if (Path("/tmp/pf-test-home") / "caseprobe").exists():
     print("skip ref: legacy id (case-insensitive /tmp)")
 else:
-    _fp_root = Path("/tmp/pf-test-home/.local/share/flatpak/app/io.unom.Punktfunk/x86_64")
+    _fp_root = Path("/tmp/pf-test-home/.local/share/flatpak/app/io.github.gunu3371.rubyfunk/x86_64")
     _install_branch("stable")
     ref = main._flatpak_ref()
     check("ref: a legacy-only install resolves under its own id",
-          ref["app_id"] == "io.unom.Punktfunk" and ref["ref"] == "io.unom.Punktfunk//stable")
+          ref["app_id"] == "io.github.gunu3371.rubyfunk" and ref["ref"] == "io.github.gunu3371.rubyfunk//stable")
     check("ref: the launcher runs the legacy id, still LAST",
-          main._client_argv()[-1] == "io.unom.Punktfunk")
-    _fp_root = Path("/tmp/pf-test-home/.local/share/flatpak/app/io.unom.punktfunk/x86_64")
+          main._client_argv()[-1] == "io.github.gunu3371.rubyfunk")
+    _fp_root = Path("/tmp/pf-test-home/.local/share/flatpak/app/io.github.gunu3371.rubyfunk/x86_64")
     _install_branch("stable")
     check("ref: the new id wins once both are installed",
-          main._flatpak_ref()["app_id"] == "io.unom.punktfunk")
+          main._flatpak_ref()["app_id"] == "io.github.gunu3371.rubyfunk")
 
 shutil.rmtree("/tmp/pf-test-home", ignore_errors=True)
 
@@ -163,7 +163,7 @@ shutil.rmtree("/tmp/pf-test-home", ignore_errors=True)
 # wrong makes an out-of-date client look like a broken plugin.
 check(
     "err: unknown verb => client-outdated",
-    main._cli_error(5, 'unknown command "discover"\n\npunktfunk — the Punktfunk client')
+    main._cli_error(5, 'unknown command "discover"\n\nrubyfunk — the RubyFunk client')
     == "client-outdated",
 )
 check(
@@ -264,14 +264,14 @@ check("art: local cache is asked per-app dir first, flat file second", [
 ] == ["library_hero.jpg", "570_library_hero.jpg"])
 check("art: the per-app dir is keyed by appid",
       main._librarycache_candidates(570, "logo.png")[0].parent.name == "570")
-# The icon: without a hash nothing is fetched, but the Punktfunk icon stands in so the overlay
+# The icon: without a hash nothing is fetched, but the RubyFunk icon stands in so the overlay
 # never shows a gray box — and with no plugin assets at all, icon_path is honestly empty.
 got = asyncio.run(main.Plugin().game_art(570, ""))
 check("art: no hash, no assets => no icon path", got["icon_path"] == "")
 Path("/tmp/pf-test-plugin/assets").mkdir(parents=True, exist_ok=True)
 Path("/tmp/pf-test-plugin/assets/icon.png").write_bytes(b"png")
 got = asyncio.run(main.Plugin().game_art(570, ""))
-check("art: no hash => the Punktfunk icon stands in", got["icon_path"].endswith("assets/icon.png") and got["icon_type"] == "png" and got["icon"] == "cG5n")
+check("art: no hash => the RubyFunk icon stands in", got["icon_path"].endswith("assets/icon.png") and got["icon_type"] == "png" and got["icon"] == "cG5n")
 # save_icon: only a real PNG for a real appid is written, into the settings dir, as .png
 decky.DECKY_PLUGIN_SETTINGS_DIR = "/tmp/pf-test-settings"
 shutil.rmtree("/tmp/pf-test-settings", ignore_errors=True)
@@ -313,9 +313,9 @@ except ValueError:
     check("fetch: a body over the cap raises", True)
 
 # ---- _field_from (flatpak info parsing, drives the client update check) ------------------
-info = "        ID: io.unom.punktfunk\n    Origin: punktfunk-origin\n    Commit: abc123def\n"
+info = "        ID: io.github.gunu3371.rubyfunk\n    Origin: rubyfunk-origin\n    Commit: abc123def\n"
 check("field: commit", main._field_from(info, "Commit") == "abc123def")
-check("field: origin", main._field_from(info, "Origin") == "punktfunk-origin")
+check("field: origin", main._field_from(info, "Origin") == "rubyfunk-origin")
 check("field: absent", main._field_from(info, "Nope") == "")
 
 # ---- _looks_outdated (the GTK-init signature of a client predating a headless flag) ------
@@ -333,9 +333,9 @@ check("semver: ordering", main._semver_tuple("0.10.0") > main._semver_tuple("0.9
 # Untested until now, and the riskiest thing that survived the cut: it edits a file holding
 # HUNDREDS of other games' controller bindings, in place. Every assertion below is about not
 # touching them.
-empty = main._upsert_configset_entry("", "punktfunk", "template", "punktfunk.vdf")
+empty = main._upsert_configset_entry("", "rubyfunk", "template", "rubyfunk.vdf")
 check("vdf: builds the skeleton when the file is new", '"controller_config"' in empty)
-check("vdf: the entry lands", '"punktfunk"' in empty and '"punktfunk.vdf"' in empty)
+check("vdf: the entry lands", '"rubyfunk"' in empty and '"rubyfunk.vdf"' in empty)
 
 existing = (
     '"controller_config"\n'
@@ -346,20 +346,20 @@ existing = (
     "\t}\n"
     "}\n"
 )
-added = main._upsert_configset_entry(existing, "punktfunk", "template", "punktfunk.vdf")
+added = main._upsert_configset_entry(existing, "rubyfunk", "template", "rubyfunk.vdf")
 check("vdf: an existing game's entry survives insertion", '"halflife2"' in added)
-check("vdf: ours is inserted", '"punktfunk"' in added)
+check("vdf: ours is inserted", '"rubyfunk"' in added)
 
 # Re-running must REPLACE our block, not accumulate a second one (this runs on every plugin
 # session gated only by a localStorage marker, so idempotence is the whole contract).
-twice = main._upsert_configset_entry(added, "punktfunk", "template", "punktfunk.vdf")
-check("vdf: idempotent", twice.count('"punktfunk"\n') == 1)
+twice = main._upsert_configset_entry(added, "rubyfunk", "template", "rubyfunk.vdf")
+check("vdf: idempotent", twice.count('"rubyfunk"\n') == 1)
 check("vdf: neighbour still intact after the rewrite", '"halflife2"' in twice)
 
 # Steam keys non-Steam games by their LOWERCASE name, and files on disk may carry either case —
 # a case-sensitive match would append a duplicate the game never reads.
-mixed = existing.replace('"halflife2"', '"Punktfunk"')
-replaced = main._upsert_configset_entry(mixed, "punktfunk", "template", "punktfunk.vdf")
+mixed = existing.replace('"halflife2"', '"RubyFunk"')
+replaced = main._upsert_configset_entry(mixed, "rubyfunk", "template", "rubyfunk.vdf")
 check("vdf: matches an existing key case-insensitively", replaced.count("unktfunk\"\n") == 1)
 
 print()

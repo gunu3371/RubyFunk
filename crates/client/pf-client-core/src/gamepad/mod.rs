@@ -21,9 +21,9 @@ mod select_gesture;
 mod worker;
 
 pub use crate::menu_nav::{MenuDir, MenuEvent, MenuPulse, PadBattery, PadInfo};
-use punktfunk_core::client::NativeClient;
-use punktfunk_core::config::GamepadPref;
-use punktfunk_core::input::gamepad as wire;
+use rubyfunk_core::client::NativeClient;
+use rubyfunk_core::config::GamepadPref;
+use rubyfunk_core::input::gamepad as wire;
 pub use select_gesture::SelectChord;
 use std::sync::atomic::{AtomicU8, Ordering};
 use std::sync::mpsc::{Receiver, Sender};
@@ -124,7 +124,7 @@ impl GamepadService {
         let (chord_tx, chord_rx) = async_channel::unbounded();
         let (p, a) = (pads.clone(), active.clone());
         if let Err(e) = std::thread::Builder::new()
-            .name("punktfunk-gamepad".into())
+            .name("rubyfunk-gamepad".into())
             .spawn(move || {
                 if let Err(e) = run(
                     p,
@@ -255,7 +255,7 @@ impl GamepadService {
     }
 
     /// Explicit controller-type (`Auto` = per pad). The host builds a pad from its
-    /// [`InputKind::GamepadArrival`](punktfunk_core::input::InputKind::GamepadArrival) and
+    /// [`InputKind::GamepadArrival`](rubyfunk_core::input::InputKind::GamepadArrival) and
     /// never swaps a built one, so a change mid-session re-plugs each forwarded pad whose
     /// declared kind moves.
     pub fn set_kind_override(&self, pref: GamepadPref) {
@@ -277,7 +277,7 @@ impl GamepadService {
 
     /// Overlay owns the controller: hold every forwarded pad NEUTRAL. Not
     /// [`set_forwarding`](Self::set_forwarding) — that sends
-    /// [`GamepadRemove`](punktfunk_core::input::InputKind::GamepadRemove) (the game sees an
+    /// [`GamepadRemove`](rubyfunk_core::input::InputKind::GamepadRemove) (the game sees an
     /// unplug). Masking keeps slots open, flushes held state so a
     /// stick stops steering, and adopts (does not replay) on the way back.
     ///

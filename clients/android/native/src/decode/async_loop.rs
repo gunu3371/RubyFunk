@@ -2,10 +2,10 @@
 
 use ndk::media::media_codec::{AsyncNotifyCallback, MediaCodec, MediaCodecDirection};
 use ndk::native_window::NativeWindow;
-use punktfunk_core::client::{Decoded, NativeClient};
-use punktfunk_core::error::PunktfunkError;
-use punktfunk_core::reanchor::{AnchorEvidence, DecoderClass, LocalRecovery};
-use punktfunk_core::session::Frame;
+use rubyfunk_core::client::{Decoded, NativeClient};
+use rubyfunk_core::error::RubyFunkError;
+use rubyfunk_core::reanchor::{AnchorEvidence, DecoderClass, LocalRecovery};
+use rubyfunk_core::session::Frame;
 use std::collections::VecDeque;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicI64, AtomicU64, Ordering};
@@ -38,7 +38,7 @@ use crate::present::verdict::Verdict;
 use crate::run_end::{after_failure, ending, Ending, Retry};
 use crate::rung_memory::{self, Entry, Key, Outcome, Start};
 use crate::sys::{now_monotonic_ns, sysprop};
-use punktfunk_core::quic::ColorInfo;
+use rubyfunk_core::quic::ColorInfo;
 
 /// One decoded output buffer ready to release: its codec buffer index + the pts the codec echoed
 /// (from the output callback's `BufferInfo`), used to pair the `decode` HUD stat, and the
@@ -153,7 +153,7 @@ fn install_async_callbacks(codec: &mut MediaCodec, ev_tx: &mpsc::Sender<DecodeEv
                 // Its monotonic twin, from the same instant. The stats are REALTIME (they
                 // fold the host's clock offset in), while the cadence loop and
                 // `releaseOutputBufferAtTime` are both CLOCK_MONOTONIC — and the loop is fed
-                // and read in one domain, never converted (`punktfunk_core::phase`: a
+                // and read in one domain, never converted (`rubyfunk_core::phase`: a
                 // constant offset between domains is what its offset estimator absorbs).
                 decoded_mono_ns: now_monotonic_ns(),
             });
@@ -1082,13 +1082,13 @@ impl DecodeTally {
 }
 
 /// The receiver rule's decoder class for this session ([`Intake`]): AV1 only, strict on the
-/// Tensor G5 decoder, lenient on the rest. `debug.punktfunk.au_admission` = `strict` /
+/// Tensor G5 decoder, lenient on the rest. `debug.rubyfunk.au_admission` = `strict` /
 /// `lenient` / `off` overrides the pick.
 fn admission(codec: u8, decoder: &str) -> Option<DecoderClass> {
-    if codec != punktfunk_core::quic::CODEC_AV1 {
+    if codec != rubyfunk_core::quic::CODEC_AV1 {
         return None;
     }
-    let class = match sysprop(c"debug.punktfunk.au_admission").as_deref() {
+    let class = match sysprop(c"debug.rubyfunk.au_admission").as_deref() {
         Some("off") => return None,
         Some("strict") => DecoderClass::Strict,
         Some("lenient") => DecoderClass::Lenient,
@@ -1405,7 +1405,7 @@ impl State {
         // A keyframe needs no reference. Anything else fed after a loss may name the lost AU.
         if piece.keyframe {
             self.loss_open = false;
-            let av1 = ctx.client.video_format().codec == punktfunk_core::quic::CODEC_AV1;
+            let av1 = ctx.client.video_format().codec == rubyfunk_core::quic::CODEC_AV1;
             self.av1_render = render_after(self.av1_render, av1, || {
                 pf_bitstream::av1::render_size(&frame.data)
             });
@@ -1679,8 +1679,8 @@ fn feeder_loop(
                     break; // the decode loop is gone, or is ending for the new format
                 }
             }
-            Err(PunktfunkError::NoFrame) => {} // timeout — re-check shutdown and poll again
-            Err(_) => break,                   // session closed
+            Err(RubyFunkError::NoFrame) => {} // timeout — re-check shutdown and poll again
+            Err(_) => break,                  // session closed
         }
     }
 }

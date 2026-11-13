@@ -1,17 +1,17 @@
 //! Root helper for triggered Linux package updates. Polkit starts it for members of
-//! `punktfunk-update`; each unit's `ExecStart` is a fixed verb.
+//! `rubyfunk-update`; each unit's `ExecStart` is a fixed verb.
 //!
-//! * `apply` — host (`punktfunk-update.service`)
-//! * `apply-client` — client (`punktfunk-client-update.service`)
+//! * `apply` — host (`rubyfunk-update.service`)
+//! * `apply-client` — client (`rubyfunk-client-update.service`)
 //!
 //! argv is the verb only. Install kind comes from a root-owned marker, the package list
 //! from the local package database, payloads from the distro's signed repos. Both verbs
-//! upgrade every installed `punktfunk*` package; the verb picks which marker to read and
+//! upgrade every installed `rubyfunk*` package; the verb picks which marker to read and
 //! which binary the post-install gate (`--version` must exit 0) runs.
 //!
 //! Result JSON is root-written and world-readable: the host's in
-//! `/var/lib/punktfunk-update/`, the unit's `StateDirectory=`, the client's in
-//! `/var/lib/punktfunk/`. stdout/stderr go to the unit journal.
+//! `/var/lib/rubyfunk-update/`, the unit's `StateDirectory=`, the client's in
+//! `/var/lib/rubyfunk/`. stdout/stderr go to the unit journal.
 //!
 //! Design: `host-update-from-web-console.md`.
 
@@ -25,7 +25,7 @@ mod linux_main {
     use std::path::Path;
     use std::process::Command;
 
-    const PACMAN_OPTIN_CONF: &str = "/etc/punktfunk/update.conf";
+    const PACMAN_OPTIN_CONF: &str = "/etc/rubyfunk/update.conf";
 
     /// Which marker to read and which binary the post-install gate runs. Two units, two
     /// paths — one path owned by two packages is a hard conflict in deb, rpm, and pacman.
@@ -45,15 +45,15 @@ mod linux_main {
 
         fn gate_binary(self) -> &'static str {
             match self {
-                Mode::Host => "/usr/bin/punktfunk-host",
-                Mode::Client => "/usr/bin/punktfunk-client",
+                Mode::Host => "/usr/bin/rubyfunk-host",
+                Mode::Client => "/usr/bin/rubyfunk-client",
             }
         }
 
         fn result_path(self) -> &'static str {
             match self {
-                Mode::Host => "/var/lib/punktfunk-update/update-result.json",
-                Mode::Client => "/var/lib/punktfunk/client-update-result.json",
+                Mode::Host => "/var/lib/rubyfunk-update/update-result.json",
+                Mode::Client => "/var/lib/rubyfunk/client-update-result.json",
             }
         }
 
@@ -139,11 +139,11 @@ mod linux_main {
         let pkgs: Vec<String> = out
             .lines()
             .map(str::trim)
-            .filter(|l| l.starts_with("punktfunk"))
+            .filter(|l| l.starts_with("rubyfunk"))
             .map(str::to_string)
             .collect();
         if pkgs.is_empty() {
-            return Err(format!("{what}: no installed punktfunk packages found"));
+            return Err(format!("{what}: no installed rubyfunk packages found"));
         }
         Ok(pkgs)
     }
@@ -163,7 +163,7 @@ mod linux_main {
             "apt" => {
                 // Restrict apt-get update to our list when it exists; a full refresh is slower, not safer.
                 // List-Cleanup=0: apt otherwise deletes every list the restricted sources omit.
-                let ours = "/etc/apt/sources.list.d/punktfunk.list";
+                let ours = "/etc/apt/sources.list.d/rubyfunk.list";
                 let mut update = Command::new("apt-get");
                 update.env("DEBIAN_FRONTEND", "noninteractive");
                 if Path::new(ours).exists() {
@@ -181,7 +181,7 @@ mod linux_main {
                 }
                 run(&mut update, "apt-get update")?;
                 let pkgs = installed_packages(
-                    Command::new("dpkg-query").args(["-W", "-f", "${Package}\n", "punktfunk*"]),
+                    Command::new("dpkg-query").args(["-W", "-f", "${Package}\n", "rubyfunk*"]),
                     "dpkg-query",
                 )?;
                 let mut install = Command::new("apt-get");
@@ -194,7 +194,7 @@ mod linux_main {
             }
             "dnf" => {
                 let pkgs = installed_packages(
-                    Command::new("rpm").args(["-qa", "--qf", "%{NAME}\n", "punktfunk*"]),
+                    Command::new("rpm").args(["-qa", "--qf", "%{NAME}\n", "rubyfunk*"]),
                     "rpm -qa",
                 )?;
                 let mut upgrade = Command::new("dnf");
@@ -206,7 +206,7 @@ mod linux_main {
                 // Layered packages re-resolve only via uninstall+install in one transaction.
                 // Staged: reboot activates.
                 let pkgs = installed_packages(
-                    Command::new("rpm").args(["-qa", "--qf", "%{NAME}\n", "punktfunk*"]),
+                    Command::new("rpm").args(["-qa", "--qf", "%{NAME}\n", "rubyfunk*"]),
                     "rpm -qa",
                 )?;
                 run(
@@ -223,8 +223,8 @@ mod linux_main {
             }
             "sysext" => {
                 run(
-                    Command::new("punktfunk-sysext").arg("update"),
-                    "punktfunk-sysext update",
+                    Command::new("rubyfunk-sysext").arg("update"),
+                    "rubyfunk-sysext update",
                 )?;
                 Ok(false)
             }
@@ -271,13 +271,13 @@ mod linux_main {
             _ => {
                 eprintln!(
                     "usage: pf-update apply | apply-client   (normally via \
-                     punktfunk-update.service / punktfunk-client-update.service)"
+                     rubyfunk-update.service / rubyfunk-client-update.service)"
                 );
                 std::process::exit(2);
             }
         };
         if effective_uid() != 0 {
-            eprintln!("pf-update: must run as root (start punktfunk-update.service)");
+            eprintln!("pf-update: must run as root (start rubyfunk-update.service)");
             std::process::exit(1);
         }
 

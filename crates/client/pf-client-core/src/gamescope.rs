@@ -1,7 +1,7 @@
 //! Whether a gamescope compositor is actually on the other end, and which socket reaches it.
 //!
 //! `GAMESCOPE_WAYLAND_DISPLAY` is not proof: the flatpak sets it on every launch so the
-//! vendored gamescope WSI layer can negotiate HDR10 (`packaging/flatpak/io.unom.punktfunk.yml`).
+//! vendored gamescope WSI layer can negotiate HDR10 (`packaging/flatpak/io.github.gunu3371.rubyfunk.yml`).
 //! Callers that treated the variable as Gaming Mode then fullscreened a GNOME/KDE session.
 //!
 //! [`under_gamescope`] is the only check. Proof is `WAYLAND_DISPLAY` naming gamescope's

@@ -215,7 +215,7 @@ fn ask_feature(h: HANDLE, expect_pad_index: u32) -> Result<u32> {
     }
     bail!(
         "this HID collection carries no channel proof (feature 0x{:02x}: no; Deck command: {}; \
-         numbered command: {}) — the driver predates the proof (reinstall: punktfunk-host.exe \
+         numbered command: {}) — the driver predates the proof (reinstall: rubyfunk-host.exe \
          driver install --gamepad)",
         HID_FEATURE_REPORT_CHANNEL_PROOF,
         if set_ok {
@@ -321,7 +321,7 @@ pub fn probe_pid(
 /// Walk the same lookup [`query`] does, reporting each step. For the HID serial transport,
 /// print which of `HidD_GetIndexedString` / `HidD_GetSerialNumberString` hidclass actually
 /// forwarded — hidclass currently swallows an arbitrary indexed-string request to a UMDF HID
-/// minidriver (`punktfunk-host channel-proof-probe`).
+/// minidriver (`rubyfunk-host channel-proof-probe`).
 pub fn diagnose(instance_id: &str, transport: ProofTransport, expect_pad_index: u32) -> String {
     use std::fmt::Write as _;
     let mut out = String::new();
@@ -513,7 +513,7 @@ fn ask_hid(h: HANDLE) -> Result<ChannelProof> {
         let end = buf.iter().position(|&c| c == 0).unwrap_or(buf.len());
         bail!(
             "this HID collection's serial is {:?}, not a channel proof — an old driver is installed \
-             (reinstall: punktfunk-host.exe driver install --gamepad)",
+             (reinstall: rubyfunk-host.exe driver install --gamepad)",
             String::from_utf16_lossy(&buf[..end])
         );
     }

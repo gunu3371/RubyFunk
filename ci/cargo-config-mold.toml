@@ -1,8 +1,8 @@
 # Installed as $CARGO_HOME/config.toml in every Linux CI builder image (ci/*.Dockerfile).
 #
 # WHAT: link the x86_64 Linux targets with mold instead of GNU ld. Linking is the one phase of a
-# Rust build that sccache CANNOT cache — every job relinks punktfunk-host, punktfunk-client-linux,
-# punktfunk-client-session, punktfunk-cli, pf-update and punktfunk-encode-worker from scratch on
+# Rust build that sccache CANNOT cache — every job relinks rubyfunk-host, rubyfunk-client-linux,
+# rubyfunk-client-session, rubyfunk-cli, pf-update and rubyfunk-encode-worker from scratch on
 # every run, and the packaging legs (deb/rpm/arch) do it for release binaries with full debug info.
 # mold is the only lever that touches that phase.
 #

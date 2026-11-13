@@ -1,9 +1,9 @@
 ---
 title: Wake-on-LAN
-description: Wake a sleeping host from a Punktfunk client — what has to happen first, the punktfunk wake command, and how to arm the host machine.
+description: Wake a sleeping host from a RubyFunk client — what has to happen first, the rubyfunk wake command, and how to arm the host machine.
 ---
 
-Punktfunk clients wake a sleeping host with a Wake-on-LAN magic packet. The clients do it out of
+RubyFunk clients wake a sleeping host with a Wake-on-LAN magic packet. The clients do it out of
 the box; the host machine has to be armed to wake, and that is where Wake-on-LAN usually fails:
 see [Arming the machine](#arming-the-machine). To put the host to sleep, see
 [Host power](/docs/host-power).
@@ -12,7 +12,7 @@ see [Arming the machine](#arming-the-machine). To put the host to sleep, see
 
 - **The client has to see the host awake once.** It learns the host's network card address (MAC)
   from the host's local-network announcement and keeps it. Open the client on the same network
-  while the host is on (`punktfunk discover` on the command line). Every client except the Linux
+  while the host is on (`rubyfunk discover` on the command line). Every client except the Linux
   app also takes a MAC typed in by hand.
 - **Client and host share a network.** Magic packets don't cross subnets, a VPN or a mesh network.
 - **Wired Ethernet is the sure thing.** Wi-Fi works when the adapter supports Wake on Wireless LAN
@@ -28,7 +28,7 @@ Opening a saved host that doesn't answer then:
 
 1. Sends a magic packet and dials anyway: a host reached over a VPN never announces itself.
 2. If the dial fails, shows **Waking…**, re-sends every 6 seconds and checks every second.
-3. Connects when the host answers, for up to 90 seconds. The Apple and Android apps and Punktfunk
+3. Connects when the host answers, for up to 90 seconds. The Apple and Android apps and RubyFunk
    Console then wait with **Try Again**; the Linux and Windows apps say the host didn't come
    online.
 
@@ -43,10 +43,10 @@ A saved host's menu also has an explicit wake while it is offline and its MAC is
 | Windows | **Wake host** sends the packet | **MAC (Wake-on-LAN)** under **Edit…** |
 | macOS · iOS · iPadOS · tvOS | **Wake Host** waits on the **Waking…** screen | **MAC address** in **Edit Host** |
 | Android · Android TV | **Wake host** waits on the **Waking…** screen | **Wake-on-LAN MAC** in **Edit host** |
-| Punktfunk Console | **Wake host** in the host's options; the confirm button reads **Wake & Connect** | not offered |
+| RubyFunk Console | **Wake host** in the host's options; the confirm button reads **Wake & Connect** | not offered |
 
 - The Apple apps add a **Wake Host** action to Shortcuts; on iPhone and iPad say *"Wake ⟨host⟩
-  with Punktfunk"*.
+  with RubyFunk"*.
 - Android 17 and later asks for the local-network permission before the app can reach anything on
   your network, wake packets included.
 - The [Steam Deck plugin](/docs/steam-deck) wakes through the client, following its auto-wake
@@ -54,11 +54,11 @@ A saved host's menu also has an explicit wake while it is offline and its MAC is
 
 ### From the command line
 
-`punktfunk`, the client command, ships with the Linux `punktfunk-client` packages and the Windows
-client. In the Flatpak it is `flatpak run --command=punktfunk io.unom.punktfunk`.
+`rubyfunk`, the client command, ships with the Linux `rubyfunk-client` packages and the Windows
+client. In the Flatpak it is `flatpak run --command=rubyfunk io.github.gunu3371.rubyfunk`.
 
 ```bash
-punktfunk wake <host-ref> [--wait]
+rubyfunk wake <host-ref> [--wait]
 ```
 
 `<host-ref>` is a saved host's id, name or address. Without `--wait` it sends the packet and
@@ -72,12 +72,12 @@ seconds.
 | `5` | No saved host matches, the name is ambiguous, or no MAC is known yet |
 | `6` | That address isn't a saved host: pair it first |
 
-`punktfunk launch` wakes the host by itself when auto-wake is on. See [Host CLI](/docs/host-cli)
+`rubyfunk launch` wakes the host by itself when auto-wake is on. See [Host CLI](/docs/host-cli)
 for the other commands.
 
 ## Arming the machine
 
-Punktfunk never changes these settings:
+RubyFunk never changes these settings:
 
 1. **BIOS/UEFI:** turn on **Wake on LAN**, **Wake on PCIe**, or your vendor's name for it.
 2. **The network card:** arm it to wake on a magic packet, below.
@@ -95,7 +95,7 @@ Wake-on-WLAN is NOT armed on this host's Wi-Fi NIC — clients cannot wake it fr
 
 The warning names the interface and the command that fixes it. No line means the host couldn't
 tell (`ethtool` or `iw` missing, no answer from the driver) or local discovery is off. Read it
-on the console's **Troubleshooting** page or with `journalctl --user -u punktfunk-host`. Windows
+on the console's **Troubleshooting** page or with `journalctl --user -u rubyfunk-host`. Windows
 hosts don't run this check.
 
 ### Linux (wired)

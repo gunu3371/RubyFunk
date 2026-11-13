@@ -1,18 +1,18 @@
 <#
 .SYNOPSIS
-  Build + sign the punktfunk Windows host installer (the punktfunk-setup-win engine exe).
+  Build + sign the rubyfunk Windows host installer (the rubyfunk-setup-win engine exe).
 
 .DESCRIPTION
-  From a release `cargo build -p punktfunk-host --features nvenc` output (the exe), this:
+  From a release `cargo build -p rubyfunk-host --features nvenc` output (the exe), this:
     1. resolves a signing backend - Azure Artifact Signing (formerly Trusted Signing) when the
        AZURE_CODESIGNING_* trio is set, else a supplied stable .pfx from CI secrets, else an
        ephemeral self-signed CN=unom - same scheme as the client's pack-msix.ps1. The .pfx paths
        also export the public .cer; Azure does not (see below). The ephemeral fallback is for
        canary/CI/dev ONLY: on a v* tag build a missing cert (or -NoSign) is a hard failure, never
        a silent downgrade to a throwaway cert - see -RequireSignedCert,
-    2. stamps -Version into the inner punktfunk-host.exe (stamp-version.ps1), then signs it,
+    2. stamps -Version into the inner rubyfunk-host.exe (stamp-version.ps1), then signs it,
     3. stages the pf-vdisplay virtual-display driver bundle (unless -NoDriver),
-    4. builds the wizard and packs it over the {app} tree as punktfunk-host-setup-<ver>.exe,
+    4. builds the wizard and packs it over the {app} tree as rubyfunk-host-setup-<ver>.exe,
     5. signs the setup.exe (timestamped - MANDATORY under Azure signing, see Sign-File),
     6. emits HOST_SETUP_PATH / HOST_CER_PATH to GITHUB_ENV for the publish step. Azure signing
        emits no .cer: the chain is publicly trusted, so there is nothing for a user to import.
@@ -31,7 +31,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][string]$Version,                 # e.g. 0.2.137 or 1.4.0 (free-form)
-    [Parameter(Mandatory = $true)][string]$TargetDir,               # cargo --release dir (has punktfunk-host.exe)
+    [Parameter(Mandatory = $true)][string]$TargetDir,               # cargo --release dir (has rubyfunk-host.exe)
     [string]$OutDir = (Join-Path $TargetDir 'installer'),
     # Subject for the EPHEMERAL self-signed fallback only. Azure signing carries its own subject
     # (the profile's verified CN/O), and nothing downstream of setup.exe compares the two - unlike
@@ -77,20 +77,20 @@ if (-not $env:RUSTFLAGS) {
 }
 $triple = if ($Arch -eq 'arm64') { 'aarch64-pc-windows-msvc' } else { 'x86_64-pc-windows-msvc' }
 $archSuffix = if ($Arch -eq 'arm64') { '_arm64' } else { '' }
-$exe = Join-Path $TargetDir 'punktfunk-host.exe'
-if (-not (Test-Path $exe)) { throw "missing build artifact 'punktfunk-host.exe' in $TargetDir (did 'cargo build --release -p punktfunk-host --features nvenc' run?)" }
-$trayExe = Join-Path $TargetDir 'punktfunk-tray.exe'
-if (-not (Test-Path $trayExe)) { throw "missing build artifact 'punktfunk-tray.exe' in $TargetDir (did 'cargo build --release -p punktfunk-tray' run?)" }
+$exe = Join-Path $TargetDir 'rubyfunk-host.exe'
+if (-not (Test-Path $exe)) { throw "missing build artifact 'rubyfunk-host.exe' in $TargetDir (did 'cargo build --release -p rubyfunk-host --features nvenc' run?)" }
+$trayExe = Join-Path $TargetDir 'rubyfunk-tray.exe'
+if (-not (Test-Path $trayExe)) { throw "missing build artifact 'rubyfunk-tray.exe' in $TargetDir (did 'cargo build --release -p rubyfunk-tray' run?)" }
 # The seat keeper builds in its own workspace (crates/host/pf-seat-keeper) into the same target dir.
-$keeperExe = Join-Path $TargetDir 'punktfunk-seat-keeper.exe'
-if (-not (Test-Path $keeperExe)) { throw "missing build artifact 'punktfunk-seat-keeper.exe' in $TargetDir (did 'cargo build --release --manifest-path crates/host/pf-seat-keeper/Cargo.toml' run?)" }
+$keeperExe = Join-Path $TargetDir 'rubyfunk-seat-keeper.exe'
+if (-not (Test-Path $keeperExe)) { throw "missing build artifact 'rubyfunk-seat-keeper.exe' in $TargetDir (did 'cargo build --release --manifest-path crates/host/pf-seat-keeper/Cargo.toml' run?)" }
 # The host starts this beside itself to capture a monitor it did not create (a pinned monitor, a
 # shared screen). Without it those sessions fail; everything else streams.
-$workerExe = Join-Path $TargetDir 'punktfunk-capture-worker.exe'
-if (-not (Test-Path $workerExe)) { throw "missing build artifact 'punktfunk-capture-worker.exe' in $TargetDir (did 'cargo build --release -p punktfunk-capture-worker' run?)" }
+$workerExe = Join-Path $TargetDir 'rubyfunk-capture-worker.exe'
+if (-not (Test-Path $workerExe)) { throw "missing build artifact 'rubyfunk-capture-worker.exe' in $TargetDir (did 'cargo build --release -p rubyfunk-capture-worker' run?)" }
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 # The version goes into a copy: cargo re-links its own output on the next build.
-$stampedExe = Join-Path $OutDir 'punktfunk-host.exe'
+$stampedExe = Join-Path $OutDir 'rubyfunk-host.exe'
 Copy-Item -LiteralPath $exe -Destination $stampedExe -Force
 & (Join-Path $here 'stamp-version.ps1') -Path $stampedExe -Version $Version
 $exe = $stampedExe
@@ -98,8 +98,8 @@ $exe = $stampedExe
 # --- signing backend (signing.ps1: Azure, then MSIX_CERT_PFX_B64, then ephemeral) ----------------
 # The .pfx modes export the .cer users import once (LocalMachine\TrustedPublisher) so SmartScreen
 # and UAC trust the setup.exe. Azure emits none, so HOST_CER_PATH stays unset.
-$cerPath = Join-Path $OutDir "punktfunk-host-windows_${Version}.cer"
-$signing = Resolve-SigningMode -OutDir $OutDir -Publisher $Publisher -FriendlyName 'punktfunk host (self-signed)' `
+$cerPath = Join-Path $OutDir "rubyfunk-host-windows_${Version}.cer"
+$signing = Resolve-SigningMode -OutDir $OutDir -Publisher $Publisher -FriendlyName 'rubyfunk host (self-signed)' `
     -PfxBase64 $PfxBase64 -PfxPassword $PfxPassword -AzureEndpoint $AzureEndpoint -AzureAccount $AzureAccount `
     -AzureProfile $AzureProfile -AzureDlib $AzureDlib -RequireSignedCert $RequireSignedCert `
     -CerPath $cerPath -NoSign:$NoSign
@@ -114,7 +114,7 @@ Sign-File $signing $workerExe
 $repoRoot = (Resolve-Path (Join-Path $here '..\..')).Path
 $hostEnvSrc = Join-Path $repoRoot 'scripts\windows\host.env.example'
 $readmeSrc = Join-Path $here 'README.md'
-$brandIco = Join-Path $here 'branding\punktfunk.ico'
+$brandIco = Join-Path $here 'branding\rubyfunk.ico'
 foreach ($p in @($exe, $trayExe, $keeperExe, $workerExe, $hostEnvSrc, $readmeSrc, $brandIco)) {
     if (-not (Test-Path -LiteralPath $p)) { throw "installer source file missing: $p" }
 }
@@ -146,11 +146,11 @@ if (-not $NoDriver) {
 }
 else { Write-Host "-NoDriver: building installer WITHOUT the bundled pf-vdisplay driver" }
 
-# --- build (from source) + stage the punktfunk virtual-gamepad UMDF drivers --------------------
+# --- build (from source) + stage the rubyfunk virtual-gamepad UMDF drivers --------------------
 # pf-gamepad (DualSense / DS4 / Edge / Deck) + pf-xusb (Xbox 360 / XInput) are members of the same drivers
 # workspace as pf-vdisplay, built from source per release (build-gamepad-drivers.ps1) - same anti-stale
 # reasoning as pf-vdisplay; the prior checked-in binaries under gamepad-drivers/ are retired. The
-# installer adds each to the store via `punktfunk-host.exe driver install --gamepad` (the host
+# installer adds each to the store via `rubyfunk-host.exe driver install --gamepad` (the host
 # SwDeviceCreate's the per-session devnodes).
 if (-not $NoDriver) {
     $gpBuilt = Join-Path $OutDir 'gamepad-built'
@@ -166,7 +166,7 @@ if (-not $NoDriver) {
 
 # --- stage the official base VB-CABLE package (the streaming virtual microphone) --------------
 # VB-CABLE is no longer bundled (the audio-substrate program, 2026-08): the host mints its own
-# audio endpoints from Steam's streaming drivers ("Punktfunk Speakers/Microphone"), so audio needs
+# audio endpoints from Steam's streaming drivers ("RubyFunk Speakers/Microphone"), so audio needs
 # Steam installed on the target box - never running - and no third-party cable. A user-installed
 # VB-CABLE keeps working as a fallback mic target.
 
@@ -182,7 +182,7 @@ if ($wantWeb -or $wantScripting) {
     Copy-Item -LiteralPath $BunExe -Destination $bunStage -Force
 }
 # The web console: the self-contained .output tree (Nitro noExternals - deps bundled + tree-shaken,
-# no node_modules), run as a supervised child of the PunktfunkHost service (no launcher script),
+# no node_modules), run as a supervised child of the RubyFunkHost service (no launcher script),
 # auto-wired to the host's loopback mgmt API.
 if ($wantWeb) {
     $webStage = Join-Path $OutDir 'web'
@@ -265,12 +265,12 @@ if ($Arch -eq 'x64') {
 }
 
 # --- build the wizard + pack the installer -----------------------------------------------------
-$setup = Join-Path $OutDir "punktfunk-host-setup-$Version$archSuffix.exe"
+$setup = Join-Path $OutDir "rubyfunk-host-setup-$Version$archSuffix.exe"
 # The wizard crate builds into a target dir of its own: windows-reactor-setup stages the
 # self-contained WinAppSDK runtime next to the exe, and the packer takes everything in that
 # dir that is not cargo's as the runtime set.
 $wizTarget = Join-Path $OutDir 'wizard-target'
-Write-Host "==> building punktfunk-setup-win (self-contained wizard + packer) -> $wizTarget"
+Write-Host "==> building rubyfunk-setup-win (self-contained wizard + packer) -> $wizTarget"
 $prevTarget = $env:CARGO_TARGET_DIR
 $env:CARGO_TARGET_DIR = $wizTarget
 Push-Location $repoRoot
@@ -279,20 +279,20 @@ Push-Location $repoRoot
 # build stages. A cross-built wizard therefore gets a cache of its own.
 $prevLocal = $env:LOCALAPPDATA
 if ($Arch -ne 'x64') { $env:LOCALAPPDATA = Join-Path $OutDir "reactor-cache-$Arch" }
-& cargo build --release -p punktfunk-setup-win --target $triple
+& cargo build --release -p rubyfunk-setup-win --target $triple
 $wizExit = $LASTEXITCODE
 $env:LOCALAPPDATA = $prevLocal
 # The pack tool rewrites bytes on the runner, so a cross build needs a host-arch copy of it.
 if ($wizExit -eq 0 -and $Arch -ne 'x64') {
-    & cargo build --release -p punktfunk-setup-win --bin punktfunk-setup-pack
+    & cargo build --release -p rubyfunk-setup-win --bin rubyfunk-setup-pack
     $wizExit = $LASTEXITCODE
 }
 Pop-Location
 if ($prevTarget) { $env:CARGO_TARGET_DIR = $prevTarget } else { Remove-Item Env:\CARGO_TARGET_DIR -ErrorAction SilentlyContinue }
-if ($wizExit -ne 0) { throw "punktfunk-setup-win build failed ($wizExit)" }
+if ($wizExit -ne 0) { throw "rubyfunk-setup-win build failed ($wizExit)" }
 $wizRel = Join-Path $wizTarget "$triple\release"
-$wizExe = Join-Path $wizRel 'punktfunk-setup-win.exe'
-$packer = if ($Arch -eq 'x64') { Join-Path $wizRel 'punktfunk-setup-pack.exe' } else { Join-Path $wizTarget 'release\punktfunk-setup-pack.exe' }
+$wizExe = Join-Path $wizRel 'rubyfunk-setup-win.exe'
+$packer = if ($Arch -eq 'x64') { Join-Path $wizRel 'rubyfunk-setup-pack.exe' } else { Join-Path $wizTarget 'release\rubyfunk-setup-pack.exe' }
 
 # The {app} tree. A missing input is simply absent - the plan's DeployFiles lays down whatever
 # this assembles, verbatim, and the host's own probes decide what a partial tree can do.

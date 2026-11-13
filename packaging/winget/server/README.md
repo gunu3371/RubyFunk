@@ -1,16 +1,16 @@
-# Punktfunk winget REST source
+# RubyFunk winget REST source
 
 A self-hosted [winget REST source](https://github.com/microsoft/winget-cli-restsource) serving the
-Punktfunk Windows host, so users can install and upgrade with `winget` instead of downloading a
+RubyFunk Windows host, so users can install and upgrade with `winget` instead of downloading a
 `setup.exe` by hand.
 
 ```powershell
 # one-time, from an ELEVATED prompt (winget requires admin to add a source)
-winget source add -n punktfunk https://winget.punktfunk.unom.io -t Microsoft.Rest
+winget source add -n rubyfunk https://winget.punktfunk.unom.io -t Microsoft.Rest
 
-winget install unom.PunktfunkHost                 # silent, wizard defaults
-winget install unom.PunktfunkHost --interactive   # the full wizard
-winget upgrade unom.PunktfunkHost
+winget install gunu3371.RubyFunkHost                 # silent, wizard defaults
+winget install gunu3371.RubyFunkHost --interactive   # the full wizard
+winget upgrade gunu3371.RubyFunkHost
 ```
 
 ## Why self-hosted rather than the community repo

@@ -1,7 +1,7 @@
 //! Client identity, the known-hosts (pinned fingerprint) store, and app settings —
-//! re-exported from `pf-client-core` so the shell and the spawned `punktfunk-session`
+//! re-exported from `pf-client-core` so the shell and the spawned `rubyfunk-session`
 //! binary share ONE `Settings`/`KnownHosts` shape over the same files
-//! (`%APPDATA%\punktfunk`, or a non-empty `PUNKTFUNK_CONFIG_DIR`:
+//! (`%APPDATA%\rubyfunk`, or a non-empty `RUBYFUNK_CONFIG_DIR`:
 //! `client-windows-settings.json` / `client-known-hosts.json`).
 //!
 //! The shell is the settings file's only writer; the session only reads it. The shell's

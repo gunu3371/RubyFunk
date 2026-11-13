@@ -6,7 +6,7 @@
 //! The table test pins every branch.
 
 use super::session::WAKE_SETTLE;
-use super::{PunktfunkEndReason, SessionEvent, StreamState};
+use super::{RubyFunkEndReason, SessionEvent, StreamState};
 use std::time::{Duration, Instant};
 
 /// How the stream's host is dialled again.
@@ -86,7 +86,7 @@ pub(crate) fn restart_for<'a>(ev: &'a SessionEvent, f: &RestartFacts) -> Option<
             if !lost && f.redials == 0 {
                 return None;
             }
-            let wait = PunktfunkEndReason::Lost.redial_delay(f.redials)?;
+            let wait = RubyFunkEndReason::Lost.redial_delay(f.redials)?;
             Some(Restart {
                 dial: Dial::Redial {
                     wait,
@@ -129,7 +129,7 @@ pub(crate) fn restart_for<'a>(ev: &'a SessionEvent, f: &RestartFacts) -> Option<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use punktfunk_core::reject::RejectReason;
+    use rubyfunk_core::reject::RejectReason;
 
     const LOST: &str = "Lost the connection — reconnecting.";
     const WAKE: &str = "The host isn't ready to stream yet — trying again.";

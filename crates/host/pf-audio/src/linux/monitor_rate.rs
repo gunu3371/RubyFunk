@@ -1,6 +1,6 @@
 //! The monitored node's own rate, from the PipeWire registry — not the capture stream's.
 //!
-//! In `PUNKTFUNK_STREAM_SINK=0` the host records someone else's sink through PipeWire's
+//! In `RUBYFUNK_STREAM_SINK=0` the host records someone else's sink through PipeWire's
 //! resampler, which reports whatever rate we asked for. `AudioCapturer::sample_rate` is
 //! therefore the request, not the device. WirePlumber's `default` metadata names the
 //! elected sink; only a bind's negotiated `Format` names its rate (the announce props
@@ -141,8 +141,8 @@ mod tests {
             Some("alsa_output.pci-0000_00_1f.3.analog-stereo".into())
         );
         assert_eq!(
-            sink_name_from_json(r#"{ "name": "punktfunk-speaker-4242-0" }"#),
-            Some("punktfunk-speaker-4242-0".into())
+            sink_name_from_json(r#"{ "name": "rubyfunk-speaker-4242-0" }"#),
+            Some("rubyfunk-speaker-4242-0".into())
         );
     }
 

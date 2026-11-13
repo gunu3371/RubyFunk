@@ -1,4 +1,4 @@
-//! The WDF skeleton every punktfunk HID driver stands on: `DriverEntry`, the default parallel
+//! The WDF skeleton every rubyfunk HID driver stands on: `DriverEntry`, the default parallel
 //! queue, the manual queue pended reads wait in, and the periodic timer that completes them.
 //! Three drivers carried a copy each; the zeroed-config traps (a parallel queue presents ZERO
 //! requests unless told otherwise, a timer's attributes must inherit or WDF refuses it) now
@@ -30,7 +30,7 @@ pub const WDF_EXECUTION_LEVEL_INHERIT: i32 = 1;
 /// `WDF_SYNCHRONIZATION_SCOPE::WdfSynchronizationScopeInheritFromParent`.
 pub const WDF_SYNCHRONIZATION_SCOPE_INHERIT: i32 = 1;
 
-/// `WdfDriverCreate` with `evt_device_add` as the one callback a punktfunk driver registers.
+/// `WdfDriverCreate` with `evt_device_add` as the one callback a rubyfunk driver registers.
 ///
 /// # Safety
 /// `driver` and `registry_path` must be the loader-provided `DriverEntry` arguments.

@@ -1,7 +1,7 @@
 //! OS-clipboard bridge for the spawned session client: Win32 on Windows, the
 //! session window's SDL3 clipboard on Linux.
 //!
-//! Protocol and fetch streams live in `punktfunk_core::clipboard`. This
+//! Protocol and fetch streams live in `rubyfunk_core::clipboard`. This
 //! thread talks to the OS clipboard. Evidence: `design/clipboard-and-file-transfer.md`.
 //!
 //! Local copies announce a format list (`clip_offer`); bytes cross only on
@@ -18,9 +18,9 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use punktfunk_core::client::NativeClient;
-use punktfunk_core::clipboard::ClipEventCore;
-use punktfunk_core::quic::{ClipKind, CLIP_FILE_INDEX_NONE, HOST_CAP_CLIPBOARD};
+use rubyfunk_core::client::NativeClient;
+use rubyfunk_core::clipboard::ClipEventCore;
+use rubyfunk_core::quic::{ClipKind, CLIP_FILE_INDEX_NONE, HOST_CAP_CLIPBOARD};
 
 /// UTF-8 text — every peer must handle this mime.
 const MIME_TEXT: &str = "text/plain;charset=utf-8";
@@ -69,7 +69,7 @@ pub fn run(client: Arc<NativeClient>, stop: Arc<AtomicBool>) {
         // FetchRequest first — the host is blocked on us.
         match client.next_clip(EVENT_WAIT) {
             Ok(ev) => handle_event(&client, &mut state, ev),
-            Err(punktfunk_core::error::PunktfunkError::NoFrame) => {}
+            Err(rubyfunk_core::error::RubyFunkError::NoFrame) => {}
             Err(_) => break,
         }
         // Check the OS clipboard on [`POLL`]. This wait is short so teardown is not delayed.

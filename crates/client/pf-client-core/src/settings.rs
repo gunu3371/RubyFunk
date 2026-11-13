@@ -9,7 +9,7 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 /// Overlay tier and corner. Live in the core so every client formats with the same enums.
-pub use punktfunk_core::hud::{HudCorner, StatsVerbosity};
+pub use rubyfunk_core::hud::{HudCorner, StatsVerbosity};
 
 /// How a touchscreen drives the host (Android `TouchMode`, Apple `TouchInputMode`).
 /// Stored stringly in [`Settings::touch_mode`]; parsed with [`TouchMode::from_name`].
@@ -145,7 +145,7 @@ pub struct Settings {
     /// Requested encoder bitrate (kbps); 0 = host default.
     pub bitrate_kbps: u32,
     /// PyroWave quality, bits per pixel in `[BPP_FLOOR, BPP_MAX]`
-    /// ([`punktfunk_core::pyrowave`]). The most a PyroWave session sends; Automatic adapts
+    /// ([`rubyfunk_core::pyrowave`]). The most a PyroWave session sends; Automatic adapts
     /// under it.
     #[serde(default = "default_pyrowave_bpp")]
     pub pyrowave_bpp: f64,
@@ -153,7 +153,7 @@ pub struct Settings {
     /// supersamples; `< 1` under-renders; `1.0` = native. Clamped even, codec max.
     pub render_scale: f64,
     /// How a frame whose aspect differs from the window fills it: `"fit"` (default, bars),
-    /// `"crop"` or `"stretch"`. Parsed with `punktfunk_core::video_fit::VideoFit::from_name`;
+    /// `"crop"` or `"stretch"`. Parsed with `rubyfunk_core::video_fit::VideoFit::from_name`;
     /// unknown reads as fit.
     #[serde(default = "default_video_fit")]
     pub video_fit: String,
@@ -203,7 +203,7 @@ pub struct Settings {
     pub mic_enabled: bool,
     /// Platform echo cancellation (PipeWire echo-cancelled source; WASAPI Communications
     /// category). Default on — without it a laptop speaker looping host audio is heard
-    /// by the mic. `PUNKTFUNK_NO_AEC=1` overrides off. Only while `mic_enabled`.
+    /// by the mic. `RUBYFUNK_NO_AEC=1` overrides off. Only while `mic_enabled`.
     #[serde(default = "default_true")]
     pub echo_cancel: bool,
     /// Requested channels: 2 (stereo), 6 (5.1), 8 (7.1). Host clamps; decoder follows.
@@ -232,9 +232,9 @@ pub struct Settings {
     ///
     /// A stored value is not validated. Pre-native spellings `"vulkan"`/`"vaapi"`/`"d3d11va"`
     /// map in `video::migrate_decoder_pref` at warn; the store is not rewritten, so a
-    /// downgrade still works. `PUNKTFUNK_DECODER` overrides (see `video::Decoder::new`).
+    /// downgrade still works. `RUBYFUNK_DECODER` overrides (see `video::Decoder::new`).
     pub decoder: String,
-    /// Decode/present GPU marketing name; empty = automatic. Maps to `PUNKTFUNK_VK_ADAPTER`.
+    /// Decode/present GPU marketing name; empty = automatic. Maps to `RUBYFUNK_VK_ADAPTER`.
     #[serde(default)]
     pub adapter: String,
     /// Ask for 4:4:4 (`quic::VIDEO_CAP_444`). Default off: bandwidth and encode
@@ -291,14 +291,14 @@ pub struct Settings {
     #[serde(default)]
     pub hud_placement: String,
     /// Stats overlay size in percent, on top of the display scale; resolve with
-    /// [`punktfunk_core::hud::stats_scale`]. The stats panel only. Device-wide.
+    /// [`rubyfunk_core::hud::stats_scale`]. The stats panel only. Device-wide.
     #[serde(default = "default_stats_scale_pct")]
     pub stats_scale_pct: u16,
     /// Show how to leave for a few seconds when a stream starts. Device-wide.
     #[serde(default = "default_true")]
     pub exit_hint: bool,
     /// On, a stream holds this device's screen awake for as long as it runs. Off, only while
-    /// the player's input is recent ([`punktfunk_core::client::holds_screen_awake`]), so the
+    /// the player's input is recent ([`rubyfunk_core::client::holds_screen_awake`]), so the
     /// screen's own saver runs over a game left alone. Device-wide.
     #[serde(default = "default_true")]
     pub keep_awake: bool,
@@ -307,7 +307,7 @@ pub struct Settings {
     pub show_advanced: bool,
     /// Enter fullscreen when a stream starts. `--fullscreen` (Gaming Mode) ignores this.
     pub fullscreen_on_stream: bool,
-    /// Gamepad-UI backdrop palette (`"violet"` default). Presentation only — never
+    /// Gamepad-UI backdrop palette (`"ruby"` default). Presentation only — never
     /// part of a settings preset. Unknown name → default (a newer client may have
     /// shipped one this binary does not know).
     #[serde(default = "default_ui_palette")]
@@ -355,10 +355,10 @@ pub struct Settings {
     #[serde(default)]
     pub overlay_actions: String,
     /// Playback endpoint (PipeWire `node.name` / WASAPI `IMMDevice` id); empty = OS default.
-    /// Maps to `PUNKTFUNK_AUDIO_SINK`. A gone pick falls back to default.
+    /// Maps to `RUBYFUNK_AUDIO_SINK`. A gone pick falls back to default.
     #[serde(default)]
     pub speaker_device: String,
-    /// Capture endpoint; same semantics as `speaker_device` (`PUNKTFUNK_AUDIO_SOURCE`).
+    /// Capture endpoint; same semantics as `speaker_device` (`RUBYFUNK_AUDIO_SOURCE`).
     #[serde(default)]
     pub mic_device: String,
     /// Off, the client plays no rumble on any pad, whatever the host sends, and the console
@@ -405,7 +405,7 @@ pub const PYROWAVE_BITRATE_HINT: &str =
      your quality.";
 /// The rate Fixed stores under PyroWave, kbps. The host pins the session at the quality, so
 /// only "not zero" counts. If the host picks another codec the session is Automatic
-/// ([`punktfunk_core::quic::session_bitrate_kbps`]).
+/// ([`rubyfunk_core::quic::session_bitrate_kbps`]).
 pub const PYROWAVE_FIXED_KBPS: u32 = 20_000;
 
 /// When the controller-optimized UI (the console) takes over the desktop layout.
@@ -453,7 +453,7 @@ fn default_true() -> bool {
 }
 
 fn default_ui_palette() -> String {
-    "violet".into()
+    "ruby".into()
 }
 
 fn default_pad_speaker() -> String {
@@ -465,21 +465,21 @@ fn default_stats_scale_pct() -> u16 {
 }
 
 fn default_pyrowave_bpp() -> f64 {
-    punktfunk_core::pyrowave::BPP_DEFAULT
+    rubyfunk_core::pyrowave::BPP_DEFAULT
 }
 
 impl Settings {
     /// The mode a connect asks for: a `0` size or refresh takes `native`'s (a refresh under 30
     /// reads 30), then render scale.
-    pub fn stream_mode(&self, native: punktfunk_core::Mode) -> punktfunk_core::Mode {
+    pub fn stream_mode(&self, native: rubyfunk_core::Mode) -> rubyfunk_core::Mode {
         let pick = |set: u32, native: u32| if set == 0 { native } else { set };
-        let (width, height) = punktfunk_core::render_scale::apply(
+        let (width, height) = rubyfunk_core::render_scale::apply(
             pick(self.width, native.width),
             pick(self.height, native.height),
             self.render_scale,
-            punktfunk_core::render_scale::max_dimension(&self.codec),
+            rubyfunk_core::render_scale::max_dimension(&self.codec),
         );
-        punktfunk_core::Mode {
+        rubyfunk_core::Mode {
             width,
             height,
             refresh_hz: pick(self.refresh_hz, native.refresh_hz.max(30)),
@@ -489,7 +489,7 @@ impl Settings {
     /// [`Self::pyrowave_bpp`] in the hundredths the dial carries, held inside
     /// `[BPP_FLOOR, BPP_MAX]`.
     pub fn pyrowave_bpp_x100(&self) -> u16 {
-        use punktfunk_core::pyrowave::{BPP_FLOOR, BPP_MAX};
+        use rubyfunk_core::pyrowave::{BPP_FLOOR, BPP_MAX};
         (self.pyrowave_bpp.clamp(BPP_FLOOR, BPP_MAX) * 100.0).round() as u16
     }
 
@@ -498,12 +498,12 @@ impl Settings {
     /// and 10 bits follow the switches that ask for them.
     pub fn pyrowave_quality_lines(
         &self,
-        native: punktfunk_core::Mode,
-        link: punktfunk_core::transport::LinkFacts,
+        native: rubyfunk_core::Mode,
+        link: rubyfunk_core::transport::LinkFacts,
     ) -> (String, Option<String>) {
         let mode = self.stream_mode(native);
         let ten_bit = self.hdr_enabled || self.ten_bit_sdr;
-        let kbps = punktfunk_core::pyrowave::kbps_for(
+        let kbps = rubyfunk_core::pyrowave::kbps_for(
             &mode,
             self.enable_444,
             if ten_bit { 10 } else { 8 },
@@ -514,9 +514,9 @@ impl Settings {
             mode.width,
             mode.height,
             mode.refresh_hz,
-            punktfunk_core::pyrowave::rate_label(kbps)
+            rubyfunk_core::pyrowave::rate_label(kbps)
         );
-        (caption, punktfunk_core::pyrowave::link_warning(kbps, link))
+        (caption, rubyfunk_core::pyrowave::link_warning(kbps, link))
     }
 }
 
@@ -628,12 +628,12 @@ impl Settings {
     #[cfg(not(target_family = "wasm"))]
     pub fn preferred_codec(&self) -> u8 {
         match self.codec.as_str() {
-            "h264" | "avc" => punktfunk_core::quic::CODEC_H264,
-            "hevc" | "h265" => punktfunk_core::quic::CODEC_HEVC,
-            "av1" => punktfunk_core::quic::CODEC_AV1,
+            "h264" | "avc" => rubyfunk_core::quic::CODEC_H264,
+            "hevc" | "h265" => rubyfunk_core::quic::CODEC_HEVC,
+            "av1" => rubyfunk_core::quic::CODEC_AV1,
             // Wired-LAN wavelet: preference-only (`resolve_codec` never auto-picks it).
             // Harmless if the bit is not advertised — the ladder falls back to HEVC.
-            "pyrowave" => punktfunk_core::quic::CODEC_PYROWAVE,
+            "pyrowave" => rubyfunk_core::quic::CODEC_PYROWAVE,
             _ => 0,
         }
     }
@@ -957,10 +957,10 @@ mod tests {
         assert_eq!(s.audio_channels, 6);
         assert!(s.mic_enabled);
         assert_eq!(s.decoder, "hardware");
-        assert_eq!(s.preferred_codec(), punktfunk_core::quic::CODEC_AV1);
+        assert_eq!(s.preferred_codec(), rubyfunk_core::quic::CODEC_AV1);
         let mut pw = s.clone();
         pw.codec = "pyrowave".into();
-        assert_eq!(pw.preferred_codec(), punktfunk_core::quic::CODEC_PYROWAVE);
+        assert_eq!(pw.preferred_codec(), rubyfunk_core::quic::CODEC_PYROWAVE);
         assert_eq!(s.adapter, "NVIDIA GeForce RTX 4080");
         assert!(s.hdr_enabled);
         assert!(!s.show_stats);
@@ -1086,7 +1086,7 @@ mod tests {
     /// the bounds, and the caption prices the mode a connect would ask at it.
     #[test]
     fn pyrowave_quality_reads_as_the_rate_it_needs() {
-        use punktfunk_core::transport::{LinkFacts, IFACE_KIND_ETHERNET};
+        use rubyfunk_core::transport::{LinkFacts, IFACE_KIND_ETHERNET};
         let old: Settings = serde_json::from_str(r#"{"width":1920,"height":1080}"#).unwrap();
         assert_eq!(old.pyrowave_bpp, 1.6);
         assert_eq!(old.pyrowave_bpp_x100(), 160);
@@ -1095,7 +1095,7 @@ mod tests {
             ..Settings::default()
         };
         assert_eq!(past.pyrowave_bpp_x100(), 200);
-        let native = punktfunk_core::Mode {
+        let native = rubyfunk_core::Mode {
             width: 3840,
             height: 2160,
             refresh_hz: 120,

@@ -149,7 +149,7 @@ pub(crate) fn row_tri_in(rows: &[Resolved], env: &str) -> Option<bool> {
     }
 }
 
-/// A raw `PUNKTFUNK_*` read that also sees the console, for numeric, text and enum rows: the
+/// A raw `RUBYFUNK_*` read that also sees the console, for numeric, text and enum rows: the
 /// env value when env set the row, else the console's value spelled as the env var would be,
 /// else `None`, so the reader keeps its own default. Any other name reads the environment.
 /// Bool and tri-state rows read through [`row_bool`] and [`row_tri`].
@@ -280,7 +280,7 @@ fn read_file(path: &Path) -> std::io::Result<Map<String, Value>> {
 fn load_file(path: &Path) -> Map<String, Value> {
     read_file(path).unwrap_or_else(|e| {
         warn_once(format!(
-            "punktfunk: {}: {e} — using env and defaults",
+            "rubyfunk: {}: {e} — using env and defaults",
             path.display()
         ));
         Map::new()
@@ -316,7 +316,7 @@ pub(crate) fn resolve(
                 Ok(v) => Some(v),
                 Err(reason) => {
                     warn_once(format!(
-                        "punktfunk: host-settings.json {}: {reason} — ignoring it",
+                        "rubyfunk: host-settings.json {}: {reason} — ignoring it",
                         s.id
                     ));
                     None
@@ -352,7 +352,7 @@ fn from_env(
             Ok(Some(v)) => return Some((s.env, v)),
             Ok(None) => {}
             Err(reason) => warn_once(format!(
-                "punktfunk: {}={raw:?}: {reason} — ignoring it",
+                "rubyfunk: {}={raw:?}: {reason} — ignoring it",
                 s.env
             )),
         }
@@ -367,7 +367,7 @@ fn from_env(
             },
         };
         warn_once(format!(
-            "punktfunk: {} is an old name — set {} instead",
+            "rubyfunk: {} is an old name — set {} instead",
             alias.name, s.env
         ));
         return Some((alias.name, v));
@@ -408,7 +408,7 @@ mod tests {
     #[test]
     fn flag_beats_env_beats_store_beats_default() {
         let file = obj(json!({"gamestream": true, "max_fps": 60, "ten_bit": false}));
-        let env = env_of(&[("PUNKTFUNK_MAX_FPS", "30"), ("PUNKTFUNK_GAMESTREAM", "0")]);
+        let env = env_of(&[("RUBYFUNK_MAX_FPS", "30"), ("RUBYFUNK_GAMESTREAM", "0")]);
         let pins = [("gamestream", "--gamestream", Value::Bool(true))];
         let r = resolve(&env, &file, &pins);
 
@@ -433,22 +433,19 @@ mod tests {
 
     #[test]
     fn aliases_select_values_and_report_their_name() {
-        let r = resolve(&env_of(&[("PUNKTFUNK_HOST_AUDIO", "")]), &Map::new(), &[]);
+        let r = resolve(&env_of(&[("RUBYFUNK_HOST_AUDIO", "")]), &Map::new(), &[]);
         let m = row(&r, "audio_output_mode");
         assert_eq!(m.value, json!("host_and_client"));
-        assert_eq!(m.origin, Some("PUNKTFUNK_HOST_AUDIO"));
+        assert_eq!(m.origin, Some("RUBYFUNK_HOST_AUDIO"));
         // KEEP_DEFAULT is checked first; the real name beats both.
-        let both = env_of(&[
-            ("PUNKTFUNK_HOST_AUDIO", "1"),
-            ("PUNKTFUNK_KEEP_DEFAULT", "1"),
-        ]);
+        let both = env_of(&[("RUBYFUNK_HOST_AUDIO", "1"), ("RUBYFUNK_KEEP_DEFAULT", "1")]);
         assert_eq!(
             row(&resolve(&both, &Map::new(), &[]), "audio_output_mode").value,
             json!("follow_default")
         );
         let named = env_of(&[
-            ("PUNKTFUNK_HOST_AUDIO", "1"),
-            ("PUNKTFUNK_AUDIO_OUTPUT_MODE", "client"),
+            ("RUBYFUNK_HOST_AUDIO", "1"),
+            ("RUBYFUNK_AUDIO_OUTPUT_MODE", "client"),
         ]);
         assert_eq!(
             row(&resolve(&named, &Map::new(), &[]), "audio_output_mode").value,
@@ -460,8 +457,8 @@ mod tests {
     fn junk_env_and_store_values_fall_through() {
         let file = obj(json!({"max_fps": "sixty", "clipboard": "text"}));
         let env = env_of(&[
-            ("PUNKTFUNK_CLIPBOARD", "sometimes"),
-            ("PUNKTFUNK_GAMESTREAM", " "),
+            ("RUBYFUNK_CLIPBOARD", "sometimes"),
+            ("RUBYFUNK_GAMESTREAM", " "),
         ]);
         let r = resolve(&env, &file, &[]);
         assert_eq!(row(&r, "max_fps").source, Source::Default);
@@ -529,32 +526,32 @@ mod tests {
             "audio_voice_apps": ["discord", "mumble"],
         }));
         let rows = resolve(&env_of(&[]), &file, &[]);
-        assert_eq!(knob_in(&rows, "PUNKTFUNK_MAX_FPS").as_deref(), Some("60"));
-        assert_eq!(knob_in(&rows, "PUNKTFUNK_10BIT").as_deref(), Some("0"));
+        assert_eq!(knob_in(&rows, "RUBYFUNK_MAX_FPS").as_deref(), Some("60"));
+        assert_eq!(knob_in(&rows, "RUBYFUNK_10BIT").as_deref(), Some("0"));
         assert_eq!(
-            knob_in(&rows, "PUNKTFUNK_GAMESTREAM"),
+            knob_in(&rows, "RUBYFUNK_GAMESTREAM"),
             None,
             "a stored default is still the reader's default"
         );
         assert_eq!(
-            knob_in(&rows, "PUNKTFUNK_AUDIO_VOICE_APPS").as_deref(),
+            knob_in(&rows, "RUBYFUNK_AUDIO_VOICE_APPS").as_deref(),
             Some("discord,mumble")
         );
         assert_eq!(
-            knob_in(&rows, "PUNKTFUNK_444"),
+            knob_in(&rows, "RUBYFUNK_444"),
             None,
             "at its default the reader decides"
         );
-        assert_eq!(knob_in(&rows, "PUNKTFUNK_NOT_A_KNOB"), None);
+        assert_eq!(knob_in(&rows, "RUBYFUNK_NOT_A_KNOB"), None);
     }
 
     #[test]
     fn an_env_enum_reads_in_the_spelling_the_console_shows() {
         let knob = |raw: &str| {
-            let pairs = [("PUNKTFUNK_GAMESTREAM_ENCRYPT", raw)];
+            let pairs = [("RUBYFUNK_GAMESTREAM_ENCRYPT", raw)];
             knob_in(
                 &resolve(&env_of(&pairs), &Map::new(), &[]),
-                "PUNKTFUNK_GAMESTREAM_ENCRYPT",
+                "RUBYFUNK_GAMESTREAM_ENCRYPT",
             )
         };
         assert_eq!(knob("video_only").as_deref(), Some("video"));
@@ -566,31 +563,31 @@ mod tests {
     fn typed_rows_read_the_value_the_console_shows() {
         let file = obj(json!({"instant_replay_pause": "on", "pen": false}));
         let env = env_of(&[
-            ("PUNKTFUNK_STEAM_GADGET", "auto"),
-            ("PUNKTFUNK_SESSION_WATCH", "TRUE"),
-            ("PUNKTFUNK_PAD_AUDIO", "no"),
-            ("PUNKTFUNK_UPDATE_CHECK", " off "),
-            ("PUNKTFUNK_DUALSENSE_USBIP", "Yes"),
+            ("RUBYFUNK_STEAM_GADGET", "auto"),
+            ("RUBYFUNK_SESSION_WATCH", "TRUE"),
+            ("RUBYFUNK_PAD_AUDIO", "no"),
+            ("RUBYFUNK_UPDATE_CHECK", " off "),
+            ("RUBYFUNK_DUALSENSE_USBIP", "Yes"),
         ]);
         let rows = resolve(&env, &file, &[]);
         let row_tri = |k: &str| row_tri_in(&rows, k);
         let row_bool = |k: &str| row_bool_in(&rows, k);
-        assert_eq!(row_tri("PUNKTFUNK_INSTANT_REPLAY_PAUSE"), Some(true));
+        assert_eq!(row_tri("RUBYFUNK_INSTANT_REPLAY_PAUSE"), Some(true));
         assert_eq!(
-            row_tri("PUNKTFUNK_STEAM_GADGET"),
+            row_tri("RUBYFUNK_STEAM_GADGET"),
             None,
             "auto defers to the host"
         );
-        assert_eq!(row_tri("PUNKTFUNK_SESSION_WATCH"), Some(true));
-        assert_eq!(row_tri("PUNKTFUNK_GAMESCOPE_BIND"), None);
-        assert!(!row_bool("PUNKTFUNK_PEN") && !row_bool("PUNKTFUNK_PAD_AUDIO"));
-        assert!(!row_bool("PUNKTFUNK_UPDATE_CHECK"));
-        assert!(row_bool("PUNKTFUNK_DUALSENSE_USBIP"));
-        assert!(row_bool("PUNKTFUNK_MDNS"), "a default is the row's own");
+        assert_eq!(row_tri("RUBYFUNK_SESSION_WATCH"), Some(true));
+        assert_eq!(row_tri("RUBYFUNK_GAMESCOPE_BIND"), None);
+        assert!(!row_bool("RUBYFUNK_PEN") && !row_bool("RUBYFUNK_PAD_AUDIO"));
+        assert!(!row_bool("RUBYFUNK_UPDATE_CHECK"));
+        assert!(row_bool("RUBYFUNK_DUALSENSE_USBIP"));
+        assert!(row_bool("RUBYFUNK_MDNS"), "a default is the row's own");
         let cfg = build(
             &env_of(&[
-                ("PUNKTFUNK_GAMESCOPE_VRR", "false"),
-                ("PUNKTFUNK_AUDIO_REDUNDANCY", "auto"),
+                ("RUBYFUNK_GAMESCOPE_VRR", "false"),
+                ("RUBYFUNK_AUDIO_REDUNDANCY", "auto"),
             ]),
             &Map::new(),
             &[],
@@ -620,7 +617,7 @@ mod tests {
                 continue;
             }
             let text = std::fs::read_to_string(&p).unwrap();
-            for (i, _) in text.match_indices("\"PUNKTFUNK_") {
+            for (i, _) in text.match_indices("\"RUBYFUNK_") {
                 let name = text[i + 1..].split('"').next().unwrap();
                 let call = text[..i].trim_end();
                 let row = SETTINGS.iter().find(|s| s.env == name);
@@ -668,7 +665,7 @@ mod tests {
             "audio_voice_apps": ["Discord", "firefox"],
             "audio_voice_chat": "host",
         }));
-        let s = build(&env_of(&[("PUNKTFUNK_MAX_FPS", "500")]), &file, &[]);
+        let s = build(&env_of(&[("RUBYFUNK_MAX_FPS", "500")]), &file, &[]);
         let c = &s.config;
         assert_eq!(c.clipboard, crate::ClipboardPolicy::Text);
         assert_eq!(c.max_fps, Some(240));
@@ -692,7 +689,7 @@ mod tests {
         assert_eq!(off.config.vdisplay_hz_mult, 1, "the console turns it off");
         for (raw, want) in [("0", 0), ("9", 4)] {
             let s = build(
-                &env_of(&[("PUNKTFUNK_VDISPLAY_HZ_MULT", raw)]),
+                &env_of(&[("RUBYFUNK_VDISPLAY_HZ_MULT", raw)]),
                 &Map::new(),
                 &[],
             );

@@ -4,7 +4,7 @@
 //! network or disk rides a [`ConsoleCmd`] — the overlay never blocks. A result that answers
 //! a command carries that command's [`RequestKey`].
 
-use punktfunk_core::quic::v2::msg::ProfileUnlock;
+use rubyfunk_core::quic::v2::msg::ProfileUnlock;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, VecDeque};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -275,7 +275,7 @@ pub struct CleanRound {
     pub jitter_us: u32,
 }
 
-/// One finding of the network check, by id ([`punktfunk_core::client::health::FindingId`]
+/// One finding of the network check, by id ([`rubyfunk_core::client::health::FindingId`]
 /// as a byte); the words are [`crate::shell`]'s.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct FindingRow {

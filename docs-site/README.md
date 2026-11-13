@@ -1,11 +1,11 @@
-# punktfunk-docs
+# rubyfunk-docs
 
-The Punktfunk documentation site: [Fumadocs](https://fumadocs.dev) on
+The RubyFunk documentation site: [Fumadocs](https://fumadocs.dev) on
 [TanStack Start](https://tanstack.com/start) (Vite + Nitro/bun preset).
 
 Content lives in [`content/docs/`](content/docs) as `.md`/`.mdx`. This site is the source of truth
 for user-facing guides and the developer guide; design rationale lives in the internal
-punktfunk-planning repo, and READMEs and the marketing site link here instead of restating
+rubyfunk-planning repo, and READMEs and the marketing site link here instead of restating
 anything — see "Where facts live" in [CONTRIBUTING.md](../CONTRIBUTING.md). How to write a page:
 [docs/writing.md §4c](../docs/writing.md#4c-docs-pages).
 
@@ -24,7 +24,7 @@ sidebar, and the landing page). It reads [`public/openapi.json`](public/openapi.
 
 ```sh
 # from the repo root — regenerate the spec, then copy the snapshot in:
-cargo run -p punktfunk-host -- openapi > api/openapi.json
+cargo run -p rubyfunk-host -- openapi > api/openapi.json
 cp api/openapi.json docs-site/public/openapi.json
 ```
 

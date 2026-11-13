@@ -60,8 +60,8 @@ pub fn note(mut line: String) {
 /// correlates with the host log beside it. Shared by every feeder (`ring_layer`,
 /// Android logcat tee).
 pub fn wallclock() -> String {
-    let ms = punktfunk_core::quic::wall_clock_ns() / 1_000_000;
-    punktfunk_core::time::utc_rfc3339(ms, true)
+    let ms = rubyfunk_core::quic::wall_clock_ns() / 1_000_000;
+    rubyfunk_core::time::utc_rfc3339(ms, true)
 }
 
 /// Oldest-first text bundle. `header` is the shell identity line; an eviction
@@ -123,8 +123,8 @@ pub fn send_bundle(
     fp_hex: &str,
 ) -> Result<String, String> {
     // The package version where the build stamped one (every packager sets
-    // PUNKTFUNK_BUILD_VERSION), else the crate's: a bundle names the build it came from.
-    let version = option_env!("PUNKTFUNK_BUILD_VERSION")
+    // RUBYFUNK_BUILD_VERSION), else the crate's: a bundle names the build it came from.
+    let version = option_env!("RUBYFUNK_BUILD_VERSION")
         .filter(|v| !v.trim().is_empty())
         .unwrap_or(env!("CARGO_PKG_VERSION"));
     let header = format!(
@@ -279,8 +279,8 @@ mod tests {
         for i in 0..(MAX_LINES + 10) {
             note(format!("line {i}"));
         }
-        let text = render("punktfunk-client test");
-        assert!(text.starts_with("punktfunk-client test\n"));
+        let text = render("rubyfunk-client test");
+        assert!(text.starts_with("rubyfunk-client test\n"));
         assert!(text.contains("older lines evicted"));
         assert!(
             !text.contains("\nline 0\n"),

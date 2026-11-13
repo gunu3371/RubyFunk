@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""A domain module of punktfunk-host never names a module above it.
+"""A domain module of rubyfunk-host never names a module above it.
 
 `mgmt` is the HTTP layer: it calls `game`, `library` and `plugin_host`, and none of them calls it.
 `game` sits above the other two the same way, and `library` above `plugin_host`: the CLI and
@@ -14,7 +14,7 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-SRC = os.path.join(ROOT, "crates", "host", "punktfunk-host", "src")
+SRC = os.path.join(ROOT, "crates", "host", "rubyfunk-host", "src")
 
 # A module on the left names none of the modules on its row.
 DENY = {

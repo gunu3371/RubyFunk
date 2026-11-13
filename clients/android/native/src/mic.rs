@@ -19,8 +19,8 @@ use ndk::audio::{
     AudioCallbackResult, AudioDirection, AudioFormat, AudioInputPreset, AudioPerformanceMode,
     AudioSharingMode, AudioStream, AudioStreamBuilder, SessionId,
 };
-use punktfunk_core::audio::mic::MicEncoder;
-use punktfunk_core::client::NativeClient;
+use rubyfunk_core::audio::mic::MicEncoder;
+use rubyfunk_core::client::NativeClient;
 use std::ffi::c_void;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::mpsc::{sync_channel, Receiver, RecvTimeoutError, SyncSender, TrySendError};

@@ -1,6 +1,6 @@
 //! AAudio and `AudioTrack` arithmetic, split out of the device-only [`crate::audio`] so its tests
 //! run on the host build. The session's resolved format is core's
-//! [`PlaneFormat`](punktfunk_core::audio::plane::PlaneFormat).
+//! [`PlaneFormat`](rubyfunk_core::audio::plane::PlaneFormat).
 
 /// Interleaved samples in one AAudio callback, or `None` for a length no buffer can hold.
 pub(crate) fn callback_sample_count(num_frames: i32, channels: usize) -> Option<usize> {
@@ -12,7 +12,7 @@ pub(crate) fn callback_sample_count(num_frames: i32, channels: usize) -> Option<
 
 /// `AudioFormat.CHANNEL_OUT_*` for the wire layout: the native speaker mask shifted left by two.
 pub(crate) fn java_channel_mask(channels: u8) -> i32 {
-    (punktfunk_core::audio::wasapi_channel_mask(channels) << 2) as i32
+    (rubyfunk_core::audio::wasapi_channel_mask(channels) << 2) as i32
 }
 
 #[cfg(test)]

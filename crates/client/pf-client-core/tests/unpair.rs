@@ -26,9 +26,9 @@ fn unpair_in(home: &Path) {
     let store = home.join("config");
     let fp = "ab".repeat(32);
     let catalog = home.join(if cfg!(windows) {
-        "punktfunk/cache/library"
+        "rubyfunk/cache/library"
     } else {
-        "punktfunk/library"
+        "rubyfunk/library"
     });
     std::fs::create_dir_all(&store).expect("scratch config dir");
     std::fs::create_dir_all(&catalog).expect("scratch cache dir");

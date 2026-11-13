@@ -1,8 +1,8 @@
-# punktfunk client — Flatpak (Steam Deck / SteamOS, and any flatpak distro)
+# rubyfunk client — Flatpak (Steam Deck / SteamOS, and any flatpak distro)
 
-The native Linux **client** — the shell (crate `punktfunk-client-linux`, binary
-`punktfunk-client`) plus the Vulkan session binary it execs for streaming (crate
-`punktfunk-client-session`, binary `punktfunk-session`) — is
+The native Linux **client** — the shell (crate `rubyfunk-client-linux`, binary
+`rubyfunk-client`) plus the Vulkan session binary it execs for streaming (crate
+`rubyfunk-client-session`, binary `rubyfunk-session`) — is
 published two ways by CI (`.gitea/workflows/flatpak.yml`), on every push to `main` (a rolling
 `<next-minor>-ciN.g<sha>` build, base derived from the latest stable tag by
 `scripts/ci/pf-version.sh`) and on `v*` tags (a clean `X.Y.Z`):
@@ -12,7 +12,7 @@ published two ways by CI (`.gitea/workflows/flatpak.yml`), on every push to `mai
    `flatpak update`**. Shared unom-wide repo (remote name `unom`), reusable by other unom apps
    under the same signing key. See "Install (recommended)" below.
 2. **Single-file `.flatpak` bundle** in **Gitea's generic package registry** (`unom` org) — the
-   no-remote fallback the **Decky plugin** consumes (stable `latest/punktfunk-client.flatpak`
+   no-remote fallback the **Decky plugin** consumes (stable `latest/rubyfunk-client.flatpak`
    URL) and the offline/manual path. On tags it's also attached to the Gitea release.
 
 > The **host** is NOT a flatpak (it needs unsandboxed `/dev/uinput` + zero-copy NVENC — see
@@ -21,15 +21,15 @@ published two ways by CI (`.gitea/workflows/flatpak.yml`), on every push to `mai
 ## Why flatpak for the Steam Deck
 
 SteamOS `/usr` is read-only and image-based, and the system is **missing `libadwaita` and
-`libSDL3`** — so a bare `punktfunk-client` binary dropped into `~/.local/bin` won't run. Flatpak
+`libSDL3`** — so a bare `rubyfunk-client` binary dropped into `~/.local/bin` won't run. Flatpak
 is the Deck's native, update-survivable app path (the user already runs Moonlight and chiaki-ng
 as flatpaks), and the bundle carries libadwaita (from `org.gnome.Platform//50`) + a bundled SDL3.
 It carries no FFmpeg: since M10 the client decodes on the user's own GPU drivers (Vulkan Video,
 VAAPI) with openh264 + rav1d as the CPU floor, so the runtime's `codecs-extra` extension — and the
 encumbered-codec question it answered — no longer enter into it.
 
-App id: **`io.unom.punktfunk`**, the same string as the Apple bundle id and the Android
-application id. The old `io.unom.Punktfunk` refs stay published, end-of-life with a rebase onto
+App id: **`io.github.gunu3371.rubyfunk`**, the same string as the Apple bundle id and the Android
+application id. The old `io.github.gunu3371.rubyfunk` refs stay published, end-of-life with a rebase onto
 it, so `flatpak update` moves an existing install.
 
 ## Install
@@ -53,12 +53,12 @@ user-scope, no root):
 flatpak install --user -y flathub org.flatpak.Builder
 
 # build-flatpak.sh auto-detects org.flatpak.Builder, generates cargo-sources.json (or reuses an
-# existing one — see below), builds, and exports dist/punktfunk-client-<version>.flatpak:
+# existing one — see below), builds, and exports dist/rubyfunk-client-<version>.flatpak:
 bash packaging/flatpak/build-flatpak.sh
 
 # Upload to the generic registry (PAT with write:package):
 curl -fsS --user "enricobuehler:$REGISTRY_TOKEN" \
-  --upload-file dist/punktfunk-client-*.flatpak \
+  --upload-file dist/rubyfunk-client-*.flatpak \
   "https://git.unom.io/api/packages/unom/generic/punktfunk-client-flatpak/0.0.1-manual/punktfunk-client.flatpak"
 ```
 
@@ -91,7 +91,7 @@ are now expressed properly rather than hardcoded:
 
 ```sh
 ARCH=aarch64 bash packaging/flatpak/build-flatpak.sh
-# -> dist/punktfunk-client-<version>-aarch64.flatpak
+# -> dist/rubyfunk-client-<version>-aarch64.flatpak
 ```
 
 `ARCH` defaults to this machine's, and the bundle name now carries the architecture so an x86_64
@@ -100,9 +100,9 @@ the build in a sandbox for the target arch, so building aarch64 anywhere but an 
 needs qemu binfmt and is very slow.
 
 CI builds aarch64 as a second leg of `flatpak.yml`, on a runner labelled `linux-arm64`, in the
-image `punktfunk-flatpak-ci-arm64` (a `docker.yml` `builders` row that runs on that runner). Both legs publish
+image `rubyfunk-flatpak-ci-arm64` (a `docker.yml` `builders` row that runs on that runner). Both legs publish
 into the same OSTree repo, so the `.flatpakref` installs the right arch on its own. The bundle is
-`punktfunk-client-<version>-aarch64.flatpak`, and the alias is `<channel>/punktfunk-client-aarch64.flatpak`.
+`rubyfunk-client-<version>-aarch64.flatpak`, and the alias is `<channel>/rubyfunk-client-aarch64.flatpak`.
 The leg is `continue-on-error` and never holds back x86_64.
 
 The runner is a VM on the macOS CI Mac mini (unom/infra `runners/home-runner-arm-1`). It sits on
@@ -110,7 +110,7 @@ the LAN, so it pulls the builder from the LAN registry and uses ci-core's cache 
 
 ## Manifest
 
-[`io.unom.punktfunk.yml`](io.unom.punktfunk.yml). Runtime `org.gnome.Platform//50`
+[`io.github.gunu3371.rubyfunk.yml`](io.github.gunu3371.rubyfunk.yml). Runtime `org.gnome.Platform//50`
 (GTK 4.20 + libadwaita 1.8 ≥ the crate floors of v4_16 / v1_5), built on freedesktop-sdk 25.08,
 with two build-time SDK extensions: `org.freedesktop.Sdk.Extension.rust-stable` (→ //25.08,
 **rustc 1.96** — the GTK4 dep chain, e.g. pango-sys 0.22, needs ≥ 1.92, which the EOL GNOME-48 /
@@ -122,7 +122,7 @@ rung (see the manifest header). A bundled
 **SDL3 3.4.18** module (pinned to match `sdl3-sys 0.7.2+SDL-3.4.18`), and finish-args for Wayland +
 `--device=all` (GPU/VAAPI render node + evdev + the hidraw char-devices SDL3 needs for DualSense)
 + the native `pipewire-0` socket (playback + mic) + `--share=network`. Alongside it:
-`io.unom.punktfunk.desktop`, `io.unom.punktfunk.metainfo.xml`, `io.unom.punktfunk.svg` (all
+`io.github.gunu3371.rubyfunk.desktop`, `io.github.gunu3371.rubyfunk.metainfo.xml`, `io.github.gunu3371.rubyfunk.svg` (all
 installed by the manifest). No `vulkan-headers` module: it existed for `pf-ffvk`'s bindgen over
 FFmpeg's `hwcontext_vulkan.h`, and ash generates its own bindings and dlopens the loader.
 `cargo-sources.json` (the offline crate cache) is a pure function of
@@ -149,7 +149,7 @@ from `Cargo.lock` and self-corrects; this tarball is the only hand-maintained pi
 
 The OSTree repo flatpak-builder produces is GPG-signed in CI and rsynced to unom-1, where a tiny
 static **Caddy container** (`server/compose.production.yml` + `server/Caddyfile`, port **3230**)
-serves the `./site` tree (`repo/` + `unom.flatpakrepo` + `io.unom.punktfunk.flatpakref` +
+serves the `./site` tree (`repo/` + `unom.flatpakrepo` + `io.github.gunu3371.rubyfunk.flatpakref` +
 `index.html`). The edge Caddy on home-reverse-proxy-1 fronts it at `https://flatpak.unom.io`.
 The CI deploy step **no-ops until the secret + infra exist**, so it won't redden builds mid-setup.
 
@@ -182,7 +182,7 @@ re-add the remote (the `GPGKey` changed), so rotate rarely.
   produces the repo, so the marginal cost is GPG signing + an rsync + a 10-line static container.
 - **Generic registry bundle (kept as fallback):** one curl to publish, one `flatpak install
   --bundle` to consume; mirrors the deb/rpm curl-upload pattern. No auto-update — this is what the
-  **Decky plugin** pulls (stable `latest/punktfunk-client.flatpak`), plus the offline/manual path.
+  **Decky plugin** pulls (stable `latest/rubyfunk-client.flatpak`), plus the offline/manual path.
 - **Release attachment:** also done on tags, good for a human-facing download page.
 - **Flathub (blocked):** its [Generative AI policy](https://docs.flathub.org/docs/for-app-authors/requirements)
   bans AI-assisted manifests and AI-opened submissions, so a person writes both, not a copy of this

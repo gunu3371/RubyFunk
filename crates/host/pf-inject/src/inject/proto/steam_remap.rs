@@ -1,13 +1,13 @@
 //! Steam Controller / Deck rich-input fallback when the host backend is not
 //! virtual `hid-steam` (DualSense / DualShock 4 / Xbox), plus Deck motion rescale.
 //!
-//! `PUNKTFUNK_STEAM_REMAP`: `key=value`, `,`/`;`-separated (`paddles=stickclicks`).
+//! `RUBYFUNK_STEAM_REMAP`: `key=value`, `,`/`;`-separated (`paddles=stickclicks`).
 //! Pin paddles here; motion units in `crates/host/pf-inject/tests/motion_contract.rs`.
 //!
 //! uinput Xbox already exposes the grips as Elite paddles (`BTN_TRIGGER_HAPPY5-8`);
 //! only DualSense / DS4 (no native back-button slot) fold them.
 
-use punktfunk_core::input::gamepad as gs;
+use rubyfunk_core::input::gamepad as gs;
 
 /// Target for the four Steam back grips when the backend has no native HID slot.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
@@ -20,7 +20,7 @@ pub enum PaddleFallback {
     Shoulders,
 }
 
-/// Parsed from `PUNKTFUNK_STEAM_REMAP`.
+/// Parsed from `RUBYFUNK_STEAM_REMAP`.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct RemapConfig {
     pub paddles: PaddleFallback,
@@ -28,7 +28,7 @@ pub struct RemapConfig {
 
 impl RemapConfig {
     pub fn from_env() -> RemapConfig {
-        std::env::var("PUNKTFUNK_STEAM_REMAP")
+        std::env::var("RUBYFUNK_STEAM_REMAP")
             .map(|s| RemapConfig::parse(&s))
             .unwrap_or_default()
     }

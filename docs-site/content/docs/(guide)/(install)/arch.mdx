@@ -1,6 +1,6 @@
 ---
 title: Arch Linux
-description: Install the Punktfunk host on Arch, CachyOS or EndeavourOS from the signed pacman repo, in four steps.
+description: Install the RubyFunk host on Arch, CachyOS or EndeavourOS from the signed pacman repo, in four steps.
 ---
 
 Install the host on **Arch Linux** and Arch-based distros such as CachyOS and EndeavourOS. Omarchy
@@ -25,10 +25,10 @@ breaks them.
 
 <Install platform="arch" />
 
-`sudo pacman -Syu` updates every Punktfunk package from then on. Restart the console and the host
-afterwards with `systemctl --user restart punktfunk-web punktfunk-host`, or let the
+`sudo pacman -Syu` updates every RubyFunk package from then on. Restart the console and the host
+afterwards with `systemctl --user restart rubyfunk-web rubyfunk-host`, or let the
 [console update it](/docs/updating).
-The host also installs `punktfunk-gamescope` (HDR on gamescope). The repo carries `punktfunk-client`
+The host also installs `rubyfunk-gamescope` (HDR on gamescope). The repo carries `rubyfunk-client`
 too.
 
 ## 3. Let it use your controllers
@@ -37,7 +37,7 @@ Join the groups, then **log out and back in**:
 
 ```sh
 sudo usermod -aG input "$USER"       # virtual gamepads
-sudo usermod -aG punktfunk "$USER"   # virtual Steam Deck controller
+sudo usermod -aG rubyfunk "$USER"   # virtual Steam Deck controller
 ```
 
 ## 4. Start it
@@ -45,7 +45,7 @@ sudo usermod -aG punktfunk "$USER"   # virtual Steam Deck controller
 From a terminal inside your desktop session. On Arch the plugin runner isn't started for you:
 
 ```sh
-systemctl --user enable --now punktfunk-host punktfunk-web punktfunk-scripting
+systemctl --user enable --now rubyfunk-host rubyfunk-web rubyfunk-scripting
 ```
 
 Stock Arch has no firewall. **CachyOS** enables `ufw` and **EndeavourOS** enables firewalld; open
@@ -53,10 +53,10 @@ the host, and the console for other devices:
 
 ```sh
 # ufw (CachyOS)
-sudo ufw allow punktfunk-native && sudo ufw allow punktfunk-web
+sudo ufw allow rubyfunk-native && sudo ufw allow rubyfunk-web
 # firewalld (EndeavourOS)
 sudo firewall-cmd --reload
-sudo firewall-cmd --permanent --add-service=punktfunk-native --add-service=punktfunk-web
+sudo firewall-cmd --permanent --add-service=rubyfunk-native --add-service=rubyfunk-web
 sudo firewall-cmd --reload
 ```
 
@@ -66,7 +66,7 @@ a device.
 ## More
 
 - **pacman says `database already registered`?** The repo was added twice:
-  [the fix](/docs/troubleshooting-startup#pacman-error-could-not-register-punktfunk-database-database-already-registered).
+  [the fix](/docs/troubleshooting-startup#pacman-error-could-not-register-rubyfunk-database-database-already-registered).
 - Your desktop: [KDE](/docs/kde), [GNOME](/docs/gnome), [gamescope](/docs/gamescope),
   [Hyprland](/docs/hyprland), [niri](/docs/niri), [Sway](/docs/sway), [Umbriel](/docs/umbriel).
 - Stream with nobody logged in: [Running as a service](/docs/running-as-a-service).

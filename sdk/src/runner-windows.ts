@@ -1,5 +1,5 @@
 // Launching a plugin out of process on Windows: a process of its own, or an AppContainer through
-// `punktfunk-host plugins spawn`. Both reach the host over the pipe it serves for the plugin's id.
+// `rubyfunk-host plugins spawn`. Both reach the host over the pipe it serves for the plugin's id.
 import { Effect } from "effect";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -25,7 +25,7 @@ export const runInOwnProcess = (
 			unitArgv(unit),
 			{
 				...process.env,
-				...(options.configDir ? { PUNKTFUNK_CONFIG_DIR: options.configDir } : {}),
+				...(options.configDir ? { RUBYFUNK_CONFIG_DIR: options.configDir } : {}),
 				...pipeEnv(unit),
 			},
 			"plugin process",
@@ -33,7 +33,7 @@ export const runInOwnProcess = (
 	);
 
 /**
- * Run one plugin in its own AppContainer: `punktfunk-host plugins spawn` creates the profile for
+ * Run one plugin in its own AppContainer: `rubyfunk-host plugins spawn` creates the profile for
  * this account and starts this runner's `--run-unit` child inside it, relaying its exit code
  * and ending the child with itself. The child holds no token: its own pipe is its credential.
  */
@@ -53,10 +53,10 @@ export const runInContainer = (
 			["plugins", "spawn", "--package", id, "--", process.execPath, ...unitArgv(unit)],
 			{
 				...process.env,
-				...(options.configDir ? { PUNKTFUNK_CONFIG_DIR: options.configDir } : {}),
+				...(options.configDir ? { RUBYFUNK_CONFIG_DIR: options.configDir } : {}),
 				...pipe,
 				// The container can bind nothing the console dials: its page goes over the pipe.
-				...(pipe.PUNKTFUNK_MGMT_UNIX ? { PUNKTFUNK_UI_CHANNEL: id } : {}),
+				...(pipe.RUBYFUNK_MGMT_UNIX ? { RUBYFUNK_UI_CHANNEL: id } : {}),
 			},
 			"sandboxed plugin",
 		);
@@ -69,7 +69,7 @@ export const runInContainer = (
 const pipeEnv = (unit: Unit): Record<string, string> => {
 	const id = unit.manifest?.id;
 	if (process.platform !== "win32" || !id) return {};
-	const pipe = `\\\\.\\pipe\\punktfunk-plugin-${id}`;
+	const pipe = `\\\\.\\pipe\\rubyfunk-plugin-${id}`;
 	if (!fs.existsSync(pipe)) return {};
-	return { PUNKTFUNK_MGMT_URL: "http://punktfunk.host", PUNKTFUNK_MGMT_UNIX: pipe };
+	return { RUBYFUNK_MGMT_URL: "http://punktfunk.host", RUBYFUNK_MGMT_UNIX: pipe };
 };

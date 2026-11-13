@@ -114,7 +114,7 @@ pub(crate) fn stamp_header(view: SectionView<'_>, heap_bytes: u32, wire_seq_base
         .store(au::AU_MAGIC, Ordering::Release);
 }
 
-/// The access-unit dump while `PUNKTFUNK_IDD_DIAG` is on: one file per open.
+/// The access-unit dump while `RUBYFUNK_IDD_DIAG` is on: one file per open.
 #[cfg(target_os = "windows")]
 fn au_dump(target_id: u32) -> Option<AuDump> {
     crate::knobs::Knobs::process()

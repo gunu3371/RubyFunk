@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# punktfunk hook: hold Omarchy's idle timer off for the length of a stream — and put the user's
+# rubyfunk hook: hold Omarchy's idle timer off for the length of a stream — and put the user's
 # own setting back afterwards (design D9).
 #
 #   idle-guard on    # a stream started: remember the current state, then stay awake
@@ -29,7 +29,7 @@
 
 set -euo pipefail
 
-STATE="${XDG_RUNTIME_DIR:-/tmp}/punktfunk-omarchy-idle-prior"
+STATE="${XDG_RUNTIME_DIR:-/tmp}/rubyfunk-omarchy-idle-prior"
 
 command -v omarchy-toggle-idle >/dev/null || exit 0
 

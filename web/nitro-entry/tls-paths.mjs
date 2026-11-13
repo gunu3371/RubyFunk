@@ -7,12 +7,12 @@
 //                                     localhost, 127.0.0.1, ::1). This is what the native QUIC
 //                                     plane and the management API present, and what native
 //                                     clients pin.
-//   cert.pem / key.pem                the legacy RSA GameStream identity: CN=punktfunk and NO SAN
+//   cert.pem / key.pem                the legacy RSA GameStream identity: CN=rubyfunk and NO SAN
 //                                     at all (gamestream::cert::generate passes rcgen an empty SAN
 //                                     list), kept byte-stable because Moonlight pins it and the
 //                                     pairing hashes bind its X.509 signature bytes.
 //
-// Every launcher names the LEGACY pair — scripts/punktfunk-web.service, the NixOS module, the
+// Every launcher names the LEGACY pair — scripts/rubyfunk-web.service, the NixOS module, the
 // Windows service supervisor, web-run.cmd, the Steam Deck installer — because they were written
 // before the split, and none of them CAN choose: systemd `Environment=` has no "this file, else
 // that one". Serving the legacy pair costs twice:
@@ -37,7 +37,7 @@ import { statSync } from "node:fs";
  * The directory prefix (separator included) of a path ending in `base`, or null if it does not.
  *
  * Deliberately NOT `node:path`: that resolves per-RUNTIME, so a POSIX build reads
- * `C:\ProgramData\punktfunk\cert.pem` as one long filename — and Windows, where the service
+ * `C:\ProgramData\rubyfunk\cert.pem` as one long filename — and Windows, where the service
  * supervisor hands us exactly that (windows/service.rs), is the platform CI can never exercise.
  * A suffix test gives the same answer everywhere. It also leaves the prefix VERBATIM, where
  * `join(dirname(p), …)` would normalise `/a/b/../cert.pem` to a different directory than the one
@@ -71,8 +71,8 @@ function usable(p) {
 }
 
 /**
- * @param {string | undefined} cert  PUNKTFUNK_UI_TLS_CERT, verbatim.
- * @param {string | undefined} key   PUNKTFUNK_UI_TLS_KEY, verbatim.
+ * @param {string | undefined} cert  RUBYFUNK_UI_TLS_CERT, verbatim.
+ * @param {string | undefined} key   RUBYFUNK_UI_TLS_KEY, verbatim.
  * @param {(p: string) => boolean} [exists]  injected by the test; defaults to a real stat.
  * @returns {{cert: string | undefined, key: string | undefined}}
  */

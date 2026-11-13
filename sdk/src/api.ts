@@ -3,7 +3,7 @@
 // OpenAPI document (`listPairedClients`, `stopSession`, `reconcileProviderEntries`, …). This is
 // the typed front door; `pf.request(method, path, body)` stays as the untyped escape hatch.
 //
-// It's a thin, zero-drift veneer over the generated client (`./gen/punktfunk.ts`, from
+// It's a thin, zero-drift veneer over the generated client (`./gen/rubyfunk.ts`, from
 // `@effect/openapi-generator`): the generated methods return Effects, so each is run to a Promise
 // here. The transport is the SAME CA-pinning fetch the rest of the SDK uses (config.ts), fed to
 // Effect's `HttpClient` via the overridable `FetchHttpClient.Fetch` reference — so the loopback
@@ -14,7 +14,7 @@ import * as HttpClient from "effect/http/HttpClient";
 import * as HttpClientRequest from "effect/http/HttpClientRequest";
 import type { HttpClientResponse } from "effect/http/HttpClientResponse";
 import type { Connection } from "./connection.js";
-import * as gen from "./gen/punktfunk.js";
+import * as gen from "./gen/rubyfunk.js";
 
 /**
  * Make a trailing argument that merely *accepts* `undefined` genuinely optional. The generated
@@ -54,14 +54,14 @@ type NonApiMethods = "httpClient" | "streamEvents" | "streamEventsSse";
  * error. The live-event SSE endpoint is intentionally absent — subscribe via `pf.events`.
  */
 export type HostApi = {
-	readonly [K in Exclude<keyof gen.Punktfunk, NonApiMethods>]: Promiseify<
-		gen.Punktfunk[K]
+	readonly [K in Exclude<keyof gen.RubyFunk, NonApiMethods>]: Promiseify<
+		gen.RubyFunk[K]
 	>;
 };
 
 /**
  * The `HttpClient` the generated client runs on: base URL, the credential, and the connection's
- * fetch. Platform-neutral — this is what `@punktfunk/host/core` hands a browser.
+ * fetch. Platform-neutral — this is what `@rubyfunk/host/core` hands a browser.
  *
  * The credential is attached effectfully because a device key may have to run an exchange to
  * produce one, and re-earned once on a 401 because such a token lapses. A static bearer cannot

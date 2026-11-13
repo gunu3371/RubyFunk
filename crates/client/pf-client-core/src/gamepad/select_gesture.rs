@@ -1,6 +1,6 @@
 //! Hold-Select→Guide and the Select chords: pure state over button transitions and a clock.
 
-use punktfunk_core::input::gamepad as wire;
+use rubyfunk_core::input::gamepad as wire;
 use std::time::{Duration, Instant};
 
 /// Hold Select alone this long and it is the host's Guide ([`SelectGesture`]). The physical

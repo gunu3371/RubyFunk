@@ -381,7 +381,7 @@ impl SimpleComponent for HostsPage {
                     if !hosts.is_empty() {
                         let (tx, rx) = async_channel::bounded(1);
                         std::thread::Builder::new()
-                            .name("punktfunk-probe".into())
+                            .name("rubyfunk-probe".into())
                             .spawn(move || {
                                 let results =
                                     crate::trust::probe_known(&hosts, crate::trust::PROBE_TIMEOUT);
@@ -750,7 +750,7 @@ impl HostsPage {
         }
     }
 
-    /// The host's self-emitted `punktfunk://` link and a launcher label for it. It carries the
+    /// The host's self-emitted `rubyfunk://` link and a launcher label for it. It carries the
     /// stable id AND host+fp, so it still resolves after a re-address or a reinstall.
     fn link(&self, host: &HostRef, preset: Option<&str>) -> Option<(String, String)> {
         let known = self.store.hosts();

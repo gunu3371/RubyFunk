@@ -17,7 +17,7 @@ use std::time::Duration;
 const BUDGET: Duration = Duration::from_secs(5);
 
 /// Name the probe asks niri to remove. Nothing ever creates it.
-const PROBE_NAME: &str = "punktfunk-probe";
+const PROBE_NAME: &str = "rubyfunk-probe";
 
 /// niri answered `Err`. The text is niri's own, for logs and for [`classify_probe`].
 #[derive(Debug)]
@@ -279,7 +279,7 @@ mod tests {
             Capability::NoVirtualOutputs
         );
         assert_eq!(
-            classify_probe("virtual output 'punktfunk-probe' not found"),
+            classify_probe("virtual output 'rubyfunk-probe' not found"),
             Capability::VirtualOutputs
         );
         assert!(matches!(

@@ -16,7 +16,7 @@
 //! of named rows; the shell samples, calls `step` and performs the answer. A transition is
 //! decided in its model, never inline in the shell.
 //! Knobs: only `knobs::read`, called once at `Shell::open` or by `probe_backend`, reads a
-//! `PUNKTFUNK_*` variable; everything else takes a `Knobs` field.
+//! `RUBYFUNK_*` variable; everything else takes a `Knobs` field.
 //! Vulkan: the contract below holds at every site; a site that needs more proves it there.
 
 // VULKAN CONTRACT. CREATE/ALLOCATE: this type owns the live device; CreateInfo

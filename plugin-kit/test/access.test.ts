@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
-import type { Punktfunk } from "@punktfunk/host";
+import type { RubyFunk } from "@rubyfunk/host";
 import { Duration, Effect, Layer, Schema } from "effect";
 import { requestAccess, unreachable } from "../src/access.js";
 import { HostRequestError } from "../src/errors.js";
@@ -9,7 +9,7 @@ import { HostClient, type HostClientService } from "../src/host-client.js";
 import { defineLibraryPlugin } from "../src/library/define.js";
 
 const hostLayer = (request: HostClientService["request"]) =>
-	Layer.succeed(HostClient)({ request, facade: {} as Punktfunk });
+	Layer.succeed(HostClient)({ request, facade: {} as RubyFunk });
 
 describe("folder access", () => {
 	test("requestAccess batches paths on the host route", async () => {
@@ -83,39 +83,39 @@ describe("folder access", () => {
 	});
 
 	test("missing counts only inside the sandbox", () => {
-		const missing = `/definitely-missing-punktfunk-${process.pid}`;
-		const previous = process.env.PUNKTFUNK_MGMT_UNIX;
+		const missing = `/definitely-missing-rubyfunk-${process.pid}`;
+		const previous = process.env.RUBYFUNK_MGMT_UNIX;
 		try {
-			delete process.env.PUNKTFUNK_MGMT_UNIX;
+			delete process.env.RUBYFUNK_MGMT_UNIX;
 			expect(unreachable([missing])).toEqual([]);
-			process.env.PUNKTFUNK_MGMT_UNIX = "/run/punktfunk/host.sock";
+			process.env.RUBYFUNK_MGMT_UNIX = "/run/rubyfunk/host.sock";
 			expect(unreachable([missing, missing])).toEqual([missing]);
 		} finally {
-			if (previous === undefined) delete process.env.PUNKTFUNK_MGMT_UNIX;
-			else process.env.PUNKTFUNK_MGMT_UNIX = previous;
+			if (previous === undefined) delete process.env.RUBYFUNK_MGMT_UNIX;
+			else process.env.RUBYFUNK_MGMT_UNIX = previous;
 		}
 	});
 
 	test("a folder asked for by its files keeps that through the check", () => {
-		const missing = `/definitely-missing-punktfunk-${process.pid}`;
-		const previous = process.env.PUNKTFUNK_MGMT_UNIX;
+		const missing = `/definitely-missing-rubyfunk-${process.pid}`;
+		const previous = process.env.RUBYFUNK_MGMT_UNIX;
 		try {
-			process.env.PUNKTFUNK_MGMT_UNIX = "/run/punktfunk/host.sock";
+			process.env.RUBYFUNK_MGMT_UNIX = "/run/rubyfunk/host.sock";
 			expect(unreachable([{ path: missing, files: true }, missing])).toEqual([
 				{ path: missing, files: true },
 			]);
 		} finally {
-			if (previous === undefined) delete process.env.PUNKTFUNK_MGMT_UNIX;
-			else process.env.PUNKTFUNK_MGMT_UNIX = previous;
+			if (previous === undefined) delete process.env.RUBYFUNK_MGMT_UNIX;
+			else process.env.RUBYFUNK_MGMT_UNIX = previous;
 		}
 	});
 
 	test("defineLibraryPlugin asks once for one unreachable set", async () => {
-		const previousConfig = process.env.PUNKTFUNK_CONFIG_DIR;
-		const previousSocket = process.env.PUNKTFUNK_MGMT_UNIX;
+		const previousConfig = process.env.RUBYFUNK_CONFIG_DIR;
+		const previousSocket = process.env.RUBYFUNK_MGMT_UNIX;
 		const config = `${import.meta.dir}/.access-${process.pid}`;
-		process.env.PUNKTFUNK_CONFIG_DIR = config;
-		process.env.PUNKTFUNK_MGMT_UNIX = "/run/punktfunk/host.sock";
+		process.env.RUBYFUNK_CONFIG_DIR = config;
+		process.env.RUBYFUNK_MGMT_UNIX = "/run/rubyfunk/host.sock";
 		const posts: unknown[] = [];
 		const plugin = defineLibraryPlugin({
 			name: "access-test",
@@ -139,10 +139,10 @@ describe("folder access", () => {
 					return [{ id: "access-test", category: "library" }];
 				return [];
 			},
-		} as unknown as Punktfunk;
+		} as unknown as RubyFunk;
 		let running: Promise<void> | undefined;
 		try {
-			running = (plugin.def.main as (pf: Punktfunk) => Promise<void>)(pf);
+			running = (plugin.def.main as (pf: RubyFunk) => Promise<void>)(pf);
 			const deadline = Date.now() + 5000;
 			while (posts.length === 0 && Date.now() < deadline)
 				await new Promise((resolve) => setTimeout(resolve, 10));
@@ -158,20 +158,20 @@ describe("folder access", () => {
 				process.emit("SIGTERM", "SIGTERM");
 				await running;
 			}
-			if (previousConfig === undefined) delete process.env.PUNKTFUNK_CONFIG_DIR;
-			else process.env.PUNKTFUNK_CONFIG_DIR = previousConfig;
-			if (previousSocket === undefined) delete process.env.PUNKTFUNK_MGMT_UNIX;
-			else process.env.PUNKTFUNK_MGMT_UNIX = previousSocket;
+			if (previousConfig === undefined) delete process.env.RUBYFUNK_CONFIG_DIR;
+			else process.env.RUBYFUNK_CONFIG_DIR = previousConfig;
+			if (previousSocket === undefined) delete process.env.RUBYFUNK_MGMT_UNIX;
+			else process.env.RUBYFUNK_MGMT_UNIX = previousSocket;
 			fs.rmSync(config, { recursive: true, force: true });
 		}
 	});
 
 	test("a refused request still lets the scan reach the library", async () => {
-		const previousConfig = process.env.PUNKTFUNK_CONFIG_DIR;
-		const previousSocket = process.env.PUNKTFUNK_MGMT_UNIX;
+		const previousConfig = process.env.RUBYFUNK_CONFIG_DIR;
+		const previousSocket = process.env.RUBYFUNK_MGMT_UNIX;
 		const config = `${import.meta.dir}/.access-refused-${process.pid}`;
-		process.env.PUNKTFUNK_CONFIG_DIR = config;
-		process.env.PUNKTFUNK_MGMT_UNIX = "/run/punktfunk/host.sock";
+		process.env.RUBYFUNK_CONFIG_DIR = config;
+		process.env.RUBYFUNK_MGMT_UNIX = "/run/rubyfunk/host.sock";
 		const reconciles: string[] = [];
 		const plugin = defineLibraryPlugin({
 			name: "refused-test",
@@ -196,10 +196,10 @@ describe("folder access", () => {
 					return [{ id: "refused-test", category: "library" }];
 				return [];
 			},
-		} as unknown as Punktfunk;
+		} as unknown as RubyFunk;
 		let running: Promise<void> | undefined;
 		try {
-			running = (plugin.def.main as (pf: Punktfunk) => Promise<void>)(pf);
+			running = (plugin.def.main as (pf: RubyFunk) => Promise<void>)(pf);
 			const deadline = Date.now() + 5000;
 			while (reconciles.length === 0 && Date.now() < deadline)
 				await new Promise((resolve) => setTimeout(resolve, 10));
@@ -209,10 +209,10 @@ describe("folder access", () => {
 				process.emit("SIGTERM", "SIGTERM");
 				await running;
 			}
-			if (previousConfig === undefined) delete process.env.PUNKTFUNK_CONFIG_DIR;
-			else process.env.PUNKTFUNK_CONFIG_DIR = previousConfig;
-			if (previousSocket === undefined) delete process.env.PUNKTFUNK_MGMT_UNIX;
-			else process.env.PUNKTFUNK_MGMT_UNIX = previousSocket;
+			if (previousConfig === undefined) delete process.env.RUBYFUNK_CONFIG_DIR;
+			else process.env.RUBYFUNK_CONFIG_DIR = previousConfig;
+			if (previousSocket === undefined) delete process.env.RUBYFUNK_MGMT_UNIX;
+			else process.env.RUBYFUNK_MGMT_UNIX = previousSocket;
 			fs.rmSync(config, { recursive: true, force: true });
 		}
 	});

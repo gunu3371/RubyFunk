@@ -1,6 +1,6 @@
-//! `pf_seat_audio.dll`: the audio endpoint enumerator of punktfunk's seat listener.
+//! `pf_seat_audio.dll`: the audio endpoint enumerator of rubyfunk's seat listener.
 //!
-//! Remote Desktop names it in the `punktfunk-tcp` listener's `AudioEnumeratorDll`. Windows loads
+//! Remote Desktop names it in the `rubyfunk-tcp` listener's `AudioEnumeratorDll`. Windows loads
 //! it into AudioEndpointBuilder, Audiosrv, audiodg and every process of a seat session that uses
 //! MMDevAPI. It returns the stock `rdpendp` enumerator's endpoints plus a DualSense render
 //! endpoint for each pad slot the session's host owns (`pf_driver_proto::seat_audio`). Any

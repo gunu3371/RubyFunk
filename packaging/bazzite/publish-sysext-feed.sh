@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Publish a punktfunk sysext image into its feed on the Gitea generic package registry —
+# Publish a rubyfunk sysext image into its feed on the Gitea generic package registry —
 # called by .gitea/workflows/rpm.yml after the RPM publish. A feed is one fixed URL
-# (…/punktfunk-sysext/<feed>/) holding versioned .raw files plus a SHA256SUMS manifest and its
-# detached OpenPGP signature SHA256SUMS.asc; punktfunk-sysext(8) on the boxes verifies that
+# (…/rubyfunk-sysext/<feed>/) holding versioned .raw files plus a SHA256SUMS manifest and its
+# detached OpenPGP signature SHA256SUMS.asc; rubyfunk-sysext(8) on the boxes verifies that
 # signature, then uses the manifest to find + check the newest image (the layout is also exactly
 # what systemd-sysupdate's url-file source expects, so a .transfer feed can be added later
 # without re-publishing anything).
@@ -71,7 +71,7 @@ read_manifest() {
 # stable feed, this month". So anyone who can WRITE the registry without holding the key — a leaked
 # write:package token, the kind that sits in half our CI jobs — can copy this feed's manifest,
 # signature and images into another channel's path, or put an old pair back, and every box verifies
-# them happily and merges the result over /usr. punktfunk-sysext(8) refuses a manifest whose FEED is
+# them happily and merges the result over /usr. rubyfunk-sysext(8) refuses a manifest whose FEED is
 # not the feed it fetched and one whose SERIAL is below the highest it has accepted, which is the
 # same channel-binding + monotonic-serial pair the Rust updater enforces on its own manifest
 # (crates/core/pf-update-check/src/manifest.rs). Comment lines, so a `#`-skipping checksum reader and the
@@ -103,16 +103,16 @@ sign_manifest() {
   keyid="$(GNUPGHOME="$home" gpg --list-secret-keys --with-colons | awk -F: '/^fpr:/{print $10; exit}')"
   # A feed signed by a key the client script doesn't carry is a feed nobody can install from, and
   # the failure would only surface on someone's Bazzite box. Compare fingerprints here instead: the
-  # baked-in public key in punktfunk-sysext.sh must be the key we are about to sign with.
+  # baked-in public key in rubyfunk-sysext.sh must be the key we are about to sign with.
   # The armor block is a shell single-quoted literal in that script, so the range's first and last
   # lines carry the `FEED_KEY='` prefix and the closing quote — strip them or gpg sees no armor at
   # all and hands back an empty fingerprint, which would look like a mismatch on every publish.
-  baked="$(sed -n '/BEGIN PGP PUBLIC KEY BLOCK/,/END PGP PUBLIC KEY BLOCK/p' "$HERE/punktfunk-sysext.sh" \
+  baked="$(sed -n '/BEGIN PGP PUBLIC KEY BLOCK/,/END PGP PUBLIC KEY BLOCK/p' "$HERE/rubyfunk-sysext.sh" \
            | sed "s/^FEED_KEY='//; s/'\$//" \
            | GNUPGHOME="$home" gpg --batch --quiet --with-colons --import-options show-only --import 2>/dev/null \
            | awk -F: '/^fpr:/{print $10; exit}')"
   if [ -z "$baked" ] || [ "$keyid" != "$baked" ]; then
-    echo "signing key $keyid does not match the key baked into punktfunk-sysext.sh ($baked)" >&2
+    echo "signing key $keyid does not match the key baked into rubyfunk-sysext.sh ($baked)" >&2
     echo "-> rotate BOTH (packaging/rpm/README.md), or clients cannot verify this feed." >&2
     rm -rf "$home"; return 1
   fi
@@ -139,7 +139,7 @@ require_signature() {
 if [ "$SEAL" = 1 ]; then
   read_manifest || { echo "no SHA256SUMS at $BASE — nothing to seal" >&2; exit 1; }
   # An empty result means the manifest was ALL junk. Signing that would hand clients a feed that
-  # verifies and offers no images, which reads as "up to date" to `punktfunk-sysext update`.
+  # verifies and offers no images, which reads as "up to date" to `rubyfunk-sysext update`.
   if [ ! -s "$SUMS" ]; then
     echo "$BASE/SHA256SUMS lists no images — refusing to seal it (feed needs a republish)" >&2
     exit 1

@@ -8,7 +8,7 @@ const entry = (
 	detected?: boolean,
 ): CatalogEntry => ({
 	id: title.toLowerCase(),
-	pkg: `@punktfunk/plugin-${title.toLowerCase()}`,
+	pkg: `@rubyfunk/plugin-${title.toLowerCase()}`,
 	title,
 	description: "",
 	author: "unom",

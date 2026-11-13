@@ -420,7 +420,7 @@ impl Shell {
                 );
                 st.session_notice = Some((
                     "Steam Input is sending the touchscreen as a mouse — \
-                     pick the Punktfunk controller layout for touch"
+                     pick the RubyFunk controller layout for touch"
                         .into(),
                     Instant::now(),
                 ));
@@ -600,7 +600,7 @@ impl Shell {
     fn cursor_inputs(
         &self,
         st: &StreamState,
-        host: Option<punktfunk_core::quic::CursorState>,
+        host: Option<rubyfunk_core::quic::CursorState>,
     ) -> crate::cursor_model::Inputs {
         use crate::cursor_model::{CaptureFacts, HostCursor, Inputs};
         Inputs {
@@ -615,7 +615,7 @@ impl Shell {
                 captured: cap.captured(),
                 desktop: cap.desktop(),
                 buttons_held: cap.buttons_held(),
-                pointer: cap.grants() & punktfunk_core::quic::GRANT_POINTER != 0,
+                pointer: cap.grants() & rubyfunk_core::quic::GRANT_POINTER != 0,
                 abs_ok: cap.abs_ok(),
                 last_abs: cap.last_abs(),
             }),

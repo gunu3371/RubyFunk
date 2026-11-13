@@ -3,7 +3,7 @@
 // `config.ts` builds one of these from environment and token files, which is a Node job. A
 // browser builds one from an origin the user typed and a device key. Both end up here, and
 // everything downstream — `http.ts`, `api.ts`, `sse.ts`, the Effect service — takes only this,
-// which is what lets `@punktfunk/host/core` exist without `node:*` reachable from it.
+// which is what lets `@rubyfunk/host/core` exist without `node:*` reachable from it.
 
 import type { Credential } from "./credential.js";
 

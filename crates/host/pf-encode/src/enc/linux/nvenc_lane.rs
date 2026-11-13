@@ -20,9 +20,9 @@ pub(crate) struct Facts {
     pub(crate) hdr_asked: bool,
     /// The depth the session negotiated. An 8-bit capture reaches 10 only as packed RGB.
     pub(crate) depth_asked: u8,
-    /// Raw dmabufs go through the convert worker (`PUNKTFUNK_NVENC_RAW`).
+    /// Raw dmabufs go through the convert worker (`RUBYFUNK_NVENC_RAW`).
     pub(crate) raw_wanted: bool,
-    /// LINEAR raw frames may be read in place (`PUNKTFUNK_NVENC_DIRECT`, under the raw lane).
+    /// LINEAR raw frames may be read in place (`RUBYFUNK_NVENC_DIRECT`, under the raw lane).
     pub(crate) direct_wanted: bool,
     /// Cursor overlays expected. Without them and without the raw lane, no slot device.
     pub(crate) blend_wanted: bool,
@@ -155,7 +155,7 @@ pub(crate) struct Frame {
     pub(crate) pointer: bool,
 }
 
-/// What `PUNKTFUNK_NVENC_ASYNC` pins: `1` forces the retrieve thread, `0` vetoes it.
+/// What `RUBYFUNK_NVENC_ASYNC` pins: `1` forces the retrieve thread, `0` vetoes it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Pin {
     Adaptive,
@@ -766,7 +766,7 @@ mod tests {
                 state(OPEN, Up, SYNC),
             ),
             (
-                "PUNKTFUNK_NVENC_ASYNC=1 refuses the wind-back",
+                "RUBYFUNK_NVENC_ASYNC=1 refuses the wind-back",
                 RAW,
                 state(OPEN, Up, SYNC),
                 vec![
@@ -776,7 +776,7 @@ mod tests {
                 state(OPEN, Up, SYNC),
             ),
             (
-                "PUNKTFUNK_NVENC_ASYNC=0 refuses the escalation",
+                "RUBYFUNK_NVENC_ASYNC=0 refuses the escalation",
                 RAW,
                 state(OPEN, Up, SYNC),
                 vec![(asked(true, Pin::Vetoed, session(true, false, true)), vec![])],

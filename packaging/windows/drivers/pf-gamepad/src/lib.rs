@@ -1,4 +1,4 @@
-//! punktfunk virtual gamepad — UMDF2 HID minidriver, a port of the WDK `vhidmini2` sample.
+//! rubyfunk virtual gamepad — UMDF2 HID minidriver, a port of the WDK `vhidmini2` sample.
 //!
 //! One driver presents the pad the host's `device_type` stamp names, answering from that kind's
 //! row in `pf_driver_proto::pad_kind` and the feature blobs the host's `inject/` ships. The

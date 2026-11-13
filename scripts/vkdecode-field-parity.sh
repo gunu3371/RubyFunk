@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Diff a PUNKTFUNK_DUMP_VIDEO H.265 capture's on-GPU decode against ffmpeg's
+# Diff a RUBYFUNK_DUMP_VIDEO H.265 capture's on-GPU decode against ffmpeg's
 # software decode of the same bytes, and name the FIRST divergent frame.
 #
 # Two halves:

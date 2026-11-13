@@ -9,13 +9,13 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license = "MIT OR Apache-2.0"
-description = "punktfunk host video encode: NVENC/VAAPI/AMF/QSV/Vulkan-Video/PyroWave/openh264 backends behind one Encoder trait."
+description = "rubyfunk host video encode: NVENC/VAAPI/AMF/QSV/Vulkan-Video/PyroWave/openh264 backends behind one Encoder trait."
 publish = false
 
 [dependencies]
 # `quic::{HdrMeta, resolve_codec, Welcome, CODEC_*}` and `video_fit` live outside the `quic`
 # feature, so the encoder crate never builds quinn, rustls or opus.
-punktfunk-core = { path = "../../core/punktfunk-core", default-features = false }
+rubyfunk-core = { path = "../../core/rubyfunk-core", default-features = false }
 pf-frame = { path = "../pf-frame" }
 # The `Encoder` contract and what every backend shares; re-exported wholesale from `lib.rs`.
 pf-encode-core = { path = "../pf-encode-core" }
@@ -40,7 +40,7 @@ serde_json = "1"
 # The native VAAPI encoder (enc/linux/vaapi_native.rs): the libva session and its pure half.
 pf-libva = { path = "../../codec/pf-libva" }
 pf-vaapi = { path = "../../codec/pf-vaapi" }
-# The `punktfunk-encode-worker` protocol (enc/linux/worker.rs). The framing is pf-zerocopy's
+# The `rubyfunk-encode-worker` protocol (enc/linux/worker.rs). The framing is pf-zerocopy's
 # `ipc`, which is generic over the serde body; the message enums live here and version separately.
 serde = { version = "1", features = ["derive"] }
 # Software H.264 (openh264, BSD-2) — the GPU-less encode path. Linux only: on Windows the

@@ -8,7 +8,7 @@
 //! the others.
 
 use anyhow::Result;
-use punktfunk_core::au::{AuBuf, AuMemory};
+use rubyfunk_core::au::{AuBuf, AuMemory};
 use std::sync::Arc;
 
 use crate::video::DecodedImage;
@@ -235,7 +235,7 @@ impl Rung for crate::video_pyrowave::PyroWaveDecoder {
         user_flags: u32,
         complete: bool,
     ) -> Result<Option<DecodedImage>> {
-        let aligned = user_flags & punktfunk_core::packet::USER_FLAG_CHUNK_ALIGNED != 0;
+        let aligned = user_flags & rubyfunk_core::packet::USER_FLAG_CHUNK_ALIGNED != 0;
         let frame = self.decode_frame(au, aligned, complete)?;
         // The presenter and the export lanes read on their own terms: hand over done planes.
         if let Some(f) = &frame {
@@ -250,7 +250,7 @@ impl Rung for crate::video_pyrowave::PyroWaveDecoder {
         user_flags: u32,
         complete: bool,
     ) -> Result<Option<DecodedImage>> {
-        let aligned = user_flags & punktfunk_core::packet::USER_FLAG_CHUNK_ALIGNED != 0;
+        let aligned = user_flags & rubyfunk_core::packet::USER_FLAG_CHUNK_ALIGNED != 0;
         let frame = Self::decode_au(self, au, aligned, complete)?;
         if let Some(f) = &frame {
             self.wait_ready(f)?;

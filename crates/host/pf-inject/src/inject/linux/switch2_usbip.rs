@@ -18,7 +18,7 @@ use super::usbip::{attach_device, boxed, ep, hid_class_descriptor, UsbipAttachme
 use super::usbip_relay::{one_report, Hello, Output, Outputs, Served, UsbKind};
 use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
-use punktfunk_core::quic::{HidOutput, RichInput};
+use rubyfunk_core::quic::{HidOutput, RichInput};
 use std::any::Any;
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
@@ -299,7 +299,7 @@ impl PadProto for Switch2Proto {
     fn merge_frame(
         &self,
         prev: &Switch2State,
-        f: &punktfunk_core::input::GamepadFrame,
+        f: &rubyfunk_core::input::GamepadFrame,
     ) -> Switch2State {
         Switch2State::merge_frame(self.model, prev, f)
     }
@@ -333,8 +333,8 @@ pub fn manager(model: Model) -> Switch2Manager {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use punktfunk_core::input::gamepad as gs;
-    use punktfunk_core::input::{GamepadEvent, GamepadFrame};
+    use rubyfunk_core::input::gamepad as gs;
+    use rubyfunk_core::input::{GamepadEvent, GamepadFrame};
     use std::time::Duration;
 
     /// SDL's `FindBulkEndpoints` wants bulk IN and OUT on interface 1; the HID interface polls

@@ -218,7 +218,7 @@ mod tests {
         assert_eq!(
             Av1ProfileKey::from_stream(2, 2, 8, false).unwrap_err(),
             ParamsAv1Error::UnsupportedChromaFormat(2),
-            "4:2:2 is legal AV1 Professional with no punktfunk output plumbing"
+            "4:2:2 is legal AV1 Professional with no rubyfunk output plumbing"
         );
         assert_eq!(
             Av1ProfileKey::from_stream(2, 4, 8, false).unwrap_err(),

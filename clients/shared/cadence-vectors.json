@@ -1,5 +1,5 @@
 {
-  "$comment": "Written by punktfunk-core's phase::vectors (see its module doc); the Apple client's CadenceClockTests replays it. Each case runs one CadenceClock under the named tuning (CadenceTuning::snapping or free_running). A `due` step is [src_pts_ns, ready_ns, frame_interval_ns] and expect is the due time it returns; `off_cadence` is [ready_ns, frame_interval_ns] and `reset` forces a re-anchor. `health` is the loop's counters and estimate after the last step. Everything is integer nanoseconds and compared exactly.",
+  "$comment": "Written by rubyfunk-core's phase::vectors (see its module doc); the Apple client's CadenceClockTests replays it. Each case runs one CadenceClock under the named tuning (CadenceTuning::snapping or free_running). A `due` step is [src_pts_ns, ready_ns, frame_interval_ns] and expect is the due time it returns; `off_cadence` is [ready_ns, frame_interval_ns] and `reset` forces a re-anchor. `health` is the loop's counters and estimate after the last step. Everything is integer nanoseconds and compared exactly.",
   "version": 1,
   "cases": [
     {

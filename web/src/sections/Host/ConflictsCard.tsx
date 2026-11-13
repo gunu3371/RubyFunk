@@ -9,7 +9,7 @@ import { m } from "@/paraglide/messages";
  *
  * The host detects other Moonlight-compatible servers (Sunshine, Apollo, …) on the same machine at
  * startup and reports them in `GET /local/summary` as `conflicts`. Nothing surfaced it, even though
- * it is the single most common reason a Punktfunk host looks installed and working but no client can
+ * it is the single most common reason a RubyFunk host looks installed and working but no client can
  * reach it — two servers fighting over the same ports, with whichever won the bind answering the
  * client.
  *

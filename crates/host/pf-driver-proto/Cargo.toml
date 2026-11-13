@@ -1,7 +1,7 @@
-# Shared host<->driver binary contracts for punktfunk's Windows drivers (display, pads, mouse).
+# Shared host<->driver binary contracts for rubyfunk's Windows drivers (display, pads, mouse).
 #
 # Deliberately self-contained (no workspace-inherited dependencies, no Windows deps): this crate is a
-# path dependency of BOTH the host workspace (crates/host/punktfunk-host) AND the out-of-workspace driver
+# path dependency of BOTH the host workspace (crates/host/rubyfunk-host) AND the out-of-workspace driver
 # workspace (packaging/windows/drivers/), so it must resolve identically from either build graph. It is
 # `no_std` (+ alloc) and platform-neutral; the GUID/LUID are plain integers each side converts to its
 # own OS type. Defining every wire struct ONCE here — with `const` size/offset asserts + bytemuck
@@ -12,7 +12,7 @@ version = "0.0.1"
 edition.workspace = true
 rust-version.workspace = true
 license = "MIT OR Apache-2.0"
-description = "Shared host<->driver binary contracts for the punktfunk Windows drivers: virtual display (control IOCTLs, encode transport, cursor), gamepads and mouse."
+description = "Shared host<->driver binary contracts for the rubyfunk Windows drivers: virtual display (control IOCTLs, encode transport, cursor), gamepads and mouse."
 publish = false
 
 [dependencies]

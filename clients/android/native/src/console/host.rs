@@ -23,7 +23,7 @@ use pf_console_ui::{
     Console, ConsoleEntry, ConsoleHandles, ConsoleOptions, InputSource, Insets, Key, SnapshotStore,
     Viewport,
 };
-use punktfunk_core::config::GamepadPref;
+use rubyfunk_core::config::GamepadPref;
 use std::collections::VecDeque;
 use std::sync::{Arc, Condvar, Mutex};
 use std::time::{Duration, Instant};

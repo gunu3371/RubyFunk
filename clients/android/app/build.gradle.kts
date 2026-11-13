@@ -10,11 +10,11 @@ plugins {
 }
 
 android {
-    namespace = "io.unom.punktfunk"
+    namespace = "io.github.gunu3371.rubyfunk"
     compileSdk = 37 // Android 17 — required by androidx.core 1.19.0.
     // The NDK whose llvm-strip strips the packaged .so. Unset, AGP looks for its own default
     // NDK and packages the library unstripped when that one is not installed.
-    ndkVersion = providers.gradleProperty("punktfunk.ndkVersion").get()
+    ndkVersion = providers.gradleProperty("rubyfunk.ndkVersion").get()
 
     defaultConfig {
         // Load from .env if it exists (local dev), otherwise from System.getenv (CI)
@@ -24,7 +24,7 @@ android {
             envFile.inputStream().use { props.load(it) }
         }
 
-        applicationId = "io.unom.punktfunk"
+        applicationId = "io.github.gunu3371.rubyfunk"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // Android 9. Reaches older Android TV boxes (e.g. Amlogic streamers still on Android 9–11);
         // the handful of API 31+ APIs we use are runtime-gated (Material You → brand palette, rumble
@@ -204,6 +204,6 @@ tasks.withType<Test>().configureEach {
     // gated nothing. Gradle only fails when the WHOLE filter set matches nothing, so neither
     // half was ever reported.
     if (project.hasProperty("excludeScreenshots")) {
-        filter { excludeTestsMatching("io.unom.punktfunk.screenshots.*") }
+        filter { excludeTestsMatching("io.github.gunu3371.rubyfunk.screenshots.*") }
     }
 }

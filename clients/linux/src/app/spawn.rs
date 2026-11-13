@@ -1,6 +1,6 @@
-//! The shell↔session handoff: every stream runs in the spawned `punktfunk-session`
+//! The shell↔session handoff: every stream runs in the spawned `rubyfunk-session`
 //! Vulkan binary (the legacy in-process presenter is gone — phase 5 of
-//! punktfunk-planning `linux-client-rearchitecture.md`). What is left here is the
+//! rubyfunk-planning `linux-client-rearchitecture.md`). What is left here is the
 //! TRANSLATION: a [`ConnectRequest`] becomes a `ConnectPlan`, and the session's typed
 //! lifecycle events become the [`AppMsg`]s the relm4 app consumes — spinner until
 //! `{"ready":true}`, banner from the `{"error"|"ended": …}` line, exit code 3 +
@@ -14,7 +14,7 @@
 use crate::app::AppMsg;
 use crate::hosts::ConnectRequest;
 use pf_client_core::orchestrate::{self, ConnectOutcome, ConnectPlan, HostTarget, SessionEvent};
-use punktfunk_core::quic::v2::msg::ProfileUnlock;
+use rubyfunk_core::quic::v2::msg::ProfileUnlock;
 
 /// Spawn tunables beyond a plain connect.
 #[derive(Debug, Default)]
@@ -169,13 +169,13 @@ mod tests {
         use pf_client_core::trust::{KnownHost, KnownHosts, Settings};
 
         let home = std::env::temp_dir().join(format!("pf-spawn-test-{}", std::process::id()));
-        let cfg = home.join(".config/punktfunk");
+        let cfg = home.join(".config/rubyfunk");
         std::fs::create_dir_all(&cfg).unwrap();
         // SAFETY: the only env-mutating test in this binary (see the doc above — one test, one
         // directory, deliberately not split). Parallel tests may `getenv` concurrently; glibc
         // keeps replaced environ storage alive, and every reader tolerates either value.
         // Point the store at `cfg` directly. A `HOME` redirect loses to a developer override.
-        unsafe { std::env::set_var("PUNKTFUNK_CONFIG_DIR", &cfg) };
+        unsafe { std::env::set_var("RUBYFUNK_CONFIG_DIR", &cfg) };
 
         // A device whose owner has set a bitrate, and a host bound to a preset that raises it
         // further — the two layers the spec has to carry.

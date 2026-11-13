@@ -36,7 +36,7 @@ pub unsafe fn dispatch(request: WDFREQUEST, ioctl_code: u32) {
     // IOCTL is liveness for that owner, so its watchdog fires only once it has gone silent.
     let owner = request.requestor_pid();
     // A seat device admits NETWORK SERVICE for the remoting stack's transport. Every NS service
-    // lives in session 0 and the seat host runs inside its seat session, so punktfunk verbs on
+    // lives in session 0 and the seat host runs inside its seat session, so rubyfunk verbs on
     // that device answer only a requestor outside session 0.
     if crate::adapter::is_seat_role()
         && ioctl_code != IOCTL_RDPIDD_TRANSPORT

@@ -15,7 +15,7 @@ use super::switch_proto::{
 use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
 use pf_driver_proto::gamepad::DEVTYPE_SWITCH_PRO;
-use punktfunk_core::quic::{HidOutput, RichInput};
+use rubyfunk_core::quic::{HidOutput, RichInput};
 
 /// INF hardware ids. A package rename must not change them (`hwid_matches_inf`).
 pub(super) const SWITCH_HWID: &str = "pf_switchpro";
@@ -54,7 +54,7 @@ impl SwitchWinPad {
                 // A wired Pro Controller is a single-interface HID device.
                 usb_mi: None,
                 bluetooth: false,
-                description: "Punktfunk Virtual Pro Controller",
+                description: "RubyFunk Virtual Pro Controller",
                 enumerator: "VID_057E&PID_2009",
                 property: None,
             },
@@ -67,7 +67,7 @@ impl SwitchWinPad {
         let (index, hwid, side) = match half {
             Half::Left => (slot, JOYCON_LEFT_HWID, 'L'),
             Half::Right => (
-                slot + punktfunk_core::input::MAX_PADS as u8,
+                slot + rubyfunk_core::input::MAX_PADS as u8,
                 JOYCON_RIGHT_HWID,
                 'R',
             ),
@@ -84,7 +84,7 @@ impl SwitchWinPad {
                 usb_vid_pid: Some(&vid_pid),
                 usb_mi: None,
                 bluetooth: true,
-                description: &format!("Punktfunk Virtual Joy-Con ({side})"),
+                description: &format!("RubyFunk Virtual Joy-Con ({side})"),
                 enumerator: &vid_pid,
                 property: None,
             },
@@ -124,7 +124,7 @@ impl SwitchWinPad {
 
 /// Slot table, unplug, heartbeat, and `HidoutDedup` live in [`UhidManager`].
 pub struct SwitchWinProto {
-    /// Steam back-grip fold. A Pro Controller has no paddle slot; `PUNKTFUNK_STEAM_REMAP=paddles=…`, default drop.
+    /// Steam back-grip fold. A Pro Controller has no paddle slot; `RUBYFUNK_STEAM_REMAP=paddles=…`, default drop.
     remap: crate::steam_remap::RemapConfig,
 }
 
@@ -142,7 +142,7 @@ impl PadProto for SwitchWinProto {
     const LABEL: &'static str = "Switch Pro/Windows";
     const DEVICE: &'static str = "Switch Pro Controller";
     const CREATE_HINT: &'static str =
-        " (install/repair: punktfunk-host.exe driver install --gamepad)";
+        " (install/repair: rubyfunk-host.exe driver install --gamepad)";
 
     fn open(&mut self, idx: u8) -> Result<SwitchWinPad> {
         let p = SwitchWinPad::open_pro(idx)?;
@@ -156,7 +156,7 @@ impl PadProto for SwitchWinProto {
     fn merge_frame(
         &self,
         prev: &SwitchState,
-        f: &punktfunk_core::input::GamepadFrame,
+        f: &rubyfunk_core::input::GamepadFrame,
     ) -> SwitchState {
         let buttons = crate::steam_remap::fold_paddles(f.buttons, self.remap.paddles);
         SwitchState::merge_frame(prev, f, buttons)
@@ -197,7 +197,7 @@ impl PadProto for JoyConWinProto {
     const LABEL: &'static str = "Joy-Con pair/Windows";
     const DEVICE: &'static str = "Joy-Con pair";
     const CREATE_HINT: &'static str =
-        " (install/repair: punktfunk-host.exe driver install --gamepad)";
+        " (install/repair: rubyfunk-host.exe driver install --gamepad)";
 
     fn open(&mut self, idx: u8) -> Result<JoyConWinPair> {
         let pair = JoyConWinPair {
@@ -214,7 +214,7 @@ impl PadProto for JoyConWinProto {
     fn merge_frame(
         &self,
         prev: &SwitchState,
-        f: &punktfunk_core::input::GamepadFrame,
+        f: &rubyfunk_core::input::GamepadFrame,
     ) -> SwitchState {
         SwitchState::merge_joycon_frame(prev, f)
     }

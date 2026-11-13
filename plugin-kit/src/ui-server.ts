@@ -2,12 +2,12 @@
 // any HttpRouter route layers), mount it as the SDK server's `fetch` handler, and manage
 // register/renew/deregister through Scope. Validated end-to-end by the phase-0 spike:
 // core-only env layers, no platform package, SPA fallthrough preserved.
-import { type PluginUiHandle, servePluginUi } from "@punktfunk/host";
+import { type PluginUiHandle, servePluginUi } from "@rubyfunk/host";
 import {
 	decodeHostEvent,
 	type EventOf,
 	type GameRef,
-} from "@punktfunk/host/core";
+} from "@rubyfunk/host/core";
 import { Effect, FileSystem, Layer, Path, Schema, type Scope } from "effect";
 import { Etag, HttpPlatform, HttpRouter } from "effect/http";
 import type { ConfigService } from "./config.js";
@@ -515,7 +515,7 @@ export const serveUi = (
  * `category` travels through the UNTYPED `pf.request` seam precisely so an older host ignores it
  * instead of rejecting the registration — which means dropping it is SILENT by design, at three
  * different layers (an old host, an old runner-resolved SDK, a typo). On 2026-08-08 the middle one
- * happened: `@punktfunk/host@0.1.2` was published before it forwarded the field, so every installed
+ * happened: `@rubyfunk/host@0.1.2` was published before it forwarded the field, so every installed
  * library scanner registered without a category. The visible result was Lutris and Heroic sitting in
  * the console nav — which they explicitly opt out of — and their settings unreachable, because the
  * Library section's Game sources surface lists exactly the plugins whose category IS `library`.
@@ -546,7 +546,7 @@ const verifyCategoryLanded = (
 			return Effect.logWarning(
 				`registered without category "${category}" (the host reports ` +
 					`${mine.category === undefined ? "none" : `"${mine.category}"`}) — it lands ` +
-					`in the console's sidebar, not its section. An @punktfunk/host older than 0.1.3 ` +
+					`in the console's sidebar, not its section. An @rubyfunk/host older than 0.1.3 ` +
 					`drops the field before registering; update it.`,
 			);
 		}),

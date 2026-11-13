@@ -20,9 +20,9 @@ import { parse as parseYaml } from "yaml";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const API = process.env.PF_GITEA_API ?? "https://git.unom.io/api/v1";
-const REPO = process.env.PF_GITEA_REPO ?? "unom/punktfunk";
-const PACKAGE_ID = "unom.PunktfunkHost";
-const SOURCE_IDENTIFIER = process.env.PF_SOURCE_ID ?? "unom.punktfunk";
+const REPO = process.env.PF_GITEA_REPO ?? "unom/rubyfunk";
+const PACKAGE_ID = "gunu3371.RubyFunkHost";
+const SOURCE_IDENTIFIER = process.env.PF_SOURCE_ID ?? "io.github.gunu3371.rubyfunk";
 // The API contract this source implements. Advertised via /information so a future client can
 // negotiate; bump only alongside a real change to the response shapes.
 const SERVER_SUPPORTED_VERSIONS = ["1.1.0"];

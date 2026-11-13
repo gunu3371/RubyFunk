@@ -1,30 +1,30 @@
-//! Runs the REAL `punktfunk` binary and pins its self-documentation contract: help goes
+//! Runs the REAL `rubyfunk` binary and pins its self-documentation contract: help goes
 //! to stdout and exits 0, an unknown verb refuses on stderr with the not-found code.
 //!
 //! This exists so CI *executes* the shipped binary at least once per platform. A binary
 //! that compiles but is the wrong program passes every build/clippy/fmt gate — that is
-//! exactly how 0.22.0 shipped a stub as `punktfunk-session` — and only a gate that runs
+//! exactly how 0.22.0 shipped a stub as `rubyfunk-session` — and only a gate that runs
 //! the thing catches the class. The help paths are the right probe: they touch no config
 //! stores and no network, so they are safe on any runner.
 #![cfg(any(target_os = "linux", windows))]
 
 use std::process::Command;
 
-fn punktfunk(args: &[&str]) -> std::process::Output {
-    Command::new(env!("CARGO_BIN_EXE_punktfunk"))
+fn rubyfunk(args: &[&str]) -> std::process::Output {
+    Command::new(env!("CARGO_BIN_EXE_rubyfunk"))
         .args(args)
         .output()
-        .expect("run punktfunk")
+        .expect("run rubyfunk")
 }
 
 #[test]
 fn bare_and_help_print_the_overview_on_stdout() {
     for args in [&[][..], &["help"][..], &["--help"][..], &["-h"][..]] {
-        let out = punktfunk(args);
+        let out = rubyfunk(args);
         assert!(out.status.success(), "{args:?} must exit 0");
         let stdout = String::from_utf8_lossy(&out.stdout);
         assert!(
-            stdout.contains("punktfunk pair"),
+            stdout.contains("rubyfunk pair"),
             "{args:?} overview lists the verbs"
         );
         assert!(
@@ -41,7 +41,7 @@ fn per_verb_help_answers_both_spellings() {
         &["launch", "--help"][..],
         &["launch", "-h"][..],
     ] {
-        let out = punktfunk(args);
+        let out = rubyfunk(args);
         assert!(out.status.success(), "{args:?} must exit 0");
         let stdout = String::from_utf8_lossy(&out.stdout);
         assert!(
@@ -53,15 +53,15 @@ fn per_verb_help_answers_both_spellings() {
 
 /// `default-host` is the only door to the start-screen pointer on a headless box, and the
 /// verbs that read it must refuse rather than guess. Runs against a scratch directory.
-/// `PUNKTFUNK_CONFIG_DIR` is set there too, so a developer export cannot point the
+/// `RUBYFUNK_CONFIG_DIR` is set there too, so a developer export cannot point the
 /// verb at the real identity.
 #[test]
 fn default_host_is_set_read_and_cleared() {
     let home = std::env::temp_dir().join(format!("pf-cli-default-host-{}", std::process::id()));
     let store = home.join(if cfg!(windows) {
-        "punktfunk"
+        "rubyfunk"
     } else {
-        ".config/punktfunk"
+        ".config/rubyfunk"
     });
     std::fs::create_dir_all(&store).expect("scratch config dir");
     std::fs::write(
@@ -72,12 +72,12 @@ fn default_host_is_set_read_and_cleared() {
     .expect("seed the store");
 
     let run = |args: &[&str]| {
-        Command::new(env!("CARGO_BIN_EXE_punktfunk"))
+        Command::new(env!("CARGO_BIN_EXE_rubyfunk"))
             .args(args)
             .env(if cfg!(windows) { "APPDATA" } else { "HOME" }, &home)
-            .env("PUNKTFUNK_CONFIG_DIR", &store)
+            .env("RUBYFUNK_CONFIG_DIR", &store)
             .output()
-            .expect("run punktfunk")
+            .expect("run rubyfunk")
     };
 
     // One paired host derives, with nothing written.
@@ -118,9 +118,9 @@ fn forgetting_a_host_clears_its_default_and_cached_catalog() {
     let store = home.join("config");
     let fp = "ab".repeat(32);
     let catalog = if cfg!(windows) {
-        home.join("punktfunk/cache/library")
+        home.join("rubyfunk/cache/library")
     } else {
-        home.join("punktfunk/library")
+        home.join("rubyfunk/library")
     };
     std::fs::create_dir_all(&store).expect("scratch config dir");
     std::fs::create_dir_all(&catalog).expect("scratch cache dir");
@@ -138,13 +138,13 @@ fn forgetting_a_host_clears_its_default_and_cached_catalog() {
     let cached = catalog.join(format!("{fp}.json"));
     std::fs::write(&cached, r#"{"games":[],"fetched_at":0}"#).expect("seed the catalog");
 
-    let out = Command::new(env!("CARGO_BIN_EXE_punktfunk"))
+    let out = Command::new(env!("CARGO_BIN_EXE_rubyfunk"))
         .args(["hosts", "forget", "Desk"])
-        .env("PUNKTFUNK_CONFIG_DIR", &store)
+        .env("RUBYFUNK_CONFIG_DIR", &store)
         .env("XDG_CACHE_HOME", &home)
         .env("LOCALAPPDATA", &home)
         .output()
-        .expect("run punktfunk");
+        .expect("run rubyfunk");
     assert!(
         out.status.success(),
         "{}",
@@ -165,15 +165,15 @@ fn hosts_added_by_eight_processes_at_once_all_land() {
     std::fs::create_dir_all(&store).expect("scratch config dir");
     let adds: Vec<_> = (1..=8)
         .map(|n| {
-            Command::new(env!("CARGO_BIN_EXE_punktfunk"))
+            Command::new(env!("CARGO_BIN_EXE_rubyfunk"))
                 .args(["hosts", "add", &format!("10.0.0.{n}")])
-                .env("PUNKTFUNK_CONFIG_DIR", &store)
+                .env("RUBYFUNK_CONFIG_DIR", &store)
                 .spawn()
-                .expect("run punktfunk")
+                .expect("run rubyfunk")
         })
         .collect();
     for mut add in adds {
-        assert!(add.wait().expect("wait for punktfunk").success());
+        assert!(add.wait().expect("wait for rubyfunk").success());
     }
     let saved = std::fs::read_to_string(store.join("client-known-hosts.json")).expect("the store");
     assert_eq!(saved.matches("\"addr\"").count(), 8, "{saved}");
@@ -183,18 +183,18 @@ fn hosts_added_by_eight_processes_at_once_all_land() {
 
 #[test]
 fn version_prints_the_crate_version() {
-    let out = punktfunk(&["--version"]);
+    let out = rubyfunk(&["--version"]);
     assert!(out.status.success());
     assert!(String::from_utf8_lossy(&out.stdout).contains(env!("CARGO_PKG_VERSION")));
 }
 
 #[test]
 fn unknown_verbs_refuse_with_the_not_found_code() {
-    let out = punktfunk(&["frobnicate"]);
+    let out = rubyfunk(&["frobnicate"]);
     assert_eq!(out.status.code(), Some(5), "unknown verb exits 5");
     assert!(String::from_utf8_lossy(&out.stderr).contains("unknown command"));
 
-    let out = punktfunk(&["help", "frobnicate"]);
+    let out = rubyfunk(&["help", "frobnicate"]);
     assert_eq!(out.status.code(), Some(5), "unknown help topic exits 5");
 }
 
@@ -206,13 +206,13 @@ fn unknown_verbs_refuse_with_the_not_found_code() {
 /// enough, `discover` is a verb with help rather than an unknown word.
 #[test]
 fn the_request_access_surfaces_document_themselves() {
-    let out = punktfunk(&["help", "discover"]);
+    let out = rubyfunk(&["help", "discover"]);
     assert!(out.status.success(), "discover has its own help topic");
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(stdout.contains("--timeout"), "discover documents --timeout");
     assert!(stdout.contains("--json"), "discover documents --json");
 
-    let out = punktfunk(&["launch", "--help"]);
+    let out = rubyfunk(&["launch", "--help"]);
     assert!(String::from_utf8_lossy(&out.stdout).contains("--request-access"));
 }
 
@@ -226,15 +226,15 @@ fn scratch_store(tag: &str, known_hosts: &str) -> std::path::PathBuf {
     store
 }
 
-/// `punktfunk` against `store`, with every cache dir inside it too.
-fn punktfunk_in(store: &std::path::Path, args: &[&str]) -> std::process::Output {
-    Command::new(env!("CARGO_BIN_EXE_punktfunk"))
+/// `rubyfunk` against `store`, with every cache dir inside it too.
+fn rubyfunk_in(store: &std::path::Path, args: &[&str]) -> std::process::Output {
+    Command::new(env!("CARGO_BIN_EXE_rubyfunk"))
         .args(args)
-        .env("PUNKTFUNK_CONFIG_DIR", store)
+        .env("RUBYFUNK_CONFIG_DIR", store)
         .env("XDG_CACHE_HOME", store)
         .env("LOCALAPPDATA", store)
         .output()
-        .expect("run punktfunk")
+        .expect("run rubyfunk")
 }
 
 fn stdout_of(out: &std::process::Output) -> String {
@@ -256,7 +256,7 @@ fn hosts_list_prints_one_line_per_saved_host() {
     let store = scratch_store("list", TWO_HOSTS);
     let want = "Desk\t10.0.0.5:9777\tpaired\t-\nCouch\t10.0.0.6:1234\ttrusted\t-\n";
     for args in [&["hosts", "list"][..], &["hosts"][..]] {
-        let out = punktfunk_in(&store, args);
+        let out = rubyfunk_in(&store, args);
         assert!(out.status.success(), "{args:?}: {}", stderr_of(&out));
         assert_eq!(stdout_of(&out), want, "{args:?}");
     }
@@ -279,7 +279,7 @@ fn hosts_list_json_resolves_presets_and_keeps_the_old_keys() {
         r#"{"version":1,"presets":[{"id":"p1","name":"Work"}]}"#,
     )
     .expect("seed the catalog");
-    let out = punktfunk_in(&store, &["hosts", "list", "--json"]);
+    let out = rubyfunk_in(&store, &["hosts", "list", "--json"]);
     assert!(out.status.success(), "{}", stderr_of(&out));
     let got: serde_json::Value = serde_json::from_str(&stdout_of(&out)).expect("one JSON object");
     let preset = serde_json::json!({"id": "p1", "name": "Work"});
@@ -312,7 +312,7 @@ fn hosts_list_json_resolves_presets_and_keeps_the_old_keys() {
 fn hosts_add_reports_what_it_did() {
     let store = scratch_store("add", "");
     let fp = "ab".repeat(32);
-    let say = |args: &[&str]| punktfunk_in(&store, args);
+    let say = |args: &[&str]| rubyfunk_in(&store, args);
     for (args, stdout, stderr) in [
         (
             vec!["hosts", "add", "10.0.0.5"],
@@ -358,7 +358,7 @@ fn hosts_add_reports_what_it_did() {
     assert!(stderr_of(&out).contains("--fp takes the host's 64-hex-digit fingerprint"));
     let out = say(&["hosts", "add"]);
     assert_eq!(out.status.code(), Some(5));
-    assert!(stderr_of(&out).contains("usage: punktfunk hosts add"));
+    assert!(stderr_of(&out).contains("usage: rubyfunk hosts add"));
     std::fs::remove_dir_all(&store).ok();
 }
 
@@ -373,7 +373,7 @@ fn a_bare_fp_is_a_usage_error() {
         &["hosts", "add", "10.0.0.5", "--fp"][..],
         &["hosts", "add", "10.0.0.5", "--fp", "--name", "Desk"][..],
     ] {
-        let out = punktfunk_in(&store, args);
+        let out = rubyfunk_in(&store, args);
         assert_eq!(out.status.code(), Some(5), "{args:?}: {}", stderr_of(&out));
         assert_eq!(
             stderr_of(&out),
@@ -391,9 +391,9 @@ fn hosts_refuses_what_it_cannot_resolve() {
     let store = scratch_store("refuse", TWO_HOSTS);
     for (args, said) in [
         (&["hosts", "frob"][..], "unknown hosts command \"frob\""),
-        (&["hosts", "forget"][..], "usage: punktfunk hosts forget"),
+        (&["hosts", "forget"][..], "usage: rubyfunk hosts forget"),
     ] {
-        let out = punktfunk_in(&store, args);
+        let out = rubyfunk_in(&store, args);
         assert_eq!(out.status.code(), Some(5), "{args:?}");
         assert!(
             stderr_of(&out).contains(said),
@@ -402,12 +402,12 @@ fn hosts_refuses_what_it_cannot_resolve() {
         );
     }
     // A name nothing matches reads as an address nobody saved: a person's call (6).
-    let out = punktfunk_in(&store, &["hosts", "forget", "Nobody"]);
+    let out = rubyfunk_in(&store, &["hosts", "forget", "Nobody"]);
     assert_eq!(out.status.code(), Some(6));
     assert!(stderr_of(&out).contains("Nobody:9777 isn't a saved host"));
-    let out = punktfunk_in(&store, &["hosts", "forget", "Desk"]);
+    let out = rubyfunk_in(&store, &["hosts", "forget", "Desk"]);
     assert_eq!(stdout_of(&out), "forgot Desk\n");
-    let left = stdout_of(&punktfunk_in(&store, &["hosts", "list"]));
+    let left = stdout_of(&rubyfunk_in(&store, &["hosts", "list"]));
     assert_eq!(left.lines().count(), 1, "{left}");
     std::fs::remove_dir_all(&store).ok();
 }
@@ -418,16 +418,16 @@ fn hosts_refuses_what_it_cannot_resolve() {
 fn the_probe_verbs_refuse_before_they_dial() {
     let store = scratch_store("probe", TWO_HOSTS);
     for verb in ["speed-test", "network-check"] {
-        let out = punktfunk_in(&store, &[verb]);
+        let out = rubyfunk_in(&store, &[verb]);
         assert_eq!(out.status.code(), Some(5), "{verb}");
         assert!(
-            stderr_of(&out).contains(&format!("usage: punktfunk {verb} <host-ref>")),
+            stderr_of(&out).contains(&format!("usage: rubyfunk {verb} <host-ref>")),
             "{verb}: {}",
             stderr_of(&out)
         );
-        let out = punktfunk_in(&store, &[verb, "Nobody"]);
+        let out = rubyfunk_in(&store, &[verb, "Nobody"]);
         assert_eq!(out.status.code(), Some(6), "{verb} Nobody");
-        let out = punktfunk_in(&store, &[verb, "Couch"]);
+        let out = rubyfunk_in(&store, &[verb, "Couch"]);
         assert_eq!(out.status.code(), Some(6), "{verb} Couch");
         assert_eq!(stderr_of(&out), "Couch isn't paired yet\n", "{verb} Couch");
     }
@@ -438,14 +438,14 @@ fn the_probe_verbs_refuse_before_they_dial() {
 /// and says so with the connect-failed code rather than "already saved".
 #[test]
 fn hosts_add_without_a_config_dir_fails_to_save() {
-    let out = Command::new(env!("CARGO_BIN_EXE_punktfunk"))
+    let out = Command::new(env!("CARGO_BIN_EXE_rubyfunk"))
         .args(["hosts", "add", "10.0.0.5"])
-        .env_remove("PUNKTFUNK_CONFIG_DIR")
+        .env_remove("RUBYFUNK_CONFIG_DIR")
         .env_remove("XDG_CONFIG_HOME")
         .env_remove("HOME")
         .env_remove("APPDATA")
         .output()
-        .expect("run punktfunk");
+        .expect("run rubyfunk");
     assert_eq!(out.status.code(), Some(2), "{}", stderr_of(&out));
     assert!(
         stderr_of(&out).starts_with("saving: "),

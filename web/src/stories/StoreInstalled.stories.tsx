@@ -25,7 +25,7 @@ type Story = StoryObj<typeof meta>;
 
 const ROWS: InstalledView[] = [
 	{
-		pkg: "@punktfunk/plugin-rom-manager",
+		pkg: "@rubyfunk/plugin-rom-manager",
 		title: "ROM Manager",
 		version: "0.3.1",
 		tier: "verified",
@@ -36,7 +36,7 @@ const ROWS: InstalledView[] = [
 		update_available: "0.3.2",
 	},
 	{
-		pkg: "@punktfunk/plugin-playnite",
+		pkg: "@rubyfunk/plugin-playnite",
 		title: "Playnite",
 		version: "0.2.0",
 		tier: "external",
@@ -104,7 +104,7 @@ export const RowBusy: Story = {
 	args: {
 		installed: loaded(ROWS),
 		updateCount: 2,
-		busyPkg: "@punktfunk/plugin-playnite",
+		busyPkg: "@rubyfunk/plugin-playnite",
 	},
 };
 

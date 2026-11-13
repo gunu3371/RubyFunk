@@ -22,7 +22,7 @@ static ANV_ENCODE_OURS: std::sync::atomic::AtomicBool = std::sync::atomic::Atomi
 
 /// The `ANV_DEBUG` value that opts Mesa's Intel driver into Vulkan Video encode, which it
 /// exposes only under `video-encode`. Appended, never clobbered, so an operator's flags survive;
-/// `PUNKTFUNK_VULKAN_ENCODE=0` still picks VAAPI. `None` when there is nothing to add.
+/// `RUBYFUNK_VULKAN_ENCODE=0` still picks VAAPI. `None` when there is nothing to add.
 /// A `Some` marks the flag as ours: the caller exports it before any Vulkan instance exists.
 pub fn anv_video_encode_flag() -> Option<String> {
     if !cfg!(feature = "vulkan-encode") {

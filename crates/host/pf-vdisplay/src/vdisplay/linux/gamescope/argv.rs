@@ -6,7 +6,7 @@
 use super::*;
 
 /// Compositor argv from `/proc/<pid>/cmdline`. Basename `ends_with("gamescope")` — `/proc/…/exe`
-/// is often unreadable, and `==` would miss `punktfunk-gamescope` while still excluding helpers.
+/// is often unreadable, and `==` would miss `rubyfunk-gamescope` while still excluding helpers.
 pub(super) fn gamescope_argvs() -> Vec<Vec<String>> {
     argvs_where(|_| true)
 }
@@ -135,7 +135,7 @@ pub(super) fn warn_if_mode_lost(mode: Mode, want_hz: u32, scope: Scope<'_>) {
          dropped GAMESCOPE_BIN / SCREEN_WIDTH / SCREEN_HEIGHT. A headless gamescope reports \
          `--nested-refresh` as its ONE refresh rate (60 Hz when the flag never arrives), so games \
          and Steam will believe the display runs at that rate however fast the stream is. Install \
-         punktfunk-gamescope, or check /etc/gamescope-session-plus/sessions.d/ for a file that \
+         rubyfunk-gamescope, or check /etc/gamescope-session-plus/sessions.d/ for a file that \
          overrides GAMESCOPE_BIN or sets GAMESCOPECMD"
     );
 }
@@ -217,7 +217,7 @@ pub(super) fn verify_managed_spawn_flags(hdr: bool, scope: Scope<'_>) -> Result<
          ran a stock gamescope. Refusing it rather than streaming a session whose shape was \
          planned around flags that never arrived (a missing cursor flag has no symptom but an \
          absent pointer). Those capabilities are off for this host now; reconnect for a plain SDR \
-         session, or install punktfunk-gamescope as the box's `gamescope`",
+         session, or install rubyfunk-gamescope as the box's `gamescope`",
         missing.join(" ")
     ))
 }
@@ -278,7 +278,7 @@ mod tests {
     #[test]
     fn the_post_restart_wait_asks_whether_the_target_size_is_present() {
         let session = argv("/usr/bin/gamescope -W 1920 -H 1080");
-        let stray = argv("punktfunk-gamescope --backend headless -W 1280 -H 720");
+        let stray = argv("rubyfunk-gamescope --backend headless -W 1280 -H 720");
         assert!(any_output_size_is(
             std::slice::from_ref(&session),
             (1920, 1080)
@@ -397,7 +397,7 @@ mod tests {
         assert!(missing_flags(
             &want,
             &[argv(
-                "/usr/bin/punktfunk-gamescope --backend headless -W 1920 -H 1080 \
+                "/usr/bin/rubyfunk-gamescope --backend headless -W 1920 -H 1080 \
                  --hdr-enabled --hdr-debug-force-support --pipewire-composite-cursor"
             )]
         )
@@ -434,7 +434,7 @@ mod tests {
             &want,
             &[
                 argv("/usr/bin/gamescope -W 800 -H 600"),
-                argv("/usr/bin/punktfunk-gamescope --hdr-enabled --pipewire-composite-cursor"),
+                argv("/usr/bin/rubyfunk-gamescope --hdr-enabled --pipewire-composite-cursor"),
             ]
         )
         .is_empty());

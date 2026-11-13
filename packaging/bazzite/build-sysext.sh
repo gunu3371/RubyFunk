@@ -1,37 +1,37 @@
 #!/usr/bin/env bash
-# Build the punktfunk systemd-sysext image for Bazzite / Fedora Atomic from the built RPMs —
+# Build the rubyfunk systemd-sysext image for Bazzite / Fedora Atomic from the built RPMs —
 # the no-layering install path (rpm-ostree layering slows every update and can block upgrades;
 # a sysext never enters an rpm-ostree transaction). The .raw overlays /usr read-only from
 # /var/lib/extensions/, survives OS updates, and is toggled/updated without a reboot.
 #
 # Counterpart to ../arch/build-sysext.sh (which wraps a pacman package for SteamOS). This one
-# wraps the Fedora RPMs (punktfunk, -web, -scripting, -seats, -bun) and additionally:
-#   * relocates the RPMs' /etc payload to /usr/share/punktfunk/etc/ (a sysext carries ONLY /usr;
-#     punktfunk-sysext(8) copies these into the real /etc on install),
+# wraps the Fedora RPMs (rubyfunk, -web, -scripting, -seats, -bun) and additionally:
+#   * relocates the RPMs' /etc payload to /usr/share/rubyfunk/etc/ (a sysext carries ONLY /usr;
+#     rubyfunk-sysext(8) copies these into the real /etc on install),
 #   * bakes SELinux labels in as squashfs pseudo-xattrs, computed with matchpathcon from the
 #     build container's targeted policy. Without them every file is unlabeled_t at runtime:
 #     fine for the user session + systemd --user units (unconfined), but system daemons are
-#     DENIED — udev couldn't read 60-punktfunk.rules and systemd-sysctl couldn't read the
+#     DENIED — udev couldn't read 60-rubyfunk.rules and systemd-sysctl couldn't read the
 #     sysctl drop-in (validated live on Bazzite 43, SELinux enforcing, 2026-07-04),
 #   * pins compatibility via ID=fedora + VERSION_ID: merges on Bazzite/Silverblue/Aurora of the
 #     SAME Fedora major (ID_LIKE matching, systemd >= 256) and is REFUSED after a major rebase
-#     instead of running soname-broken binaries (`punktfunk-sysext update` then re-resolves),
-#   * embeds the punktfunk-sysext helper so an installed box can update itself.
+#     instead of running soname-broken binaries (`rubyfunk-sysext update` then re-resolves),
+#   * embeds the rubyfunk-sysext helper so an installed box can update itself.
 #
 # Build in the matching Fedora container (ci/fedora*-rpm.Dockerfile) — matchpathcon needs the
 # Fedora targeted policy (libselinux-utils + selinux-policy-targeted), and the RPMs are
 # soname-coupled to their base anyway. Needs: rpm2cpio, cpio, mksquashfs (>= 4.6), matchpathcon.
 #
 # Usage:
-#   bash build-sysext.sh --version-id 43 --out dist/punktfunk-0.7.1-1-x86-64.raw \
+#   bash build-sysext.sh --version-id 43 --out dist/rubyfunk-0.7.1-1-x86-64.raw \
 #        [--gamescope-stage path/to/gamescope-destdir] \
-#        dist/punktfunk-0.7.1-1.fc43.x86_64.rpm dist/punktfunk-web-0.7.1-1.fc43.x86_64.rpm \
-#        dist/punktfunk-bun-0.7.1-1.fc43.x86_64.rpm
+#        dist/rubyfunk-0.7.1-1.fc43.x86_64.rpm dist/rubyfunk-web-0.7.1-1.fc43.x86_64.rpm \
+#        dist/rubyfunk-bun-0.7.1-1.fc43.x86_64.rpm
 #
 # --gamescope-stage folds in a prebuilt HDR-capable gamescope (packaging/gamescope) as
-# /usr/bin/punktfunk-gamescope, which is what lets the gamescope backend stream 10-bit BT.2020 PQ.
+# /usr/bin/rubyfunk-gamescope, which is what lets the gamescope backend stream 10-bit BT.2020 PQ.
 # It is NOT built here: it is a C++ meson build with gamescope's whole dependency set, so CI builds
-# it in the same Fedora container beforehand (`bash packaging/gamescope/build-punktfunk-gamescope.sh
+# it in the same Fedora container beforehand (`bash packaging/gamescope/build-rubyfunk-gamescope.sh
 # --destdir stage --prefix /usr`) and passes that DESTDIR in. Omit it and the image is exactly what
 # it was — the host then stays SDR on that backend, by design.
 #
@@ -40,9 +40,9 @@
 # gamescope, so an image with the compositor and without it would stream HDR while every game in it
 # rendered SDR.
 #
-# The installed image MUST be named punktfunk.raw (the embedded extension-release marker is
-# extension-release.punktfunk; systemd-sysext requires marker == image name) — the feed carries
-# versioned filenames and punktfunk-sysext installs to the fixed name.
+# The installed image MUST be named rubyfunk.raw (the embedded extension-release marker is
+# extension-release.rubyfunk; systemd-sysext requires marker == image name) — the feed carries
+# versioned filenames and rubyfunk-sysext installs to the fixed name.
 set -euo pipefail
 
 VERSION_ID="" OUT="" GAMESCOPE="" RPMS=()
@@ -66,8 +66,8 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 
-# SYSEXT_VERSION_ID from the punktfunk RPM (V-R without the dist tag): what
-# `punktfunk-sysext status` reports as the installed version.
+# SYSEXT_VERSION_ID from the rubyfunk RPM (V-R without the dist tag): what
+# `rubyfunk-sysext status` reports as the installed version.
 PF_VR=""
 SEEN_NAMES=" "
 for rpm in "${RPMS[@]}"; do
@@ -77,24 +77,24 @@ for rpm in "${RPMS[@]}"; do
   # download glob) silently shadow each other's files — refuse instead of building a chimera.
   case "$SEEN_NAMES" in *" $name "*) echo "duplicate RPM name '$name' in inputs — pass exactly one RPM per package" >&2; exit 1 ;; esac
   SEEN_NAMES="$SEEN_NAMES$name "
-  if [ "$name" = punktfunk ]; then
+  if [ "$name" = rubyfunk ]; then
     PF_VR="$(rpm -qp --qf '%{VERSION}-%{RELEASE}' "$rpm" 2>/dev/null)"
     PF_VR="${PF_VR%.fc*}"
   fi
   rpm2cpio "$rpm" | ( cd "$STAGE" && cpio -idmu --quiet )
 done
-[ -n "$PF_VR" ] || { echo "the punktfunk (host) RPM must be among the inputs" >&2; exit 1; }
-# An image resolves no dependencies, and both launchers exec punktfunk-bun's bun.
-if [ -e "$STAGE/usr/bin/punktfunk-web-server" ] || [ -e "$STAGE/usr/bin/punktfunk-scripting" ]; then
-  [ -x "$STAGE/usr/libexec/punktfunk-bun/bun" ] || {
-    echo "the punktfunk-bun RPM must be among the inputs — web and scripting run on it" >&2; exit 1; }
+[ -n "$PF_VR" ] || { echo "the rubyfunk (host) RPM must be among the inputs" >&2; exit 1; }
+# An image resolves no dependencies, and both launchers exec rubyfunk-bun's bun.
+if [ -e "$STAGE/usr/bin/rubyfunk-web-server" ] || [ -e "$STAGE/usr/bin/rubyfunk-scripting" ]; then
+  [ -x "$STAGE/usr/libexec/rubyfunk-bun/bun" ] || {
+    echo "the rubyfunk-bun RPM must be among the inputs — web and scripting run on it" >&2; exit 1; }
 fi
 
 # A sysext carries only /usr. Relocate the RPMs' /etc payload (the gamescope-session drop-in)
-# under /usr/share/punktfunk/etc/ — punktfunk-sysext copies it into /etc.
+# under /usr/share/rubyfunk/etc/ — rubyfunk-sysext copies it into /etc.
 if [ -d "$STAGE/etc" ]; then
-  mkdir -p "$STAGE/usr/share/punktfunk/etc"
-  cp -a "$STAGE/etc/." "$STAGE/usr/share/punktfunk/etc/"
+  mkdir -p "$STAGE/usr/share/rubyfunk/etc"
+  cp -a "$STAGE/etc/." "$STAGE/usr/share/rubyfunk/etc/"
   rm -rf "${STAGE:?}/etc"
 fi
 rm -rf "${STAGE:?}/var"   # rpm ghosts etc. — nothing outside /usr may remain
@@ -102,15 +102,15 @@ rm -rf "${STAGE:?}/var"   # rpm ghosts etc. — nothing outside /usr may remain
 # The HDR-capable gamescope, when one was built (see --gamescope-stage in the header), verified by
 # its banner and its WSI layer rather than trusted by filename.
 if [ -n "$GAMESCOPE" ]; then
-  GS_BIN="$GAMESCOPE/usr/bin/punktfunk-gamescope"
-  GS_LAYER_SO="$GAMESCOPE/usr/lib/punktfunk/libVkLayer_PUNKTFUNK_gamescope_wsi.so"
-  GS_LAYER_JSON="$GAMESCOPE/usr/lib/punktfunk/vulkan/implicit_layer.d/punktfunk_gamescope_wsi.json"
+  GS_BIN="$GAMESCOPE/usr/bin/rubyfunk-gamescope"
+  GS_LAYER_SO="$GAMESCOPE/usr/lib/rubyfunk/libVkLayer_RUBYFUNK_gamescope_wsi.so"
+  GS_LAYER_JSON="$GAMESCOPE/usr/lib/rubyfunk/vulkan/implicit_layer.d/rubyfunk_gamescope_wsi.json"
   pf_verify_gamescope "$GAMESCOPE" "the gamescope stage $GAMESCOPE"
-  install -Dm0755 "$GS_BIN" "$STAGE/usr/bin/punktfunk-gamescope"
+  install -Dm0755 "$GS_BIN" "$STAGE/usr/bin/rubyfunk-gamescope"
   install -Dm0755 "$GS_LAYER_SO" \
-    "$STAGE/usr/lib/punktfunk/libVkLayer_PUNKTFUNK_gamescope_wsi.so"
+    "$STAGE/usr/lib/rubyfunk/libVkLayer_RUBYFUNK_gamescope_wsi.so"
   install -Dm0644 "$GS_LAYER_JSON" \
-    "$STAGE/usr/lib/punktfunk/vulkan/implicit_layer.d/punktfunk_gamescope_wsi.json"
+    "$STAGE/usr/lib/rubyfunk/vulkan/implicit_layer.d/rubyfunk_gamescope_wsi.json"
 fi
 
 # Enable the plugin/script runner for every user, by baking its `[Install] WantedBy=default.target`
@@ -122,16 +122,16 @@ fi
 # likely to go hunting for it. The game-library scanners are plugins now (design D9), so an
 # unenabled runner means an empty library.
 #
-# Opt-out is unchanged and still wins: `systemctl --user mask punktfunk-scripting` in the user's own
+# Opt-out is unchanged and still wins: `systemctl --user mask rubyfunk-scripting` in the user's own
 # ~/.config/systemd/user takes precedence over anything under /usr.
-if [ -f "$STAGE/usr/lib/systemd/user/punktfunk-scripting.service" ]; then
+if [ -f "$STAGE/usr/lib/systemd/user/rubyfunk-scripting.service" ]; then
   install -d "$STAGE/usr/lib/systemd/user/default.target.wants"
-  ln -sf ../punktfunk-scripting.service \
-    "$STAGE/usr/lib/systemd/user/default.target.wants/punktfunk-scripting.service"
+  ln -sf ../rubyfunk-scripting.service \
+    "$STAGE/usr/lib/systemd/user/default.target.wants/rubyfunk-scripting.service"
 fi
 
 # Self-update: the helper rides inside the image.
-install -Dm0755 "$HERE/punktfunk-sysext.sh" "$STAGE/usr/bin/punktfunk-sysext"
+install -Dm0755 "$HERE/rubyfunk-sysext.sh" "$STAGE/usr/bin/rubyfunk-sysext"
 # The UDP buffer sysctl and the enabled door/seat units at every boot. Image-borne, so the first
 # update to it fixes the box.
 pf_stage_sysctl_unit "$STAGE"
@@ -140,11 +140,11 @@ pf_stage_start_unit "$STAGE"
 # Compatibility marker. ID=fedora matches Bazzite & friends through os-release ID_LIKE;
 # VERSION_ID makes a major-rebased host refuse the old ABI instead of merging it.
 install -d "$STAGE/usr/lib/extension-release.d"
-cat > "$STAGE/usr/lib/extension-release.d/extension-release.punktfunk" <<EOF
+cat > "$STAGE/usr/lib/extension-release.d/extension-release.rubyfunk" <<EOF
 ID=fedora
 VERSION_ID=$VERSION_ID
 ARCHITECTURE=x86-64
-SYSEXT_ID=punktfunk
+SYSEXT_ID=rubyfunk
 SYSEXT_VERSION_ID=$PF_VR
 EXTENSION_RELOAD_MANAGER=1
 EOF
@@ -173,5 +173,5 @@ rm -f "$OUT"; mkdir -p "$(dirname "$OUT")"
 mksquashfs "$STAGE" "$OUT" -all-root -noappend -quiet \
   -xattrs-exclude '^security.selinux' -pf "$PSEUDO"
 rm -f "$PSEUDO"
-echo "built $OUT (punktfunk $PF_VR, fedora $VERSION_ID, $(du -h "$OUT" | cut -f1))"
-echo "  install on the box:  punktfunk-sysext install   (or --from-file $OUT)"
+echo "built $OUT (rubyfunk $PF_VR, fedora $VERSION_ID, $(du -h "$OUT" | cut -f1))"
+echo "  install on the box:  rubyfunk-sysext install   (or --from-file $OUT)"

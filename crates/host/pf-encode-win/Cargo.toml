@@ -8,7 +8,7 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license = "MIT OR Apache-2.0"
-description = "punktfunk Windows video encode backends: NVENC/AMF/QSV/PyroWave behind the Encoder trait."
+description = "rubyfunk Windows video encode backends: NVENC/AMF/QSV/PyroWave behind the Encoder trait."
 publish = false
 
 [dependencies]

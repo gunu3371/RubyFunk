@@ -4,7 +4,7 @@
 use super::{config_dir, load_json_or_default, write_atomic};
 use crate::presets::{PresetsFile, StreamPreset};
 use anyhow::Result;
-use punktfunk_core::discovery::DiscoveredHost;
+use rubyfunk_core::discovery::DiscoveredHost;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use std::collections::BTreeMap;
@@ -887,7 +887,7 @@ pub struct Paired {
 /// The save every pairing ceremony ends in: the host `fp` names, trusted and `paired`, by
 /// [`persist_host`]. `mac` is as there.
 pub fn save_paired(name: &str, addr: &str, port: u16, fp: [u8; 32], mac: &[String]) -> Paired {
-    let fp_hex = punktfunk_core::fp::hex(&fp);
+    let fp_hex = rubyfunk_core::fp::hex(&fp);
     let saved = persist_host(name, addr, port, &fp_hex, true, mac);
     Paired { fp, fp_hex, saved }
 }
@@ -961,7 +961,7 @@ fn apply_advert(
 /// `addr:port`, and keep the advert's address as a place [`probe_known`](super::probe_known)
 /// asks. No-op, and no disk write, when nothing changed — call it on every discovery tick.
 ///
-/// Mints no record ids: `punktfunk discover` calls this, and hands none out.
+/// Mints no record ids: `rubyfunk discover` calls this, and hands none out.
 pub fn learn_from_advert(fp_hex: &str, addr: &str, port: u16, advert: &DiscoveredHost) {
     let Ok(path) = KnownHosts::path() else {
         return;

@@ -2,23 +2,23 @@
 // identity cert, from the environment with file fallbacks — so `connect()` on the host machine
 // needs zero configuration.
 //
-//   PUNKTFUNK_MGMT_URL     else <config_dir>/mgmt-endpoint (the URL the host actually bound,
+//   RUBYFUNK_MGMT_URL     else <config_dir>/mgmt-endpoint (the URL the host actually bound,
 //                          rewritten on every start), else https://127.0.0.1:47990
-//   PUNKTFUNK_MGMT_TOKEN   (admin override), else PUNKTFUNK_PLUGIN_TOKEN,
+//   RUBYFUNK_MGMT_TOKEN   (admin override), else RUBYFUNK_PLUGIN_TOKEN,
 //                          else <config_dir>/plugin-token, else <config_dir>/mgmt-token
-//   PUNKTFUNK_MGMT_CA      (path; else <config_dir>/native-cert.pem, else cert.pem when present)
+//   RUBYFUNK_MGMT_CA      (path; else <config_dir>/native-cert.pem, else cert.pem when present)
 //
 // Token precedence is deliberate: the host mints a capability-limited `plugin-token` for the
 // scripting runner (it cannot register hooks or administer pairing), and that is what a plugin's
 // zero-config connect() should hold — the full-admin `mgmt-token` is only a fallback for hosts
 // that predate the plugin token (and on Windows the runner's LocalService principal can't read it
-// at all). A script that legitimately needs the admin surface sets PUNKTFUNK_MGMT_TOKEN or passes
+// at all). A script that legitimately needs the admin surface sets RUBYFUNK_MGMT_TOKEN or passes
 // { token } explicitly.
 //
 // The CA is the host's own identity certificate — trusting exactly it (not the system roots)
 // IS the pin for the loopback hop. Per-runtime plumbing differs: Bun takes `tls.ca` on fetch,
 // Node (undici) takes a dispatcher with a CA-carrying TLS connector; anything else falls back
-// to plain fetch (document PUNKTFUNK_MGMT_CA + NODE_EXTRA_CA_CERTS there).
+// to plain fetch (document RUBYFUNK_MGMT_CA + NODE_EXTRA_CA_CERTS there).
 import type { Connection } from "./connection.js";
 import { noCredential, staticBearer } from "./credential.js";
 import { socketFetch } from "./pipe-fetch.js";
@@ -29,9 +29,9 @@ import * as path from "node:path";
 export interface ConnectOptions {
 	/** Management API base URL (default `https://127.0.0.1:47990`). */
 	url?: string;
-	/** Bearer token (default: `PUNKTFUNK_MGMT_TOKEN`, else the host's `mgmt-token` file). */
+	/** Bearer token (default: `RUBYFUNK_MGMT_TOKEN`, else the host's `mgmt-token` file). */
 	token?: string;
-	/** PEM of the CA to trust — the host's identity cert (default: `PUNKTFUNK_MGMT_CA`, else `native-cert.pem`, else `cert.pem`). */
+	/** PEM of the CA to trust — the host's identity cert (default: `RUBYFUNK_MGMT_CA`, else `native-cert.pem`, else `cert.pem`). */
 	ca?: string;
 }
 
@@ -45,15 +45,15 @@ export interface ResolvedConfig extends Connection {
 
 /** The host's config dir — the same resolution the host itself uses. */
 export const configDir = (): string => {
-	const explicit = process.env.PUNKTFUNK_CONFIG_DIR;
+	const explicit = process.env.RUBYFUNK_CONFIG_DIR;
 	if (explicit) return explicit;
 	if (process.platform === "win32") {
 		const base = process.env.ProgramData ?? process.env.APPDATA ?? ".";
-		return path.join(base, "punktfunk");
+		return path.join(base, "rubyfunk");
 	}
 	const base =
 		process.env.XDG_CONFIG_HOME ?? path.join(os.homedir(), ".config");
-	return path.join(base, "punktfunk");
+	return path.join(base, "rubyfunk");
 };
 
 /**
@@ -62,7 +62,7 @@ export const configDir = (): string => {
  *
  * WHY this and not `<config_dir>/<name>` directly: on Windows the managed runner is de-privileged
  * (runs as `NT AUTHORITY\LocalService`), and the config dir is locked to Users-read — so a plugin
- * writing straight under it fails with EPERM. `punktfunk-host plugins enable` grants the runner
+ * writing straight under it fails with EPERM. `rubyfunk-host plugins enable` grants the runner
  * **Modify** on exactly `plugin-state` (the config dir and the plugin *code* stay read-only), so
  * this is the one place a supervised plugin can write. On Linux the runner is a `systemd --user`
  * unit owning the whole config dir, so the path is writable there too — same code, no branch.
@@ -83,7 +83,7 @@ export const pluginStateDir = (name?: string): string => {
  * The mirror of {@link pluginStateDir}, and the answer to a problem the de-privileging creates on
  * Windows: the LocalService runner can no longer traverse the interactive user's profile, so a
  * plugin can't read a file an app running as *you* produced (e.g. the Playnite exporter's library
- * JSON under your `%APPDATA%`). `punktfunk-host plugins enable` grants `BUILTIN\Users` **write** on
+ * JSON under your `%APPDATA%`). `rubyfunk-host plugins enable` grants `BUILTIN\Users` **write** on
  * exactly `ingest` — so your app drops `ingest/<plugin>/…` and the runner reads it there. On Linux
  * the runner is a `systemd --user` unit owning the config dir, so a same-user producer writes here
  * with no special step.
@@ -117,8 +117,8 @@ const parseTokenFile = (raw: string): string | undefined => {
 
 /**
  * The mgmt URL the host published: `<config_dir>/mgmt-endpoint`, one
- * `PUNKTFUNK_MGMT_URL=https://127.0.0.1:<port>` line the host rewrites on every start with the port
- * it REALLY bound. This is how a `PUNKTFUNK_MGMT_BIND` move (the supported way to share a box with
+ * `RUBYFUNK_MGMT_URL=https://127.0.0.1:<port>` line the host rewrites on every start with the port
+ * it REALLY bound. This is how a `RUBYFUNK_MGMT_BIND` move (the supported way to share a box with
  * Sunshine/Apollo, whose web UI owns 47990) reaches a plugin: the runner is a scheduled task /
  * systemd unit that inherits nothing from `host.env` (which on Windows it can't even read), so
  * before this a moved port left every plugin — and the runner's own log shipper — dialing
@@ -133,7 +133,7 @@ export const resolveConfig = async (
 ): Promise<ResolvedConfig> => {
 	const url = (
 		options?.url ??
-		process.env.PUNKTFUNK_MGMT_URL ??
+		process.env.RUBYFUNK_MGMT_URL ??
 		publishedMgmtUrl() ??
 		"https://127.0.0.1:47990"
 	).replace(/\/+$/, "");
@@ -142,15 +142,15 @@ export const resolveConfig = async (
 	// up handed every plugin full admin on any host whose plugin token was missing.
 	const token =
 		options?.token ??
-		process.env.PUNKTFUNK_MGMT_TOKEN ??
-		process.env.PUNKTFUNK_PLUGIN_TOKEN ??
+		process.env.RUBYFUNK_MGMT_TOKEN ??
+		process.env.RUBYFUNK_PLUGIN_TOKEN ??
 		parseTokenFile(readIfExists(path.join(configDir(), "plugin-token")) ?? "");
 	// On the host's own pipe the connection is the credential: an AppContainer holds no token.
-	if (!token && !isPipe(process.env.PUNKTFUNK_MGMT_UNIX)) {
+	if (!token && !isPipe(process.env.RUBYFUNK_MGMT_UNIX)) {
 		throw new Error(
 			"no plugin token: the host writes one to " +
 				`${path.join(configDir(), "plugin-token")} once the runner is installed. Pass ` +
-				"{ token }, or set PUNKTFUNK_MGMT_TOKEN for a script that needs the admin API.",
+				"{ token }, or set RUBYFUNK_MGMT_TOKEN for a script that needs the admin API.",
 		);
 	}
 	const ca = resolveCa(url, options);
@@ -167,9 +167,9 @@ export const resolveConfig = async (
 const isPipe = (socket: string | undefined): boolean =>
 	(socket ?? "").trim().startsWith("\\\\.\\pipe\\");
 
-/** The certificate to pin for `url`: explicit, then `PUNKTFUNK_MGMT_CA`, then the host's own. */
+/** The certificate to pin for `url`: explicit, then `RUBYFUNK_MGMT_CA`, then the host's own. */
 const resolveCa = (url: string, options?: ConnectOptions): string | undefined => {
-	const caPath = process.env.PUNKTFUNK_MGMT_CA;
+	const caPath = process.env.RUBYFUNK_MGMT_CA;
 	return (
 		options?.ca ??
 		(caPath ? readIfExists(caPath) : undefined) ??
@@ -198,7 +198,7 @@ export const hostFetch = (url: string, options?: ConnectOptions): Promise<typeof
 const makeFetch = async (ca: string | undefined): Promise<typeof fetch> => {
 	// Inside a sandbox there is no route to the host's port: the supervisor listens on this
 	// socket and forwards over its own pinned connection, so there is nothing to pin in here.
-	const unix = process.env.PUNKTFUNK_MGMT_UNIX?.trim();
+	const unix = process.env.RUBYFUNK_MGMT_UNIX?.trim();
 	if (unix) {
 		// A Windows pipe — the host's own, per plugin — is not a socket bun's fetch dials.
 		if (isPipe(unix)) return socketFetch(unix);
@@ -226,7 +226,7 @@ const makeFetch = async (ca: string | undefined): Promise<typeof fetch> => {
 		return ((input: Parameters<typeof fetch>[0], init?: RequestInit) =>
 			fetch(input, { ...init, dispatcher } as RequestInit)) as typeof fetch;
 	} catch {
-		// Unknown runtime: plain fetch (system trust) — PUNKTFUNK_MGMT_CA via the runtime's
+		// Unknown runtime: plain fetch (system trust) — RUBYFUNK_MGMT_CA via the runtime's
 		// own CA mechanism (e.g. NODE_EXTRA_CA_CERTS / --cert) is the documented fallback.
 		return fetch;
 	}

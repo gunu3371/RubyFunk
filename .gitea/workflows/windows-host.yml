@@ -1,4 +1,4 @@
-# Build the punktfunk Windows HOST as a signed punktfunk-setup-win installer and publish it to Gitea's
+# Build the rubyfunk Windows HOST as a signed rubyfunk-setup-win installer and publish it to Gitea's
 # generic package registry, so a Windows GPU box can install the streaming host (SYSTEM service + bundled
 # pf-vdisplay virtual-display driver + the web management console + the opt-in plugin/script runner,
 # run by scheduled tasks on a bundled bun) from one signed setup.exe. Runs on a self-hosted
@@ -10,7 +10,7 @@
 # Why an installer and not MSIX (like the client): the host installs a LocalSystem SCM service that
 # CreateProcessAsUserW's into the interactive session for secure-desktop capture, and bundles a
 # kernel/IDD driver — neither is expressible in MSIX's sandbox. The real install logic already lives
-# in `punktfunk-host service install` (crates/host/punktfunk-host/src/service.rs); the installer just lays
+# in `rubyfunk-host service install` (crates/host/rubyfunk-host/src/service.rs); the installer just lays
 # the exe down and calls it elevated. Packaging internals: packaging/windows/README.md.
 #
 # Registry (public reads, unom org): https://git.unom.io/unom/-/packages  (generic group)
@@ -68,12 +68,12 @@ on:
     # The crate lines are the Windows host + tray build closure. scripts/ci/check-workflow-paths.py
     # fails CI when one is missing, in either leg.
     paths:
-      - 'crates/client/punktfunk-ffi/**'
+      - 'crates/client/rubyfunk-ffi/**'
       - 'crates/codec/libvpl-sys/**'
       - 'crates/codec/pf-bitstream/**'
       - 'crates/codec/pyrowave-sys/**'
       - 'crates/core/pf-update-check/**'
-      - 'crates/core/punktfunk-core/**'
+      - 'crates/core/rubyfunk-core/**'
       - 'crates/host/pf-audio/**'
       - 'crates/host/pf-capture/**'
       - 'crates/host/pf-clipboard/**'
@@ -95,9 +95,9 @@ on:
       - 'crates/host/pf-vdisplay/**'
       - 'crates/host/pf-win-display/**'
       - 'crates/host/pf-zerocopy/**'
-      - 'crates/host/punktfunk-capture-worker/**'
-      - 'crates/host/punktfunk-host/**'
-      - 'crates/install/punktfunk-tray/**'
+      - 'crates/host/rubyfunk-capture-worker/**'
+      - 'crates/host/rubyfunk-host/**'
+      - 'crates/install/rubyfunk-tray/**'
       - 'tools/display-disturb/**'
       - 'packaging/windows/**'
       - 'scripts/windows/**'
@@ -111,12 +111,12 @@ on:
   # code meets a compiler before merge.
   pull_request:
     paths:
-      - 'crates/client/punktfunk-ffi/**'
+      - 'crates/client/rubyfunk-ffi/**'
       - 'crates/codec/libvpl-sys/**'
       - 'crates/codec/pf-bitstream/**'
       - 'crates/codec/pyrowave-sys/**'
       - 'crates/core/pf-update-check/**'
-      - 'crates/core/punktfunk-core/**'
+      - 'crates/core/rubyfunk-core/**'
       - 'crates/host/pf-audio/**'
       - 'crates/host/pf-capture/**'
       - 'crates/host/pf-clipboard/**'
@@ -138,9 +138,9 @@ on:
       - 'crates/host/pf-vdisplay/**'
       - 'crates/host/pf-win-display/**'
       - 'crates/host/pf-zerocopy/**'
-      - 'crates/host/punktfunk-capture-worker/**'
-      - 'crates/host/punktfunk-host/**'
-      - 'crates/install/punktfunk-tray/**'
+      - 'crates/host/rubyfunk-capture-worker/**'
+      - 'crates/host/rubyfunk-host/**'
+      - 'crates/install/rubyfunk-tray/**'
       - 'tools/display-disturb/**'
       - 'packaging/windows/**'
       - 'scripts/windows/**'
@@ -159,7 +159,7 @@ on:
 env:
   REGISTRY: git.unom.io
   OWNER: unom
-  PKG: punktfunk-host-windows
+  PKG: rubyfunk-host-windows
   RUSTC_WRAPPER: sccache
   SCCACHE_BUCKET: unom-ci-sccache
   SCCACHE_ENDPOINT: https://storage.unom.io
@@ -230,7 +230,7 @@ jobs:
         # C++ tree, and the drivers lane already compiles that backend. Two runs, not eight:
         # every extra feature set re-checks the crates the runs share.
         run: |
-          cargo clippy --release --locked -p punktfunk-host -p punktfunk-tray --features nvenc,qsv --target x86_64-pc-windows-msvc -- -D warnings; if ($LASTEXITCODE) { throw "host clippy" }
+          cargo clippy --release --locked -p rubyfunk-host -p rubyfunk-tray --features nvenc,qsv --target x86_64-pc-windows-msvc -- -D warnings; if ($LASTEXITCODE) { throw "host clippy" }
           cargo clippy --release --locked -p pf-encode -p pf-encode-core -p pf-encode-win -p pf-encode-session -p pf-capture -p pf-vdisplay -p pf-win-display -p pf-inject -p pf-audio -p pf-seats -p pf-seat-audio -p pf-clipboard -p pf-frame -p display-disturb --all-targets --features nvenc,qsv --target x86_64-pc-windows-msvc -- -D warnings; if ($LASTEXITCODE) { throw "subsystem clippy" }
           # The seat keeper is its own workspace (IronRDP's lockfile); see its Cargo.toml.
           cargo clippy --release --locked --manifest-path crates/host/pf-seat-keeper/Cargo.toml --target x86_64-pc-windows-msvc -- -D warnings; if ($LASTEXITCODE) { throw "seat keeper clippy" }
@@ -238,7 +238,7 @@ jobs:
       - name: Format check
         # Cheap, needs no compile, and the Linux lane cannot see these crates' Windows modules.
         run: |
-          cargo fmt -p punktfunk-host -p pf-encode -p pf-encode-core -p pf-encode-win -p pf-encode-session -p pf-capture -p pf-vdisplay -p pf-win-display -p pf-inject -p pf-audio -p pf-seats -p pf-seat-audio -p pf-clipboard -p pf-frame -p punktfunk-tray -p punktfunk-capture-worker --check; if ($LASTEXITCODE) { throw "fmt" }
+          cargo fmt -p rubyfunk-host -p pf-encode -p pf-encode-core -p pf-encode-win -p pf-encode-session -p pf-capture -p pf-vdisplay -p pf-win-display -p pf-inject -p pf-audio -p pf-seats -p pf-seat-audio -p pf-clipboard -p pf-frame -p rubyfunk-tray -p rubyfunk-capture-worker --check; if ($LASTEXITCODE) { throw "fmt" }
           cargo fmt --manifest-path crates/host/pf-seat-keeper/Cargo.toml --check; if ($LASTEXITCODE) { throw "seat keeper fmt" }
 
       - name: Test (subsystem crates, Windows)
@@ -248,7 +248,7 @@ jobs:
         # runs featureless, so no encoder SDK is in its graph.
         #
         # pf-win-display joins them for the same reason as pf-capture: its manifest is
-        # punktfunk-core (default-features off), pf-paths, tracing and windows — no encoder in
+        # rubyfunk-core (default-features off), pf-paths, tracing and windows — no encoder in
         # the tree, so the link objection does not apply. Its 29 tests are the CCD path/mode
         # array transforms (keep_only_supplied, remap_mode_idx, anchor_kept_sources_at_origin,
         # prune_saved_config_for_targets) — pure code that decides what the operator's desktop
@@ -349,7 +349,7 @@ jobs:
             # Canary: <major>.<minor>.<run> — major.minor track one minor ahead of stable, run climbs monotonically.
             "$($pf.PF_MAJOR).$($pf.PF_MINOR).$($env:GITHUB_RUN_NUMBER)"
           }
-          # Not PUNKTFUNK_BUILD_VERSION: the packer stamps $v into the finished exe, so a new run
+          # Not RUBYFUNK_BUILD_VERSION: the packer stamps $v into the finished exe, so a new run
           # number never recompiles the host (packaging/windows/stamp-version.ps1).
           "HOST_VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           Write-Output "host version $v"
@@ -400,38 +400,38 @@ jobs:
         # The fingerprint log names why each rebuilt unit was dirty; a fresh unit prints nothing.
         env:
           CARGO_LOG: cargo::core::compiler::fingerprint=info
-        run: cargo build --release --locked -p punktfunk-host ${{ matrix.host_flags }} --target ${{ matrix.target }}
+        run: cargo build --release --locked -p rubyfunk-host ${{ matrix.host_flags }} --target ${{ matrix.target }}
 
       - name: Build (release, status tray)
         shell: pwsh
-        # The per-user notification-area companion the installer bundles (punktfunk-tray.exe).
-        run: cargo build --release --locked -p punktfunk-tray --target ${{ matrix.target }}
+        # The per-user notification-area companion the installer bundles (rubyfunk-tray.exe).
+        run: cargo build --release --locked -p rubyfunk-tray --target ${{ matrix.target }}
 
       - name: Build (release, seat keeper)
         shell: pwsh
-        # punktfunk-seat-keeper.exe, from its own workspace into the same CARGO_TARGET_DIR, so
-        # it lands beside punktfunk-host.exe where the pack script takes it.
+        # rubyfunk-seat-keeper.exe, from its own workspace into the same CARGO_TARGET_DIR, so
+        # it lands beside rubyfunk-host.exe where the pack script takes it.
         run: cargo build --release --locked --manifest-path crates/host/pf-seat-keeper/Cargo.toml --target ${{ matrix.target }}
 
       - name: Build (release, capture worker)
         shell: pwsh
-        # punktfunk-capture-worker.exe: captures and encodes a monitor the host did not create, as
+        # rubyfunk-capture-worker.exe: captures and encodes a monitor the host did not create, as
         # the signed-in user. The installer places it beside the host. Its backends follow the
         # target, as the driver's do, so it takes no feature flags.
-        run: cargo build --release --locked -p punktfunk-capture-worker --target ${{ matrix.target }}
+        run: cargo build --release --locked -p rubyfunk-capture-worker --target ${{ matrix.target }}
 
       - name: Clippy (host + tray, Windows)
         shell: pwsh
         # --release reuses the tree the Build steps made. A debug clippy builds a second one, and
         # its second openh264 C++ build tips this runner into C1069 (disk/temp exhaustion).
         # The subsystem crates take --all-targets so their Windows `#[cfg(test)]` modules are
-        # type-checked; `-p punktfunk-host` builds them only as dependencies. The host and
+        # type-checked; `-p rubyfunk-host` builds them only as dependencies. The host and
         # pf-encode stay lint-only: with `nvenc` a test binary cannot link on MSVC.
         # Two runs, not eight: every extra feature set re-checks the crates the runs share.
         run: |
           $t = '${{ matrix.target }}'
-          cargo clippy --release --locked -p punktfunk-host -p punktfunk-tray ${{ matrix.host_flags }} --target $t -- -D warnings; if ($LASTEXITCODE) { throw "host clippy" }
-          cargo clippy --release --locked -p punktfunk-capture-worker --target $t -- -D warnings; if ($LASTEXITCODE) { throw "capture worker clippy" }
+          cargo clippy --release --locked -p rubyfunk-host -p rubyfunk-tray ${{ matrix.host_flags }} --target $t -- -D warnings; if ($LASTEXITCODE) { throw "host clippy" }
+          cargo clippy --release --locked -p rubyfunk-capture-worker --target $t -- -D warnings; if ($LASTEXITCODE) { throw "capture worker clippy" }
           cargo clippy --release --locked -p pf-encode -p pf-encode-core -p pf-encode-win -p pf-encode-session -p pf-capture -p pf-vdisplay -p pf-win-display -p pf-inject -p pf-audio -p pf-seats -p display-disturb --all-targets ${{ matrix.encode_flags }} --target $t -- -D warnings; if ($LASTEXITCODE) { throw "subsystem clippy" }
           cargo clippy --release --locked --manifest-path crates/host/pf-seat-keeper/Cargo.toml --target $t -- -D warnings; if ($LASTEXITCODE) { throw "seat keeper clippy" }
 
@@ -472,7 +472,7 @@ jobs:
         # pf-vdisplay's Windows half is ~3,400 lines (manager.rs, pf_vdisplay.rs, ddc.rs, the three
         # manager/ submodules) that NO other job compiles — the host lint above builds the crate as
         # a dependency, so its test targets were reaching no compiler anywhere. Worse, the only two
-        # Windows `#[test]`s were `if env::var("PUNKTFUNK_PF_VDISPLAY_LIVE").is_err() { return; }`
+        # Windows `#[test]`s were `if env::var("RUBYFUNK_PF_VDISPLAY_LIVE").is_err() { return; }`
         # early-returns, so an unrun hardware test reported `ok`. They are `#[ignore]`d now and this
         # step reports them as `ignored`, which is the truth.
         #
@@ -582,7 +582,7 @@ jobs:
           }
           Pop-Location
           # Gate the installer on a real boot under the BUNDLED bun (the runtime it ships), serving /login.
-          $env:PORT = '3009'; $env:HOST = '127.0.0.1'; $env:PUNKTFUNK_UI_PASSWORD = 'ci'
+          $env:PORT = '3009'; $env:HOST = '127.0.0.1'; $env:RUBYFUNK_UI_PASSWORD = 'ci'
           $server = (Resolve-Path 'web\.output\server\index.mjs').Path
           $p = Start-Process -FilePath $bun -ArgumentList $server -PassThru -WindowStyle Hidden
           Start-Sleep -Seconds 4
@@ -595,7 +595,7 @@ jobs:
       # last line, so a CACHE HIT skipped it and left the variable unset — and pack-host-installer.ps1
       # treats an unset WEB_OUTPUT_DIR as "don't bundle the console", silently ("installer built
       # WITHOUT the web console"). That shipped in 0.22.1 and 0.22.2: no {app}\web, so no web-run.cmd,
-      # so `web setup` bails, so no PunktfunkWeb task and no console at all. It also removed the only
+      # so `web setup` bails, so no RubyFunkWeb task and no console at all. It also removed the only
       # thing that stopped bun before the copy (StopBunRuntimes was #ifdef WithWeb), while bun.exe kept
       # shipping under WithScripting — which is the "DeleteFile failed; code 5" modal on bun.exe.
       # The throw is the point: never silently ship a console-less installer again.
@@ -661,7 +661,7 @@ jobs:
           AZURE_CODESIGNING_ENDPOINT: https://neu.codesigning.azure.net/
           AZURE_CODESIGNING_ACCOUNT: unomsigning
           AZURE_CODESIGNING_PROFILE: unom-io
-          # Service principal 'punktfunk-ci-signing', holding ONLY the Artifact Signing Certificate
+          # Service principal 'rubyfunk-ci-signing', holding ONLY the Artifact Signing Certificate
           # Profile Signer role, scoped to the unom-io profile — it can sign and nothing else.
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -677,7 +677,7 @@ jobs:
           DRIVER_CERT_PFX_B64: ${{ secrets.DRIVER_CERT_PFX_B64 }}
           DRIVER_CERT_PASSWORD: ${{ secrets.DRIVER_CERT_PASSWORD }}
         run: |
-          # The engine exe (punktfunk-setup-win + payload). It keeps the Inno silent flags (D5)
+          # The engine exe (rubyfunk-setup-win + payload). It keeps the Inno silent flags (D5)
           # and the ARP key + unins000.exe (D6), so the updater, winget and every fielded Inno
           # install upgrade onto it unchanged.
           & packaging/windows/pack-host-installer.ps1 `
@@ -714,8 +714,8 @@ jobs:
         if: matrix.arch == 'x64'
         shell: pwsh
         run: |
-          $got = & '${{ matrix.td }}\out\punktfunk-host.exe' --version
-          if ($got -ne "punktfunk-host $env:HOST_VERSION") { throw "stamped exe reports '$got', not $env:HOST_VERSION" }
+          $got = & '${{ matrix.td }}\out\rubyfunk-host.exe' --version
+          if ($got -ne "rubyfunk-host $env:HOST_VERSION") { throw "stamped exe reports '$got', not $env:HOST_VERSION" }
           Write-Output $got
 
       - name: Smoke the installer (silent dry-run)
@@ -731,7 +731,7 @@ jobs:
             -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', "/LOG=$log", '--dry-run'
           if ($p.ExitCode -ne 0) { throw "silent dry-run exited $($p.ExitCode)" }
           $text = Get-Content $log -Raw
-          foreach ($line in @('==> Detected Windows', 'punktfunk-host.exe" service install', 'web setup', 'Done. Next:')) {
+          foreach ($line in @('==> Detected Windows', 'rubyfunk-host.exe" service install', 'web setup', 'Done. Next:')) {
             if (-not $text.Contains($line)) { throw "smoke transcript lacks: $line" }
           }
           Get-Content $log
@@ -785,9 +785,9 @@ jobs:
           # literal key ("A null key is not allowed in a hash literal"), not the empty-string key it
           # looks like it should be. The $files guard above filters the missing .cer out just fine;
           # this line ran before anything could use it and failed the whole publish step.
-          $aliasNames = @{ $env:HOST_SETUP_PATH = 'punktfunk-host-setup${{ matrix.suffix }}.exe' }
+          $aliasNames = @{ $env:HOST_SETUP_PATH = 'rubyfunk-host-setup${{ matrix.suffix }}.exe' }
           # One signing cert for both arches: the x64 leg owns the .cer alias.
-          if ($env:HOST_CER_PATH -and '${{ matrix.arch }}' -eq 'x64') { $aliasNames[$env:HOST_CER_PATH] = 'punktfunk-host-windows.cer' }
+          if ($env:HOST_CER_PATH -and '${{ matrix.arch }}' -eq 'x64') { $aliasNames[$env:HOST_CER_PATH] = 'rubyfunk-host-windows.cer' }
           foreach ($f in $files) {
             $an = $aliasNames[$f]; if (-not $an) { continue }
             curl.exe -fsS -o NUL --user "enricobuehler:$($env:REGISTRY_TOKEN)" -X DELETE "$base/$alias/$an" 2>$null

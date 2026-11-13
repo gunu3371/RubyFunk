@@ -33,7 +33,7 @@ use ash::vk::Handle as _;
 #[cfg(windows)]
 use pf_client_core::video::SlotFormat;
 use pf_client_core::video::{CpuPlanarFrame, NativeVkFrame, NativeVkLayout, RawVkFormat};
-use punktfunk_core::video_fit::Placement;
+use rubyfunk_core::video_fit::Placement;
 use std::ops::ControlFlow;
 
 /// Where a CSC pass draws.
@@ -168,7 +168,7 @@ impl DirectSrc {
 
 impl Presenter {
     /// How a frame of another aspect fills the swapchain. Takes effect on the next present.
-    pub fn set_video_fit(&mut self, fit: punktfunk_core::video_fit::VideoFit) {
+    pub fn set_video_fit(&mut self, fit: rubyfunk_core::video_fit::VideoFit) {
         self.video_fit = fit;
         self.placement_logged = None;
     }
@@ -180,7 +180,7 @@ impl Presenter {
         &mut self,
         width: u32,
         height: u32,
-        p: &punktfunk_core::video_fit::Placement,
+        p: &rubyfunk_core::video_fit::Placement,
         path: &'static str,
     ) {
         let key = (self.targets.extent, width, height, path);
@@ -526,7 +526,7 @@ impl Presenter {
         let source = slot.map(|(f, w, h)| (f.image, w, h)).or(source);
         let view = (self.targets.extent.width, self.targets.extent.height);
         let placement = source
-            .map(|(_, w, h)| punktfunk_core::video_fit::place(self.video_fit, view, (w, h)))
+            .map(|(_, w, h)| rubyfunk_core::video_fit::place(self.video_fit, view, (w, h)))
             .filter(|p| !p.is_empty());
         let targets_ready = self.targets.overlay.framebuffers.len() == self.targets.images.len();
         let filtered = match (placement, &self.video) {

@@ -1,19 +1,19 @@
 ---
 title: Writing plugins
-description: Build a host plugin with @punktfunk/plugin-kit — the manifest, the sandbox, a minimal library source, testing on a host and publishing to a catalog.
+description: Build a host plugin with @rubyfunk/plugin-kit — the manifest, the sandbox, a minimal library source, testing on a host and publishing to a catalog.
 ---
 
 A plugin is an npm package that the host's plugin runner loads and supervises. This page takes you
 from an empty folder to a package operators can install from the console. Most plugins are library
-sources, like [`punktfunk-plugin-steam`](https://git.unom.io/unom/punktfunk-plugin-steam);
-[`punktfunk-plugin-rom-manager`](https://git.unom.io/unom/punktfunk-plugin-rom-manager) also has
+sources, like [`rubyfunk-plugin-steam`](https://git.unom.io/unom/punktfunk-plugin-steam);
+[`rubyfunk-plugin-rom-manager`](https://git.unom.io/unom/punktfunk-plugin-rom-manager) also has
 its own console page.
 
 ## How a plugin runs
 
-The runner (`punktfunk-scripting`) starts every package listed in `<config>/plugins/package.json`
-whose name is `@<scope>/plugin-*` or `punktfunk-plugin-*`. `<config>` is `~/.config/punktfunk` on
-Linux and `%ProgramData%\punktfunk` on Windows.
+The runner (`rubyfunk-scripting`) starts every package listed in `<config>/plugins/package.json`
+whose name is `@<scope>/plugin-*` or `rubyfunk-plugin-*`. `<config>` is `~/.config/rubyfunk` on
+Linux and `%ProgramData%\rubyfunk` on Windows.
 
 - It imports the package's `module` (else `main`) entry. The default export must be a plugin
   definition.
@@ -27,14 +27,14 @@ Linux and `%ProgramData%\punktfunk` on Windows.
 
 | | Linux | Windows |
 |---|---|---|
-| Isolation | One bubblewrap sandbox per plugin, with its own PID namespace | One AppContainer per plugin, `punktfunk.plugin.<id>`, under the runner's `NT AUTHORITY\LocalService` account |
+| Isolation | One bubblewrap sandbox per plugin, with its own PID namespace | One AppContainer per plugin, `rubyfunk.plugin.<id>`, under the runner's `NT AUTHORITY\LocalService` account |
 | Files | `/usr`, its own code, its state dir, the manifest's paths and the operator's grants | Program Files, its own code, its state dir, the manifest's paths and the operator's grants; user profiles are closed |
 | Network | None unless the manifest sets `network` | None unless the manifest sets `network`; never loopback |
 | Host API | A socket the runner forwards; `connect()` finds it | A named pipe per plugin; `connect()` finds it |
 
 ## The manifest
 
-Declare what the plugin needs in a `punktfunk` block in its `package.json`; the
+Declare what the plugin needs in a `rubyfunk` block in its `package.json`; the
 [minimal plugin](#a-minimal-library-plugin) below has one. It ships inside the reviewed tarball, so
 nothing the plugin does at runtime widens it. Without it, a plugin does not start.
 
@@ -50,7 +50,7 @@ nothing the plugin does at runtime widens it. Without it, a plugin does not star
 | `exec` | Named argv templates the host may run for this plugin's titles. |
 
 The sandbox never binds `/`, the home directory or its parents, `/proc`, `/sys`, `/dev`, `/run`
-(except `/run/media`), `~/.ssh`, `~/.gnupg` or `~/.config/punktfunk`.
+(except `/run/media`), `~/.ssh`, `~/.gnupg` or `~/.config/rubyfunk`.
 
 An `exec` template names a program and its arguments with `{param}` placeholders. A title supplies
 the values, and the host builds the argv itself. `exe` is a program name looked up on `PATH`, or an absolute path inside the plugin's roots; it may
@@ -76,7 +76,7 @@ once with `saves: true` on `POST /api/v1/plugin-access/requests`.
 
 ## A minimal library plugin
 
-`@punktfunk/plugin-kit/library` supplies everything except the scan: the sync loop, file watching,
+`@rubyfunk/plugin-kit/library` supplies everything except the scan: the sync loop, file watching,
 the console settings form and the CLI. Four files:
 
 ```json title="package.json"
@@ -85,18 +85,18 @@ the console settings form and the CLI. Four files:
   "version": "0.1.0",
   "type": "module",
   "module": "./dist/index.js",
-  "bin": { "punktfunk-plugin-hello": "./dist/cli.js" },
+  "bin": { "rubyfunk-plugin-hello": "./dist/cli.js" },
   "files": ["dist"],
   "scripts": {
-    "build": "bun build src/index.ts src/cli.ts --target=bun --outdir dist --external effect --external '@punktfunk/*'",
+    "build": "bun build src/index.ts src/cli.ts --target=bun --outdir dist --external effect --external '@rubyfunk/*'",
     "test": "bun test"
   },
   "dependencies": {
-    "@punktfunk/host": "^0.4.0",
-    "@punktfunk/plugin-kit": "^0.13.0",
+    "@rubyfunk/host": "^0.4.0",
+    "@rubyfunk/plugin-kit": "^0.13.0",
     "effect": "4.0.1"
   },
-  "punktfunk": {
+  "rubyfunk": {
     "schema": 1,
     "id": "hello",
     "reads": ["~/.local/share/hello"],
@@ -112,7 +112,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { Effect, Schema } from "effect";
-import { defineLibraryPlugin } from "@punktfunk/plugin-kit/library";
+import { defineLibraryPlugin } from "@rubyfunk/plugin-kit/library";
 
 const dir = () => path.join(os.homedir(), ".local/share/hello");
 const db = () => path.join(dir(), "games.json");
@@ -145,7 +145,7 @@ import { plugin } from "./plugin.js";
 await plugin.cli();
 ```
 
-Before `bun install`, add `@punktfunk:registry=https://git.unom.io/api/packages/unom/npm/` to
+Before `bun install`, add `@rubyfunk:registry=https://git.unom.io/api/packages/unom/npm/` to
 `.npmrc`.
 
 The host lists each title as `hello:<external_id>`. Other `launch` kinds cover the common
@@ -166,7 +166,7 @@ tell when the game quits.
 | Art or details for every game | `defineMetadataPlugin`; see [below](#a-source-of-art-and-details) |
 | Work before a game starts | `serveUi({ title, holds })`; see [below](#hold-a-launch) |
 | Titles that download before they play | `serveUi({ title, install })`; see [below](#install-a-title) |
-| Reacting to events only | `definePlugin({ name, main: async (pf) => … })` from `@punktfunk/host` |
+| Reacting to events only | `definePlugin({ name, main: async (pf) => … })` from `@rubyfunk/host` |
 
 Keep Effect values inside the plugin: the runner bundles its own copy of Effect, so the default
 export must be a plain async `main`. `definePluginKit` and `defineLibraryPlugin` build that for you.
@@ -178,7 +178,7 @@ game's page in the console. Pass `game` to `serveUi`:
 
 ```ts
 import { Effect, Schema } from "effect";
-import { handedPath, serveUi } from "@punktfunk/plugin-kit";
+import { handedPath, serveUi } from "@rubyfunk/plugin-kit";
 
 const Section = Schema.Struct({
   enabled: Schema.Boolean.annotate({ title: "Swap this game's files" }),
@@ -205,12 +205,12 @@ yield* serveUi({
 ## A source of art and details
 
 An Art & Metadata source fills covers and details for games other plugins list, the way
-[`punktfunk-plugin-steamgriddb`](https://git.unom.io/unom/punktfunk-plugin-steamgriddb) covers every
+[`rubyfunk-plugin-steamgriddb`](https://git.unom.io/unom/punktfunk-plugin-steamgriddb) covers every
 game. Write how to find a game and what to fetch for it; `defineMetadataPlugin` does the rest:
 
 ```ts
 import { Effect, Schema } from "effect";
-import { defineMetadataPlugin } from "@punktfunk/plugin-kit/metadata";
+import { defineMetadataPlugin } from "@rubyfunk/plugin-kit/metadata";
 
 export const plugin = defineMetadataPlugin({
   name: "covers",
@@ -321,8 +321,8 @@ beside the game folders themselves: one yes covers them all, and a host before 0
 pattern and prompts per folder.
 
 A plugin that doesn't use `defineLibraryPlugin` yields `requestAccess(paths, reason)` from
-`@punktfunk/plugin-kit`. A request only creates a pending row: the operator allows it on the
-library source in the console, or with `punktfunk-host plugins grant`. A grant restarts the plugin.
+`@rubyfunk/plugin-kit`. A request only creates a pending row: the operator allows it on the
+library source in the console, or with `rubyfunk-host plugins grant`. A grant restarts the plugin.
 Don't tell users to widen the runner unit or change ACLs by hand.
 
 When the operator is the one who knows the folder, a save folder or a config directory, make it a
@@ -345,12 +345,12 @@ On a Linux host, install the packed tarball like any plugin. `plugins add` resta
 
 ```sh
 bun run build && bun pm pack --destination /tmp/pf-dev
-punktfunk-host plugins add /tmp/pf-dev/you-plugin-hello-0.1.0.tgz --allow-public-registry
-journalctl --user -u punktfunk-scripting -f
-punktfunk-host plugins remove @you/plugin-hello   # when you're done
+rubyfunk-host plugins add /tmp/pf-dev/you-plugin-hello-0.1.0.tgz --allow-public-registry
+journalctl --user -u rubyfunk-scripting -f
+rubyfunk-host plugins remove @you/plugin-hello   # when you're done
 ```
 
-Any package outside the `@punktfunk` scope needs `--allow-public-registry`.
+Any package outside the `@rubyfunk` scope needs `--allow-public-registry`.
 
 Before a release, guard your title ids. With the previous version installed,
 `bun src/cli.ts parity --snapshot before.json` records what the host lists for your source;
@@ -362,10 +362,10 @@ non-zero on any change. A changed id breaks pins and art caches on every client.
 1. Publish under a scoped name, `@<scope>/plugin-<id>`, to an HTTPS npm registry. The
    first-party repos publish from CI on a `v*` tag with `bun publish`.
 2. From the public npm registry, operators can install it by name:
-   `punktfunk-host plugins add @<scope>/plugin-<id> --allow-public-registry`. The console shows
+   `rubyfunk-host plugins add @<scope>/plugin-<id> --allow-public-registry`. The console shows
    it as **Installed via CLI**.
 3. To appear under **Browse** as **Verified**, open a pull request against
-   [`punktfunk-plugin-index`](https://git.unom.io/unom/punktfunk-plugin-index): add an entry to
+   [`rubyfunk-plugin-index`](https://git.unom.io/unom/punktfunk-plugin-index): add an entry to
    `v1/index.json` pinning the exact `version` and the registry's `integrity` hash, then run
    `bun run validate`. unom reviews that tarball; each new version is a new pull request.
 4. To run your own catalog, serve an `index.json` in the same format over HTTPS, with its ed25519

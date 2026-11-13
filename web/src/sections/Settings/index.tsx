@@ -87,7 +87,7 @@ export const SectionSettings: FC = () => {
 /**
  * Who can reach this console, but only when that is more than this machine.
  *
- * The bind is the server's to know (`PUNKTFUNK_UI_BIND`), not the browser's: reaching the page
+ * The bind is the server's to know (`RUBYFUNK_UI_BIND`), not the browser's: reaching the page
  * over the LAN proves it, while opening it on the host proves nothing either way. The URL shown
  * is this tab's own, which is an address that demonstrably works.
  */

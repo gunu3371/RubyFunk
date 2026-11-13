@@ -25,7 +25,7 @@ fn the_os_field_compiles_for_both_modes() {
 use crate::model::WakeStatus;
 use crate::screens::home::HomeScreen;
 use crate::screens::library::LibraryScreen;
-use punktfunk_core::config::GamepadPref;
+use rubyfunk_core::config::GamepadPref;
 
 /// The `#[ignore]` screenshot harnesses and their art.
 mod shots;

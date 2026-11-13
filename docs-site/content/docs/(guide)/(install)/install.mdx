@@ -33,7 +33,7 @@ To read what runs first:
 
 <Installer inspect />
 
-The script downloads the `punktfunk-setup` installer for your architecture (x86_64 or aarch64),
+The script downloads the `rubyfunk-setup` installer for your architecture (x86_64 or aarch64),
 checks its sha256 and runs it. In a terminal it shows one screen with every choice filled in:
 press Enter to install, or edit a row. It then asks for a console password and where the console
 should listen. Without a terminal it takes the defaults.
@@ -49,20 +49,20 @@ Each option also has an environment twin (`1` or `0` for on/off options). `--hel
 
 | Flag | Environment | What it does |
 |---|---|---|
-| `-y`, `--yes` | `PUNKTFUNK_INSTALL_YES=1` | No questions: take every default |
-| `--host`, `--client` | | What to install (default: host). `--client` alone installs only the client, as a Flatpak where your distro has no Punktfunk repo |
-| `--channel stable\|canary` | `PUNKTFUNK_INSTALL_CHANNEL` | Package channel. On an installed box this switches channel; without it the box keeps its current one ([Release Channels](/docs/channels)) |
-| `--gamestream` / `--no-gamestream` | `PUNKTFUNK_INSTALL_GAMESTREAM` | [Moonlight](/docs/moonlight) compatibility (default off) |
-| `--clipboard` / `--no-clipboard` | `PUNKTFUNK_INSTALL_CLIPBOARD` | [Shared clipboard](/docs/clipboard) (default on) |
-| `--punktfunk-group` / `--no-punktfunk-group` | `PUNKTFUNK_INSTALL_PUNKTFUNK_GROUP` | Join the `punktfunk` group for the virtual Steam Deck controller (default on) |
-| `--linger` / `--no-linger` | `PUNKTFUNK_INSTALL_LINGER` | Start at boot with nobody logged in (default on for Bazzite, Nobara, Game Mode boxes and runs without a graphical session) |
-| `--console-cert` / `--no-console-cert` | `PUNKTFUNK_INSTALL_CONSOLE_CERT` | Trust the console's certificate in this box's browser (default on when a desktop is installed) |
-| `--web-bind lan\|localhost\|ADDR` | `PUNKTFUNK_INSTALL_WEB_BIND` | Where the console listens (default `lan`). Written to `host.env` as [`PUNKTFUNK_UI_BIND`](/docs/configuration) |
-| `--mgmt-port N` | `PUNKTFUNK_INSTALL_MGMT_PORT` | Where the management API moves when Sunshine or Apollo holds 47990 (default 47991) |
-| `--omarchy-setup` / `--no-omarchy-setup` | `PUNKTFUNK_INSTALL_OMARCHY_SETUP` | Run `punktfunk-omarchy setup` on [Omarchy](/docs/omarchy) (default on). `--no-omarchy-setup` also turns off the three rows below |
-| `--omarchy-toasts`, `--omarchy-idle`, `--omarchy-theme` (and `--no-…`) | `PUNKTFUNK_INSTALL_OMARCHY_TOASTS`, `PUNKTFUNK_INSTALL_OMARCHY_IDLE`, `PUNKTFUNK_INSTALL_OMARCHY_THEME` | Omarchy pairing and stream toasts, keep the screen awake while streaming, console follows the Omarchy theme |
+| `-y`, `--yes` | `RUBYFUNK_INSTALL_YES=1` | No questions: take every default |
+| `--host`, `--client` | | What to install (default: host). `--client` alone installs only the client, as a Flatpak where your distro has no RubyFunk repo |
+| `--channel stable\|canary` | `RUBYFUNK_INSTALL_CHANNEL` | Package channel. On an installed box this switches channel; without it the box keeps its current one ([Release Channels](/docs/channels)) |
+| `--gamestream` / `--no-gamestream` | `RUBYFUNK_INSTALL_GAMESTREAM` | [Moonlight](/docs/moonlight) compatibility (default off) |
+| `--clipboard` / `--no-clipboard` | `RUBYFUNK_INSTALL_CLIPBOARD` | [Shared clipboard](/docs/clipboard) (default on) |
+| `--rubyfunk-group` / `--no-rubyfunk-group` | `RUBYFUNK_INSTALL_RUBYFUNK_GROUP` | Join the `rubyfunk` group for the virtual Steam Deck controller (default on) |
+| `--linger` / `--no-linger` | `RUBYFUNK_INSTALL_LINGER` | Start at boot with nobody logged in (default on for Bazzite, Nobara, Game Mode boxes and runs without a graphical session) |
+| `--console-cert` / `--no-console-cert` | `RUBYFUNK_INSTALL_CONSOLE_CERT` | Trust the console's certificate in this box's browser (default on when a desktop is installed) |
+| `--web-bind lan\|localhost\|ADDR` | `RUBYFUNK_INSTALL_WEB_BIND` | Where the console listens (default `lan`). Written to `host.env` as [`RUBYFUNK_UI_BIND`](/docs/configuration) |
+| `--mgmt-port N` | `RUBYFUNK_INSTALL_MGMT_PORT` | Where the management API moves when Sunshine or Apollo holds 47990 (default 47991) |
+| `--omarchy-setup` / `--no-omarchy-setup` | `RUBYFUNK_INSTALL_OMARCHY_SETUP` | Run `rubyfunk-omarchy setup` on [Omarchy](/docs/omarchy) (default on). `--no-omarchy-setup` also turns off the three rows below |
+| `--omarchy-toasts`, `--omarchy-idle`, `--omarchy-theme` (and `--no-…`) | `RUBYFUNK_INSTALL_OMARCHY_TOASTS`, `RUBYFUNK_INSTALL_OMARCHY_IDLE`, `RUBYFUNK_INSTALL_OMARCHY_THEME` | Omarchy pairing and stream toasts, keep the screen awake while streaming, console follows the Omarchy theme |
 | `--no-start` | | Install and configure, but don't start the services |
-| `--dry-run` | `PUNKTFUNK_INSTALL_DRY_RUN=1` | Print every command, change nothing |
+| `--dry-run` | `RUBYFUNK_INSTALL_DRY_RUN=1` | Print every command, change nothing |
 | `--demo PRESET` | | Walk the whole flow against a canned machine, change nothing |
 | `--uninstall` | | Stop the services and remove the packages and repo. Your config stays |
 | `-v`, `--verbose` | | Echo every command instead of one progress line |
@@ -72,10 +72,10 @@ Each option also has an environment twin (`1` or `0` for on/off options). `--hel
 - **Read [Security & Safe Use](/docs/security) once.** A streaming host is remote control of the
   machine.
 - **Sunshine, Apollo or Vibeshine installed?** They can run side by side with one port moved:
-  [Switching from Sunshine](/docs/switching-from-sunshine). `punktfunk-host detect-conflicts`
+  [Switching from Sunshine](/docs/switching-from-sunshine). `rubyfunk-host detect-conflicts`
   lists what it finds.
-- **Three packages.** `punktfunk-host` is the host, `punktfunk-web` the browser console,
-  `punktfunk-scripting` the plugin runner that fills your [game library](/docs/game-library).
+- **Three packages.** `rubyfunk-host` is the host, `rubyfunk-web` the browser console,
+  `rubyfunk-scripting` the plugin runner that fills your [game library](/docs/game-library).
   Every install line names all three, so a package manager that skips recommended packages still
   installs the console you pair with.
 - **Status icon.** The host starts its tray icon at your next log-in. Turn that off with **Start

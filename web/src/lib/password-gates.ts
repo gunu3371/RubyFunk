@@ -3,7 +3,7 @@
 // page asks exactly when the server would refuse it without the password.
 
 /** Carries the console password on a plugin form's save, whose body goes to the plugin as typed. */
-export const PASSWORD_HEADER = "x-punktfunk-password";
+export const PASSWORD_HEADER = "x-rubyfunk-password";
 
 /** Host settings that open a plane to devices or weaken one. Any change to them asks. */
 export const PLANE_SETTINGS = [
@@ -18,7 +18,7 @@ export const PLANE_SETTINGS = [
 export const touchesPlane = (patch: object): boolean =>
 	PLANE_SETTINGS.some((id) => id in patch);
 
-/** `GRANT_ALL` in `punktfunk-core` `quic/access.rs`; an absent stored mask means it. */
+/** `GRANT_ALL` in `rubyfunk-core` `quic/access.rs`; an absent stored mask means it. */
 const GRANT_ALL = 0xff;
 
 /** A paired device's access as the host stores it. */

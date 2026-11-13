@@ -99,8 +99,8 @@ rows = "\n".join(
     for t, d, w, h in MARKS
 )
 write(
-    "clients/android/app/src/main/kotlin/io/unom/punktfunk/components/LauncherIcons.kt",
-    f"""package io.unom.punktfunk.components
+    "clients/android/app/src/main/kotlin/io/github/gunu3371/rubyfunk/components/LauncherIcons.kt",
+    f"""package io.github.gunu3371.rubyfunk.components
 
 {comment(BANNER, "//")}
 

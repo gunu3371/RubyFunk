@@ -88,7 +88,7 @@ export const writePluginToken = (
 	try {
 		fs.mkdirSync(stateDir, { recursive: true });
 		fs.rmSync(file, { force: true });
-		fs.writeFileSync(file, `PUNKTFUNK_PLUGIN_TOKEN=${token}\n`, { mode: 0o600, flag: "wx" });
+		fs.writeFileSync(file, `RUBYFUNK_PLUGIN_TOKEN=${token}\n`, { mode: 0o600, flag: "wx" });
 		return file;
 	} catch (e) {
 		return new Error(`Couldn't write the credential for ${id} into ${stateDir} — ${e}`);
@@ -141,7 +141,7 @@ export const runSandboxed = (
 		// shared name would let the old close delete the new socket.
 		const socket = path.join(
 			runtime,
-			"punktfunk",
+			"rubyfunk",
 			`plugin-${id}-${randomBytes(4).toString("hex")}.sock`,
 		);
 		const url = options.connect?.url ?? publishedMgmtUrl() ?? "https://127.0.0.1:47990";
@@ -158,7 +158,7 @@ export const runSandboxed = (
 		let ui: { dir: string; port: number } | undefined;
 		let forward: UiForward | undefined;
 		if (!manifest.network) {
-			const dir = path.join(runtime, "punktfunk", `ui-${id}-${randomBytes(4).toString("hex")}`);
+			const dir = path.join(runtime, "rubyfunk", `ui-${id}-${randomBytes(4).toString("hex")}`);
 			try {
 				fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
 				forward = forwardUi(path.join(dir, "ui.sock"));
@@ -248,7 +248,7 @@ export const exitOutcome = (
 
 /** The runner bundle this process is running, which each sandbox re-execs. */
 export const runnerEntry = (): string =>
-	process.env.PUNKTFUNK_RUNNER_ENTRY ?? process.argv[1] ?? "";
+	process.env.RUBYFUNK_RUNNER_ENTRY ?? process.argv[1] ?? "";
 
 /** The argv tail every out-of-process shape runs: this runner, in `--run-unit` mode, on `unit`. */
 export const unitArgv = (unit: Unit): string[] => [

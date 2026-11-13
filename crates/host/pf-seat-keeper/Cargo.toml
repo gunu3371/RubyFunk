@@ -1,8 +1,8 @@
 # The seat keeper: holds one seat's loopback RDP session open, and records TermService's
 # leaf pin (`trust`). Its own workspace and lockfile, as packaging/windows/drivers is:
 # IronRDP pins picky 7.0.0-rc.25 and earlier, which pin a release-candidate aes-gcm that
-# cannot share a lockfile with punktfunk-core's aes-gcm 0.11. The supervisor in
-# crates/host/pf-seats spawns it beside punktfunk-host.exe and hands it its bootstrap on stdin.
+# cannot share a lockfile with rubyfunk-core's aes-gcm 0.11. The supervisor in
+# crates/host/pf-seats spawns it beside rubyfunk-host.exe and hands it its bootstrap on stdin.
 [workspace]
 resolver = "2"
 
@@ -14,8 +14,8 @@ unsafe_op_in_unsafe_fn = "deny"
 undocumented_unsafe_blocks = "deny"
 
 [package]
-name = "punktfunk-seat-keeper"
-description = "Holds a punktfunk seat's loopback RDP session open"
+name = "rubyfunk-seat-keeper"
+description = "Holds a rubyfunk seat's loopback RDP session open"
 version = "0.0.1"
 edition = "2024"
 rust-version = "1.89"

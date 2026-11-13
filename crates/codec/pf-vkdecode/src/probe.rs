@@ -1,4 +1,4 @@
-//! Verbatim physical-device video-format probe behind `punktfunk-session --probe-decode`.
+//! Verbatim physical-device video-format probe behind `rubyfunk-session --probe-decode`.
 //!
 //! For every profile the client can negotiate, asks the same question the
 //! session caps query asks, in every usage the image pools would create with,

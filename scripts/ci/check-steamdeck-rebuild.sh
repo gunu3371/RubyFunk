@@ -17,16 +17,16 @@ repo=$PWD
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 src=$tmp/src
-host=$src/target-steamos/release/punktfunk-host
-mkdir -p "$src/scripts/steamdeck" "$(dirname "$host")" "$tmp/home/.config/punktfunk"
-: > "$tmp/home/.config/punktfunk/host.env" # install.sh always writes one
+host=$src/target-steamos/release/rubyfunk-host
+mkdir -p "$src/scripts/steamdeck" "$(dirname "$host")" "$tmp/home/.config/rubyfunk"
+: > "$tmp/home/.config/rubyfunk/host.env" # install.sh always writes one
 
 stub() {  # stub <exit status>: an update.sh that logs a call and exits with it
     printf '#!/bin/sh\necho ran >> "%s/calls"\nexit %s\n' "$tmp" "$1" > "$src/scripts/steamdeck/update.sh"
 }
-run() { HOME=$tmp/home PUNKTFUNK_SRC=$src bash "$repo/scripts/steamdeck/rebuild-check.sh" 2>&1; }
+run() { HOME=$tmp/home RUBYFUNK_SRC=$src bash "$repo/scripts/steamdeck/rebuild-check.sh" 2>&1; }
 calls() { if [ -f "$tmp/calls" ]; then wc -l < "$tmp/calls" | tr -d ' '; else echo 0; fi; }
-stamp=$tmp/home/.cache/punktfunk/rebuild-attempt
+stamp=$tmp/home/.cache/rubyfunk/rebuild-attempt
 fail() { echo "check-steamdeck-rebuild: $*" >&2; exit 1; }
 
 stub 0
@@ -39,10 +39,10 @@ run > /dev/null
 [ "$(calls)" = 1 ] || fail "a missing host binary ran update.sh $(calls) times, not once"
 [ ! -e "$stamp" ] || fail "a successful rebuild left its attempt stamp"
 
-rm "$tmp/home/.config/punktfunk/host.env"
+rm "$tmp/home/.config/rubyfunk/host.env"
 run > /dev/null || fail "with no host.env a missing host binary did not rebuild"
 [ "$(calls)" = 2 ] || fail "with no host.env update.sh ran $(calls) times in all, not twice"
-: > "$tmp/home/.config/punktfunk/host.env"
+: > "$tmp/home/.config/rubyfunk/host.env"
 
 stub 1
 run > /dev/null && fail "a failed update.sh did not fail the check"
@@ -54,7 +54,7 @@ case $out in *"not retrying"*) ;; *) fail "the second boot retried the rebuild: 
 # The real update.sh on a box whose door is on, without sudo. Its steps past the gate are stubs:
 # heal-box.sh stops the run, so reaching it means a build would have started.
 stubs=$tmp/stubs
-mkdir -p "$stubs" "$src/.git" "$src/crates/host/punktfunk-host"
+mkdir -p "$stubs" "$src/.git" "$src/crates/host/rubyfunk-host"
 printf '#!/bin/sh\nexit 1\n' > "$stubs/sudo"
 printf '#!/bin/sh\necho "git $*" >> "%s/steps"\n' "$tmp" > "$stubs/git"
 printf '#!/bin/sh\n[ -e "%s/door-on" ]\n' "$tmp" > "$stubs/systemctl"
@@ -65,7 +65,7 @@ printf '#!/bin/sh\necho "repulled sudo=$PF_SUDO_OK" >> "%s/steps"\n' "$tmp" > "$
 version() { printf '#!/bin/sh\necho %s\n' "$1" > "$src/scripts/steamdeck/build-version.sh"; }
 update() {
     : > "$tmp/steps"
-    HOME=$tmp/home PUNKTFUNK_SRC=$src PATH=$stubs:$PATH bash "$repo/scripts/steamdeck/update.sh" "$@" </dev/null 2>&1
+    HOME=$tmp/home RUBYFUNK_SRC=$src PATH=$stubs:$PATH bash "$repo/scripts/steamdeck/update.sh" "$@" </dev/null 2>&1
 }
 steps() { grep -c "$1" "$tmp/steps" || true; }
 

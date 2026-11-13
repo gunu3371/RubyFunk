@@ -131,7 +131,7 @@ export default defineEventHandler(async (event) => {
 	// Misconfigured: refuse everything rather than serve open on the LAN.
 	if (!authConfigured()) {
 		setResponseStatus(event, 503);
-		return { error: "auth not configured: set PUNKTFUNK_UI_PASSWORD_HASH" };
+		return { error: "auth not configured: set RUBYFUNK_UI_PASSWORD_HASH" };
 	}
 
 	const session = await useSession<SessionData>(event, sessionConfig());

@@ -34,7 +34,7 @@ def log(kind, *args):
 
 class App(Gtk.Application):
     def do_activate(self):
-        win = Gtk.ApplicationWindow(application=self, title="punktfunk scroll logger")
+        win = Gtk.ApplicationWindow(application=self, title="rubyfunk scroll logger")
         win.set_default_size(1400, 1000)
         sw = Gtk.ScrolledWindow()
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -90,4 +90,4 @@ class App(Gtk.Application):
         GLib.timeout_add_seconds(SECONDS, self.quit)
 
 
-App(application_id="io.unom.punktfunk.scrolllogger").run([])
+App(application_id="io.github.gunu3371.rubyfunk.scrolllogger").run([])

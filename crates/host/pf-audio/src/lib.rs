@@ -1,7 +1,7 @@
 //! Host audio capture, virtual microphone, and (Windows) wiring-plan facade.
 //!
 //! Linux default: a host-owned PipeWire stream sink claimed as the session default
-//! (`PUNKTFUNK_STREAM_SINK=0` records the default sink's monitor). Windows: WASAPI
+//! (`RUBYFUNK_STREAM_SINK=0` records the default sink's monitor). Windows: WASAPI
 //! loopback of the wiring-plan endpoint. Capture is interleaved `f32` PCM; channel
 //! count is the open request (GameStream order FL FR FC LFE RL RR [SL SR]).
 //! The host's audio planes reframe it into Opus ([`OpusEnc`]). Rate honesty: [`CaptureRate`]
@@ -14,26 +14,26 @@ pub const SAMPLE_RATE: u32 = 48_000;
 /// Default for a backend that leaves `channels()` alone. Either plane opens 5.1 or 7.1 on request; capture clamps to 2, 6 or 8.
 pub const CHANNELS: usize = 2;
 
-/// Cap for `PUNKTFUNK_AUDIO_GAIN` (×8 = +18 dB). Past this the soft knee squashes
+/// Cap for `RUBYFUNK_AUDIO_GAIN` (×8 = +18 dB). Past this the soft knee squashes
 /// rather than boosts. A stray `180` (meant `1.8`) is capped and warned, not shipped.
 const MAX_CAPTURE_GAIN: f32 = 8.0;
 
-/// Operator capture gain (`PUNKTFUNK_AUDIO_GAIN`, default 1.0), shared by both audio planes.
+/// Operator capture gain (`RUBYFUNK_AUDIO_GAIN`, default 1.0), shared by both audio planes.
 ///
 /// WASAPI loopback is tapped upstream of the endpoint master volume, so the speaker
 /// slider never reaches the client; this is the host-side knob. Applied through
-/// [`punktfunk_core::audio::apply_gain`] (soft knee). Headroom, not loudness: it
+/// [`rubyfunk_core::audio::apply_gain`] (soft knee). Headroom, not loudness: it
 /// cannot close a peak-to-loudness gap in already-limited content.
 pub fn capture_gain() -> f32 {
-    let raw: f32 = std::env::var("PUNKTFUNK_AUDIO_GAIN")
+    let raw: f32 = std::env::var("RUBYFUNK_AUDIO_GAIN")
         .ok()
         .and_then(|v| v.parse().ok())
         .unwrap_or(1.0);
     // Negative or non-finite would invert or poison every sample — unity, not the typo.
     if !raw.is_finite() || raw <= 0.0 {
-        if std::env::var("PUNKTFUNK_AUDIO_GAIN").is_ok() {
+        if std::env::var("RUBYFUNK_AUDIO_GAIN").is_ok() {
             tracing::warn!(
-                "PUNKTFUNK_AUDIO_GAIN must be a positive number (1.0 = unchanged) — ignoring"
+                "RUBYFUNK_AUDIO_GAIN must be a positive number (1.0 = unchanged) — ignoring"
             );
         }
         return 1.0;
@@ -42,7 +42,7 @@ pub fn capture_gain() -> f32 {
         tracing::warn!(
             requested = raw,
             capped = MAX_CAPTURE_GAIN,
-            "PUNKTFUNK_AUDIO_GAIN is above the +18 dB ceiling — capping"
+            "RUBYFUNK_AUDIO_GAIN is above the +18 dB ceiling — capping"
         );
         return MAX_CAPTURE_GAIN;
     }
@@ -116,7 +116,7 @@ pub enum CaptureRate {
     Declared,
     /// Device mix rate. A request at another rate still succeeds by resampling, so only
     /// `rate ≤ this` is honest. Windows: WASAPI engine mix format. Linux: the monitor
-    /// sink's rate under `PUNKTFUNK_STREAM_SINK=0`.
+    /// sink's rate under `RUBYFUNK_STREAM_SINK=0`.
     #[cfg_attr(not(any(target_os = "linux", target_os = "windows")), allow(dead_code))]
     Engine(u32),
     /// Probe failed (gone/idle sink, unreachable endpoint) or no backend. Hi-res declines.
@@ -146,7 +146,7 @@ pub fn probe_capture_rate() -> CaptureRate {
 }
 
 /// Open a live capturer for system output. Linux: a host-owned stream sink (or the default
-/// sink's monitor under `PUNKTFUNK_STREAM_SINK=0`). Windows: WASAPI loopback of the wiring
+/// sink's monitor under `RUBYFUNK_STREAM_SINK=0`). Windows: WASAPI loopback of the wiring
 /// plan's sink. `rate_hz` is a request; the grant is [`AudioCapturer::sample_rate`].
 pub fn open_audio_capture(channels: u32, rate_hz: u32) -> Result<Box<dyn AudioCapturer>> {
     plat::open_audio_capture(channels, rate_hz)
@@ -232,7 +232,7 @@ pub enum OpusEnc {
 
 impl OpusEnc {
     pub fn new(
-        layout: &punktfunk_core::audio::OpusLayout,
+        layout: &rubyfunk_core::audio::OpusLayout,
         bitrate: i32,
         rate: RateControl,
     ) -> Result<OpusEnc, opus::Error> {
@@ -298,7 +298,7 @@ pub trait VirtualMic: Send {
     /// Adaptive de-jitter target in per-channel samples (see `mic_jitter`). A ring primes
     /// to this PLUS one of its own consumer quanta: arrival burstiness is the pump's
     /// number, pull granularity is the backend's, and a 2048-frame recorder gets one
-    /// quantum, not three. Never called ⇒ legacy constants (`PUNKTFUNK_MIC_LEGACY_BUFFER=1`
+    /// quantum, not three. Never called ⇒ legacy constants (`RUBYFUNK_MIC_LEGACY_BUFFER=1`
     /// is the pump never driving this). Default: no ring, ignored.
     fn set_target_depth(&self, _samples_per_ch: usize) {}
 
@@ -324,12 +324,12 @@ pub struct MicBackendStats {
     pub overflow_dropped: u64,
 }
 
-/// `PUNKTFUNK_MIC_LEGACY_BUFFER=1`: pump never drives the backend target (rings stay
+/// `RUBYFUNK_MIC_LEGACY_BUFFER=1`: pump never drives the backend target (rings stay
 /// on 48 ms prime / 120 ms cap on Windows, 3-quanta clamp on Linux) and never
 /// creep-trims depth.
 pub fn mic_legacy_buffer() -> bool {
     static ON: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-    *ON.get_or_init(|| pf_host_config::env_on("PUNKTFUNK_MIC_LEGACY_BUFFER") == Some(true))
+    *ON.get_or_init(|| pf_host_config::env_on("RUBYFUNK_MIC_LEGACY_BUFFER") == Some(true))
 }
 
 /// Open a virtual mic (1 or 2 channels). Linux: PipeWire `Audio/Source`. Windows:
@@ -339,7 +339,7 @@ pub fn open_virtual_mic(channels: u32) -> Result<Box<dyn VirtualMic>> {
 }
 
 /// [`open_virtual_mic`] pinned to a source `node.name` (`design/gamescope-multiuser.md`:
-/// `punktfunk-mic-{id}`, gamescope `PULSE_SOURCE`). `None` = shared `punktfunk-mic`.
+/// `rubyfunk-mic-{id}`, gamescope `PULSE_SOURCE`). `None` = shared `rubyfunk-mic`.
 /// Other platforms ignore the name.
 pub fn open_virtual_mic_named(channels: u32, source: Option<&str>) -> Result<Box<dyn VirtualMic>> {
     plat::open_virtual_mic_named(channels, source)
@@ -471,7 +471,7 @@ pub fn wiring_snapshot() -> Option<wiring_plan::Wiring> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use punktfunk_core::audio::{OpusLayout, LAYOUT_51, LAYOUT_STEREO};
+    use rubyfunk_core::audio::{OpusLayout, LAYOUT_51, LAYOUT_STEREO};
 
     /// One 5 ms frame: silence, or a loud 440 Hz tone on every channel.
     fn frame(layout: &OpusLayout, loud: bool) -> Vec<f32> {
@@ -545,7 +545,7 @@ mod tests {
             Ok(Vec::new())
         }
         fn sink_name(&self) -> Option<&str> {
-            Some("punktfunk-speaker-1-0")
+            Some("rubyfunk-speaker-1-0")
         }
     }
 

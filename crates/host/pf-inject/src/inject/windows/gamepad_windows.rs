@@ -18,8 +18,8 @@ use super::gamepad_raii::{
 use super::xbox_proto::XboxState;
 use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
-use punktfunk_core::input::GamepadFrame;
-use punktfunk_core::quic::RichInput;
+use rubyfunk_core::input::GamepadFrame;
+use rubyfunk_core::quic::RichInput;
 use std::sync::atomic::{fence, Ordering};
 use std::time::Duration;
 
@@ -87,8 +87,8 @@ impl XusbWinPad {
             usb_vid_pid: None,
             usb_mi: None,
             bluetooth: false,
-            description: "Punktfunk Virtual Xbox 360 (XUSB)",
-            enumerator: "punktfunk",
+            description: "RubyFunk Virtual Xbox 360 (XUSB)",
+            enumerator: "rubyfunk",
             property: None,
         })?;
         channel.bind_devnode(index as u32, instance_id.clone(), ProofTransport::XusbIoctl);
@@ -157,7 +157,7 @@ impl PadProto for XusbWinProto {
     const LABEL: &'static str = "Xbox 360/Windows";
     const DEVICE: &'static str = "Xbox 360";
     const CREATE_HINT: &'static str =
-        " (install/repair: punktfunk-host.exe driver install --gamepad)";
+        " (install/repair: rubyfunk-host.exe driver install --gamepad)";
 
     fn open(&mut self, idx: u8) -> Result<XusbWinPad> {
         let p = XusbWinPad::open(idx)?;

@@ -30,49 +30,49 @@ const fixtureEntries: LogEntry[] = [
 	entry(
 		1,
 		"INFO",
-		"punktfunk_host",
-		"punktfunk-host 0.4.2 (punktfunk_core ABI v2)",
+		"rubyfunk_host",
+		"rubyfunk-host 0.4.2 (rubyfunk_core ABI v2)",
 	),
 	entry(
 		2,
 		"INFO",
-		"punktfunk_host::mgmt",
+		"rubyfunk_host::mgmt",
 		"management API listening over HTTPS addr=0.0.0.0:47990",
 	),
 	entry(
 		3,
 		"DEBUG",
-		"punktfunk_host::discovery",
-		"mDNS advertise _punktfunk._udp pair=required",
+		"rubyfunk_host::discovery",
+		"mDNS advertise _rubyfunk._udp pair=required",
 	),
 	entry(
 		4,
 		"INFO",
-		"punktfunk_host::punktfunk1",
+		"rubyfunk_host::rubyfunk1",
 		"session start mode=1920x1080@60 codec=hevc",
 	),
 	entry(
 		5,
 		"INFO",
-		"punktfunk_host::inject",
+		"rubyfunk_host::inject",
 		"virtual Xbox 360 created (Windows XUSB companion)",
 	),
 	entry(
 		6,
 		"WARN",
-		"punktfunk_host::inject",
-		"gamepad driver not attached to Global\\pfxusb-shm-0 after 3s — is the pf_xusb driver installed? (punktfunk-host.exe driver install --gamepad)",
+		"rubyfunk_host::inject",
+		"gamepad driver not attached to Global\\pfxusb-shm-0 after 3s — is the pf_xusb driver installed? (rubyfunk-host.exe driver install --gamepad)",
 	),
 	entry(
 		7,
 		"ERROR",
-		"punktfunk_host::inject",
+		"rubyfunk_host::inject",
 		"virtual Xbox 360 creation failed — controller input disabled (is the pf_xusb driver installed?)",
 	),
 	entry(
 		8,
 		"INFO",
-		"punktfunk_host::encode",
+		"rubyfunk_host::encode",
 		"NVENC opened 1920x1080 nv12 gop=inf rfi=on",
 	),
 	// Lines the plugin runner shipped up (`POST /api/v1/plugins/logs`), targeted `plugin:<name>`.
@@ -112,11 +112,11 @@ const DECK: ClientLogMeta = {
  */
 const iso = (seq: number) => new Date(BASE + seq * 750).toISOString();
 const deckBundle = [
-	"punktfunk-session 0.4.2 (linux x86_64)",
-	`${iso(4)} INFO  punktfunk_session::stream connected host=skynet mode=1920x1080@60`,
-	`${iso(6)} WARN  punktfunk_session::audio egress late=31% — link stalled`,
-	`${iso(7)} ERROR punktfunk_session::pad no rumble device for DualSense (permission denied)`,
-	`${iso(9)} INFO  punktfunk_session::stream decode queue drained`,
+	"rubyfunk-session 0.4.2 (linux x86_64)",
+	`${iso(4)} INFO  rubyfunk_session::stream connected host=skynet mode=1920x1080@60`,
+	`${iso(6)} WARN  rubyfunk_session::audio egress late=31% — link stalled`,
+	`${iso(7)} ERROR rubyfunk_session::pad no rumble device for DualSense (permission denied)`,
+	`${iso(9)} INFO  rubyfunk_session::stream decode queue drained`,
 ].join("\n");
 
 const hostOnly = hostRows(fixtureEntries);

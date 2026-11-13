@@ -135,8 +135,8 @@ pub(crate) fn display_of(crop: pf_bitstream::h264::DisplayCrop) -> anyhow::Resul
 /// demoting past it on the first decode.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct StreamFormat {
-    /// [`punktfunk_core::quic::CHROMA_IDC_420`] (1) or
-    /// [`punktfunk_core::quic::CHROMA_IDC_444`] (3). A host that omits it reads as 4:2:0, never 0.
+    /// [`rubyfunk_core::quic::CHROMA_IDC_420`] (1) or
+    /// [`rubyfunk_core::quic::CHROMA_IDC_444`] (3). A host that omits it reads as 4:2:0, never 0.
     pub chroma_format_idc: u8,
     /// Bits per component: 8, or 10 for Main10/HDR. A host that omits it reads 8.
     pub bit_depth: u8,
@@ -145,7 +145,7 @@ pub struct StreamFormat {
 impl StreamFormat {
     /// 8-bit 4:2:0 — every H.264 session, and what an omitted Welcome shape decodes to.
     pub const SDR_420_8: StreamFormat = StreamFormat {
-        chroma_format_idc: punktfunk_core::quic::CHROMA_IDC_420,
+        chroma_format_idc: rubyfunk_core::quic::CHROMA_IDC_420,
         bit_depth: 8,
     };
 

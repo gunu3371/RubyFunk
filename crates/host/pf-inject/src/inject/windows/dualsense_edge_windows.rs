@@ -9,7 +9,7 @@ use super::dualsense_proto::{edge_paddle_bits, DsState, DS_TOUCH_H, DS_TOUCH_W};
 use super::dualsense_windows::{DsWinPad, WinDsIdentity};
 use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
-use punktfunk_core::quic::RichInput;
+use rubyfunk_core::quic::RichInput;
 
 /// No `RemapConfig` — paddles have native `buttons[2]` slots (plain DualSense folds or drops them).
 #[derive(Default)]
@@ -21,7 +21,7 @@ impl PadProto for DsEdgeWinProto {
     const LABEL: &'static str = "DualSense Edge/Windows";
     const DEVICE: &'static str = "DualSense Edge";
     const CREATE_HINT: &'static str =
-        " (install/repair: punktfunk-host.exe driver install --gamepad)";
+        " (install/repair: rubyfunk-host.exe driver install --gamepad)";
 
     fn open(&mut self, idx: u8) -> Result<DsWinPad> {
         let p = DsWinPad::open(idx, &WinDsIdentity::dualsense_edge())?;
@@ -33,7 +33,7 @@ impl PadProto for DsEdgeWinProto {
     }
 
     /// Paddles OR onto `buttons[2]` each frame — they ride the button plane, not `prev`.
-    fn merge_frame(&self, prev: &DsState, f: &punktfunk_core::input::GamepadFrame) -> DsState {
+    fn merge_frame(&self, prev: &DsState, f: &rubyfunk_core::input::GamepadFrame) -> DsState {
         let mut s = DsState::merge_frame(prev, f, f.buttons);
         s.buttons[2] |= edge_paddle_bits(f.buttons);
         s

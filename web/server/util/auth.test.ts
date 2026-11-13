@@ -53,43 +53,43 @@ describe("verifyUiPassword", () => {
 	const epoch = join(dir, "epoch");
 
 	beforeEach(() => {
-		process.env.PUNKTFUNK_UI_PASSWORD_FILE = file;
-		process.env.PUNKTFUNK_UI_EPOCH_FILE = epoch;
-		delete process.env.PUNKTFUNK_UI_PASSWORD;
-		delete process.env.PUNKTFUNK_UI_PASSWORD_HASH;
+		process.env.RUBYFUNK_UI_PASSWORD_FILE = file;
+		process.env.RUBYFUNK_UI_EPOCH_FILE = epoch;
+		delete process.env.RUBYFUNK_UI_PASSWORD;
+		delete process.env.RUBYFUNK_UI_PASSWORD_HASH;
 	});
 
 	test("a wrong clear-text guess neither passes nor migrates", async () => {
-		writeFileSync(file, "PUNKTFUNK_UI_PASSWORD=hunter2\n");
-		process.env.PUNKTFUNK_UI_PASSWORD = "hunter2";
+		writeFileSync(file, "RUBYFUNK_UI_PASSWORD=hunter2\n");
+		process.env.RUBYFUNK_UI_PASSWORD = "hunter2";
 		expect(await verifyUiPassword("hunter3")).toBe(false);
 		expect(readFileSync(file, "utf8")).toContain(
-			"PUNKTFUNK_UI_PASSWORD=hunter2",
+			"RUBYFUNK_UI_PASSWORD=hunter2",
 		);
 	});
 
 	test("the first good clear-text login replaces the line with a hash", async () => {
 		writeFileSync(
 			file,
-			"PUNKTFUNK_UI_SECRET=keepme\nPUNKTFUNK_UI_PASSWORD=hunter2\n",
+			"RUBYFUNK_UI_SECRET=keepme\nRUBYFUNK_UI_PASSWORD=hunter2\n",
 		);
-		process.env.PUNKTFUNK_UI_PASSWORD = "hunter2";
+		process.env.RUBYFUNK_UI_PASSWORD = "hunter2";
 		expect(await verifyUiPassword("hunter2")).toBe(true);
 		const body = readFileSync(file, "utf8");
-		expect(body).toContain("PUNKTFUNK_UI_SECRET=keepme"); // other keys survive
-		expect(body).not.toContain("PUNKTFUNK_UI_PASSWORD=");
+		expect(body).toContain("RUBYFUNK_UI_SECRET=keepme"); // other keys survive
+		expect(body).not.toContain("RUBYFUNK_UI_PASSWORD=");
 		// Windows uses ACLs; POSIX mode bits do not describe its file access.
 		if (process.platform !== "win32") {
 			expect(statSync(file).mode & 0o777).toBe(0o600);
 		}
-		const hash = body.match(/^PUNKTFUNK_UI_PASSWORD_HASH='(.+)'$/m)?.[1] ?? "";
+		const hash = body.match(/^RUBYFUNK_UI_PASSWORD_HASH='(.+)'$/m)?.[1] ?? "";
 		expect(await Bun.password.verify("hunter2", hash)).toBe(true);
 		// A password just set revokes what came before it, so a reset ends old sessions too.
 		expect(readFileSync(epoch, "utf8")).toBe("2");
 	});
 
 	test("a stored hash accepts only its own password", async () => {
-		process.env.PUNKTFUNK_UI_PASSWORD_HASH = `'${await Bun.password.hash(
+		process.env.RUBYFUNK_UI_PASSWORD_HASH = `'${await Bun.password.hash(
 			"hunter2",
 			{
 				algorithm: "argon2id",
@@ -101,7 +101,7 @@ describe("verifyUiPassword", () => {
 	});
 
 	test("a mangled hash is refused rather than trusted", async () => {
-		process.env.PUNKTFUNK_UI_PASSWORD_HASH = "not-a-hash";
+		process.env.RUBYFUNK_UI_PASSWORD_HASH = "not-a-hash";
 		expect(await verifyUiPassword("not-a-hash")).toBe(false);
 	});
 
@@ -113,13 +113,13 @@ describe("verifyUiPassword", () => {
 // The seal key a door switch carries between two consoles with different management tokens.
 describe("sessionConfig", () => {
 	beforeEach(() => {
-		delete process.env.PUNKTFUNK_UI_SECRET;
+		delete process.env.RUBYFUNK_UI_SECRET;
 	});
 
 	test("seeds the key file from the token, so earlier cookies still unseal", () => {
 		const dir = mkdtempSync(join(tmpdir(), "pf-key-"));
-		process.env.PUNKTFUNK_CONFIG_DIR = dir;
-		process.env.PUNKTFUNK_MGMT_TOKEN = "a".repeat(64);
+		process.env.RUBYFUNK_CONFIG_DIR = dir;
+		process.env.RUBYFUNK_MGMT_TOKEN = "a".repeat(64);
 		const seal = sessionConfig().password;
 		expect(readFileSync(join(dir, "web-session-key"), "utf8").trim()).toBe(
 			seal,
@@ -133,8 +133,8 @@ describe("sessionConfig", () => {
 		const dir = mkdtempSync(join(tmpdir(), "pf-key-"));
 		const carried = "c".repeat(64);
 		writeFileSync(join(dir, "web-session-key"), `${carried}\n`);
-		process.env.PUNKTFUNK_CONFIG_DIR = dir;
-		process.env.PUNKTFUNK_MGMT_TOKEN = "d".repeat(64);
+		process.env.RUBYFUNK_CONFIG_DIR = dir;
+		process.env.RUBYFUNK_MGMT_TOKEN = "d".repeat(64);
 		expect(sessionConfig().password).toBe(carried);
 	});
 });

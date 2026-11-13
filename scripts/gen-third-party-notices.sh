@@ -45,7 +45,7 @@ echo "==> wrote $OUT" >&2
 #
 # These are GENERATED, not copied. They used to be the workspace-wide file, which attributed to
 # every client every crate anything in this repo links: FFmpeg, the NVENC SDK, GTK4, windows-rs.
-# The Apple app links ONE Rust crate (punktfunk-ffi, through PunktfunkCore.xcframework — see
+# The Apple app links ONE Rust crate (rubyfunk-ffi, through RubyFunkCore.xcframework — see
 # scripts/build-xcframework.sh) and Android links the JNI bridge over it; everything else in those
 # apps is Swift/Kotlin and platform frameworks.
 #
@@ -68,9 +68,9 @@ if [ "$OUT" = "THIRD-PARTY-NOTICES.txt" ]; then
         python3 scripts/gen-third-party-notices.py --packages "$packages" --out "$dest"
         echo "==> generated $dest ($packages closure)" >&2
     done <<'CLIENTS'
-clients/apple/Sources/PunktfunkKit/Resources/THIRD-PARTY-NOTICES.txt punktfunk-ffi
-clients/android/app/src/main/assets/THIRD-PARTY-NOTICES.txt punktfunk-client-android
-clients/linux/THIRD-PARTY-NOTICES.txt punktfunk-client-linux,punktfunk-client-session,punktfunk-cli,pf-update
-clients/windows/THIRD-PARTY-NOTICES.txt punktfunk-client-windows,punktfunk-client-session,punktfunk-cli
+clients/apple/Sources/RubyFunkKit/Resources/THIRD-PARTY-NOTICES.txt rubyfunk-ffi
+clients/android/app/src/main/assets/THIRD-PARTY-NOTICES.txt rubyfunk-client-android
+clients/linux/THIRD-PARTY-NOTICES.txt rubyfunk-client-linux,rubyfunk-client-session,rubyfunk-cli,pf-update
+clients/windows/THIRD-PARTY-NOTICES.txt rubyfunk-client-windows,rubyfunk-client-session,rubyfunk-cli
 CLIENTS
 fi

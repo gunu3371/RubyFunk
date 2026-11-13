@@ -90,7 +90,7 @@ const Adopt: FC<{ id: string; onDone: () => void }> = ({ id, onDone }) => {
 };
 
 /**
- * Every emulator the host knows: installed by punktfunk or found on the box first, the rest one
+ * Every emulator the host knows: installed by rubyfunk or found on the box first, the rest one
  * tap away. Installing and pointing at the operator's own copy are the operator's acts here; a
  * plugin's own ask lands in its source's Access rows instead. A seat on a person's own account
  * takes no copy added by hand.

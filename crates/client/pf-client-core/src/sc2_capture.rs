@@ -6,10 +6,10 @@
 //! buttons, sticks and triggers. Core's send path gates each report
 //! ([`NativeClient::set_sc2_gate`]), as it does for the Apple and Android captures.
 
-use punktfunk_core::client::sc1_ble;
-use punktfunk_core::client::NativeClient;
-use punktfunk_core::config::GamepadPref;
-use punktfunk_core::quic::{RichInput, HID_RAW_FEATURE, HID_RAW_OUTPUT, HID_REPORT_MAX};
+use rubyfunk_core::client::sc1_ble;
+use rubyfunk_core::client::NativeClient;
+use rubyfunk_core::config::GamepadPref;
+use rubyfunk_core::quic::{RichInput, HID_RAW_FEATURE, HID_RAW_OUTPUT, HID_REPORT_MAX};
 use sdl3::sys::hidapi as hid;
 use std::sync::mpsc::{Receiver, Sender, TryRecvError};
 use std::sync::Arc;
@@ -290,7 +290,7 @@ impl Drop for Dev {
 /// Read the pad's replies to core's feature queries and send them with its serial, so the host
 /// builds its virtual pad as this one.
 fn send_identity(dev: &Dev, client: &NativeClient, pad: u8, serial: String, model: Model) {
-    use punktfunk_core::client::sc2;
+    use rubyfunk_core::client::sc2;
     let requests: Vec<&[u8]> = match model {
         Model::Triton { puck } => sc2::identity_requests(puck).collect(),
         Model::Classic | Model::ClassicBle => sc2::classic_identity_requests().collect(),
@@ -299,7 +299,7 @@ fn send_identity(dev: &Dev, client: &NativeClient, pad: u8, serial: String, mode
         .into_iter()
         .filter_map(|req| dev.exchange(req, model).map(|reply| (req, reply)))
         .collect();
-    let replies = punktfunk_core::quic::pack_identity_replies(
+    let replies = rubyfunk_core::quic::pack_identity_replies(
         answered.iter().map(|(req, reply)| (*req, reply.as_slice())),
     );
     tracing::info!(
@@ -315,7 +315,7 @@ fn send_identity(dev: &Dev, client: &NativeClient, pad: u8, serial: String, mode
     } else {
         0
     };
-    let id = punktfunk_core::quic::PadIdentity {
+    let id = rubyfunk_core::quic::PadIdentity {
         pad,
         serial,
         replies,

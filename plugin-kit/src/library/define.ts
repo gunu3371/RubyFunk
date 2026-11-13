@@ -8,8 +8,8 @@
 // standard CLI verbs.
 
 import * as fs from "node:fs";
-import type { PluginDef } from "@punktfunk/host";
-import type { EventOf, GameRef } from "@punktfunk/host/core";
+import type { PluginDef } from "@rubyfunk/host";
+import type { EventOf, GameRef } from "@rubyfunk/host/core";
 import { Duration, Effect, type Schema, Stream } from "effect";
 import {
 	type AccessRequestOutcome,

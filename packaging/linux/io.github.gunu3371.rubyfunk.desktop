@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=RubyFunk
+Comment=Stream a remote rubyfunk host
+Exec=rubyfunk-client %u
+Icon=io.github.gunu3371.rubyfunk
+Terminal=false
+Categories=Network;Game;
+Keywords=streaming;remote;game;moonlight;
+StartupNotify=true
+MimeType=x-scheme-handler/rubyfunk;

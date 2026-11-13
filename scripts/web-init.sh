@@ -1,5 +1,5 @@
 #!/bin/sh
-# Pre-start for the punktfunk web console (run by punktfunk-web-init.service as the user):
+# Pre-start for the rubyfunk web console (run by rubyfunk-web-init.service as the user):
 #
 #   1. generate the login password once, in the streaming user's config dir, and surface it to
 #      the journal;
@@ -8,13 +8,13 @@
 #   3. wait for the host's first-run artifacts, so the console is not started before the files it
 #      cannot start without exist.
 #
-# The mgmt token is NOT created here — the host owns it (~/.config/punktfunk/mgmt-token); this
+# The mgmt token is NOT created here — the host owns it (~/.config/rubyfunk/mgmt-token); this
 # script only waits for it.
 #
 # Usage: web-init.sh [WAIT_SECONDS]   (default 30; the CI gate passes a small value)
 set -eu
 
-DIR="${XDG_CONFIG_HOME:-$HOME/.config}/punktfunk"
+DIR="${XDG_CONFIG_HOME:-$HOME/.config}/rubyfunk"
 mkdir -p "$DIR"
 chmod 700 "$DIR" 2>/dev/null || true
 PWFILE="$DIR/web-password"
@@ -25,15 +25,15 @@ PWFILE="$DIR/web-password"
 if [ ! -s "$PWFILE" ]; then
     # URL/shell-safe password (no /+= so it's a clean EnvironmentFile value).
     PW=$(head -c 18 /dev/urandom | base64 | tr -d '/+=' | cut -c1-20)
-    (umask 077; printf 'PUNKTFUNK_UI_PASSWORD=%s\n' "$PW" > "$PWFILE")
+    (umask 077; printf 'RUBYFUNK_UI_PASSWORD=%s\n' "$PW" > "$PWFILE")
     chmod 600 "$PWFILE" 2>/dev/null || true
     # Do NOT echo the password itself. Anything this script prints is captured by systemd into
     # the PERSISTENT journal, which on Debian/Ubuntu is readable by the `adm` and
     # `systemd-journal` groups — so printing it published a 0600 secret to every member of them,
     # permanently. Point at the file instead: it is correctly 0600, and it stays readable only by
     # the user who owns the console.
-    echo "punktfunk web console login password generated."
-    echo "Read it NOW, before your first sign-in:  sed -n 's/^PUNKTFUNK_UI_PASSWORD=//p' $PWFILE"
+    echo "rubyfunk web console login password generated."
+    echo "Read it NOW, before your first sign-in:  sed -n 's/^RUBYFUNK_UI_PASSWORD=//p' $PWFILE"
     echo "(then open https://<host-ip>:47992 and log in — the console stores a hash after that)"
 fi
 
@@ -41,20 +41,20 @@ fi
 #
 # The console listens on every interface and answers only peers on the local network or a VPN.
 # Write that down once so the operator finds the setting in host.env; an existing line always wins.
-# Runs before punktfunk-web.service reads host.env — the ordering punktfunk-web-init.service is for.
+# Runs before rubyfunk-web.service reads host.env — the ordering rubyfunk-web-init.service is for.
 HOST_ENV="$DIR/host.env"
-if ! grep -q '^[[:space:]]*PUNKTFUNK_UI_BIND=' "$HOST_ENV" 2>/dev/null; then
-    printf '\n# Where the web console listens: 0.0.0.0 (your network, never the internet), 127.0.0.1\n# (this machine only), or one address, e.g. a VPN interface.\nPUNKTFUNK_UI_BIND=0.0.0.0\n' >> "$HOST_ENV"
-    echo "host.env: the web console answers on your local network (PUNKTFUNK_UI_BIND=0.0.0.0)."
-    echo "To keep it to this machine, set PUNKTFUNK_UI_BIND=127.0.0.1 there and restart punktfunk-web."
+if ! grep -q '^[[:space:]]*RUBYFUNK_UI_BIND=' "$HOST_ENV" 2>/dev/null; then
+    printf '\n# Where the web console listens: 0.0.0.0 (your network, never the internet), 127.0.0.1\n# (this machine only), or one address, e.g. a VPN interface.\nRUBYFUNK_UI_BIND=0.0.0.0\n' >> "$HOST_ENV"
+    echo "host.env: the web console answers on your local network (RUBYFUNK_UI_BIND=0.0.0.0)."
+    echo "To keep it to this machine, set RUBYFUNK_UI_BIND=127.0.0.1 there and restart rubyfunk-web."
 fi
 
 # ---------------------------------------------------------------- wait for the host's first run
 #
 # The console cannot START without two things the HOST creates on its first `serve`: `mgmt-token`
-# (a MANDATORY EnvironmentFile on punktfunk-web.service) and the TLS pair `Bun.serve` listens with.
+# (a MANDATORY EnvironmentFile on rubyfunk-web.service) and the TLS pair `Bun.serve` listens with.
 #
-# punktfunk-web.service already says `After=punktfunk-host.service`, but that is not a readiness
+# rubyfunk-web.service already says `After=rubyfunk-host.service`, but that is not a readiness
 # gate: the host is `Type=simple`, so systemd considers it started the instant it is SPAWNED —
 # seconds before either file lands. Worse, the two are written far apart. `mgmt-token` is persisted
 # early in `serve` (main.rs, before the listeners), while the identity cert comes last, inside
@@ -64,10 +64,10 @@ fi
 # Losing that race was a HARD systemd-level failure — "Failed to load environment files: No such
 # file or directory", result 'resources' — on the very first enable of a perfectly good install,
 # and only the Restart loop brought the console up two seconds later. Field report 2026-08-28
-# (Omarchy): `punktfunk-omarchy setup` enables the host and the console back to back, so it lost
-# the race every time and reported "Failed to start punktfunk management web console".
+# (Omarchy): `rubyfunk-omarchy setup` enables the host and the console back to back, so it lost
+# the race every time and reported "Failed to start rubyfunk management web console".
 #
-# This unit is `Type=oneshot` and punktfunk-web.service is ordered `After=` it, so blocking HERE is
+# This unit is `Type=oneshot` and rubyfunk-web.service is ordered `After=` it, so blocking HERE is
 # the readiness gate that ordering already claimed to be — no new unit, no new directive, and the
 # check is the console's own precondition rather than a proxy for it.
 #
@@ -87,7 +87,7 @@ host_ready() {
 
 # ponytail: a 1 s poll, not sd_notify. Making the host `Type=notify` is the real readiness
 # protocol, but it locks the unit file to the binary — and the documented install route copies
-# scripts/punktfunk-host.service into ~/.config/systemd/user BY HAND, so a new unit beside an
+# scripts/rubyfunk-host.service into ~/.config/systemd/user BY HAND, so a new unit beside an
 # older host would hang for TimeoutStartSec and then fail to start at all. Upgrade to notify once
 # the units only ever ship alongside the binary that answers them.
 WAIT_SECS="${1:-30}"
@@ -97,13 +97,13 @@ while ! host_ready; do
         # Not fatal: exit 0 so the console still starts and its own Restart=always retry takes
         # over (the pre-existing behaviour). Say WHY, because the bare systemd error this replaces
         # named a missing file and never the host that owes it.
-        echo "punktfunk-host has not written its mgmt token + identity cert after ${WAIT_SECS}s."
+        echo "rubyfunk-host has not written its mgmt token + identity cert after ${WAIT_SECS}s."
         echo "Starting the console anyway — it retries every 2s until they appear."
-        echo "If it stays down:  systemctl --user status punktfunk-host"
+        echo "If it stays down:  systemctl --user status rubyfunk-host"
         break
     fi
     if [ "$waited" -eq 0 ]; then
-        echo "waiting for punktfunk-host to write its mgmt token + identity cert..."
+        echo "waiting for rubyfunk-host to write its mgmt token + identity cert..."
     fi
     sleep 1
     waited=$((waited + 1))

@@ -67,7 +67,7 @@ Rules and examples: `docs/settings.md`.
 
 ## Identifiers
 
-Reverse-DNS IDs are lowercase `io.unom.punktfunk`, with a lowercase suffix. Adding or renaming an
+Reverse-DNS IDs are lowercase `io.github.gunu3371.rubyfunk`, with a lowercase suffix. Adding or renaming an
 app, bundle, package or service ID: read `docs/identifiers.md` first, for platform conventions and
 the IDs that never change.
 
@@ -84,7 +84,7 @@ scans its own vendor dir still finds them via this file.
 
 ### Issue tracker
 
-Issues live as Gitea issues in `unom/punktfunk` on `git.unom.io`, driven by the `gitea` MCP server
+Issues live as Gitea issues in `unom/rubyfunk` on `git.unom.io`, driven by the `gitea` MCP server
 (`gh`/`glab`/`tea` do not work here), and every write needs the user's go-ahead first.
 See `docs/agents/issue-tracker.md`.
 
@@ -105,12 +105,12 @@ workspace. See `docs/agents/domain.md`.
 
 ## Scroll verification
 
-- `cargo test -p punktfunk-core --features quic scroll` checks wire and compatibility.
+- `cargo test -p rubyfunk-core --features quic scroll` checks wire and compatibility.
 - `cargo test -p pf-inject --lib scroll` checks the production host mapping plans on any OS.
 - `cargo test -p pf-presenter --no-default-features` runs pure touch and scroll tests on macOS;
   it does not compile the Linux/Windows presenter or injector implementations.
 - `swift test --package-path clients/apple --filter ScrollCaptureTests` needs an ABI-matched,
-  signed XCFramework. Its packaged header must define `PUNKTFUNK_FEATURE_QUIC`.
+  signed XCFramework. Its packaged header must define `RUBYFUNK_FEATURE_QUIC`.
 - `scroll-probe` (`tools/scroll-probe`), run in a Linux host's session, prints what an app
   receives from injected scroll: source, distance, value120, stops, cadence. `--listen N` only
   listens, for a real client scrolling over its window; the host's
@@ -120,7 +120,7 @@ workspace. See `docs/agents/domain.md`.
   scroll event, each kinetic `decelerate`, and the scrolled window's position per frame. A
   client's lumpy scroll shows there as large deltas tens of milliseconds apart.
 - Scope ripwire source reviews with `--exclude=clients/apple/.build`
-  `--exclude=clients/apple/PunktfunkCore.xcframework`; downloaded sources and packaged headers
+  `--exclude=clients/apple/RubyFunkCore.xcframework`; downloaded sources and packaged headers
   otherwise pollute the symbol graph and clone findings.
 
 ## Console verification
@@ -136,7 +136,7 @@ workspace. See `docs/agents/domain.md`.
   and the layer installed. It exits 1 on any validation error and prints each under its test. A
   test that fails for the driver's own reasons does not change the exit code: compare those with
   `main`.
-- `PUNKTFUNK_VKDECODE_ARRANGEMENT=sampler` puts any card on the route a device with no plane
+- `RUBYFUNK_VKDECODE_ARRANGEMENT=sampler` puts any card on the route a device with no plane
   views takes (Pascal on Linux, which we do not own). The script runs pf-vkdecode's tests that way.
 - On NVIDIA an H.264 decode faults inside the driver under the layer (615.78), and that ends its
   test binary. Run those tests bare, and the layer with `--skip h264`.

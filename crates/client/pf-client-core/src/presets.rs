@@ -659,7 +659,7 @@ pub(crate) mod tests {
         let out = empty.apply(&base);
         assert_eq!((out.width, out.height), (1920, 1080));
         assert_eq!(out.bitrate_kbps, 20000);
-        assert_eq!(out.pyrowave_bpp, punktfunk_core::pyrowave::BPP_DEFAULT);
+        assert_eq!(out.pyrowave_bpp, rubyfunk_core::pyrowave::BPP_DEFAULT);
         assert_eq!(out.codec, "hevc");
         assert!(
             out.gamepad_forwarding,

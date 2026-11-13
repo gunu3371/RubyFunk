@@ -519,7 +519,7 @@ impl CardMenu {
         }
     }
 
-    /// `punktfunk://` from the store at activation, never at open: the row may have left
+    /// `rubyfunk://` from the store at activation, never at open: the row may have left
     /// the store while the menu was up.
     fn link(&self, store: &dyn SettingsStore) -> Option<String> {
         match &self.subject {
@@ -1843,7 +1843,7 @@ mod tests {
         card(&game()).run(Action::HomeScreen, &mut ctx, &mut fx);
         match fx.action {
             Some(OverlayAction::PinShortcut { url, title }) => {
-                assert!(url.starts_with("punktfunk://connect/") && url.contains("367520"));
+                assert!(url.starts_with("rubyfunk://connect/") && url.contains("367520"));
                 assert_eq!(title, "Hollow Knight");
             }
             other => panic!("expected a shortcut, got {other:?}"),

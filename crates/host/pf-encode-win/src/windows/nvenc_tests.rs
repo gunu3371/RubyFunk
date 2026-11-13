@@ -402,7 +402,7 @@ fn nvenc_wave_smoke() {
                 .flat_map(|(_, a)| a.data.iter().copied())
                 .collect()
         };
-        let dir = std::env::var("PUNKTFUNK_SMOKE_DIR").unwrap_or_else(|_| ".".into());
+        let dir = std::env::var("RUBYFUNK_SMOKE_DIR").unwrap_or_else(|_| ".".into());
         std::fs::write(format!("{dir}/nvenc-wave.h265"), &full).expect("write");
         std::fs::write(format!("{dir}/nvenc-wave-dropA.h265"), view(1..3)).expect("write");
         std::fs::write(
@@ -766,8 +766,8 @@ fn nvenc_split_reconfigure_in_place() {
 
     // SAFETY: this ignored hardware test is run alone; no other thread touches the env.
     unsafe {
-        std::env::set_var("PUNKTFUNK_NVENC_SUBFRAME", "0");
-        std::env::set_var("PUNKTFUNK_SPLIT_ENCODE", "0");
+        std::env::set_var("RUBYFUNK_NVENC_SUBFRAME", "0");
+        std::env::set_var("RUBYFUNK_SPLIT_ENCODE", "0");
     }
 
     // SAFETY: test-only, same D3D11/DXGI setup as `nvenc_reconfigure_no_idr`.
@@ -895,8 +895,8 @@ fn nvenc_split_reconfigure_in_place() {
 
     // SAFETY: single-threaded manual test; no concurrent env access.
     unsafe {
-        std::env::remove_var("PUNKTFUNK_SPLIT_ENCODE");
-        std::env::remove_var("PUNKTFUNK_NVENC_SUBFRAME");
+        std::env::remove_var("RUBYFUNK_SPLIT_ENCODE");
+        std::env::remove_var("RUBYFUNK_NVENC_SUBFRAME");
     }
 }
 

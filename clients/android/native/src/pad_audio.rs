@@ -40,14 +40,14 @@
 //! either hypothesis, and it is what keeps a rumble-only title rumbling — it renders no haptics
 //! audio, the host's silence gate emits nothing, and the pad simply keeps its motors.
 
-use punktfunk_core::audio::pad_mix::HapticsLiveness;
+use rubyfunk_core::audio::pad_mix::HapticsLiveness;
 #[cfg(target_os = "android")]
-use punktfunk_core::audio::pad_mix::{
+use rubyfunk_core::audio::pad_mix::{
     is_haptics_evidence, PadDecode, QuadMixer, MAX_FRAME_SAMPLES, PAD_CHANNELS,
 };
 
 #[cfg(target_os = "android")]
-use punktfunk_core::client::NativeClient;
+use rubyfunk_core::client::NativeClient;
 #[cfg(target_os = "android")]
 use std::sync::atomic::{AtomicBool, Ordering};
 #[cfg(target_os = "android")]
@@ -400,7 +400,7 @@ fn render(
     // exchange for nothing. Against every released host this is the DEFAULT path — `pad_haptics`
     // is on with no UI to turn it off — so without this gate a wired DualSense simply stops
     // rumbling. Checked before `sink::open` so the iso interface is never claimed pointlessly.
-    if client.host_caps() & punktfunk_core::quic::HOST_CAP_PAD_AUDIO == 0 {
+    if client.host_caps() & rubyfunk_core::quic::HOST_CAP_PAD_AUDIO == 0 {
         log::warn!("pad audio: host cannot send it (no HOST_CAP_PAD_AUDIO) — pad {pad} stays on wire rumble");
         drain_until_stop(client, stop);
         return;

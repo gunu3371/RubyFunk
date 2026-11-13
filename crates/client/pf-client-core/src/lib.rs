@@ -24,7 +24,7 @@ pub mod audio_vitals;
 // Priority for threads that feed the device callbacks (decode, pad-audio, WASAPI). rtkit / Realtime portal on Linux, MMCSS on Windows.
 #[cfg(desktop)]
 pub mod audio_rt;
-// mDNS browse of `_punktfunk._udp`. Android folds the same events behind its JNI poll.
+// mDNS browse of `_rubyfunk._udp`. Android folds the same events behind its JNI poll.
 #[cfg(all(
     feature = "discovery",
     any(
@@ -55,7 +55,7 @@ pub mod menu_nav;
 pub mod audio_format;
 // Stored decoder-pref migration, for the Skia settings screen on every target.
 #[cfg(portable)]
-pub use punktfunk_core::decoder_pref;
+pub use rubyfunk_core::decoder_pref;
 // Console actions, pointer input, and session phases. Shared by the Vulkan overlay and the Android GL host.
 #[cfg(portable)]
 pub mod console;
@@ -82,7 +82,7 @@ pub mod host_actions;
 // Log ring (note/render, std only) on every platform. `send_to_host` stays desktop-gated; Android posts via OkHttp (`SkiaConsole.sendLogs`).
 #[cfg(portable)]
 pub mod logring;
-// `punktfunk://` grammar (`design/client-deep-links.md`). One parser/emitter, held to the Swift/Kotlin ports by a shared vector file.
+// `rubyfunk://` grammar (`design/client-deep-links.md`). One parser/emitter, held to the Swift/Kotlin ports by a shared vector file.
 #[cfg(portable)]
 pub mod deeplink;
 // Where a bare launch opens (`design/default-host.md`). One resolver, held to the Swift/Kotlin ports by a shared vector file.
@@ -92,7 +92,7 @@ pub mod start;
 #[cfg(desktop)]
 pub mod orchestrate;
 // Session grant snapshot, overlay chip, and AccessUpdate toast (`design/per-client-access.md`).
-// Presentation only; Apple/Android mirror the rules. Gated with session: macOS has no punktfunk-core to name the grants.
+// Presentation only; Apple/Android mirror the rules. Gated with session: macOS has no rubyfunk-core to name the grants.
 #[cfg(desktop)]
 pub mod access;
 // Host OS-identity from mDNS `os=` TXT: sanitize + icon-walk order. Apple/Android mirror it rather than link it.
@@ -178,5 +178,5 @@ pub use pf_client_video::{video_d3d11, video_d3d11_native};
 
 pub mod wol;
 
-/// The `PUNKTFUNK_*` switch grammar every process shares.
-pub use punktfunk_core::env_on;
+/// The `RUBYFUNK_*` switch grammar every process shares.
+pub use rubyfunk_core::env_on;

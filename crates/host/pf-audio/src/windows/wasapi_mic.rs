@@ -2,7 +2,7 @@
 //! device's **render** endpoint so its **capture** side is a host-recordable mic.
 //! Windows has no user-mode way to create a capture endpoint.
 //!
-//! Target is [`audio_control::wire_now`] on every open; `PUNKTFUNK_MIC_DEVICE`
+//! Target is [`audio_control::wire_now`] on every open; `RUBYFUNK_MIC_DEVICE`
 //! overrides. The plan keeps this write off the desktop-audio loopback endpoint
 //! so inject cannot echo ([`wiring_plan`](super::wiring_plan)). Missing
 //! candidates auto-install the Steam Streaming pair
@@ -16,7 +16,7 @@
 //! A running stream holds a kernel power request that vetoes sleep. After
 //! [`IDLE_STOP_AFTER`] of silence the loop `IAudioClient::Stop`s (endpoint
 //! stays; only the request is released) and parks on the queue condvar.
-//! `PUNKTFUNK_MIC_ALWAYS_ON=1` never idle-stops.
+//! `RUBYFUNK_MIC_ALWAYS_ON=1` never idle-stops.
 
 use super::{audio_control, MicBackendStats, VirtualMic, SAMPLE_RATE};
 use anyhow::{anyhow, Context, Result};
@@ -31,7 +31,7 @@ use wasapi::{Direction, SampleType, StreamMode, WaveFormat};
 const CHANNELS: u32 = 2;
 const BLOCK_ALIGN: usize = 2 * 4;
 /// Fallback prime (~48 ms) until the pump's first jitter estimate, and forever
-/// under `PUNKTFUNK_MIC_LEGACY_BUFFER=1`. Covers a ~42 ms inter-burst gap so
+/// under `RUBYFUNK_MIC_LEGACY_BUFFER=1`. Covers a ~42 ms inter-burst gap so
 /// WASAPI's ~10 ms pull does not insert mid-stream silence.
 const PRIME_BYTES: usize = (SAMPLE_RATE as usize * 48 / 1000) * BLOCK_ALIGN;
 /// Legacy inject-queue cap (~120 ms, drop oldest): prime plus burst headroom,
@@ -52,11 +52,11 @@ const IDLE_WAKE_CHECK: Duration = Duration::from_millis(250);
 /// is when a stopped stream must resume.
 type MicQueue = (Mutex<VecDeque<u8>>, Condvar);
 
-/// `PUNKTFUNK_MIC_ALWAYS_ON=1`: never idle-stop. Escape hatch if a virtual
+/// `RUBYFUNK_MIC_ALWAYS_ON=1`: never idle-stop. Escape hatch if a virtual
 /// driver's capture side misbehaves while its render side is paused.
 fn mic_always_on() -> bool {
     static ON: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-    *ON.get_or_init(|| pf_host_config::env_on("PUNKTFUNK_MIC_ALWAYS_ON") == Some(true))
+    *ON.get_or_init(|| pf_host_config::env_on("RUBYFUNK_MIC_ALWAYS_ON") == Some(true))
 }
 
 pub struct WasapiVirtualMic {
@@ -95,7 +95,7 @@ impl WasapiVirtualMic {
         let ring = Arc::new(RingShared::default());
         let (q, st, rg, al) = (queue.clone(), stop.clone(), ring.clone(), alive.clone());
         let (name, join) = crate::ready::spawn_ready(
-            "punktfunk-wasapi-mic",
+            "rubyfunk-wasapi-mic",
             Duration::from_secs(5),
             move |ready| {
                 if let Err(e) = render_thread(q, st, rg, ready) {
@@ -237,7 +237,7 @@ fn resolve_target() -> Result<(wasapi::Device, String, bool)> {
             anyhow::bail!(
                 "the Steam Streaming Microphone is carrying desktop audio (game audio outranks \
                  the mic; taking it would have silenced the stream) — install VB-Audio Virtual \
-                 Cable to give the mic its own device, or set PUNKTFUNK_MIC_DEVICE=<friendly-name \
+                 Cable to give the mic its own device, or set RUBYFUNK_MIC_DEVICE=<friendly-name \
                  substring> to force a target."
             );
         }
@@ -249,7 +249,7 @@ fn resolve_target() -> Result<(wasapi::Device, String, bool)> {
         anyhow::bail!(
             "no virtual mic endpoint: install Steam and open it once (its first start installs \
              the streaming drivers the host mints a microphone from), or install VB-Audio \
-             Virtual Cable, or set PUNKTFUNK_MIC_DEVICE=<friendly-name substring>"
+             Virtual Cable, or set RUBYFUNK_MIC_DEVICE=<friendly-name substring>"
         );
     };
     let minted = super::minted::minted_ids().mic_render.as_deref() == Some(ep.1.as_str());
@@ -271,7 +271,7 @@ fn repair_pins(minted: bool) {
 /// echo; [`super::wiring_plan`]). Microphone first (inject target), speakers
 /// second (loopback / silent sink). Returns true if either installed. No-op
 /// when the INFs are absent, install is denied (needs admin; host is SYSTEM),
-/// or `PUNKTFUNK_NO_MIC_INSTALL=1`. [`super::wasapi_cap`] installs the
+/// or `RUBYFUNK_NO_MIC_INSTALL=1`. [`super::wasapi_cap`] installs the
 /// same pair when no silent sink exists.
 pub fn install_steam_audio_pair() -> bool {
     let mic = try_install_steam_audio("SteamStreamingMicrophone.inf");
@@ -354,7 +354,7 @@ fn try_install_steam_audio(inf_name: &str) -> bool {
         DiInstallDriverW, DIINSTALLDRIVER_FLAGS,
     };
 
-    if pf_host_config::env_on("PUNKTFUNK_NO_MIC_INSTALL") == Some(true) {
+    if pf_host_config::env_on("RUBYFUNK_NO_MIC_INSTALL") == Some(true) {
         return false;
     }
     let Some(path) = steam_driver_inf_path(inf_name) else {
@@ -443,7 +443,7 @@ fn render_thread(
     // Prime→hold→re-prime: clients burst on their clock, WASAPI pulls per
     // period on another. Greedy drain pads mid-stream silence. Re-prime only
     // after a full drain. Threshold = period + pump target; [`PRIME_BYTES`]
-    // until the first estimate, forever under `PUNKTFUNK_MIC_LEGACY_BUFFER=1`.
+    // until the first estimate, forever under `RUBYFUNK_MIC_LEGACY_BUFFER=1`.
     let mut buf: Vec<u8> = Vec::new();
     let mut primed = false;
     // `running` is Start/Stop. `idle_mark` is (queue len, first seen at that

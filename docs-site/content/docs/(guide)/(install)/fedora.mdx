@@ -1,6 +1,6 @@
 ---
 title: Fedora
-description: Install the Punktfunk host on Fedora 43, 44 or 45 from the RPM repo, in four steps.
+description: Install the RubyFunk host on Fedora 43, 44 or 45 from the RPM repo, in four steps.
 ---
 
 Install the host on **Fedora 43, 44 or 45**, Workstation or KDE. Bazzite and other Fedora Atomic spins
@@ -36,7 +36,7 @@ Add the repo and install the host, the console and the plugin runner. On **Fedor
 <Install platform="fedora" />
 
 `sudo dnf upgrade` updates it from then on. Restart the host afterwards with
-`systemctl --user restart punktfunk-host`, or let the [console update it](/docs/updating).
+`systemctl --user restart rubyfunk-host`, or let the [console update it](/docs/updating).
 
 ## 3. Let it use your controllers
 
@@ -44,7 +44,7 @@ Join the groups, then **log out and back in**:
 
 ```sh
 sudo usermod -aG input "$USER"       # virtual gamepads
-sudo usermod -aG punktfunk "$USER"   # virtual Steam Deck controller
+sudo usermod -aG rubyfunk "$USER"   # virtual Steam Deck controller
 ```
 
 ## 4. Start it
@@ -52,7 +52,7 @@ sudo usermod -aG punktfunk "$USER"   # virtual Steam Deck controller
 From a terminal inside your desktop session:
 
 ```sh
-systemctl --user enable --now punktfunk-host punktfunk-web
+systemctl --user enable --now rubyfunk-host rubyfunk-web
 ```
 
 Fedora runs **firewalld**, and no client reaches the host until you open it. Open the host, and the
@@ -60,11 +60,11 @@ console for other devices:
 
 ```sh
 sudo firewall-cmd --reload   # load the service definitions the package installed
-sudo firewall-cmd --permanent --add-service=punktfunk-native --add-service=punktfunk-web
+sudo firewall-cmd --permanent --add-service=rubyfunk-native --add-service=rubyfunk-web
 sudo firewall-cmd --reload
 ```
 
-For [Moonlight](/docs/moonlight), also add `punktfunk-gamestream` ([Ports & firewall](/docs/ports)).
+For [Moonlight](/docs/moonlight), also add `rubyfunk-gamestream` ([Ports & firewall](/docs/ports)).
 
 **Next:** [Quick Start, step 3](/docs/quickstart#3-open-the-web-console): open the console and pair
 a device.

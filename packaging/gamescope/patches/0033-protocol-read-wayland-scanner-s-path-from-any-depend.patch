@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: punktfunk <packages@unom.io>
+From: rubyfunk <packages@unom.io>
 Date: Sun, 4 Oct 2026 00:39:36 +0200
 Subject: [PATCH 33/33] protocol: read wayland-scanner's path from any
  dependency type
@@ -10,7 +10,7 @@ its `wayland` fallback, wayland-scanner is an internal dependency that sets
 the same variable, and the pkg-config-only lookup fails at configure time.
 The generic `get_variable('wayland_scanner')` reads both, as wlroots does.
 
-punktfunk: also stamps the version banner +pfhdr30 (rebase onto 3.16.31).
+rubyfunk: also stamps the version banner +pfhdr30 (rebase onto 3.16.31).
 ---
  protocol/meson.build | 2 +-
  src/meson.build      | 5 ++++-

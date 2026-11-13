@@ -22,7 +22,7 @@ pub fn in_scratch_home(test: &str, child_var: &str, body: fn(&Path)) {
     let child = Command::new(std::env::current_exe().expect("this test binary"))
         .args(["--exact", test, "--nocapture"])
         .env(child_var, &home)
-        .env("PUNKTFUNK_CONFIG_DIR", home.join("config"))
+        .env("RUBYFUNK_CONFIG_DIR", home.join("config"))
         .env("XDG_CACHE_HOME", &home)
         .env("LOCALAPPDATA", &home)
         .output()

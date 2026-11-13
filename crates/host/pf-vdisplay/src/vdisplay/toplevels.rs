@@ -89,12 +89,12 @@ pub fn list_toplevels(compositor: Compositor, output: &str) -> Vec<Toplevel> {
 
 /// Every window on every head, for the host's own window stage. `None` when
 /// this compositor cannot list its windows at all right now: KWin has not
-/// granted the protocol, GNOME has not loaded punktfunk's extension, or it is
+/// granted the protocol, GNOME has not loaded rubyfunk's extension, or it is
 /// gamescope or Windows. An empty list means it can, and nothing is open.
 ///
 /// Never a client's answer: it names the operator's other monitors, which is
 /// what [`list_toplevels`] exists to keep out. KWin reads it over
-/// `org_kde_plasma_window_management` and GNOME from punktfunk's shell
+/// `org_kde_plasma_window_management` and GNOME from rubyfunk's shell
 /// extension; neither names a window's head.
 pub fn list_all_toplevels(compositor: Compositor) -> Option<Vec<Toplevel>> {
     match compositor {

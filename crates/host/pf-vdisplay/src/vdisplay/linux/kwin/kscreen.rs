@@ -672,7 +672,7 @@ mod tests {
     fn parses_both_id_encodings() {
         let doc: serde_json::Value = serde_json::from_str(
             r#"{"outputs":[
-                 {"id":7,"name":"Virtual-punktfunk","modes":[
+                 {"id":7,"name":"Virtual-rubyfunk","modes":[
                    {"id":"m1","size":{"width":2868,"height":1320},"refreshRate":60.0},
                    {"id":42,"size":{"width":2864,"height":1320},"refreshRate":119.92},
                    {"id":"broken","size":{"width":800}}
@@ -684,7 +684,7 @@ mod tests {
         )
         .expect("fixture parses");
         // Addressable by numeric id (how `resolve_kscreen_addr` returns it) and by name.
-        for addr in ["7", "Virtual-punktfunk"] {
+        for addr in ["7", "Virtual-rubyfunk"] {
             let modes = modes_from_json(&doc, addr);
             assert_eq!(modes.len(), 2, "the malformed row is dropped ({addr})");
             assert_eq!(modes[1].id, "42", "numeric mode ids stringify ({addr})");
@@ -712,7 +712,7 @@ mod tests {
                     {"id":7,"size":{"width":3840,"height":2160},"refreshRate":120.0}]},
                  {"id":3,"name":"DP-3","enabled":false,"scale":1,"pos":{"x":0,"y":0},
                   "modes":[{"id":"z","size":{"width":2560,"height":1440},"refreshRate":60.0}]},
-                 {"id":4,"name":"Virtual-punktfunk-7","enabled":true,"scale":1,
+                 {"id":4,"name":"Virtual-rubyfunk-7","enabled":true,"scale":1,
                   "pos":{"x":5760,"y":0},"currentModeId":"v1","modes":[
                     {"id":"v1","size":{"width":2560,"height":1440},"refreshRate":119.98}]}
                ]}"#,
@@ -729,7 +729,7 @@ mod tests {
         let order: Vec<&str> = mons.iter().map(|m| m.connector.as_str()).collect();
         assert_eq!(
             order,
-            vec!["DP-3", "eDP-1", "HDMI-A-1", "Virtual-punktfunk-7"]
+            vec!["DP-3", "eDP-1", "HDMI-A-1", "Virtual-rubyfunk-7"]
         );
         let edp = by("eDP-1");
         // Pixels at the scale the desk runs — the point of `logical_size`.
@@ -747,9 +747,9 @@ mod tests {
         assert!(!dark.enabled);
         assert_eq!((dark.width, dark.height, dark.refresh_mhz), (0, 0, 0));
         // Ours, labelled by connector when the entry carries no make/model.
-        let ours = by("Virtual-punktfunk-7");
+        let ours = by("Virtual-rubyfunk-7");
         assert!(ours.managed);
-        assert_eq!(ours.description, "Virtual-punktfunk-7");
+        assert_eq!(ours.description, "Virtual-rubyfunk-7");
         assert!(!by("eDP-1").managed);
     }
 
@@ -774,16 +774,16 @@ mod tests {
                 "modes": [{"id": "m", "size": {"width": w, "height": 1096}, "refreshRate": 60.0}]})
         };
         let doc = serde_json::json!({"outputs": [
-            at(3, "Virtual-punktfunk-1", 1920),
-            at(5, "Virtual-punktfunk-1", 2560),
-            at(9, "Virtual-punktfunk-12", 1920),
-            at(4, "Virtual-punktfunk-1", 1920),
+            at(3, "Virtual-rubyfunk-1", 1920),
+            at(5, "Virtual-rubyfunk-1", 2560),
+            at(9, "Virtual-rubyfunk-12", 1920),
+            at(4, "Virtual-rubyfunk-1", 1920),
         ]});
         assert_eq!(
-            newest_id_at(&doc, "Virtual-punktfunk-1", 1920, 1096),
+            newest_id_at(&doc, "Virtual-rubyfunk-1", 1920, 1096),
             Some(4)
         );
-        assert_eq!(newest_id_at(&doc, "Virtual-punktfunk", 1920, 1096), None);
+        assert_eq!(newest_id_at(&doc, "Virtual-rubyfunk", 1920, 1096), None);
     }
 
     /// The kscreen half decides by the seam's plan: a sibling's primary holds, our
@@ -800,8 +800,8 @@ mod tests {
         let doc = |outs: Vec<serde_json::Value>| serde_json::json!({ "outputs": outs });
         let sibling = doc(vec![
             out(1, "eDP-1", 2, 0),
-            out(2, "Virtual-punktfunk-7", 1, 1920),
-            out(3, "Virtual-punktfunk-1", 3, 3840),
+            out(2, "Virtual-rubyfunk-7", 1, 1920),
+            out(3, "Virtual-rubyfunk-1", 3, 3840),
         ]);
         let rows = rows_from_json(&sibling, "3");
         assert!(
@@ -811,15 +811,15 @@ mod tests {
 
         let predecessor = doc(vec![
             out(1, "eDP-1", 2, 0),
-            out(2, "Virtual-punktfunk-1", 1, 1920),
-            out(3, "Virtual-punktfunk-1", 3, 3840),
+            out(2, "Virtual-rubyfunk-1", 1, 1920),
+            out(3, "Virtual-rubyfunk-1", 3, 3840),
         ]);
         let rows = rows_from_json(&predecessor, "3");
         let p = plan(&rows, Exclusive, &[]);
         assert!(p.take_primary, "our predecessor is no sibling");
         let edp = ("eDP-1".to_string(), "1920x1080@60".to_string());
         assert_eq!(p.disabled(&rows), vec![edp]);
-        let by_name = rows_from_json(&predecessor, "Virtual-punktfunk-1");
+        let by_name = rows_from_json(&predecessor, "Virtual-rubyfunk-1");
         assert_eq!(
             by_name, rows,
             "an unresolved id falls back to the newest named"
@@ -827,7 +827,7 @@ mod tests {
 
         let kept = doc(vec![
             out(1, "eDP-1", 1, 0),
-            out(3, "Virtual-punktfunk-1", 2, 0),
+            out(3, "Virtual-rubyfunk-1", 2, 0),
         ]);
         let rows = rows_from_json(&kept, "3");
         let p = plan(&rows, Exclusive, &["eDP-1".to_string()]);

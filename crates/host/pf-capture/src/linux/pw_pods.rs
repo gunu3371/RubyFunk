@@ -60,7 +60,7 @@ fn max_framerate_prop(pacing: Pacing) -> Option<pw::spa::pod::Property> {
 pub(super) enum Extent {
     /// Ranges up to 8192² and 240 Hz around the preferred mode (1080p60 without one).
     Around(Option<(u32, u32, u32)>),
-    /// One fixed size at variable rate: the `PUNKTFUNK_PW_FIXED_POD` bisect offer.
+    /// One fixed size at variable rate: the `RUBYFUNK_PW_FIXED_POD` bisect offer.
     Fixed(u32, u32),
 }
 
@@ -524,7 +524,7 @@ mod tests {
         assert_eq!(
             buffers_data_type(&build_shm_only_buffers().unwrap()),
             MEM_PTR | MEM_FD,
-            "PUNKTFUNK_FORCE_SHM must exclude DmaBuf"
+            "RUBYFUNK_FORCE_SHM must exclude DmaBuf"
         );
         assert_eq!(
             buffers_data_type(&build_dmabuf_buffers(crate::POOL_MIN, false).unwrap()),

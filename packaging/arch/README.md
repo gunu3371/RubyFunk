@@ -1,10 +1,10 @@
-# punktfunk on Arch Linux / SteamOS
+# rubyfunk on Arch Linux / SteamOS
 
-Packaging for punktfunk on Arch and Arch-derived immutable distros. The `PKGBUILD` is a **split
-package** producing **`punktfunk-host`** (the gaming-rig host) and **`punktfunk-client`** (the native
-GTK4/libadwaita Linux client) — mirrors the rpm subpackages (`packaging/rpm/punktfunk.spec`) and the
-deb build scripts. On a **Steam Deck used as a client you want `punktfunk-client`** (it's what the
-[Decky plugin](../../clients/decky/) launches); on a gaming rig, `punktfunk-host`.
+Packaging for rubyfunk on Arch and Arch-derived immutable distros. The `PKGBUILD` is a **split
+package** producing **`rubyfunk-host`** (the gaming-rig host) and **`rubyfunk-client`** (the native
+GTK4/libadwaita Linux client) — mirrors the rpm subpackages (`packaging/rpm/rubyfunk.spec`) and the
+deb build scripts. On a **Steam Deck used as a client you want `rubyfunk-client`** (it's what the
+[Decky plugin](../../clients/decky/) launches); on a gaming rig, `rubyfunk-host`.
 
 > **Steam Deck as a HOST:** don't use this PKGBUILD — SteamOS's read-only root makes `makepkg`/sysext
 > awkward, and a prebuilt binary breaks on OS library bumps. Use the on-device build script instead:
@@ -12,16 +12,16 @@ deb build scripts. On a **Steam Deck used as a client you want `punktfunk-client
 > ABI-matched to SteamOS and uses **VAAPI** on the Deck's AMD GPU). The Deck host path is the one
 > exception to "host encode is NVENC-only" below.
 
-A third member, **`punktfunk-web`** (the browser management console — pairing + status), is
+A third member, **`rubyfunk-web`** (the browser management console — pairing + status), is
 **opt-in**: build it by setting `PF_WITH_WEB=1`, which requires **`bun`** at build time (`bun-bin`
 from the AUR if it isn't in your repos). bun is also the **runtime** — the console serves HTTPS
 (HTTP/1.1 over TLS) via `Bun.serve`. Either `PF_WITH_WEB=1` or `PF_WITH_SCRIPTING=1` also builds
-**`punktfunk-bun`**: the one vendored bun both packages run on, at `/usr/lib/punktfunk-bun/bun`,
+**`rubyfunk-bun`**: the one vendored bun both packages run on, at `/usr/lib/rubyfunk-bun/bun`,
 never on PATH (no `nodejs` dependency). A default `makepkg` builds only host+client with no JS
 tooling — mirroring the RPM spec's `%bcond_with web`.
 
-> **Host encode: NVENC on NVIDIA, VAAPI on AMD/Intel** (`PUNKTFUNK_ENCODER=auto` picks one). The host
-> now has a VAAPI encoder + zero-copy dmabuf path alongside NVENC/CUDA, so `punktfunk-host` works on
+> **Host encode: NVENC on NVIDIA, VAAPI on AMD/Intel** (`RUBYFUNK_ENCODER=auto` picks one). The host
+> now has a VAAPI encoder + zero-copy dmabuf path alongside NVENC/CUDA, so `rubyfunk-host` works on
 > Arch + NVIDIA **and** AMD/Intel (incl. the Steam Deck — see the on-device path above). The client
 > decodes via VAAPI on AMD/Intel with a software fallback.
 
@@ -35,7 +35,7 @@ binary repo, so a partial upgrade is not supported: always a full `-Syu`.
 ### aarch64 (Arch Linux ARM) — the client
 
 The PKGBUILD declares `arch=('x86_64' 'aarch64')`. On aarch64 it builds the **client only** —
-`pkgname` drops `punktfunk-host`, so makepkg never enters the host's build or package path, and
+`pkgname` drops `rubyfunk-host`, so makepkg never enters the host's build or package path, and
 `build()` skips the host/tray cargo invocations and their NVENC/Vulkan-encode features. The host
 stays x86-only because its encode stack (NVENC/QSV/AMF) is.
 
@@ -44,7 +44,7 @@ Nothing else changes — run the same command on an Arch Linux ARM box:
 ```sh
 cd packaging/arch
 PF_SRCDIR="$(git rev-parse --show-toplevel)" makepkg -f --holdver
-# -> punktfunk-client-<ver>-<rel>-aarch64.pkg.tar.zst   (no punktfunk-host package)
+# -> rubyfunk-client-<ver>-<rel>-aarch64.pkg.tar.zst   (no rubyfunk-host package)
 ```
 
 There is no cross-compile path here: makepkg builds for `CARCH`, so this wants a real aarch64
@@ -53,11 +53,11 @@ Arch machine (or an emulated Arch Linux ARM container, which is slow). Unlike th
 Then the standard first-run (printed by the install scriptlet):
 ```sh
 sudo usermod -aG input "$USER"          # virtual gamepads; re-login after
-systemctl --user enable --now punktfunk-host
-# Settings: the console. A line in ~/.config/punktfunk/host.env locks that setting there.
-# Web console (if you installed the punktfunk-web package): enable it + read the login password.
-systemctl --user enable --now punktfunk-web
-journalctl --user -u punktfunk-web-init | sed -n 's/.*password generated: //p'   # open https://<host-ip>:47992
+systemctl --user enable --now rubyfunk-host
+# Settings: the console. A line in ~/.config/rubyfunk/host.env locks that setting there.
+# Web console (if you installed the rubyfunk-web package): enable it + read the login password.
+systemctl --user enable --now rubyfunk-web
+journalctl --user -u rubyfunk-web-init | sed -n 's/.*password generated: //p'   # open https://<host-ip>:47992
 ```
 NVENC/EGL come from the NVIDIA driver: `sudo pacman -S --needed nvidia-utils`.
 
@@ -93,38 +93,38 @@ cd packaging/arch && PF_SRCDIR="$(git rev-parse --show-toplevel)" makepkg -f --h
 ( cd ../gamescope && makepkg -f -d --holdver )   # optional: the HDR gamescope companion
 # 2. turn it into a sysext .raw (extracts the packages' /usr into an image + extension-release);
 #    --gamescope folds the HDR build into a HOST image (verified by its +pfhdr banner)
-bash build-sysext.sh --gamescope ../gamescope/punktfunk-gamescope-*.pkg.tar.zst punktfunk-host-*.pkg.tar.zst
-# 3. on the box (the host image is punktfunk.raw; delete an older punktfunk-host.raw first):
-sudo cp punktfunk.raw /var/lib/extensions/
+bash build-sysext.sh --gamescope ../gamescope/rubyfunk-gamescope-*.pkg.tar.zst rubyfunk-host-*.pkg.tar.zst
+# 3. on the box (the host image is rubyfunk.raw; delete an older rubyfunk-host.raw first):
+sudo cp rubyfunk.raw /var/lib/extensions/
 sudo systemctl enable --now systemd-sysext      # merges it
-systemctl --user enable --now punktfunk-host     # the user unit is now under /usr/lib
+systemctl --user enable --now rubyfunk-host     # the user unit is now under /usr/lib
 ```
 The udev rule and systemd **user** unit live under `/usr/lib`, so the merged sysext exposes them.
 The UDP buffer sysctl does too, but systemd applies sysctl files before the merge, so the image
-carries `punktfunk-sysctl.service` to apply it afterwards. `systemd-sysext refresh` re-merges after a reboot. (One HDR nuance of the sysext
+carries `rubyfunk-sysctl.service` to apply it afterwards. `systemd-sysext refresh` re-merges after a reboot. (One HDR nuance of the sysext
 path: the image ships gamescope without `CAP_SYS_NICE`, so its frame pacing is marginally worse —
-everything works. Capabilities inside the image: `punktfunk-host` carries **none**, on *either*
+everything works. Capabilities inside the image: `rubyfunk-host` carries **none**, on *either*
 path, deliberately — one would make it unidentifiable to KWin and break desktop streaming;
-`punktfunk-encode-worker` carries `cap_sys_nice=ep`, applied by `build-sysext.sh` because pacman
+`rubyfunk-encode-worker` carries `cap_sys_nice=ep`, applied by `build-sysext.sh` because pacman
 scriptlets never run for a sysext and a merged `/usr` is read-only. Both are asserted at build
 time. See
 [Running as a service](https://punktfunk.io/docs/running-as-a-service#gpu-scheduling-priority).)
 
 ## Steam Deck — the client (what the Decky plugin launches)
 
-To stream *to* a Deck, you install **`punktfunk-client`** there — same sysext mechanism, but
+To stream *to* a Deck, you install **`rubyfunk-client`** there — same sysext mechanism, but
 wrapping the client package instead. The split `makepkg` produces both `.pkg.tar.zst` files; on the
 Deck use the client one:
 ```sh
 cd packaging/arch && PF_SRCDIR="$(git rev-parse --show-toplevel)" makepkg -f --holdver
-bash build-sysext.sh punktfunk-client-*.pkg.tar.zst        # → punktfunk-client.raw
+bash build-sysext.sh rubyfunk-client-*.pkg.tar.zst        # → rubyfunk-client.raw
 # on the Deck:
-sudo cp punktfunk-client.raw /var/lib/extensions/
+sudo cp rubyfunk-client.raw /var/lib/extensions/
 sudo systemctl enable --now systemd-sysext
 sudo pacman -S --needed libva-mesa-driver                  # VAAPI hw decode on the Deck's AMD APU
 ```
-Now `punktfunk-client` is on `PATH`, so the **[Decky plugin](../../clients/decky/)** finds and
-launches it (`punktfunk-client --connect host:port`) — gamescope composites its video like a game.
+Now `rubyfunk-client` is on `PATH`, so the **[Decky plugin](../../clients/decky/)** finds and
+launches it (`rubyfunk-client --connect host:port`) — gamescope composites its video like a game.
 The client needs no `/dev/uinput` or compositor-spawning rights (it captures input and decodes),
 so it's a much lighter sysext than the host.
 
@@ -141,19 +141,19 @@ neither auto-enabled. The commands are on the
 [`data/platforms.json`](../../data/platforms.json).
 
 ## Files
-- `PKGBUILD` — split package: `punktfunk-host` + `punktfunk-client` + `punktfunk-seats` (builds the
-  working tree via `PF_SRCDIR`, or a git tag for AUR). `punktfunk-seats` is the root supervisor
-  behind profile seats: a host dependency at its own version, installed under `/usr/libexec/punktfunk`,
+- `PKGBUILD` — split package: `rubyfunk-host` + `rubyfunk-client` + `rubyfunk-seats` (builds the
+  working tree via `PF_SRCDIR`, or a git tag for AUR). `rubyfunk-seats` is the root supervisor
+  behind profile seats: a host dependency at its own version, installed under `/usr/libexec/rubyfunk`,
   never enabled. It also carries the door's units, root helper and polkit rule.
-- `punktfunk-host.install` / `punktfunk-client.install` — pacman scriptlets (capabilities + first-run
+- `rubyfunk-host.install` / `rubyfunk-client.install` — pacman scriptlets (capabilities + first-run
   hint, incl. the ufw/firewalld enable command for whichever is present). The host's calls the
   shared `../linux/post-install.sh` (groups, udev, sysctl, firewall notes) that the RPM `%post` and
-  deb postinst call too; the groups come from `../linux/punktfunk.sysusers`.
-  `punktfunk-scripting.install` loads the runner's AppArmor profile. `punktfunk-seats.install`
+  deb postinst call too; the groups come from `../linux/rubyfunk.sysusers`.
+  `rubyfunk-scripting.install` loads the runner's AppArmor profile. `rubyfunk-seats.install`
   creates the seat directories.
 - The firewall openers are shared across all Linux packaging and live in [`../linux/`](../linux/):
-  the ufw application profile (`punktfunk.ufw` → `/etc/ufw/applications.d/punktfunk`) and the
-  firewalld service definitions (`punktfunk-native.xml` / `punktfunk-gamestream.xml` /
-  `punktfunk-web.xml` → `/usr/lib/firewalld/services/`). None auto-enabled; see Firewall above.
+  the ufw application profile (`rubyfunk.ufw` → `/etc/ufw/applications.d/rubyfunk`) and the
+  firewalld service definitions (`rubyfunk-native.xml` / `rubyfunk-gamestream.xml` /
+  `rubyfunk-web.xml` → `/usr/lib/firewalld/services/`). None auto-enabled; see Firewall above.
 - `build-sysext.sh` — wraps either built `.pkg.tar.zst` into a `systemd-sysext` `.raw` for SteamOS
   (derives the name from the package, so it works for host or client).

@@ -35,7 +35,7 @@ use usbip_sim::{
     Version,
 };
 
-/// Default on, on the Deck's knob: `PUNKTFUNK_STEAM_USBIP=0`/`false` keeps the SC2 on UHID.
+/// Default on, on the Deck's knob: `RUBYFUNK_STEAM_USBIP=0`/`false` keeps the SC2 on UHID.
 pub fn usbip_preferred() -> bool {
     super::steam_usbip::usbip_preferred()
 }
@@ -65,7 +65,7 @@ impl TritonUsbFeedback {
     /// sends it), or a SET_REPORT whose `wValue` is `set`. Outputs and pad-bound features
     /// return to the physical-device owner.
     fn absorb(&mut self, set: Option<u16>, data: Vec<u8>) {
-        use punktfunk_core::quic::{HID_RAW_FEATURE, HID_RAW_OUTPUT};
+        use rubyfunk_core::quic::{HID_RAW_FEATURE, HID_RAW_OUTPUT};
         let Some(value) = set else {
             self.rumble = parse_triton_rumble(&data).or(self.rumble);
             self.queue_raw(HID_RAW_OUTPUT, data);
@@ -1299,7 +1299,7 @@ mod tests {
 
     #[test]
     fn out_and_feature_writes_are_captured() {
-        use punktfunk_core::quic::{HID_RAW_FEATURE, HID_RAW_OUTPUT};
+        use rubyfunk_core::quic::{HID_RAW_FEATURE, HID_RAW_OUTPUT};
         let reports = Arc::new(Mutex::new(InputReports::new(InputReport::default())));
         let (out, pad) = test_relay();
         let mut h = TritonHandler {

@@ -1,7 +1,7 @@
-//! `punktfunk://` activation for the Windows shell (design/client-deep-links.md §4.2).
+//! `rubyfunk://` activation for the Windows shell (design/client-deep-links.md §4.2).
 //!
 //! Protocol activation of a full-trust packaged app delivers the URI as the command line, so
-//! a browser prompt, `start punktfunk://…` and a written `.lnk` all arrive the same way: as a
+//! a browser prompt, `start rubyfunk://…` and a written `.lnk` all arrive the same way: as a
 //! positional argument. What Windows does NOT give us is single-instancing — unlike
 //! GApplication on Linux, a second activation is simply a second process. So this module adds
 //! it: the first instance claims a named mutex, and any later one hands its URL to the winner
@@ -25,13 +25,14 @@ use windows::Win32::winuser::{
 
 /// The single-instance mutex. Named per the design; deliberately not `Global\` — one shell per
 /// user session is the rule, and a second desktop user gets their own.
-const MUTEX_NAME: windows::core::PCWSTR = windows::core::w!("io.unom.punktfunk.client");
+const MUTEX_NAME: windows::core::PCWSTR = windows::core::w!("io.github.gunu3371.rubyfunk.client");
 
 /// Tags our `WM_COPYDATA` so a stray message from anything else is ignored rather than parsed.
 const COPYDATA_URL: usize = 0x7066_0001; // 'pf' + 1
 
 /// Window class of the primary's message-only receiver; later instances find it by this name.
-const RECEIVER_CLASS: windows::core::PCWSTR = windows::core::w!("io.unom.punktfunk.deeplink");
+const RECEIVER_CLASS: windows::core::PCWSTR =
+    windows::core::w!("io.github.gunu3371.rubyfunk.deeplink");
 
 /// URLs delivered by another instance, waiting for the app's poll to pick them up. A queue
 /// rather than a single slot: two shortcuts double-clicked in quick succession are two links,
@@ -54,7 +55,7 @@ unsafe fn close_handle(handle: HANDLE) {
     let _ = unsafe { CloseHandle(handle) };
 }
 
-/// A positional `punktfunk://` (or the `pf://` input alias) anywhere in argv — how protocol
+/// A positional `rubyfunk://` (or the `pf://` input alias) anywhere in argv — how protocol
 /// activation, `start`, and a `.lnk` shortcut all deliver a link. Validation happens later in
 /// the shared parser; this only decides whether argv carries something addressed to us.
 pub(crate) fn positional_url(args: &[String]) -> Option<String> {
@@ -309,7 +310,7 @@ pub(crate) fn write_shortcut(label: &str, url: &str) -> Result<std::path::PathBu
         .expect("an unused shortcut name");
     // Alias when packaged, absolute path when not — see the doc comment above.
     let target = if has_package_identity() {
-        "punktfunk-client.exe".to_string()
+        "rubyfunk-client.exe".to_string()
     } else {
         std::env::current_exe()
             .map_err(|e| format!("current exe: {e}"))?
@@ -381,7 +382,7 @@ fn file_name(label: &str) -> String {
         .collect();
     let trimmed = cleaned.trim().trim_end_matches('.').to_string();
     if trimmed.is_empty() {
-        "Punktfunk".to_string()
+        "RubyFunk".to_string()
     } else {
         trimmed
     }
@@ -400,10 +401,10 @@ mod tests {
     #[test]
     fn utf16_payload_decodes_without_alignment() {
         let mut storage = vec![0xff];
-        storage.extend(utf16_bytes("punktfunk://connect/Café 🎮"));
+        storage.extend(utf16_bytes("rubyfunk://connect/Café 🎮"));
         assert_eq!(
             decode_utf16_payload(&storage[1..]),
-            Some("punktfunk://connect/Café 🎮".to_string())
+            Some("rubyfunk://connect/Café 🎮".to_string())
         );
     }
 
@@ -429,8 +430,8 @@ mod tests {
     fn positional_url_finds_links_only() {
         let args = |v: &[&str]| v.iter().map(|s| s.to_string()).collect::<Vec<_>>();
         assert_eq!(
-            positional_url(&args(&["punktfunk-client.exe", "punktfunk://connect/Desk"])),
-            Some("punktfunk://connect/Desk".into())
+            positional_url(&args(&["rubyfunk-client.exe", "rubyfunk://connect/Desk"])),
+            Some("rubyfunk://connect/Desk".into())
         );
         // The alias form still parses (it is never emitted, only accepted).
         assert_eq!(
@@ -439,7 +440,7 @@ mod tests {
         );
         assert_eq!(positional_url(&args(&["exe", "--console"])), None);
         // argv[0] is never a link, even if someone renames the binary.
-        assert_eq!(positional_url(&args(&["punktfunk://connect/Desk"])), None);
+        assert_eq!(positional_url(&args(&["rubyfunk://connect/Desk"])), None);
     }
 
     /// Shortcut names survive user text: reserved characters, control characters, a trailing
@@ -450,7 +451,7 @@ mod tests {
         assert_eq!(file_name("Desk: Work/Play"), "Desk- Work-Play");
         assert_eq!(file_name("Desk\u{1}"), "Desk-");
         assert_eq!(file_name("Trailing."), "Trailing");
-        assert_eq!(file_name("   "), "Punktfunk");
+        assert_eq!(file_name("   "), "RubyFunk");
         assert!(file_name(&"x".repeat(300)).len() <= 64);
     }
 }

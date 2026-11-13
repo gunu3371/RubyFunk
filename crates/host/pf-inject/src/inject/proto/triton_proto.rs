@@ -2,9 +2,9 @@
 //! contract — the as-is passthrough sibling of [`super::steam_proto`].
 //!
 //! The client captures the physical pad and forwards raw input reports
-//! ([`RichInput::HidReport`](punktfunk_core::quic::RichInput)); the host mirrors them unchanged.
+//! ([`RichInput::HidReport`](rubyfunk_core::quic::RichInput)); the host mirrors them unchanged.
 //! Host hidraw writes (lizard-off / IMU-enable features, `0x80` rumble) go back as
-//! [`HidOutput::HidRaw`](punktfunk_core::quic::HidOutput). Steam Input drives the hidraw as it
+//! [`HidOutput::HidRaw`](rubyfunk_core::quic::HidOutput). Steam Input drives the hidraw as it
 //! would a physical pad; from kernel 7.3 `hid-steam` binds this PID too (#1368).
 //!
 //! Ground truth: SDL `SDL_hidapi_steam_triton.c` + `steam/controller_structs.h`. Input ids
@@ -16,8 +16,8 @@
 //! gamepad plane → a minimal `0x42` state report. The first raw report switches to as-is
 //! permanently.
 
-use punktfunk_core::input::{gamepad as gs, GamepadFrame};
-use punktfunk_core::quic::RichInput;
+use rubyfunk_core::input::{gamepad as gs, GamepadFrame};
+use rubyfunk_core::quic::RichInput;
 
 /// Same as [`super::steam_proto::STEAM_VENDOR`]; repeated so this module stays self-contained.
 pub const TRITON_VENDOR: u32 = 0x28DE;
@@ -222,7 +222,7 @@ pub fn serialize_triton_state(buf: &mut [u8; TRITON_STATE_LEN], st: &TritonState
     buf[16..18].copy_from_slice(&st.ry.to_le_bytes());
 }
 
-/// Raw reports for [`HidOutput::HidRaw`](punktfunk_core::quic::HidOutput), plus 0xCA rumble for
+/// Raw reports for [`HidOutput::HidRaw`](rubyfunk_core::quic::HidOutput), plus 0xCA rumble for
 /// phone-mirror clients whose physical pad already got the raw report.
 #[derive(Default)]
 pub struct TritonFeedback {
@@ -299,10 +299,10 @@ impl Sc2Identity {
         pf_driver_proto::triton::identity_blob(self.serial.as_deref().unwrap_or(""), self.pairs())
     }
 
-    /// What a client sent ([`punktfunk_core::quic::PadIdentity`]); `None` when it carries
+    /// What a client sent ([`rubyfunk_core::quic::PadIdentity`]); `None` when it carries
     /// neither a serial nor a reply, or the replies are torn.
-    pub fn from_wire(id: &punktfunk_core::quic::PadIdentity) -> Option<Sc2Identity> {
-        let replies: Vec<_> = punktfunk_core::quic::unpack_identity_replies(&id.replies)?
+    pub fn from_wire(id: &rubyfunk_core::quic::PadIdentity) -> Option<Sc2Identity> {
+        let replies: Vec<_> = rubyfunk_core::quic::unpack_identity_replies(&id.replies)?
             .into_iter()
             .filter(|(_, rep)| !rep.is_empty())
             .map(|(req, rep)| {
@@ -382,7 +382,7 @@ mod tests {
 
     #[test]
     fn a_sent_identity_becomes_the_pads_replies() {
-        use punktfunk_core::quic::{pack_identity_replies, PadIdentity};
+        use rubyfunk_core::quic::{pack_identity_replies, PadIdentity};
         let sent = PadIdentity {
             pad: 1,
             serial: "FXA0000000001".into(),

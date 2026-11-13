@@ -97,7 +97,7 @@ unsafe fn refused_import(pw_dev: pw::pyrowave_device, ten_bit: bool) -> Option<S
 }
 
 // Do not raise GPU scheduling here. `pf-frame`'s `dxgi::elevate_gpu_priority_of` owns
-// that process-wide (`PUNKTFUNK_GPU_PRIORITY_CLASS`); a second owner races it.
+// that process-wide (`RUBYFUNK_GPU_PRIORITY_CLASS`); a second owner races it.
 
 pub struct PyroWaveEncoder {
     pw_dev: pw::pyrowave_device,

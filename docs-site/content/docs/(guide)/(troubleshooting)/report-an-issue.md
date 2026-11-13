@@ -31,7 +31,7 @@ blocked — see [Ports](/docs/ports), or grab the log [by hand](#logs-without-th
 ## 3. Export everything from the web console
 
 In the [web console](/docs/web-console), open **Diagnostics** → **Troubleshooting** and press
-**Export all**. You get one text file, `punktfunk-diagnostics-YYYYMMDD-HHMMSS.txt`, with the health
+**Export all**. You get one text file, `rubyfunk-diagnostics-YYYYMMDD-HHMMSS.txt`, with the health
 checks, the host and plugin log, and every client log the host holds.
 
 **Read it before you post it.** Nothing is redacted: it holds host names, IP addresses and device
@@ -59,11 +59,11 @@ For stutter or lag, add a [performance recording](/docs/stats#recording-a-captur
 
 | Where | How |
 | --- | --- |
-| Linux host | `journalctl --user -u punktfunk-host` |
-| Windows host | `%ProgramData%\punktfunk\logs\` (`host.log`, `service.log`, `web.log`) from an **elevated** PowerShell |
+| Linux host | `journalctl --user -u rubyfunk-host` |
+| Windows host | `%ProgramData%\rubyfunk\logs\` (`host.log`, `service.log`, `web.log`) from an **elevated** PowerShell |
 | Windows client | **Settings → About → Diagnostics → Open log folder** |
-| Mac, iPhone, iPad | Console.app on a Mac, subsystem `io.unom.punktfunk` |
-| Android | `adb logcat`, tag `punktfunk` |
+| Mac, iPhone, iPad | Console.app on a Mac, subsystem `io.github.gunu3371.rubyfunk` |
+| Android | `adb logcat`, tag `rubyfunk` |
 | Linux client | Start it from a terminal; it logs there |
 
 These follow `RUST_LOG` (info by default), so they hold less than the uploads above, which keep

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# punktfunk — Steam Deck HOST installer (stream FROM the Deck to other devices).
+# rubyfunk — Steam Deck HOST installer (stream FROM the Deck to other devices).
 #
 # SteamOS is an immutable, read-only Arch base, so the host can't be a system package. Instead we
 # build it natively inside a Debian-trixie distrobox — the binary then runs natively on SteamOS —
@@ -14,20 +14,20 @@
 #   bash scripts/steamdeck/install.sh --open          # trusted LAN: accept unpaired clients (TOFU)
 #   bash scripts/steamdeck/install.sh --no-web        # skip the management web console
 #   bash scripts/steamdeck/install.sh --web-bind=127.0.0.1  # console on this Deck only (default: your network)
-#   PUNKTFUNK_SRC=~/src/punktfunk bash scripts/steamdeck/install.sh   # source elsewhere
+#   RUBYFUNK_SRC=~/src/rubyfunk bash scripts/steamdeck/install.sh   # source elsewhere
 #
 set -euo pipefail
 # shellcheck source-path=SCRIPTDIR source=lib.sh
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 # --- options ---------------------------------------------------------------
-BOX_IMAGE="${PUNKTFUNK_BOX_IMAGE:-docker.io/library/debian:trixie}"
-MGMT_PORT="${PUNKTFUNK_MGMT_PORT:-}" # empty keeps host.env's port
-WEB_PORT="${PUNKTFUNK_WEB_PORT:-47992}"
+BOX_IMAGE="${RUBYFUNK_BOX_IMAGE:-docker.io/library/debian:trixie}"
+MGMT_PORT="${RUBYFUNK_MGMT_PORT:-}" # empty keeps host.env's port
+WEB_PORT="${RUBYFUNK_WEB_PORT:-47992}"
 # Where the console listens. Your network by default, since a Deck in Game Mode has no browser;
 # the console refuses peers off the local network. --web-bind=127.0.0.1 keeps it to this Deck.
-WEB_BIND="${PUNKTFUNK_UI_BIND:-0.0.0.0}"
-[ -n "${PUNKTFUNK_UI_BIND:-}" ] && WEB_BIND_SET=1 || WEB_BIND_SET=0
+WEB_BIND="${RUBYFUNK_UI_BIND:-0.0.0.0}"
+[ -n "${RUBYFUNK_UI_BIND:-}" ] && WEB_BIND_SET=1 || WEB_BIND_SET=0
 OPEN=0
 WITH_WEB=1
 GAMESTREAM="" # the console's setting; empty leaves it as stored (off on a fresh install)
@@ -43,7 +43,7 @@ for arg in "$@"; do
         *) die "unknown option: $arg (try --help)" ;;
     esac
 done
-CONFIG="$HOME/.config/punktfunk"
+CONFIG="$HOME/.config/rubyfunk"
 # Set when this run does something that only a fresh login picks up (input-group add, first-time
 # KWin .desktop grant). Drives the loud "reboot before streaming" note in the summary.
 NEED_RELOGIN=0
@@ -55,7 +55,7 @@ case "${ID:-}${ID_LIKE:-}" in
     *steamos*|*arch*) ok "SteamOS / Arch base detected (${PRETTY_NAME:-unknown})" ;;
     *) warn "This installer targets SteamOS; '${PRETTY_NAME:-unknown}' may differ — on a normal distro use the apt/rpm packages instead." ;;
 esac
-[ -d "$SRC/crates/host/punktfunk-host" ] || die "no punktfunk source at $SRC. Clone or rsync it there first, or pass --src=DIR (see scripts/steamdeck/README.md)."
+[ -d "$SRC/crates/host/rubyfunk-host" ] || die "no rubyfunk source at $SRC. Clone or rsync it there first, or pass --src=DIR (see scripts/steamdeck/README.md)."
 ok "source: $SRC"
 if ! have distrobox; then
     die "distrobox not found. Install it once (no root needed):
@@ -114,7 +114,7 @@ command -v bun >/dev/null 2>&1 || command -v ~/.bun/bin/bun >/dev/null 2>&1 || \
 ok "build deps ready"
 
 # --- 2. build host (+ web) -------------------------------------------------
-log "Building punktfunk-host (release) — first build is slow (~15 min)"
+log "Building rubyfunk-host (release) — first build is slow (~15 min)"
 # nvenc,vulkan-encode matches the packaged builds (deb/arch/rpm): the direct-SDK NVENC backend
 # plus the raw Vulkan Video HEVC/AV1 one (real RFI loss recovery). SteamOS also runs on NVIDIA
 # desktops, where a host without nvenc advertises HEVC and then dies at encoder open. Both entry
@@ -123,15 +123,15 @@ log "Building punktfunk-host (release) — first build is slow (~15 min)"
 # The version the console shows, in the same scheme as this channel's feed (build-version.sh).
 PF_BUILD_VERSION="$(bash "$SRC/scripts/steamdeck/build-version.sh" "$SRC")"
 
-# punktfunk-encode-worker is built alongside: the capability-carrying PyroWave encode worker, a
+# rubyfunk-encode-worker is built alongside: the capability-carrying PyroWave encode worker, a
 # SEPARATE binary that lands next to the host in $TARGET_DIR/release (which is how the host finds
 # it — sibling of /proc/self/exe). The sudo block further down setcaps that one and only that one;
 # the host must stay capability-free or KWin cannot identify it and Desktop mode dies.
-# punktfunk-seats is the seat supervisor behind Reachable without logging in (door.sh).
+# rubyfunk-seats is the seat supervisor behind Reachable without logging in (door.sh).
 distrobox enter "$BOX" -- bash -lc "
 set -e
-export PATH=\$HOME/.cargo/bin:\$PATH CARGO_TARGET_DIR='$TARGET_DIR' PUNKTFUNK_BUILD_VERSION='$PF_BUILD_VERSION'
-cd '$SRC' && cargo build -r -p punktfunk-host -p punktfunk-encode-worker -p punktfunk-seats --features punktfunk-host/nvenc,punktfunk-host/vulkan-encode
+export PATH=\$HOME/.cargo/bin:\$PATH CARGO_TARGET_DIR='$TARGET_DIR' RUBYFUNK_BUILD_VERSION='$PF_BUILD_VERSION'
+cd '$SRC' && cargo build -r -p rubyfunk-host -p rubyfunk-encode-worker -p rubyfunk-seats --features rubyfunk-host/nvenc,rubyfunk-host/vulkan-encode
 "
 [ -x "$BIN" ] || die "build did not produce $BIN"
 # ldd out here on SteamOS, never inside the box, where every soname resolves by construction. The
@@ -147,7 +147,7 @@ ok "host binary: $BIN"
 if [ -x "$WORKER" ]; then
     ok "encode worker: $WORKER"
 else
-    warn "no punktfunk-encode-worker at $WORKER — PyroWave will encode at default GPU priority"
+    warn "no rubyfunk-encode-worker at $WORKER — PyroWave will encode at default GPU priority"
 fi
 
 if [ "$WITH_WEB" = 1 ]; then
@@ -165,37 +165,37 @@ cd '$SRC/web' && bun install --frozen-lockfile --ignore-scripts && bun run codeg
 fi
 
 # --- 2b. plugin runner (scripting) -----------------------------------------
-# The console's plugin store and `punktfunk-host plugins …` shell out to the scripting runner —
+# The console's plugin store and `rubyfunk-host plugins …` shell out to the scripting runner —
 # the SDK's runner CLI bundled to one self-contained JS, run on a pinned bun (it import()s the
 # operator's .ts plugins; see packaging/debian/build-scripting-deb.sh). The .deb lays it out under
 # /usr, which is read-only here, so ship the SAME payload user-scoped — wrapper + private bun +
 # bundle under ~/.local, where the host's runner discovery looks after the /usr layouts.
 log "Building the plugin runner (scripting)"
-mkdir -p "$HOME/.local/bin" "$HOME/.local/lib/punktfunk-scripting" "$HOME/.local/share/punktfunk-scripting"
+mkdir -p "$HOME/.local/bin" "$HOME/.local/lib/rubyfunk-scripting" "$HOME/.local/share/rubyfunk-scripting"
 distrobox enter "$BOX" -- bash -lc "
 set -e
 export PATH=\$HOME/.bun/bin:\$PATH
 cd '$SRC/sdk'
 bun install --frozen-lockfile --ignore-scripts
-bun build src/runner-cli.ts --target=bun --outfile \"\$HOME/.local/share/punktfunk-scripting/runner-cli.js\"
+bun build src/runner-cli.ts --target=bun --outfile \"\$HOME/.local/share/rubyfunk-scripting/runner-cli.js\"
 # Pin the runtime: copy the box's bun next to the bundle so a bun self-update (or a box rebuild)
 # never changes what the runner executes under.
-install -m0755 \"\$(command -v bun)\" \"\$HOME/.local/lib/punktfunk-scripting/bun\"
+install -m0755 \"\$(command -v bun)\" \"\$HOME/.local/lib/rubyfunk-scripting/bun\"
 "
-grep -q 'attempt=' "$HOME/.local/share/punktfunk-scripting/runner-cli.js" \
+grep -q 'attempt=' "$HOME/.local/share/rubyfunk-scripting/runner-cli.js" \
     || die "runner bundle missing the dynamic plugin import — wrong build"
-cat > "$HOME/.local/bin/punktfunk-scripting" <<'WRAP'
+cat > "$HOME/.local/bin/rubyfunk-scripting" <<'WRAP'
 #!/bin/sh
-# Generated by scripts/steamdeck/install.sh — user-scoped punktfunk-scripting (the .deb's /usr/bin
+# Generated by scripts/steamdeck/install.sh — user-scoped rubyfunk-scripting (the .deb's /usr/bin
 # wrapper, relocated): the runner bundle on its private pinned bun.
-exec "$HOME/.local/lib/punktfunk-scripting/bun" "$HOME/.local/share/punktfunk-scripting/runner-cli.js" "$@"
+exec "$HOME/.local/lib/rubyfunk-scripting/bun" "$HOME/.local/share/rubyfunk-scripting/runner-cli.js" "$@"
 WRAP
-chmod 0755 "$HOME/.local/bin/punktfunk-scripting"
-ok "plugin runner: ~/.local/bin/punktfunk-scripting"
+chmod 0755 "$HOME/.local/bin/rubyfunk-scripting"
+ok "plugin runner: ~/.local/bin/rubyfunk-scripting"
 
 # --- 2c. status tray (best-effort) -----------------------------------------
 log "Building the status tray"
-PUNKTFUNK_SRC="$SRC" PUNKTFUNK_BOX="$BOX" bash "$SRC/scripts/steamdeck/install-tray.sh"
+RUBYFUNK_SRC="$SRC" RUBYFUNK_BOX="$BOX" bash "$SRC/scripts/steamdeck/install-tray.sh"
 
 # --- 3. config -------------------------------------------------------------
 log "Configuration ($CONFIG)"
@@ -207,41 +207,41 @@ mkdir -p "$CONFIG"
 chmod 700 "$CONFIG" 2>/dev/null || true
 if [ ! -f "$CONFIG/host.env" ]; then
     cat > "$CONFIG/host.env" <<'EOF'
-# punktfunk Steam Deck host config (sourced by the punktfunk-host user service).
+# rubyfunk Steam Deck host config (sourced by the rubyfunk-host user service).
 # Auto encoder: Vulkan Video (or VAAPI fallback) on the Deck's AMD GPU, NVENC on NVIDIA.
-PUNKTFUNK_ENCODER=auto
+RUBYFUNK_ENCODER=auto
 # Van Gogh (LCD/OLED Deck) RADV still gates VK_KHR_video_encode_* behind this perftest flag;
 # without it the Vulkan backend can't open and sessions fall back to VAAPI. Harmless on
 # GPUs where encode is exposed by default.
 RADV_PERFTEST=video_encode
 # The host auto-detects the live session (Game Mode gamescope / Desktop KDE) per connect.
-# Override the compositor only if detection misbehaves: PUNKTFUNK_COMPOSITOR=gamescope
+# Override the compositor only if detection misbehaves: RUBYFUNK_COMPOSITOR=gamescope
 EOF
     ok "wrote host.env"
 else
     ok "host.env exists (left as-is)"
 fi
 if [ -n "$MGMT_PORT" ]; then
-    sed -i '/^[[:space:]]*PUNKTFUNK_MGMT_BIND[[:space:]]*=/d' "$CONFIG/host.env"
-    echo "PUNKTFUNK_MGMT_BIND=0.0.0.0:$MGMT_PORT" >>"$CONFIG/host.env"
+    sed -i '/^[[:space:]]*RUBYFUNK_MGMT_BIND[[:space:]]*=/d' "$CONFIG/host.env"
+    echo "RUBYFUNK_MGMT_BIND=0.0.0.0:$MGMT_PORT" >>"$CONFIG/host.env"
     ok "management port $MGMT_PORT (host.env)"
 fi
 
 # KWin authorization for Desktop-Mode streaming (and mid-stream Game↔Desktop switches): KWin
 # resolves a connecting client's /proc/<pid>/exe against a .desktop `Exec=` and only then grants
-# the restricted Wayland globals it lists (see packaging/linux/io.unom.punktfunk.host.desktop).
+# the restricted Wayland globals it lists (see packaging/linux/io.github.gunu3371.rubyfunk.host.desktop).
 # Exec must therefore be THIS install's binary path, not the packaged /usr/bin one. KWin reads
 # grants at session start — after first install, restart the Desktop session (Game Mode and back).
-DESKTOP_DST="$HOME/.local/share/applications/io.unom.punktfunk.host.desktop"
-DESKTOP_OLD="$HOME/.local/share/applications/io.unom.Punktfunk.Host.desktop"
+DESKTOP_DST="$HOME/.local/share/applications/io.github.gunu3371.rubyfunk.host.desktop"
+DESKTOP_OLD="$HOME/.local/share/applications/io.github.gunu3371.rubyfunk.Host.desktop"
 # First-time install of the grant: KWin only reads it at session start, so a fresh login is required
 # before Desktop-mode capture works. A re-run that just rewrites it, under either name, needs none.
 [ -f "$DESKTOP_DST" ] || [ -f "$DESKTOP_OLD" ] || NEED_RELOGIN=1
 # Removed before the write: on a case-insensitive disk the two names are one file.
 rm -f "$DESKTOP_OLD"
 mkdir -p "$HOME/.local/share/applications"
-sed "s|^Exec=.*|Exec=$BIN|" "$SRC/packaging/linux/io.unom.punktfunk.host.desktop" > "$DESKTOP_DST"
-ok "KWin desktop-capture authorization (io.unom.punktfunk.host.desktop → $BIN)"
+sed "s|^Exec=.*|Exec=$BIN|" "$SRC/packaging/linux/io.github.gunu3371.rubyfunk.host.desktop" > "$DESKTOP_DST"
+ok "KWin desktop-capture authorization (io.github.gunu3371.rubyfunk.host.desktop → $BIN)"
 
 # KDE Desktop-mode INPUT: a normal Plasma login lacks the RemoteDesktop portal grant the host's libei
 # input path needs, so it would pop an "Allow remote control?" dialog a headless host can't answer.
@@ -262,7 +262,7 @@ if [ "$WITH_WEB" = 1 ] && [ ! -f "$CONFIG/web.env" ]; then
     # Login password + session secret for the web console, once. The password is the one the
     # guided installer left in web-password, else random; that file then goes. `%q` because a
     # shell sources web.env. `|| true`: a missing file and tr's SIGPIPE must not trip pipefail.
-    WEB_PW="$(sed -n 's/^PUNKTFUNK_UI_PASSWORD=//p' "$CONFIG/web-password" 2>/dev/null || true)"
+    WEB_PW="$(sed -n 's/^RUBYFUNK_UI_PASSWORD=//p' "$CONFIG/web-password" 2>/dev/null || true)"
     [ -n "$WEB_PW" ] || WEB_PW="$(LC_ALL=C tr -dc 'a-z0-9' </dev/urandom 2>/dev/null | head -c 12 || true)"
     WEB_SECRET="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom 2>/dev/null | head -c 32 || true)"
     # `umask 077` around the redirect, not `chmod 600` after it: the heredoc CREATES the file at
@@ -270,12 +270,12 @@ if [ "$WITH_WEB" = 1 ] && [ ! -f "$CONFIG/web.env" ]; then
     # secret existed group/world-readable for the window between the redirect and the chmod.
     # Setting the mask first means the file is never readable at all. The chmod stays as the
     # idempotent belt for a pre-existing file. The console swaps the clear password for a salted
-    # hash in this same file on the first sign-in, keeping PUNKTFUNK_UI_SECRET beside it.
+    # hash in this same file on the first sign-in, keeping RUBYFUNK_UI_SECRET beside it.
     (umask 077; cat > "$CONFIG/web.env" <<EOF
-PUNKTFUNK_UI_PASSWORD=$(printf %q "$WEB_PW")
-PUNKTFUNK_UI_SECRET=$WEB_SECRET
+RUBYFUNK_UI_PASSWORD=$(printf %q "$WEB_PW")
+RUBYFUNK_UI_SECRET=$WEB_SECRET
 # Where the console listens: 127.0.0.1 (this Deck), 0.0.0.0 (your network), or one address.
-PUNKTFUNK_UI_BIND=$WEB_BIND
+RUBYFUNK_UI_BIND=$WEB_BIND
 EOF
     )
     chmod 600 "$CONFIG/web.env"
@@ -292,31 +292,31 @@ elif [ "$WITH_WEB" = 1 ] && [ -f "$CONFIG/web.env" ]; then
         chmod 600 "$CONFIG/web.env"
         warn "web.env was group/world-readable — an older install wrote it at the default umask."
         warn "Tightened to 0600, but that does NOT un-expose the password it already leaked to every"
-        warn "local account. Reset it: put a PUNKTFUNK_UI_PASSWORD line in $CONFIG/web.env, then"
-        warn "  systemctl --user restart punktfunk-web"
+        warn "local account. Reset it: put a RUBYFUNK_UI_PASSWORD line in $CONFIG/web.env, then"
+        warn "  systemctl --user restart rubyfunk-web"
     else
         ok "web.env exists (login password unchanged, mode already 0600)"
     fi
     # Name the bind once so the operator finds it; --web-bind on a re-run picks the value. An
     # existing line always wins — edit web.env to change it.
-    if ! grep -q '^[[:space:]]*PUNKTFUNK_UI_BIND=' "$CONFIG/web.env"; then
-        printf '# Where the console listens: 0.0.0.0 (your network), 127.0.0.1 (this Deck), or one address.\nPUNKTFUNK_UI_BIND=%s\n' "$WEB_BIND" >> "$CONFIG/web.env"
+    if ! grep -q '^[[:space:]]*RUBYFUNK_UI_BIND=' "$CONFIG/web.env"; then
+        printf '# Where the console listens: 0.0.0.0 (your network), 127.0.0.1 (this Deck), or one address.\nRUBYFUNK_UI_BIND=%s\n' "$WEB_BIND" >> "$CONFIG/web.env"
         ok "web.env: console bind is now $WEB_BIND"
     elif [ "$WEB_BIND_SET" = 1 ]; then
-        warn "web.env already names PUNKTFUNK_UI_BIND — --web-bind was ignored; edit $CONFIG/web.env"
+        warn "web.env already names RUBYFUNK_UI_BIND — --web-bind was ignored; edit $CONFIG/web.env"
     fi
 fi
 
-# --- 3b. HDR gamescope (punktfunk-gamescope, best-effort) ------------------
-# Stock gamescope offers only 8-bit capture, so Game Mode streams SDR. The punktfunk build adds
+# --- 3b. HDR gamescope (rubyfunk-gamescope, best-effort) ------------------
+# Stock gamescope offers only 8-bit capture, so Game Mode streams SDR. The rubyfunk build adds
 # the 10-bit BT.2020 PQ formats, and the host attempts HDR by default the moment it is present
-# (PUNKTFUNK_GAMESCOPE_HDR=0 forces SDR). Best-effort by design: on any failure this warns and
-# the host streams SDR — see build-gamescope.sh, which also wires PUNKTFUNK_GAMESCOPE_BIN into
+# (RUBYFUNK_GAMESCOPE_HDR=0 forces SDR). Best-effort by design: on any failure this warns and
+# the host streams SDR — see build-gamescope.sh, which also wires RUBYFUNK_GAMESCOPE_BIN into
 # host.env only while the binary provably runs on SteamOS.
-PUNKTFUNK_SRC="$SRC" PUNKTFUNK_BOX="$BOX" bash "$SRC/scripts/steamdeck/build-gamescope.sh"
+RUBYFUNK_SRC="$SRC" RUBYFUNK_BOX="$BOX" bash "$SRC/scripts/steamdeck/build-gamescope.sh"
 
-# --- 4. system tuning (needs sudo: UDP buffers + udev rule + vhci-hcd + input/punktfunk groups) -----
-log "System tuning (UDP buffers + gamepad rules + vhci-hcd + input/punktfunk groups)"
+# --- 4. system tuning (needs sudo: UDP buffers + udev rule + vhci-hcd + input/rubyfunk groups) -----
+log "System tuning (UDP buffers + gamepad rules + vhci-hcd + input/rubyfunk groups)"
 # sudo was acquired up front in preflight (SUDO_OK) so this never stalls behind the long build; a
 # skip here (no password / no TTY) was already reported loudly there.
 if [ "$SUDO_OK" = 1 ]; then
@@ -324,17 +324,17 @@ if [ "$SUDO_OK" = 1 ]; then
     [ "$WITH_WEB" = 0 ] || door_install
 else
     warn "no usable sudo — SKIPPED system tuning. Gamepad passthrough + clean streaming need root (udev"
-    warn "rule, 'input' + 'punktfunk' groups, vhci-hcd, UDP buffers) — there is no user-space way to do these."
+    warn "rule, 'input' + 'rubyfunk' groups, vhci-hcd, UDP buffers) — there is no user-space way to do these."
     warn "A stock SteamOS 'deck' account has NO password, so sudo can't work until you set one:"
     warn "  passwd            # set a sudo password once, then re-run this script"
     warn "Or apply it by hand (then reboot):"
-    warn "  sudo install -m644 $SRC/scripts/60-punktfunk.rules /etc/udev/rules.d/ &&"
-    warn "  sudo install -m644 $SRC/scripts/punktfunk-modules.conf /etc/modules-load.d/punktfunk.conf &&"
-    warn "  sudo groupadd --system punktfunk;"
-    warn "  sudo usermod -aG input,punktfunk $USER &&"
-    warn "  sudo install -m644 $SRC/scripts/99-punktfunk-net.conf /etc/sysctl.d/ &&"
+    warn "  sudo install -m644 $SRC/scripts/60-rubyfunk.rules /etc/udev/rules.d/ &&"
+    warn "  sudo install -m644 $SRC/scripts/rubyfunk-modules.conf /etc/modules-load.d/rubyfunk.conf &&"
+    warn "  sudo groupadd --system rubyfunk;"
+    warn "  sudo usermod -aG input,rubyfunk $USER &&"
+    warn "  sudo install -m644 $SRC/scripts/99-rubyfunk-net.conf /etc/sysctl.d/ &&"
     warn "  sudo sysctl --system && sudo udevadm control --reload-rules && sudo udevadm trigger"
-    warn "('punktfunk' owns the usbip vhci nodes the native Steam Deck pad attaches through — without"
+    warn "('rubyfunk' owns the usbip vhci nodes the native Steam Deck pad attaches through — without"
     warn " it the pad silently never appears. Omit it if you do not want that pad.)"
 fi
 
@@ -343,7 +343,7 @@ log "Installing systemd user services"
 mkdir -p "$UNITS"
 # GameStream is the console's setting, never a unit flag: a flag locks the console's toggle. An
 # older unit's --gamestream moves into the store, so the upgrade keeps Moonlight working.
-if [ -z "$GAMESTREAM" ] && grep -qs -- '^ExecStart=.* --gamestream' "$UNITS/punktfunk-host.service"; then
+if [ -z "$GAMESTREAM" ] && grep -qs -- '^ExecStart=.* --gamestream' "$UNITS/rubyfunk-host.service"; then
     GAMESTREAM=true
 fi
 if [ -n "$GAMESTREAM" ]; then
@@ -356,21 +356,21 @@ fi
 SERVE_ARGS="serve"
 [ "$OPEN" = 1 ] && SERVE_ARGS="$SERVE_ARGS --open"
 write_host_unit "$BIN $SERVE_ARGS"
-ok "punktfunk-host.service ($SERVE_ARGS)"
+ok "rubyfunk-host.service ($SERVE_ARGS)"
 
 if [ "$WITH_WEB" = 1 ]; then
     # The console is a Nitro server run by bun (Bun.serve, HTTPS — HTTP/1.1 over TLS — with the host's
     # identity cert); it lives in the build container and proxies to the host's loopback HTTPS mgmt API.
-    # No HOST/NITRO_HOST in the export below: web.env is sourced first and carries PUNKTFUNK_UI_BIND,
+    # No HOST/NITRO_HOST in the export below: web.env is sourced first and carries RUBYFUNK_UI_BIND,
     # which the server prefers — an export here would silently out-rank the file the operator edits.
-    cat > "$UNITS/punktfunk-web.service" <<EOF
-# Generated by scripts/steamdeck/install.sh — punktfunk web console (bun in the '$BOX' distrobox).
+    cat > "$UNITS/rubyfunk-web.service" <<EOF
+# Generated by scripts/steamdeck/install.sh — rubyfunk web console (bun in the '$BOX' distrobox).
 [Unit]
-Description=punktfunk management web console
-After=punktfunk-host.service
+Description=rubyfunk management web console
+After=rubyfunk-host.service
 
 [Service]
-ExecStart=$DISTROBOX enter $BOX -- bash -lc 'cd $SRC/web; set -a; . $CONFIG/mgmt-token; . $CONFIG/web.env; [ ! -f $CONFIG/mgmt-endpoint ] || . $CONFIG/mgmt-endpoint; set +a; export PORT=$WEB_PORT NITRO_PORT=$WEB_PORT PUNKTFUNK_UI_TLS_CERT=$CONFIG/cert.pem PUNKTFUNK_UI_TLS_KEY=$CONFIG/key.pem PUNKTFUNK_UI_SECURE=1 PUNKTFUNK_UI_PASSWORD_FILE=$CONFIG/web.env; exec bun .output/server/index.mjs'
+ExecStart=$DISTROBOX enter $BOX -- bash -lc 'cd $SRC/web; set -a; . $CONFIG/mgmt-token; . $CONFIG/web.env; [ ! -f $CONFIG/mgmt-endpoint ] || . $CONFIG/mgmt-endpoint; set +a; export PORT=$WEB_PORT NITRO_PORT=$WEB_PORT RUBYFUNK_UI_TLS_CERT=$CONFIG/cert.pem RUBYFUNK_UI_TLS_KEY=$CONFIG/key.pem RUBYFUNK_UI_SECURE=1 RUBYFUNK_UI_PASSWORD_FILE=$CONFIG/web.env; exec bun .output/server/index.mjs'
 Restart=on-failure
 RestartSec=3
 
@@ -378,24 +378,24 @@ RestartSec=3
 WantedBy=default.target
 EOF
     door_yield_web_unit
-    ok "punktfunk-web.service (port $WEB_PORT)"
+    ok "rubyfunk-web.service (port $WEB_PORT)"
 fi
 
 # The runner's user unit (OPT-IN, matching the .deb: installed but NOT enabled — the runner is
 # inert until you add scripts/plugins). ExecStart is rewritten from the packaged /usr wrapper to
 # the user-scoped one section 2b installed.
-sed 's|^ExecStart=.*|ExecStart=%h/.local/bin/punktfunk-scripting|' \
-    "$SRC/scripts/punktfunk-scripting.service" > "$UNITS/punktfunk-scripting.service"
-ok "punktfunk-scripting.service (opt-in: systemctl --user enable --now punktfunk-scripting)"
+sed 's|^ExecStart=.*|ExecStart=%h/.local/bin/rubyfunk-scripting|' \
+    "$SRC/scripts/rubyfunk-scripting.service" > "$UNITS/rubyfunk-scripting.service"
+ok "rubyfunk-scripting.service (opt-in: systemctl --user enable --now rubyfunk-scripting)"
 
 # Post-OS-update self-heal: SteamOS A/B updates can bump library sonames the host binary links
-# (PipeWire, libva, …) — this oneshot probes the binary with ldd before punktfunk-host starts
+# (PipeWire, libva, …) — this oneshot probes the binary with ldd before rubyfunk-host starts
 # and re-runs update.sh only when it actually stopped loading. Milliseconds on a normal boot.
-cat > "$UNITS/punktfunk-rebuild-check.service" <<EOF
+cat > "$UNITS/rubyfunk-rebuild-check.service" <<EOF
 # Generated by scripts/steamdeck/install.sh — rebuild the host if a SteamOS update broke its libs.
 [Unit]
-Description=punktfunk SteamOS post-update rebuild check
-Before=punktfunk-host.service
+Description=rubyfunk SteamOS post-update rebuild check
+Before=rubyfunk-host.service
 
 [Service]
 Type=oneshot
@@ -407,31 +407,31 @@ TimeoutStartSec=1800
 WantedBy=default.target
 EOF
 chmod +x "$SRC/scripts/steamdeck/rebuild-check.sh" 2>/dev/null || true
-systemctl --user enable punktfunk-rebuild-check.service 2>/dev/null || true
-ok "punktfunk-rebuild-check.service (auto-rebuild after SteamOS updates)"
+systemctl --user enable rubyfunk-rebuild-check.service 2>/dev/null || true
+ok "rubyfunk-rebuild-check.service (auto-rebuild after SteamOS updates)"
 
 systemctl --user daemon-reload
 loginctl show-user "$USER" 2>/dev/null | grep -q 'Linger=yes' || { sudo loginctl enable-linger "$USER" 2>/dev/null && ok "enabled linger (services run without login)" || warn "could not enable linger — services stop when you log out (sudo loginctl enable-linger $USER)"; }
 # enable + restart (not `enable --now`): restart picks up unit-file changes on a re-run, where
 # `--now` would no-op against an already-running service.
-systemctl --user enable punktfunk-host.service 2>/dev/null
-systemctl --user restart punktfunk-host.service
-ok "punktfunk-host started"
+systemctl --user enable rubyfunk-host.service 2>/dev/null
+systemctl --user restart rubyfunk-host.service
+ok "rubyfunk-host started"
 if [ "$WITH_WEB" = 1 ]; then
     # The host writes the mgmt token on first start; give it a moment so the web unit finds it.
     for _ in $(seq 1 10); do [ -f "$CONFIG/mgmt-token" ] && break; sleep 0.5; done
-    systemctl --user enable punktfunk-web.service 2>/dev/null
-    systemctl --user restart punktfunk-web.service
-    ok "punktfunk-web started"
+    systemctl --user enable rubyfunk-web.service 2>/dev/null
+    systemctl --user restart rubyfunk-web.service
+    ok "rubyfunk-web started"
 fi
 # A re-run rebuilds the runner (§2b); try-restart leaves an opted-out runner off.
-systemctl --user try-restart punktfunk-scripting.service 2>/dev/null || true
+systemctl --user try-restart rubyfunk-scripting.service 2>/dev/null || true
 
 # --- 6. summary ------------------------------------------------------------
 IP="$(ip -4 route get 1.1.1.1 2>/dev/null | sed -n 's/.* src \([0-9.]*\).*/\1/p' | head -1 || true)"
 echo
-log "Done — punktfunk host is running on this Steam Deck"
-echo "  • Host status:   systemctl --user status punktfunk-host"
+log "Done — rubyfunk host is running on this Steam Deck"
+echo "  • Host status:   systemctl --user status rubyfunk-host"
 if [ "$WITH_WEB" = 1 ]; then
     case "$WEB_BIND" in
         127.*|::1|localhost)

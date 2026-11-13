@@ -9,7 +9,7 @@
 //! sites. [`env_on`] is the explicit-off grammar of the env-only knobs.
 #![forbid(unsafe_code)]
 
-/// Keyboard LAYOUT from `localectl`, not a `PUNKTFUNK_*` knob. Shared so the
+/// Keyboard LAYOUT from `localectl`, not a `RUBYFUNK_*` knob. Shared so the
 /// injector and the gamescope backend do not depend on each other.
 pub mod layout;
 pub mod listen;
@@ -24,7 +24,7 @@ pub use store::{
     save_at, snapshot, store_path, Resolved, SaveError, Snapshot, Source,
 };
 
-/// Explicit-off for a `PUNKTFUNK_*` var: trimmed, case-insensitive
+/// Explicit-off for a `RUBYFUNK_*` var: trimmed, case-insensitive
 /// `0`/`false`/`off`/`no` are off; any other present value is on; unset is
 /// `None`. Callers must use this — `var(k) != Ok("0")` treats `"0 "` and
 /// `"false"` as ON.
@@ -50,10 +50,10 @@ pub enum AudioOutputMode {
     /// Silent render endpoint; streamed audio does not also play on the host.
     #[default]
     ClientOnly,
-    /// Host hardware plays as well as the client. `PUNKTFUNK_HOST_AUDIO=1`.
+    /// Host hardware plays as well as the client. `RUBYFUNK_HOST_AUDIO=1`.
     HostAndClient,
     /// Operator's default playback device; never write default-device policy.
-    /// `PUNKTFUNK_KEEP_DEFAULT=1`.
+    /// `RUBYFUNK_KEEP_DEFAULT=1`.
     FollowDefault,
 }
 
@@ -147,7 +147,7 @@ pub const DEFAULT_VOICE_APPS: &[&str] = &[
     "mumble",
 ];
 
-/// `PUNKTFUNK_AUDIO_VOICE_APPS`: a comma list added to [`DEFAULT_VOICE_APPS`],
+/// `RUBYFUNK_AUDIO_VOICE_APPS`: a comma list added to [`DEFAULT_VOICE_APPS`],
 /// lowercased, blanks and repeats dropped. A console store feeds the same list later.
 pub fn parse_voice_apps(raw: Option<&str>) -> Vec<String> {
     let mut apps: Vec<String> = DEFAULT_VOICE_APPS.iter().map(|s| s.to_string()).collect();
@@ -184,12 +184,12 @@ pub struct HostConfig {
     pub host_name: Option<String>,
     /// Row `clipboard`.
     pub clipboard: ClipboardPolicy,
-    /// `PUNKTFUNK_MGMT_BIND` — management listen (`IP:PORT`). `--mgmt-bind` wins.
+    /// `RUBYFUNK_MGMT_BIND` — management listen (`IP:PORT`). `--mgmt-bind` wins.
     /// Unset = `0.0.0.0:47990` (Sunshine's web UI; the only port the two share).
     /// Lives in `host.env` because a package upgrade rewrites the unit file.
     /// Raw string: `main.rs` turns a bad value into the same error as the flag.
     pub mgmt_bind: Option<String>,
-    /// `PUNKTFUNK_NATIVE_PORT` — native QUIC control port. `--native-port` wins.
+    /// `RUBYFUNK_NATIVE_PORT` — native QUIC control port. `--native-port` wins.
     /// Unset = 9777. Raw string so a typo is a startup error, not a silent 9777.
     pub native_port: Option<String>,
     /// Row `gamestream` — GameStream/Moonlight-compat planes. **Default OFF**: they
@@ -198,24 +198,24 @@ pub struct HostConfig {
     /// Row `webtransport` — the browser plane. **Default OFF**, like GameStream: a new
     /// externally-reachable transport should not appear on a host because it was upgraded.
     pub webtransport: bool,
-    /// `PUNKTFUNK_WEBTRANSPORT_ORIGINS` — comma-separated browser origins allowed to open a
+    /// `RUBYFUNK_WEBTRANSPORT_ORIGINS` — comma-separated browser origins allowed to open a
     /// session (`https://host:47990`). Unset = any, because a host has no way to know its own
     /// origin until the console offers the choice. WebTransport is not subject to CORS, so this
     /// is the only thing that separates the real client from any page the user has open.
     pub webtransport_origins: Vec<String>,
-    /// `PUNKTFUNK_WEBTRANSPORT_BIND` — browser-plane listen address. `--webtransport-bind` wins.
+    /// `RUBYFUNK_WEBTRANSPORT_BIND` — browser-plane listen address. `--webtransport-bind` wins.
     /// Unset = `[::]`, every interface, matching the native plane. Narrow it to put the browser
     /// plane on one interface without moving the rest of the host.
     pub webtransport_bind: Option<String>,
-    /// `PUNKTFUNK_WEBTRANSPORT_PORT` — browser-plane listen port. `--webtransport-port` wins.
+    /// `RUBYFUNK_WEBTRANSPORT_PORT` — browser-plane listen port. `--webtransport-port` wins.
     /// Unset = 9778. Raw string so a typo is a startup error, not a silent default.
     pub webtransport_port: Option<String>,
-    /// `PUNKTFUNK_ENCODER` — encoder-backend override (lowercased). Empty = auto-detect by GPU vendor.
+    /// `RUBYFUNK_ENCODER` — encoder-backend override (lowercased). Empty = auto-detect by GPU vendor.
     pub encoder_pref: String,
-    /// `PUNKTFUNK_RENDER_ADAPTER` — discrete render-GPU pin by description substring.
+    /// `RUBYFUNK_RENDER_ADAPTER` — discrete render-GPU pin by description substring.
     /// `Some` even when empty: empty still counts as set for presence checks.
     pub render_adapter: Option<String>,
-    /// `PUNKTFUNK_ZEROCOPY` — Windows D3D11 zero-copy encode input. `None` defers to
+    /// `RUBYFUNK_ZEROCOPY` — Windows D3D11 zero-copy encode input. `None` defers to
     /// the per-vendor default (AMF on, QSV off).
     pub zerocopy: Option<bool>,
     /// Row `ten_bit` — host policy gate for HEVC Main10 / AV1. **Default ON**. The
@@ -226,7 +226,7 @@ pub struct HostConfig {
     /// only *allows* 4:4:4; the session still needs the client to advertise it, HEVC,
     /// full-chroma capture, and the encode probe. Independent of `ten_bit`.
     pub four_four_four: bool,
-    /// `PUNKTFUNK_CHACHA20` — host policy gate for ChaCha20-Poly1305
+    /// `RUBYFUNK_CHACHA20` — host policy gate for ChaCha20-Poly1305
     /// (`design/chacha20-session-cipher.md`). **Default ON**, explicit-off.
     /// The host only *allows* it; a session uses ChaCha only when the client
     /// advertised `VIDEO_CAP_CHACHA20`. Everyone else stays AES-128-GCM.
@@ -237,79 +237,79 @@ pub struct HostConfig {
     pub audio_voice_chat: VoiceChatRoute,
     /// Row `audio_voice_apps` — see [`parse_voice_apps`]. Never empty.
     pub audio_voice_apps: Vec<String>,
-    /// `PUNKTFUNK_AUDIO_QUALITY` — encode tier (`low`/`standard`/`high`; default
-    /// `high`). Raw string: the table lives in `punktfunk-core`. The audio thread
+    /// `RUBYFUNK_AUDIO_QUALITY` — encode tier (`low`/`standard`/`high`; default
+    /// `high`). Raw string: the table lives in `rubyfunk-core`. The audio thread
     /// warns on an unknown spelling rather than silently downgrading.
     pub audio_quality: Option<String>,
-    /// `PUNKTFUNK_AUDIO_REDUNDANCY` — force the redundant `0xD2` audio plane.
+    /// `RUBYFUNK_AUDIO_REDUNDANCY` — force the redundant `0xD2` audio plane.
     /// `None` = automatic: only to a client that asked, and only while losing packets.
     pub audio_redundancy: Option<bool>,
-    /// `PUNKTFUNK_AUDIO_HIRES` — host policy gate for lossless `0xD3`
+    /// `RUBYFUNK_AUDIO_HIRES` — host policy gate for lossless `0xD3`
     /// (`design/hi-res-audio.md`). **Default ON**, explicit-off. The host only
     /// *allows* the plane; the client's format pick is the session switch.
     /// A junk value such as a client-shaped `96000/24` keeps the default. `0` forces Opus.
     pub audio_hires: bool,
-    /// `PUNKTFUNK_PERF` — per-stage timing instrumentation.
+    /// `RUBYFUNK_PERF` — per-stage timing instrumentation.
     pub perf: bool,
-    /// `PUNKTFUNK_VIDEO_SOURCE` — `virtual` (default: per-client virtual output) /
+    /// `RUBYFUNK_VIDEO_SOURCE` — `virtual` (default: per-client virtual output) /
     /// `portal` (an existing monitor); anything else, including `synthetic`, is
     /// the test pattern.
     pub video_source: Option<String>,
-    /// `PUNKTFUNK_CAPTURE_MONITOR` — pin capture at a named physical monitor
+    /// `RUBYFUNK_CAPTURE_MONITOR` — pin capture at a named physical monitor
     /// (`DP-1`). Config, not a prompt: a `--user` service has nobody to answer a
     /// chooser. A name that matches no head is a hard error. Linux-only;
     /// `design/per-monitor-portal-capture.md`.
     pub capture_monitor: Option<String>,
-    /// `PUNKTFUNK_PORTAL_CURSOR_MODE` — `auto` (default) · `hidden` · `embedded` ·
+    /// `RUBYFUNK_PORTAL_CURSOR_MODE` — `auto` (default) · `hidden` · `embedded` ·
     /// `metadata`. Preference, not a command: `pf_portal::cursor_mode::pick` never
     /// requests a mode the backend does not advertise. `embedded` is the safe pin.
     pub portal_cursor_mode: Option<String>,
-    /// `PUNKTFUNK_COMPOSITOR` — explicit compositor override (operator/CI/test).
+    /// `RUBYFUNK_COMPOSITOR` — explicit compositor override (operator/CI/test).
     /// Not the runtime-detected session; `apply_session_env` never writes this.
     pub compositor: Option<String>,
-    /// `PUNKTFUNK_GAMEPAD` — virtual-pad backend preference, fed to `pick_gamepad`.
+    /// `RUBYFUNK_GAMEPAD` — virtual-pad backend preference, fed to `pick_gamepad`.
     pub gamepad: Option<String>,
-    /// `PUNKTFUNK_GAMESCOPE_GRAB_CURSOR` — `--force-grab-cursor` on a real game
+    /// `RUBYFUNK_GAMESCOPE_GRAB_CURSOR` — `--force-grab-cursor` on a real game
     /// launch. Default OFF: relative mode breaks absolute-pointer titles and menus.
     pub gamescope_grab_cursor: bool,
-    /// `PUNKTFUNK_GAMESCOPE_SPLASH` — splash on every bare headless gamescope spawn.
+    /// `RUBYFUNK_GAMESCOPE_SPLASH` — splash on every bare headless gamescope spawn.
     /// gamescope only composites (and pushes PipeWire) when a client paints.
     /// **Default ON**; `=0` is the escape hatch.
     pub gamescope_splash: bool,
-    /// `PUNKTFUNK_GAMESCOPE_ISOLATE` — per-session EIS/audio/mic planes
+    /// `RUBYFUNK_GAMESCOPE_ISOLATE` — per-session EIS/audio/mic planes
     /// (`design/gamescope-multiuser.md`). **Default ON**; `=0` restores shared
     /// host-lifetime planes. Shared-desktop and managed/attach routes are untouched.
     pub gamescope_isolate: bool,
-    /// `PUNKTFUNK_STEAM_PREWARM` — how many of the most recent players' seats start with the
+    /// `RUBYFUNK_STEAM_PREWARM` — how many of the most recent players' seats start with the
     /// host, so a connect skips a first logon. **Default 1**; `0` is off.
     pub steam_prewarm: u32,
-    /// `PUNKTFUNK_SEAT_IDLE_STOP_MIN` — minutes a running seat may sit with nobody on it before
+    /// `RUBYFUNK_SEAT_IDLE_STOP_MIN` — minutes a running seat may sit with nobody on it before
     /// the box stops it. **Default 240**; `0` never stops one.
     pub seat_idle_stop_min: u32,
-    /// `PUNKTFUNK_SEAT_END_ON_GAME_EXIT` — a seat's stream ends when its game exits. **Default
+    /// `RUBYFUNK_SEAT_END_ON_GAME_EXIT` — a seat's stream ends when its game exits. **Default
     /// ON**. Handed to every seat in [`seat_defaults`].
     pub seat_end_on_game_exit: bool,
-    /// `PUNKTFUNK_SEAT_MAX_MODE` — the highest mode a seat grants a device without a cap of its
+    /// `RUBYFUNK_SEAT_MAX_MODE` — the highest mode a seat grants a device without a cap of its
     /// own, `WIDTHxHEIGHT@HZ`. Handed to every seat in [`seat_defaults`].
     pub seat_max_mode: Option<String>,
-    /// `PUNKTFUNK_SEAT_LIBRARY_WRITABLE` — a seat updates and installs into the owner's Steam
+    /// `RUBYFUNK_SEAT_LIBRARY_WRITABLE` — a seat updates and installs into the owner's Steam
     /// libraries. **Default ON**; off mounts them read-only. Handed on in [`seat_defaults`].
     pub seat_library_writable: bool,
-    /// `PUNKTFUNK_SEAT_BACKGROUND_INPUT` — every app a Windows seat starts reads GameInput in the
+    /// `RUBYFUNK_SEAT_BACKGROUND_INPUT` — every app a Windows seat starts reads GameInput in the
     /// background. **Default ON**. Handed to every seat in [`seat_defaults`].
     pub seat_background_input: bool,
-    /// `PUNKTFUNK_DUALSENSE_USBIP` — a DualSense is a USB/IP device with a real sound card
+    /// `RUBYFUNK_DUALSENSE_USBIP` — a DualSense is a USB/IP device with a real sound card
     /// instead of a uhid pad. **Default OFF**. Handed to every seat in [`seat_defaults`].
     pub dualsense_usbip: bool,
-    /// `PUNKTFUNK_GAMESCOPE_HDR` — allow HDR on gamescope. The host probes the
-    /// punktfunk build (`packaging/gamescope`) and stays SDR if missing; this only
-    /// decides whether HDR is *attempted*. **Default ON**, matching `PUNKTFUNK_10BIT`.
+    /// `RUBYFUNK_GAMESCOPE_HDR` — allow HDR on gamescope. The host probes the
+    /// rubyfunk build (`packaging/gamescope`) and stays SDR if missing; this only
+    /// decides whether HDR is *attempted*. **Default ON**, matching `RUBYFUNK_10BIT`.
     pub gamescope_hdr: bool,
-    /// `PUNKTFUNK_GAMESCOPE_SDR_NITS` — starting SDR luminance inside the PQ container
+    /// `RUBYFUNK_GAMESCOPE_SDR_NITS` — starting SDR luminance inside the PQ container
     /// (`--hdr-sdr-content-nits`). `None` = 203 nits (BT.2408), what our clients
     /// decode against. See `SDR_REFERENCE_WHITE_NITS`.
     pub gamescope_sdr_nits: Option<u32>,
-    /// `PUNKTFUNK_GAMESCOPE_BIND` — bind patched gamescope over `/usr/bin/gamescope`
+    /// `RUBYFUNK_GAMESCOPE_BIND` — bind patched gamescope over `/usr/bin/gamescope`
     /// in the session unit's mount namespace. `gamescope-session-plus` hardcodes
     /// that path (`pf-vdisplay`'s `gamescope/bind.rs`).
     ///
@@ -318,17 +318,17 @@ pub struct HostConfig {
     /// `None` = AUTO (arm only when the script cannot reach gamescope another way).
     /// `Some(false)` = never. `Some(true)` = force; a failed redirect still disarms.
     pub gamescope_bind: Option<bool>,
-    /// `PUNKTFUNK_GAMESCOPE_REFRESH_RATES` — extra Hz (comma-separated) a gamescope
+    /// `RUBYFUNK_GAMESCOPE_REFRESH_RATES` — extra Hz (comma-separated) a gamescope
     /// session offers on top of the rate it runs at. Can only ADD; the session rate
     /// is always included. Empty = negotiated rate only. Ignored on stock gamescope.
     pub gamescope_refresh_rates: Vec<u32>,
-    /// `PUNKTFUNK_RECOVER_SESSION_CMD` — operator hook (debounced) when a client
+    /// `RUBYFUNK_RECOVER_SESSION_CMD` — operator hook (debounced) when a client
     /// connects with no graphical session for this uid. Unset/empty = disabled.
     pub recover_session_cmd: Option<String>,
-    /// `PUNKTFUNK_ON_CONNECT_CMD` — `client.connected` hook: detached, event JSON
+    /// `RUBYFUNK_ON_CONNECT_CMD` — `client.connected` hook: detached, event JSON
     /// on stdin + `PF_EVENT_*`. Filters live in `hooks.json`. Unset/empty = disabled.
     pub on_connect_cmd: Option<String>,
-    /// `PUNKTFUNK_ON_DISCONNECT_CMD` — `client.disconnected` sibling of
+    /// `RUBYFUNK_ON_DISCONNECT_CMD` — `client.disconnected` sibling of
     /// [`Self::on_connect_cmd`].
     pub on_disconnect_cmd: Option<String>,
     /// Row `max_fps` — game-side frame limiter. `None` (`0`) = no limit. Caps
@@ -345,7 +345,7 @@ pub struct HostConfig {
     /// Row `vdisplay_resolutions` — `(width, height)` the Windows virtual display offers beside
     /// the session's own, so a game can run below the stream size.
     pub vdisplay_resolutions: Vec<(u32, u32)>,
-    /// `PUNKTFUNK_GAMESCOPE_VRR=0` — opt out of adaptive sync. Default on: capable
+    /// `RUBYFUNK_GAMESCOPE_VRR=0` — opt out of adaptive sync. Default on: capable
     /// gamescope gets `--adaptive-sync` + `--framerate-limit` at the game rate so
     /// it paints on the game's commit. Inert on stock gamescope (`adaptive_sync_args`).
     pub gamescope_vrr: bool,
@@ -361,81 +361,81 @@ impl HostConfig {
         let row_bool = |k: &str| store::row_bool_in(rows, k);
         let row_tri = |k: &str| store::row_tri_in(rows, k);
         Self {
-            // Blank-is-unset: `PUNKTFUNK_MGMT_BIND=` means default.
-            mgmt_bind: val("PUNKTFUNK_MGMT_BIND")
+            // Blank-is-unset: `RUBYFUNK_MGMT_BIND=` means default.
+            mgmt_bind: val("RUBYFUNK_MGMT_BIND")
                 .map(|s| s.trim().to_string())
                 .filter(|s| !s.is_empty()),
-            native_port: val("PUNKTFUNK_NATIVE_PORT")
+            native_port: val("RUBYFUNK_NATIVE_PORT")
                 .map(|s| s.trim().to_string())
                 .filter(|s| !s.is_empty()),
-            webtransport_origins: val("PUNKTFUNK_WEBTRANSPORT_ORIGINS")
+            webtransport_origins: val("RUBYFUNK_WEBTRANSPORT_ORIGINS")
                 .unwrap_or_default()
                 .split(',')
                 .map(|s| s.trim().to_string())
                 .filter(|s| !s.is_empty())
                 .collect(),
-            webtransport_bind: val("PUNKTFUNK_WEBTRANSPORT_BIND")
+            webtransport_bind: val("RUBYFUNK_WEBTRANSPORT_BIND")
                 .map(|s| s.trim().to_string())
                 .filter(|s| !s.is_empty()),
-            webtransport_port: val("PUNKTFUNK_WEBTRANSPORT_PORT")
+            webtransport_port: val("RUBYFUNK_WEBTRANSPORT_PORT")
                 .map(|s| s.trim().to_string())
                 .filter(|s| !s.is_empty()),
-            encoder_pref: encoder_pref(val("PUNKTFUNK_ENCODER")),
-            render_adapter: val("PUNKTFUNK_RENDER_ADAPTER"),
-            zerocopy: on("PUNKTFUNK_ZEROCOPY"),
-            chacha20: row_bool("PUNKTFUNK_CHACHA20"),
-            audio_quality: val("PUNKTFUNK_AUDIO_QUALITY").map(|s| s.trim().to_lowercase()),
-            audio_redundancy: row_tri("PUNKTFUNK_AUDIO_REDUNDANCY"),
-            audio_hires: row_bool("PUNKTFUNK_AUDIO_HIRES"),
-            perf: on("PUNKTFUNK_PERF") == Some(true),
+            encoder_pref: encoder_pref(val("RUBYFUNK_ENCODER")),
+            render_adapter: val("RUBYFUNK_RENDER_ADAPTER"),
+            zerocopy: on("RUBYFUNK_ZEROCOPY"),
+            chacha20: row_bool("RUBYFUNK_CHACHA20"),
+            audio_quality: val("RUBYFUNK_AUDIO_QUALITY").map(|s| s.trim().to_lowercase()),
+            audio_redundancy: row_tri("RUBYFUNK_AUDIO_REDUNDANCY"),
+            audio_hires: row_bool("RUBYFUNK_AUDIO_HIRES"),
+            perf: on("RUBYFUNK_PERF") == Some(true),
             // Defaults to `virtual` — the flagship per-client virtual output. It used to be unset,
             // which fell through to the synthetic test pattern: fine for a dev box that always has
             // a host.env, wrong for a packaged install, whose unit no longer requires that file at
             // all. `synthetic` is still reachable by naming it (any unrecognised value lands there).
-            video_source: val("PUNKTFUNK_VIDEO_SOURCE").or_else(|| Some("virtual".to_string())),
-            // Emptied-to-None: `PUNKTFUNK_CAPTURE_MONITOR=` is unset, not a blank name.
-            capture_monitor: val("PUNKTFUNK_CAPTURE_MONITOR")
+            video_source: val("RUBYFUNK_VIDEO_SOURCE").or_else(|| Some("virtual".to_string())),
+            // Emptied-to-None: `RUBYFUNK_CAPTURE_MONITOR=` is unset, not a blank name.
+            capture_monitor: val("RUBYFUNK_CAPTURE_MONITOR")
                 .map(|s| s.trim().to_string())
                 .filter(|s| !s.is_empty()),
             // Emptied-to-None. Spellings are parsed by `pf_portal::cursor_mode::parse_pin`.
-            portal_cursor_mode: val("PUNKTFUNK_PORTAL_CURSOR_MODE")
+            portal_cursor_mode: val("RUBYFUNK_PORTAL_CURSOR_MODE")
                 .map(|s| s.trim().to_string())
                 .filter(|s| !s.is_empty()),
-            compositor: val("PUNKTFUNK_COMPOSITOR"),
-            gamepad: val("PUNKTFUNK_GAMEPAD"),
-            gamescope_grab_cursor: row_bool("PUNKTFUNK_GAMESCOPE_GRAB_CURSOR"),
-            gamescope_splash: row_bool("PUNKTFUNK_GAMESCOPE_SPLASH"),
-            gamescope_isolate: row_bool("PUNKTFUNK_GAMESCOPE_ISOLATE"),
-            steam_prewarm: val("PUNKTFUNK_STEAM_PREWARM")
+            compositor: val("RUBYFUNK_COMPOSITOR"),
+            gamepad: val("RUBYFUNK_GAMEPAD"),
+            gamescope_grab_cursor: row_bool("RUBYFUNK_GAMESCOPE_GRAB_CURSOR"),
+            gamescope_splash: row_bool("RUBYFUNK_GAMESCOPE_SPLASH"),
+            gamescope_isolate: row_bool("RUBYFUNK_GAMESCOPE_ISOLATE"),
+            steam_prewarm: val("RUBYFUNK_STEAM_PREWARM")
                 .and_then(|s| s.trim().parse::<u32>().ok())
                 .unwrap_or(1)
                 .min(8),
-            seat_idle_stop_min: val("PUNKTFUNK_SEAT_IDLE_STOP_MIN")
+            seat_idle_stop_min: val("RUBYFUNK_SEAT_IDLE_STOP_MIN")
                 .and_then(|s| s.trim().parse::<u32>().ok())
                 .unwrap_or(240)
                 .min(1_440),
-            seat_end_on_game_exit: row_bool("PUNKTFUNK_SEAT_END_ON_GAME_EXIT"),
-            seat_max_mode: val("PUNKTFUNK_SEAT_MAX_MODE")
+            seat_end_on_game_exit: row_bool("RUBYFUNK_SEAT_END_ON_GAME_EXIT"),
+            seat_max_mode: val("RUBYFUNK_SEAT_MAX_MODE")
                 .map(|s| s.trim().to_string())
                 .filter(|s| !s.is_empty()),
-            seat_library_writable: row_bool("PUNKTFUNK_SEAT_LIBRARY_WRITABLE"),
-            seat_background_input: row_bool("PUNKTFUNK_SEAT_BACKGROUND_INPUT"),
-            dualsense_usbip: row_bool("PUNKTFUNK_DUALSENSE_USBIP"),
-            gamescope_hdr: row_bool("PUNKTFUNK_GAMESCOPE_HDR"),
-            gamescope_sdr_nits: val("PUNKTFUNK_GAMESCOPE_SDR_NITS")
+            seat_library_writable: row_bool("RUBYFUNK_SEAT_LIBRARY_WRITABLE"),
+            seat_background_input: row_bool("RUBYFUNK_SEAT_BACKGROUND_INPUT"),
+            dualsense_usbip: row_bool("RUBYFUNK_DUALSENSE_USBIP"),
+            gamescope_hdr: row_bool("RUBYFUNK_GAMESCOPE_HDR"),
+            gamescope_sdr_nits: val("RUBYFUNK_GAMESCOPE_SDR_NITS")
                 .and_then(|s| s.trim().parse::<u32>().ok())
                 .filter(|n| (1..=10_000).contains(n)),
             // Auto by default; `off` is stock gamescope; `on` is force.
-            gamescope_bind: row_tri("PUNKTFUNK_GAMESCOPE_BIND"),
+            gamescope_bind: row_tri("RUBYFUNK_GAMESCOPE_BIND"),
             // Junk entries are dropped; this only widens a menu.
             gamescope_refresh_rates: parse_refresh_rates(
-                val("PUNKTFUNK_GAMESCOPE_REFRESH_RATES").as_deref(),
+                val("RUBYFUNK_GAMESCOPE_REFRESH_RATES").as_deref(),
             ),
-            recover_session_cmd: val("PUNKTFUNK_RECOVER_SESSION_CMD")
+            recover_session_cmd: val("RUBYFUNK_RECOVER_SESSION_CMD")
                 .filter(|s| !s.trim().is_empty()),
-            on_connect_cmd: val("PUNKTFUNK_ON_CONNECT_CMD").filter(|s| !s.trim().is_empty()),
-            on_disconnect_cmd: val("PUNKTFUNK_ON_DISCONNECT_CMD").filter(|s| !s.trim().is_empty()),
-            gamescope_vrr: row_bool("PUNKTFUNK_GAMESCOPE_VRR"),
+            on_connect_cmd: val("RUBYFUNK_ON_CONNECT_CMD").filter(|s| !s.trim().is_empty()),
+            on_disconnect_cmd: val("RUBYFUNK_ON_DISCONNECT_CMD").filter(|s| !s.trim().is_empty()),
+            gamescope_vrr: row_bool("RUBYFUNK_GAMESCOPE_VRR"),
             ..Self::default()
         }
     }
@@ -536,13 +536,13 @@ impl HostConfig {
     }
 }
 
-/// `PUNKTFUNK_ENCODER`, lower-cased. On Windows a software pin becomes `auto`: the driver
+/// `RUBYFUNK_ENCODER`, lower-cased. On Windows a software pin becomes `auto`: the driver
 /// encodes, so a session opened on it would pass the handshake and die at the encoder open.
 fn encoder_pref(raw: Option<String>) -> String {
     let pref = raw.unwrap_or_default().to_ascii_lowercase();
     if cfg!(windows) && matches!(pref.as_str(), "sw" | "software" | "openh264") {
         eprintln!(
-            "punktfunk: PUNKTFUNK_ENCODER={pref:?} — Windows has no software encoder since the \
+            "rubyfunk: RUBYFUNK_ENCODER={pref:?} — Windows has no software encoder since the \
              driver took over encoding; using auto"
         );
         return "auto".into();

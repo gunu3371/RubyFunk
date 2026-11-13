@@ -107,13 +107,13 @@ pub(crate) fn refresh_snapshot(ctx: &Arc<AppCtx>) {
         speakers,
         mics,
         native: primary_mode(),
-        link: punktfunk_core::transport::ifinfo::local_link_facts(None),
+        link: rubyfunk_core::transport::ifinfo::local_link_facts(None),
     };
 }
 
 /// The primary display's current mode in real pixels: what a Native stream asks for here.
 /// `None` when Windows names none.
-fn primary_mode() -> Option<punktfunk_core::Mode> {
+fn primary_mode() -> Option<rubyfunk_core::Mode> {
     use windows::Win32::wingdi::DEVMODEW;
     use windows::Win32::winuser::{EnumDisplaySettingsW, ENUM_CURRENT_SETTINGS};
     // SAFETY: DEVMODEW is integers, arrays and unions of integers; all-zero is a valid value.
@@ -128,7 +128,7 @@ fn primary_mode() -> Option<punktfunk_core::Mode> {
             &mut dm,
         )
     };
-    (ok.as_bool() && dm.dmPelsWidth > 0).then_some(punktfunk_core::Mode {
+    (ok.as_bool() && dm.dmPelsWidth > 0).then_some(rubyfunk_core::Mode {
         width: dm.dmPelsWidth,
         height: dm.dmPelsHeight,
         // 0 and 1 are "the hardware's default".
@@ -148,8 +148,8 @@ pub(crate) struct DeviceProbes {
     gpus: Vec<String>,
     speakers: Vec<pf_client_core::audio::AudioDevice>,
     mics: Vec<pf_client_core::audio::AudioDevice>,
-    native: Option<punktfunk_core::Mode>,
-    link: punktfunk_core::transport::LinkFacts,
+    native: Option<rubyfunk_core::Mode>,
+    link: rubyfunk_core::transport::LinkFacts,
 }
 
 /// The layer the settings screen is editing, resolved for display: `None` = the defaults.
@@ -567,7 +567,7 @@ pub(crate) fn settings_page(shell: &Shell) -> View {
                     InfoBar::new()
                         .title("Your changes aren\u{2019}t being saved")
                         .message(format!(
-                            "Punktfunk can\u{2019}t write to its settings folder, so nothing \
+                            "RubyFunk can\u{2019}t write to its settings folder, so nothing \
                              on this page will survive a restart. {err}"
                         ))
                         .severity(InfoBarSeverity::Error)

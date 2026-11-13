@@ -58,7 +58,7 @@ pf-client-core = { path = "../pf-client-core", default-features = false }
 # 🛑 Check the log for `DOWNLOAD AND INSTALL SUCCEEDED` on every bump: the fallback is a
 # from-source Skia build that turns a 2-minute CI leg into hours.
 #
-# 🛑 Half the bump is by hand: packaging/flatpak/io.unom.punktfunk.yml pins the archives by
+# 🛑 Half the bump is by hand: packaging/flatpak/io.github.gunu3371.rubyfunk.yml pins the archives by
 # URL + sha256 (the sandbox is offline) and nothing derives them from this line. A stale pin
 # unpacks the old bindings.rs under the new crate and fails to compile (that is how #193 shipped).
 skia-safe = { version = "0.153", features = ["textlayout"] }
@@ -111,7 +111,7 @@ serde = { version = "1", features = ["derive"] }
 # settings struct never grows a field only one platform reads.
 serde_json = "1"
 # `config::GamepadPref` keys the button-glyph style (PlayStation shapes vs ABXY).
-punktfunk-core = { path = "../../core/punktfunk-core" }
+rubyfunk-core = { path = "../../core/rubyfunk-core" }
 # Flexbox for the element layer (`el/`). Pure Rust; flexbox and the content-size pass only.
 taffy = { version = "0.14", default-features = false, features = ["std", "taffy_tree", "flexbox", "content_size"] }
 

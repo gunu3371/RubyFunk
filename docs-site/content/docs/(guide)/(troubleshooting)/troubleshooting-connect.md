@@ -14,16 +14,16 @@ Sunshine and its forks (Apollo, Vibeshine, …) want the same ports, TCP 47990 e
 off. You see `address already in use` in the host log, pairing that fails, or the wrong host
 answering.
 
-Run `punktfunk-host detect-conflicts`, or read **Competing streaming server** on the console's
-**Troubleshooting** page. Then uninstall the other host, or keep both by moving Punktfunk's port:
+Run `rubyfunk-host detect-conflicts`, or read **Competing streaming server** on the console's
+**Troubleshooting** page. Then uninstall the other host, or keep both by moving RubyFunk's port:
 [Switching from Sunshine](/docs/switching-from-sunshine).
 
 ### The host isn't found on the network
 
 Discovery uses mDNS on the local network, and anything that blocks it hides the host. Check:
 
-- The host is running: `systemctl --user status punktfunk-host` (Linux),
-  `punktfunk-host service status` (Windows, elevated).
+- The host is running: `systemctl --user status rubyfunk-host` (Linux),
+  `rubyfunk-host service status` (Windows, elevated).
 - Android: tap **Allow…** under **Local network access is off** at the top of the host list.
 - Both devices are on the same subnet. mDNS doesn't cross routers or most VPNs; add the host by
   its IP address instead.
@@ -58,10 +58,10 @@ Plugin pages come from their own port, TCP 47993, next to the console's 47992.
 - **The panel stays empty**: a firewall rule saved before 47993 existed blocks it. Refresh it:
 
   ```sh
-  sudo ufw app update punktfunk-web && sudo ufw reload    # ufw
+  sudo ufw app update rubyfunk-web && sudo ufw reload    # ufw
   sudo firewall-cmd --reload                               # firewalld
   ```
 
   On Windows, run the setup again; it adds both console rules.
 - **Plugin interfaces are unavailable**: the console couldn't open that port. Set another with
-  `PUNKTFUNK_UI_PLUGIN_PORT` in `host.env` and restart the console.
+  `RUBYFUNK_UI_PLUGIN_PORT` in `host.env` and restart the console.

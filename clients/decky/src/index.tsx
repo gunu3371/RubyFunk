@@ -67,15 +67,15 @@ import {
 } from "./steam";
 import { TrustSheet } from "./trust";
 
-// Recovery action for "the Punktfunk library entry vanished" — recreates the visible shortcut
+// Recovery action for "the RubyFunk library entry vanished" — recreates the visible shortcut
 // and sweeps duplicate entries (the piles a boot race used to mint, one per Steam start).
 // Deleting the shortcut (optionally + reinstalling the plugin) leaves a stale appId in Steam's
 // CEF localStorage that self-heal fixes on the next mount, but this gives an in-session button
 // that works even without a reload. Always ends in a toast so the tap has feedback.
-async function recreatePunktfunkShortcut(): Promise<void> {
+async function recreateRubyFunkShortcut(): Promise<void> {
   const { appId, removedDuplicates } = await recreateShortcuts();
   toaster.toast({
-    title: "Punktfunk",
+    title: "RubyFunk",
     body:
       appId == null
         ? "Couldn't create the shortcut"
@@ -92,7 +92,7 @@ async function recreatePunktfunkShortcut(): Promise<void> {
 function removeGamePageShortcuts(): void {
   const removed = removeGameShortcuts();
   toaster.toast({
-    title: "Punktfunk",
+    title: "RubyFunk",
     body:
       removed === 0
         ? "No game shortcuts to remove"
@@ -108,7 +108,7 @@ async function forceStop(): Promise<void> {
   } catch {
     /* best-effort — the TerminateApp above is usually enough */
   }
-  toaster.toast({ title: "Punktfunk", body: "Stopped the stream" });
+  toaster.toast({ title: "RubyFunk", body: "Stopped the stream" });
 }
 
 // Press a host system button (guide/QAM) on the running stream, then hand the screen back
@@ -121,7 +121,7 @@ async function pressHost(action: "guide" | "qam"): Promise<void> {
     Navigation.CloseSideMenus();
   } else {
     toaster.toast({
-      title: "Punktfunk",
+      title: "RubyFunk",
       body: r.error === "no-stream" ? "No stream is running" : "Couldn't reach the stream",
     });
   }
@@ -136,12 +136,12 @@ async function endStreamedGame(): Promise<void> {
   }
   const r = await endGame(last.ref, last.gameId).catch(() => ({
     ok: false as const,
-    notice: "Couldn't reach the Punktfunk client.",
+    notice: "Couldn't reach the RubyFunk client.",
   }));
   if (r.ok) {
     stopStream();
   }
-  toaster.toast({ title: "Punktfunk", body: r.notice || (r.ok ? `Ended ${last.title}.` : "Couldn't end the game.") });
+  toaster.toast({ title: "RubyFunk", body: r.notice || (r.ok ? `Ended ${last.title}.` : "Couldn't end the game.") });
 }
 
 /** The line under a host's name: where it is, whether it's up, and how far trust has got. */
@@ -302,7 +302,7 @@ const QamPanel: FC = () => {
                 description="Installing can take a couple of minutes"
               >
                 <FaDownload style={{ marginRight: "0.5em" }} />
-                Update Punktfunk
+                Update RubyFunk
               </ButtonItem>
             </PanelSectionRow>
           </PanelSection>
@@ -328,14 +328,14 @@ const QamPanel: FC = () => {
               focusable={false}
               label={
                 problem === "client-unavailable"
-                  ? "Punktfunk isn’t installed"
+                  ? "RubyFunk isn’t installed"
                   : problem === "list-failed"
                     ? "Couldn’t scan for hosts"
-                    : "Update the Punktfunk client"
+                    : "Update the RubyFunk client"
               }
               description={
                 problem === "client-unavailable"
-                  ? "This panel launches the Punktfunk app, which isn’t on this Deck yet. Install it in Desktop Mode."
+                  ? "This panel launches the RubyFunk app, which isn’t on this Deck yet. Install it in Desktop Mode."
                   : problem === "list-failed"
                     ? "Something went wrong while scanning — Refresh tries again."
                     : "This client is too old to find hosts on your network. Saved hosts still work."
@@ -353,7 +353,7 @@ const QamPanel: FC = () => {
             <Field
               focusable={false}
               label="No hosts yet"
-              description="Open Punktfunk to find and pair one."
+              description="Open RubyFunk to find and pair one."
             />
           </PanelSectionRow>
         )}
@@ -362,7 +362,7 @@ const QamPanel: FC = () => {
         ))}
       </PanelSection>
 
-      <PanelSection title="Punktfunk">
+      <PanelSection title="RubyFunk">
         <PanelSectionRow>
           <ButtonItem
             layout="below"
@@ -370,12 +370,12 @@ const QamPanel: FC = () => {
             onClick={() => void launchGamepadUi()}
           >
             <FaTv style={{ marginRight: "0.5em" }} />
-            Open Punktfunk
+            Open RubyFunk
           </ButtonItem>
         </PanelSectionRow>
         <PanelSectionRow>
           <ToggleField
-            label="Punktfunk in Steam's Play menu"
+            label="RubyFunk in Steam's Play menu"
             description="The ▾ beside a game's Play button lists your hosts that have it, next to Steam Link's; pick one and Play becomes Stream."
             checked={gamePageStream}
             onChange={(on) => {
@@ -456,8 +456,8 @@ const QamPanel: FC = () => {
         <PanelSectionRow>
           <ButtonItem
             layout="below"
-            description="Missing the Punktfunk entry in your library, or seeing several? This puts one back and removes the rest."
-            onClick={() => void recreatePunktfunkShortcut()}
+            description="Missing the RubyFunk entry in your library, or seeing several? This puts one back and removes the rest."
+            onClick={() => void recreateRubyFunkShortcut()}
           >
             <FaPlus style={{ marginRight: "0.5em" }} />
             Recreate library shortcut
@@ -488,7 +488,7 @@ const QamPanel: FC = () => {
 };
 
 export default definePlugin(() => {
-  // Ensure the visible, stateless "Punktfunk" library entry (opens the gamepad UI / console
+  // Ensure the visible, stateless "RubyFunk" library entry (opens the gamepad UI / console
   // home) exists and is repointed to the current plugin dir — also installs the native-touch
   // controller config. Fire-and-forget: cosmetic library upkeep must never block plugin load.
   void ensureGamepadUiShortcut();
@@ -508,11 +508,11 @@ export default definePlugin(() => {
     // `name` must stay in sync with plugin.json (the loader keys plugins by it) — and it is
     // USER-VISIBLE: Decky labels the entry in its plugin list with it, so it carries the brand
     // case. Decky finds an installed plugin by matching plugin.json "name" (never the folder
-    // name), so this is independent of the on-disk dir, which stays lowercase `punktfunk`.
-    name: "Punktfunk",
+    // name), so this is independent of the on-disk dir, which stays lowercase `rubyfunk`.
+    name: "RubyFunk",
     // `staticClasses?.Title` is guarded so a future client that drops the export can't throw
     // at plugin-load time (an error boundary only catches render-time, not load-time, errors).
-    titleView: <div className={staticClasses?.Title}>Punktfunk</div>,
+    titleView: <div className={staticClasses?.Title}>RubyFunk</div>,
     content: (
       <PluginErrorBoundary>
         <QamPanel />

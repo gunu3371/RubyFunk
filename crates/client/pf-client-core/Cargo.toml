@@ -25,7 +25,7 @@ repository.workspace = true
 # Apple targets take the same subset: the console crate builds for the Mac, iOS and tvOS, and so
 # does the PS5 homebrew title (`all(target_os = "freebsd", target_vendor = "sie"), target_os = "horizon"`).
 [target.'cfg(any(target_os = "android", target_vendor = "apple", all(target_os = "freebsd", target_vendor = "sie"), target_os = "horizon"))'.dependencies]
-punktfunk-core = { path = "../../core/punktfunk-core", features = ["quic", "serde"] }
+rubyfunk-core = { path = "../../core/rubyfunk-core", features = ["quic", "serde"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 anyhow = "1"
@@ -38,7 +38,7 @@ rand = "0.10"
 # quinn/tokio/aws-lc-rs never build for this target and `trust`'s three identity/pair/probe
 # entry points are `cfg`'d out with them.
 [target.'cfg(target_family = "wasm")'.dependencies]
-punktfunk-core = { path = "../../core/punktfunk-core", features = ["serde"] }
+rubyfunk-core = { path = "../../core/rubyfunk-core", features = ["serde"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 anyhow = "1"
@@ -46,7 +46,7 @@ tracing = "0.1"
 rand = "0.10"
 
 [target.'cfg(any(target_os = "linux", windows))'.dependencies]
-punktfunk-core = { path = "../../core/punktfunk-core", features = ["quic", "serde"] }
+rubyfunk-core = { path = "../../core/rubyfunk-core", features = ["quic", "serde"] }
 # The decode ladder (`video`, `video_*`). Optional, so webOS — `target_os = "linux"` without
 # `desktop` — never builds it.
 pf-client-video = { path = "../pf-client-video", default-features = false, optional = true }
@@ -55,7 +55,7 @@ libc = { version = "0.2", optional = true }
 
 # Opus for the audio planes. The VIDEO side has no FFmpeg at all since M10: every decode
 # rung is native (pf-vkdecode / pf-dxvadec / pf-vaapi / openh264+rav1d) and the codec
-# vocabulary is `punktfunk_core::quic`'s own `CODEC_*` wire bits. The HOST still encodes
+# vocabulary is `rubyfunk_core::quic`'s own `CODEC_*` wire bits. The HOST still encodes
 # with libavcodec (`pf-encode`); nothing in this crate does.
 opus = { version = "0.4", optional = true }
 
@@ -68,7 +68,7 @@ ureq = { workspace = true, optional = true, features = ["gzip"] }
 pf-update-check = { path = "../../core/pf-update-check", optional = true }
 rustls = { workspace = true, optional = true, features = ["logging", "tls12"] }
 # Art-cache keys (`art_cache`): the SHA-256 of a poster URL. Already in the tree —
-# punktfunk-core's `tls` hashes certificates with the same version.
+# rubyfunk-core's `tls` hashes certificates with the same version.
 sha2 = "0.11"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -166,7 +166,7 @@ async-channel = { version = "2", optional = true }
 # nothing, which is the point.
 default = ["desktop", "pyrowave"]
 desktop = [
-    "punktfunk-core/ureq-tls",
+    "rubyfunk-core/ureq-tls",
     "dep:pf-client-video", "pf-client-video/desktop", "dep:async-channel",
     "dep:libc", "dep:opus", "discovery", "dep:ureq", "dep:pf-update-check", "dep:rustls",
     "dep:tracing-subscriber", "dep:tracing-log",
@@ -184,7 +184,7 @@ d3d11va = ["dep:pf-client-video", "pf-client-video/d3d11va"]
 discovery = ["dep:mdns-sd", "dep:async-channel"]
 # PyroWave client decode ships in every default build (flatpak included; pyrowave-sys is a
 # vendored in-repo tree, offline-safe, and an empty stub off Linux/Windows). The codec is
-# still strictly per-session opt-in (Settings codec pick / PUNKTFUNK_PREFER_PYROWAVE=1).
+# still strictly per-session opt-in (Settings codec pick / RUBYFUNK_PREFER_PYROWAVE=1).
 # Forwards to pf-client-video, which `desktop` pulls.
 pyrowave = ["pf-client-video?/pyrowave"]
 
@@ -194,7 +194,7 @@ cfg_aliases = "0.2"
 
 # x86 desktops open every packet with aws-lc-rs's VAES kernels: 250 ns a packet against 520.
 [target.'cfg(all(target_arch = "x86_64", any(target_os = "linux", windows)))'.dependencies]
-punktfunk-core = { path = "../../core/punktfunk-core", features = ["aes-aws-lc-rs"] }
+rubyfunk-core = { path = "../../core/rubyfunk-core", features = ["aes-aws-lc-rs"] }
 
 [lints]
 workspace = true

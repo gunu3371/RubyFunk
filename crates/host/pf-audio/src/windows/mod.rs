@@ -15,7 +15,7 @@ pub mod devnode_api;
 // Uninstall sweep of every audio devnode the providers (and the probe) mint.
 // `driver uninstall --audio` / installer [UninstallRun].
 pub mod devnode_cleanup;
-// Minted "Punktfunk Speakers/Microphone": our instances of Valve's streaming-audio
+// Minted "RubyFunk Speakers/Microphone": our instances of Valve's streaming-audio
 // drivers. Wiring-plan tier-0.
 pub mod minted;
 // WASAPI loopback of a minted pad endpoint, plus the tone/probe devtests. Capturing is a

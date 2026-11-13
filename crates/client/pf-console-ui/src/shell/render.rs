@@ -34,7 +34,7 @@ impl Shell {
         height: u32,
         fonts: &Fonts,
         pad: Option<&str>,
-        pad_pref: Option<punktfunk_core::config::GamepadPref>,
+        pad_pref: Option<rubyfunk_core::config::GamepadPref>,
         pads: &[PadInfo],
     ) {
         self.render_in(
@@ -56,7 +56,7 @@ impl Shell {
         viewport: &crate::console::Viewport,
         fonts: &Fonts,
         pad: Option<&str>,
-        pad_pref: Option<punktfunk_core::config::GamepadPref>,
+        pad_pref: Option<rubyfunk_core::config::GamepadPref>,
         pads: &[PadInfo],
     ) {
         let now = Instant::now();
@@ -689,7 +689,7 @@ impl LayerEnv<'_> {
 /// input, the connected pad's family if there is one, else the key device.
 fn glyph_style(
     source: Option<crate::console::InputSource>,
-    pad_pref: Option<punktfunk_core::config::GamepadPref>,
+    pad_pref: Option<rubyfunk_core::config::GamepadPref>,
     platform: crate::platform::Platform,
 ) -> GlyphStyle {
     match (source, pad_pref) {
@@ -704,7 +704,7 @@ mod glyph_style_tests {
     use super::*;
     use crate::console::InputSource;
     use crate::platform::Platform;
-    use punktfunk_core::config::GamepadPref;
+    use rubyfunk_core::config::GamepadPref;
 
     /// A remote with a Back button shows no bar; keyed as one without it, only Back stays.
     #[test]

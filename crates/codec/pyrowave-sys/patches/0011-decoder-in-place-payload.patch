@@ -1,4 +1,4 @@
-Decode packets where the caller wrote them — PUNKTFUNK LOCAL PATCH.
+Decode packets where the caller wrote them — RUBYFUNK LOCAL PATCH.
 
 Not upstream (pyrowave.h carries "TODO: Add support for importing external
 memory as GPU buffers"). push_packet copied every packet into payload_data_cpu,
@@ -37,7 +37,7 @@ index a30676aa6..d2fa2957f 100644
  PYROWAVE_PUBLIC_API pyrowave_result
  pyrowave_decoder_push_packet(pyrowave_decoder decoder, const void *data, size_t size);
  
-+// PUNKTFUNK (patch 0011): payload memory the caller owns and writes, so a decode copies nothing.
++// RUBYFUNK (patch 0011): payload memory the caller owns and writes, so a decode copies nothing.
 +typedef struct pyrowave_payload_memory
 +{
 +	// STORAGE | UNIFORM_TEXEL | TRANSFER_DST usage, `size` bytes of host-coherent memory.
@@ -108,7 +108,7 @@ index 45cc9bc9c..32ef92574 100644
  
  	std::vector<uint32_t> dequant_offset_buffer_cpu;
  	std::vector<uint32_t> payload_data_cpu;
-+	// PUNKTFUNK (patch 0011): see Decoder::set_payload_memory. A wrapped image has no
++	// RUBYFUNK (patch 0011): see Decoder::set_payload_memory. A wrapped image has no
 +	// default view, so the views sit beside it.
 +	uint8_t *in_place_base = nullptr;
 +	VkDeviceSize in_place_size = 0;
@@ -144,7 +144,7 @@ index 45cc9bc9c..32ef92574 100644
  	VkDeviceSize required_size_padded = required_size + 16;
  
 -	if (!payload_data || required_size_padded > payload_data->get_create_info().size)
-+	// PUNKTFUNK (patch 0011): the caller's memory is never reallocated. In-place packets are
++	// RUBYFUNK (patch 0011): the caller's memory is never reallocated. In-place packets are
 +	// already in it; copies land in its reserved head and must fit.
 +	if (in_place_base)
 +	{
@@ -172,7 +172,7 @@ index 45cc9bc9c..32ef92574 100644
  	{
  		decoded_blocks++;
 -		offset = payload_data_cpu.size();
-+		// PUNKTFUNK (patch 0011): an in-place packet is addressed where it lies.
++		// RUBYFUNK (patch 0011): an in-place packet is addressed where it lies.
 +		offset = pushing_in_place ?
 +		         uint32_t((reinterpret_cast<const uint8_t *>(header) - in_place_base) / sizeof(uint32_t)) :
 +		         uint32_t(payload_data_cpu.size());
@@ -196,7 +196,7 @@ index 45cc9bc9c..32ef92574 100644
 -				if (payload_r8_image && payload_r16_image && payload_r32_image)
 +				if (linear_views[0])
 +				{
-+					// PUNKTFUNK (patch 0011): the caller's linear images.
++					// RUBYFUNK (patch 0011): the caller's linear images.
 +					cmd.set_texture(0, 2, *linear_views[2]);
 +					cmd.set_texture(0, 3, *linear_views[1]);
 +					cmd.set_texture(0, 4, *linear_views[0]);
@@ -222,7 +222,7 @@ index 45cc9bc9c..32ef92574 100644
  		LOGI("Using linear textures instead of texel buffers.\n");
  }
  
-+// PUNKTFUNK (patch 0011): see Decoder::set_payload_memory. On failure the decoder keeps no
++// RUBYFUNK (patch 0011): see Decoder::set_payload_memory. On failure the decoder keeps no
 +// caller handle and rebuilds its own payload on the next decode.
 +bool Decoder::Impl::set_payload_memory(uint64_t buffer, uint64_t size, uint64_t copy_reserve, void *host,
 +                                       const uint64_t linear[3], uint32_t rows)
@@ -356,7 +356,7 @@ index 7232bd5b2..0c34e8411 100644
  	void clear();
  	bool push_packet(const void *data, size_t size);
  
-+	// PUNKTFUNK (patch 0011): payload memory the caller owns and writes, so a decode copies
++	// RUBYFUNK (patch 0011): payload memory the caller owns and writes, so a decode copies
 +	// nothing. `buffer` is `size` bytes of host-coherent memory mapped at `host`; `linear`
 +	// are R8/R16/R32_UINT linear images of 4096-byte rows aliasing it from offset 0, all three
 +	// or none. push_packet keeps copying, into the first `copy_reserve` bytes;

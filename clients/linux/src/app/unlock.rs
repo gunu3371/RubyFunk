@@ -5,7 +5,7 @@
 use super::*;
 use pf_client_core::profiles;
 use pf_client_core::unlock::{self, Gate};
-use punktfunk_core::quic::v2::msg::Zeroizing;
+use rubyfunk_core::quic::v2::msg::Zeroizing;
 
 impl AppModel {
     /// Dials as `id` (`None` names none) once `row`'s unlock allows: the password prompt
@@ -94,7 +94,7 @@ impl AppModel {
                 .hosts
                 .emit(HostsMsg::ShowError(error.unwrap_or_else(|| {
                     trust::connect_reject_message(
-                        punktfunk_core::reject::RejectReason::ProfileLocked,
+                        rubyfunk_core::reject::RejectReason::ProfileLocked,
                     )
                 }))),
         }

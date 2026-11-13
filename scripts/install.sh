@@ -1,14 +1,14 @@
 #!/bin/sh
-# punktfunk guided installer — PREVIEW.
+# rubyfunk guided installer — PREVIEW.
 #
 #   curl -fsSL https://punktfunk.unom.io/install.sh | sh
 #   curl -fsSLO https://punktfunk.unom.io/install.sh && sh install.sh --help   # read it first
 #
 # This is a stub. It checks that this is a Linux box it has a build for, downloads the
-# `punktfunk-setup` binary, verifies its sha256 and execs it with every argument and every
-# PUNKTFUNK_INSTALL_* variable untouched. The installer itself — distro detection, the guided
+# `rubyfunk-setup` binary, verifies its sha256 and execs it with every argument and every
+# RUBYFUNK_INSTALL_* variable untouched. The installer itself — distro detection, the guided
 # screen, the plan it runs, uninstall, channel switching — lives in that binary
-# (crates/install/punktfunk-setup, design/installer-v2.md).
+# (crates/install/rubyfunk-setup, design/installer-v2.md).
 #
 # THE STUB NEVER GROWS A FLAG. The binary owns the interface, so a copy of this file cached
 # years ago keeps working against a newer installer. Anything that looks like a new option
@@ -22,8 +22,8 @@
 set -u
 
 DOCS=https://docs.punktfunk.unom.io/docs
-REGISTRY=${PUNKTFUNK_SETUP_REGISTRY:-https://git.unom.io/api/packages/unom/generic/punktfunk-setup}
-CHANNEL_DIR=${PUNKTFUNK_SETUP_VERSION:-latest}
+REGISTRY=${RUBYFUNK_SETUP_REGISTRY:-https://git.unom.io/api/packages/unom/generic/punktfunk-setup}
+CHANNEL_DIR=${RUBYFUNK_SETUP_VERSION:-latest}
 
 die() { printf '\033[1;31m  xx\033[0m %s\n' "$*" >&2; exit 1; }
 
@@ -34,13 +34,13 @@ for arg in "$@"; do
     case "$arg" in
         -h|--help)
             cat <<EOF
-punktfunk guided installer (preview)
+rubyfunk guided installer (preview)
 
   curl -fsSL https://punktfunk.unom.io/install.sh | sh
 
-This script downloads the punktfunk-setup binary, checks its sha256 and runs it. It takes no
+This script downloads the rubyfunk-setup binary, checks its sha256 and runs it. It takes no
 options of its own — everything you pass is handed to the installer untouched, as is every
-PUNKTFUNK_INSTALL_* variable in the environment.
+RUBYFUNK_INSTALL_* variable in the environment.
 
   sh install.sh --yes            install unattended, taking every default
   sh install.sh --dry-run        print every command it would run, change nothing
@@ -49,11 +49,11 @@ PUNKTFUNK_INSTALL_* variable in the environment.
 
 Those four are the ones worth knowing before you start. The installer accepts more — component
 and channel selection, the per-option environment twins, the Omarchy hand-off — and prints the
-authoritative list itself: $DOCS/install, or "punktfunk-setup --help" once it is on the box.
+authoritative list itself: $DOCS/install, or "rubyfunk-setup --help" once it is on the box.
 
 Override the download for local work or CI:
 
-  PUNKTFUNK_SETUP_BIN=/path/to/punktfunk-setup sh install.sh …
+  RUBYFUNK_SETUP_BIN=/path/to/rubyfunk-setup sh install.sh …
 
 Docs: $DOCS/install
 EOF
@@ -64,7 +64,7 @@ done
 
 cat <<EOF
 
-  punktfunk guided installer — PREVIEW
+  rubyfunk guided installer — PREVIEW
   The per-distro pages stay the documented path; this automates them. Docs: $DOCS/install
 
 EOF
@@ -74,14 +74,14 @@ EOF
 case "$(uname -m)" in
     x86_64|amd64)   ARCH=x86_64 ;;
     aarch64|arm64)  ARCH=aarch64 ;;
-    *) die "no punktfunk-setup build for $(uname -m) — build from source: $DOCS/build-from-source" ;;
+    *) die "no rubyfunk-setup build for $(uname -m) — build from source: $DOCS/build-from-source" ;;
 esac
 
-# PUNKTFUNK_SETUP_BIN skips the download entirely. installer-smoke points it at the binary built
+# RUBYFUNK_SETUP_BIN skips the download entirely. installer-smoke points it at the binary built
 # from the pull request's own tree, so CI tests the checked-out code and never the published one.
-if [ -n "${PUNKTFUNK_SETUP_BIN:-}" ]; then
-    [ -x "$PUNKTFUNK_SETUP_BIN" ] || die "PUNKTFUNK_SETUP_BIN=$PUNKTFUNK_SETUP_BIN is not executable"
-    exec "$PUNKTFUNK_SETUP_BIN" "$@"
+if [ -n "${RUBYFUNK_SETUP_BIN:-}" ]; then
+    [ -x "$RUBYFUNK_SETUP_BIN" ] || die "RUBYFUNK_SETUP_BIN=$RUBYFUNK_SETUP_BIN is not executable"
+    exec "$RUBYFUNK_SETUP_BIN" "$@"
 fi
 
 command -v curl >/dev/null 2>&1 || die "curl is required (install it with your package manager first)"
@@ -89,7 +89,7 @@ command -v curl >/dev/null 2>&1 || die "curl is required (install it with your p
 TMP=$(mktemp -d) || die "could not create a temporary directory"
 trap 'rm -rf "$TMP"' EXIT INT TERM
 
-NAME=punktfunk-setup_$ARCH
+NAME=rubyfunk-setup_$ARCH
 URL=$REGISTRY/$CHANNEL_DIR/$NAME
 
 curl -fsSL -o "$TMP/$NAME" "$URL" \

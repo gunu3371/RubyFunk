@@ -1,9 +1,9 @@
 # Cross-compiling CI builder: amd64 host toolchain + an arm64 multiarch sysroot, for the
-# aarch64 Linux CLIENT artifacts (punktfunk-client + punktfunk-session).
+# aarch64 Linux CLIENT artifacts (rubyfunk-client + rubyfunk-session).
 #
-#   docker build -f ci/rust-ci-arm64cross.Dockerfile -t punktfunk-rust-ci-arm64cross .
+#   docker build -f ci/rust-ci-arm64cross.Dockerfile -t rubyfunk-rust-ci-arm64cross .
 #
-# Derived from punktfunk-rust-ci so the Rust toolchain, clang, and CMake are byte-identical
+# Derived from rubyfunk-rust-ci so the Rust toolchain, clang, and CMake are byte-identical
 # to the amd64 legs — this image only adds the target side. Kept as a SEPARATE image rather
 # than folded into the base because the :arm64 dev libs are ~1 GB that every other CI job
 # would otherwise pull for nothing.
@@ -16,7 +16,7 @@
 # explicit `Architectures:` or apt tries to fetch arm64 from the amd64 mirror and 404s.
 #
 # Built from the REPO ROOT context (not ci/) — see the rust-toolchain.toml copy below.
-FROM 192.168.1.58:5010/punktfunk-rust-ci:latest
+FROM 192.168.1.58:5010/rubyfunk-rust-ci:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 

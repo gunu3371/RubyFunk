@@ -6,7 +6,7 @@ use super::{
     pick_pad_sink, pick_profile, props_say_ds5, CardDevice, CardProfile, PadSinkPick, SinkNode,
 };
 use crate::pw_oneshot::{OneShot, TIMEOUT};
-use punktfunk_core::audio::pad_mix::PAD_CHANNELS;
+use rubyfunk_core::audio::pad_mix::PAD_CHANNELS;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
@@ -193,12 +193,12 @@ enum ProfileTarget {
 /// Move the pad's card to a four-channel profile and remember the previous index.
 ///
 /// User-visible, reverted at session end, `save = false` so WirePlumber does not remember it.
-/// `PUNKTFUNK_PAD_AUDIO_PROFILE=0` leaves the card alone.
+/// `RUBYFUNK_PAD_AUDIO_PROFILE=0` leaves the card alone.
 fn ensure_pro_audio(device_id: u32) -> anyhow::Result<()> {
-    if crate::env_on("PUNKTFUNK_PAD_AUDIO_PROFILE") == Some(false) {
+    if crate::env_on("RUBYFUNK_PAD_AUDIO_PROFILE") == Some(false) {
         anyhow::bail!(
             "the DualSense card has no four-channel profile active and \
-             PUNKTFUNK_PAD_AUDIO_PROFILE=0 forbids moving it — switch the controller to \
+             RUBYFUNK_PAD_AUDIO_PROFILE=0 forbids moving it — switch the controller to \
              \"Pro Audio\" in your sound settings to feel haptics"
         );
     }
@@ -437,7 +437,7 @@ fn unity_volume_pod(channels: u32) -> anyhow::Result<Vec<u8>> {
 
 /// Pin the pad sink to unity. WirePlumber starts new cards at 0.4 (−24 dB, cubed UI 40%)
 /// globally, so both session ends stack. Not restored: putting −24 dB back would restore the
-/// bug. Failures cost attenuation, never audio. `PUNKTFUNK_PAD_SINK_VOLUME=0` skips.
+/// bug. Failures cost attenuation, never audio. `RUBYFUNK_PAD_SINK_VOLUME=0` skips.
 /// Two rounds under one deadline: registry bind, then `set_param`.
 fn pin_sink_volume(node_id: u32, channels: u32) -> anyhow::Result<()> {
     use anyhow::{anyhow, Context};
@@ -482,7 +482,7 @@ fn pin_sink_volume(node_id: u32, channels: u32) -> anyhow::Result<()> {
 
 /// Pin the picked node to unity on every (re)correlation — a profile change remints nodes.
 fn pin_picked(name: String, sinks: &[SinkNode]) -> String {
-    if crate::env_on("PUNKTFUNK_PAD_SINK_VOLUME") == Some(false) {
+    if crate::env_on("RUBYFUNK_PAD_SINK_VOLUME") == Some(false) {
         return name;
     }
     // `split_parent` is a name on another node's proplist; there may be no bindable object.
@@ -533,7 +533,7 @@ pub fn correlate_pad_sink() -> anyhow::Result<String> {
                 "the DualSense card has no four-channel node, and moving its profile did not \
                  produce one — set the controller's Profile to \"Pro Audio\" in your sound \
                  settings (a sandboxed client may not be allowed to do it for you). Its sinks \
-                 are [{}] (run `punktfunk-session --pad-audio-test` for the full graph)",
+                 are [{}] (run `rubyfunk-session --pad-audio-test` for the full graph)",
                 last.iter()
                     .filter(|s| s.ds5)
                     .map(|s| format!("{}={}ch", s.name, s.channels))
@@ -545,7 +545,7 @@ pub fn correlate_pad_sink() -> anyhow::Result<String> {
     }
 }
 
-/// `punktfunk-session --pad-audio-test`: print correlation, then a tone so silence is
+/// `rubyfunk-session --pad-audio-test`: print correlation, then a tone so silence is
 /// "nothing arrives" vs "graph folded it" vs "firmware muted". 200 Hz on the coil pair
 /// (channels 3/4), speaker silent unless asked. Buzz means everything below the plane is good.
 pub fn pad_audio_test(seconds: u64, coils: bool, speaker: bool) -> anyhow::Result<()> {
@@ -720,8 +720,8 @@ fn pad_pw_thread(
         *pw::keys::MEDIA_TYPE       => "Audio",
         *pw::keys::MEDIA_CATEGORY   => "Playback",
         *pw::keys::MEDIA_ROLE       => "Game",
-        *pw::keys::NODE_NAME        => "punktfunk-pad-audio",
-        *pw::keys::NODE_DESCRIPTION => "Punktfunk Pad Audio",
+        *pw::keys::NODE_NAME        => "rubyfunk-pad-audio",
+        *pw::keys::NODE_DESCRIPTION => "RubyFunk Pad Audio",
         // ~5 ms quantum (one haptics Opus frame) keeps felt latency small.
         *pw::keys::NODE_LATENCY     => "240/48000",
         // Raw key: `keys::TARGET_OBJECT` is feature-gated on a newer libpipewire than we require.
@@ -733,7 +733,7 @@ fn pad_pw_thread(
         *pw::keys::STREAM_DONT_REMIX => "true",
     };
     let stream =
-        pw::stream::StreamBox::new(&core, "punktfunk-pad-audio", props).context("pw Stream")?;
+        pw::stream::StreamBox::new(&core, "rubyfunk-pad-audio", props).context("pw Stream")?;
 
     struct PadPlayData {
         rx: std::sync::mpsc::Receiver<Vec<f32>>,

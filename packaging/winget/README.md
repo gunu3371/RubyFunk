@@ -1,29 +1,29 @@
 # winget manifests — Windows host
 
-The reviewed source of truth for the `unom.PunktfunkHost` winget package. Everything except
+The reviewed source of truth for the `gunu3371.RubyFunkHost` winget package. Everything except
 `PackageVersion` / `InstallerUrl` / `InstallerSha256` / `ReleaseNotesUrl` is edited **here**;
 `scripts/ci/winget-manifest.ps1` only substitutes those four per release, so the switches,
 agreements and installation notes stay under normal code review.
 
 | File | Purpose |
 | --- | --- |
-| `unom.PunktfunkHost.yaml` | Version manifest — ties the other two together. |
-| `unom.PunktfunkHost.installer.yaml` | Installer type, scope, silent switches, `ProductCode`, URL + hash. |
-| `unom.PunktfunkHost.locale.en-US.yaml` | User-facing metadata, `Agreements`, `InstallationNotes`. |
+| `gunu3371.RubyFunkHost.yaml` | Version manifest — ties the other two together. |
+| `gunu3371.RubyFunkHost.installer.yaml` | Installer type, scope, silent switches, `ProductCode`, URL + hash. |
+| `gunu3371.RubyFunkHost.locale.en-US.yaml` | User-facing metadata, `Agreements`, `InstallationNotes`. |
 
 ## Why these choices
 
 - **`InstallerType: exe`, `Scope: machine`, `ElevationRequirement: elevatesSelf`.** The installer
-  is punktfunk-setup-win (the self-contained engine exe), which speaks the Inno Setup silent
+  is rubyfunk-setup-win (the self-contained engine exe), which speaks the Inno Setup silent
   dialect verbatim but is not an Inno binary. The host registers a SYSTEM service, installs
   drivers and opens firewall ports; the exe's `requireAdministrator` manifest raises its own UAC
   prompt. There is no per-user scope.
 - **`ProductCode: {7C9E6A52-…}_is1`** — the ARP key keeps Inno's `<AppId>_is1` name forever. This
   is what correlates an installed host with the package for `winget list` / `winget upgrade`, and
   it is what lets an Inno-installed host upgrade onto the engine. **It must track `HOST_ARP_KEY` in
-  `crates/install/punktfunk-setup/src/platform/windows/mod.rs`** — if that GUID ever changes, change it
+  `crates/install/rubyfunk-setup/src/platform/windows/mod.rs`** — if that GUID ever changes, change it
   here too or upgrades silently stop being detected.
-- **`interactive` is in `InstallModes`.** `winget install unom.PunktfunkHost --interactive` runs the
+- **`interactive` is in `InstallModes`.** `winget install gunu3371.RubyFunkHost --interactive` runs the
   full existing wizard: every task checkbox and the web-console password page.
   Nothing about the installer changes to support it.
 - **No `/MERGETASKS` in the silent switches.** A silent install deliberately takes the *same* task
@@ -41,7 +41,7 @@ The Inno-dialect `/MERGETASKS` takes `!` prefixes to deselect a default-checked 
 `/MERGETASKS` on one command line):
 
 ```powershell
-winget install unom.PunktfunkHost --override "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /MERGETASKS=!gamestream"
+winget install gunu3371.RubyFunkHost --override "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /MERGETASKS=!gamestream"
 ```
 
 Task names: `installdriver`, `installgamepad`, `installhdrlayer`,
@@ -49,11 +49,11 @@ Task names: `installdriver`, `installgamepad`, `installhdrlayer`,
 
 ## Three installer behaviours that exist for this path
 
-All three live in `crates/install/punktfunk-setup/src/platform/windows/` and also fix the plain
+All three live in `crates/install/rubyfunk-setup/src/platform/windows/` and also fix the plain
 double-click upgrade path:
 
 - **A competing host moves our port; it never aborts.** Sunshine/Apollo on the box means both want
-  TCP 47990, so `coexist_steps` writes `PUNKTFUNK_MGMT_BIND=0.0.0.0:47991` and carries on. The Inno
+  TCP 47990, so `coexist_steps` writes `RUBYFUNK_MGMT_BIND=0.0.0.0:47991` and carries on. The Inno
   installer put up a modal and failed the install instead, which under `/VERYSILENT` was an
   unattended run blocking on an invisible dialog.
 - **The GameStream flag is fresh-install-only.** On an upgrade the flag is omitted entirely, which
@@ -76,7 +76,7 @@ published ahead of its artifact:
 
 ```powershell
 scripts/ci/winget-manifest.ps1 -Version 0.19.2 `
-  -InstallerPath C:\t\out\punktfunk-host-setup-0.19.2.exe -OutDir C:\t\out\winget
+  -InstallerPath C:\t\out\rubyfunk-host-setup-0.19.2.exe -OutDir C:\t\out\winget
 ```
 
 The generated trio is attached to the same release. Canary builds are excluded: winget pins one
@@ -100,8 +100,8 @@ docs (3220) and flatpak (3230) services, behind the same edge Caddy; `windows-ho
 ships its catalogue on every stable tag, so releasing is one pipeline with no manual step.
 
 ```powershell
-winget source add -n punktfunk https://winget.punktfunk.unom.io -t Microsoft.Rest   # elevated, once
-winget install unom.PunktfunkHost
+winget source add -n rubyfunk https://winget.punktfunk.unom.io -t Microsoft.Rest   # elevated, once
+winget install gunu3371.RubyFunkHost
 ```
 
 These manifests stay in winget-pkgs' own format rather than a bespoke one, so submitting upstream

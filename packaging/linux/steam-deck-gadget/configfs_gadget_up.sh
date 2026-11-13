@@ -58,7 +58,7 @@ printf '\x06\x00\xff\x09\x01\xa1\x01\x15\x00\x26\xff\x00\x75\x08\x95\x40\x09\x01
 
 # --- config, link in order so interface numbers are 0,1,2 ---
 mkdir -p configs/c.1/strings/0x409
-echo "Punktfunk virtual Deck" > configs/c.1/strings/0x409/configuration
+echo "RubyFunk virtual Deck" > configs/c.1/strings/0x409/configuration
 echo 250 > configs/c.1/MaxPower
 ln -s functions/hid.usb0 configs/c.1/
 ln -s functions/hid.usb1 configs/c.1/

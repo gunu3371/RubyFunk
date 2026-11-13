@@ -24,22 +24,22 @@ compositor or a display skip themselves or are `#[ignore]`d.
 
 Two traps:
 
-- `punktfunk-core` and `punktfunk-ffi` alone build without their `quic` feature, which drops the
-  connection tests. Use `cargo test -p punktfunk-core -p punktfunk-ffi --features quic`.
-- `punktfunk-host` has no library target: pass test filters after `--`, never `--lib`.
+- `rubyfunk-core` and `rubyfunk-ffi` alone build without their `quic` feature, which drops the
+  connection tests. Use `cargo test -p rubyfunk-core -p rubyfunk-ffi --features quic`.
+- `rubyfunk-host` has no library target: pass test filters after `--`, never `--lib`.
 
 ## Per-area checks
 
 | Area | Command |
 |---|---|
 | FEC under loss, no network | `cargo run -p loss-harness` |
-| C ABI links from C | `bash crates/client/punktfunk-ffi/tests/c/run.sh` |
-| Scroll, wire and compatibility | `cargo test -p punktfunk-core --features quic scroll` |
+| C ABI links from C | `bash crates/client/rubyfunk-ffi/tests/c/run.sh` |
+| Scroll, wire and compatibility | `cargo test -p rubyfunk-core --features quic scroll` |
 | Scroll, host mapping (any OS) | `cargo test -p pf-inject --lib scroll` |
 | Touch and scroll in the presenter (macOS too) | `cargo test -p pf-presenter --no-default-features` |
 | Linux GPU encode backends | `cargo test -p pf-encode --locked --features nvenc,vulkan-encode,pyrowave` |
-| Host without GameStream | `cargo clippy -p punktfunk-host --no-default-features --features pyrowave --all-targets -- -D warnings` |
-| Guided installer | `cargo test -p punktfunk-setup` and `sh scripts/ci/check-installer-behavior.sh` |
+| Host without GameStream | `cargo clippy -p rubyfunk-host --no-default-features --features pyrowave --all-targets -- -D warnings` |
+| Guided installer | `cargo test -p rubyfunk-setup` and `sh scripts/ci/check-installer-behavior.sh` |
 | Settings table in the docs | `cargo test -p pf-host-config docs_table_is_current` |
 | Windows code from another OS | `scripts/xcheck.sh` |
 
@@ -68,20 +68,20 @@ For a docs change, also run `sh scripts/ci/check-docs-links.sh` and
 
 ## Apple client
 
-Build `PunktfunkCore.xcframework` first
+Build `RubyFunkCore.xcframework` first
 ([Build from source](/docs/developers/build-from-source#apple-client)), then from `clients/apple`:
 
 ```sh
 swift test                  # macOS units; tests that need a host skip without one
 bash test-loopback.sh       # synthetic hosts on 127.0.0.1, then the integration tests
 swift test --filter ScrollCaptureTests
-xcodebuild -project Punktfunk.xcodeproj -scheme Punktfunk-iOS \
+xcodebuild -project RubyFunk.xcodeproj -scheme RubyFunk-iOS \
   -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 ```
 
-The tvOS scheme is the same with `-scheme Punktfunk-tvOS` and `'generic/platform=tvOS Simulator'`.
+The tvOS scheme is the same with `-scheme RubyFunk-tvOS` and `'generic/platform=tvOS Simulator'`.
 `ScrollCaptureTests` needs an xcframework built from the same tree, whose header defines
-`PUNKTFUNK_FEATURE_QUIC`; `build-xcframework.sh` produces that.
+`RUBYFUNK_FEATURE_QUIC`; `build-xcframework.sh` produces that.
 
 ## Android client
 
@@ -109,8 +109,8 @@ anywhere the host compiles, macOS included. In two terminals, start it and conne
 which byte-checks the frames:
 
 ```sh
-cargo run -rp punktfunk-host -- punktfunk1-host --source synthetic --allow-tofu
-cargo run -rp punktfunk-probe -- --connect 127.0.0.1:9777
+cargo run -rp rubyfunk-host -- rubyfunk1-host --source synthetic --allow-tofu
+cargo run -rp rubyfunk-probe -- --connect 127.0.0.1:9777
 ```
 
 `--allow-tofu` lets an unpaired client connect; leave it out to test pairing.
@@ -119,19 +119,19 @@ cargo run -rp punktfunk-probe -- --connect 127.0.0.1:9777
 pairing window:
 
 ```sh
-cargo run -rp punktfunk-host -- serve
-cargo run -rp punktfunk-host -- ctl pair arm       # prints the PIN
+cargo run -rp rubyfunk-host -- serve
+cargo run -rp rubyfunk-host -- ctl pair arm       # prints the PIN
 ```
 
-On the client box, pair and stream with the CLI (it starts `punktfunk-session` from beside itself):
+On the client box, pair and stream with the CLI (it starts `rubyfunk-session` from beside itself):
 
 ```sh
-cargo build --release -p punktfunk-cli -p punktfunk-client-session
-target/release/punktfunk pair <host-ip>            # asks for the PIN
-target/release/punktfunk launch <host-ip>
+cargo build --release -p rubyfunk-cli -p rubyfunk-client-session
+target/release/rubyfunk pair <host-ip>            # asks for the PIN
+target/release/rubyfunk launch <host-ip>
 ```
 
-Any installed client pairs the same way. `punktfunk-probe` exercises single planes against a live
+Any installed client pairs the same way. `rubyfunk-probe` exercises single planes against a live
 host: `--input-test`, `--mic-test`, `--touch-test`, `--rich-input-test`. Its flags are in
 [clients/probe](https://git.unom.io/unom/punktfunk/src/branch/main/clients/probe/README.md). For
 the web console against this host, run `bun run dev` in `web/`.

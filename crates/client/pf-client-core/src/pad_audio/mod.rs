@@ -16,11 +16,11 @@ mod bluetooth;
 #[cfg_attr(windows, path = "wasapi.rs")]
 mod usb;
 
-use punktfunk_core::audio::pad_mix::{
+use rubyfunk_core::audio::pad_mix::{
     is_haptics_evidence, HapticsLiveness, PadDecode, QuadMixer, MAX_FRAME_SAMPLES,
 };
-use punktfunk_core::client::NativeClient;
-use punktfunk_core::input::MAX_PADS;
+use rubyfunk_core::client::NativeClient;
+use rubyfunk_core::input::MAX_PADS;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::{Duration, Instant};

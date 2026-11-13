@@ -1,5 +1,5 @@
 ;/*++
-; punktfunk virtual gamepads — UMDF2 HID minidriver INF.
+; rubyfunk virtual gamepads — UMDF2 HID minidriver INF.
 ; One package, eight hardware ids: DualSense, DualShock 4, DualSense Edge, Steam Deck, Steam
 ; Controller 2 (Triton), and three Xbox pads (Wireless / One S / Elite Series 2) — which is why the
 ; package is called pf_gamepad and not pf_dualsense (it never was one identity).
@@ -193,30 +193,30 @@ ServiceBinary="%13%\pf_gamepad.dll"
 pf_gamepad.dll
 
 [Strings]
-ProviderString     ="Punktfunk"
-ManufacturerString ="Punktfunk"
+ProviderString     ="RubyFunk"
+ManufacturerString ="RubyFunk"
 ClassName          ="HID device"
-Disk_Description   ="Punktfunk Gamepad Installation Disk"
+Disk_Description   ="RubyFunk Gamepad Installation Disk"
 ; One per hardware id — these are what Device Manager shows. Keep them aligned with the product
 ; strings the driver serves per device_type (`pf_driver_proto::pad_kind`).
-DeviceDesc         ="Punktfunk Virtual DualSense"
-DeviceDescDS4      ="Punktfunk Virtual DualShock 4"
-DeviceDescEdge     ="Punktfunk Virtual DualSense Edge"
-DeviceDescDeck     ="Punktfunk Virtual Steam Deck Controller"
-DeviceDescTriton   ="Punktfunk Virtual Steam Controller"
-DeviceDescSteamCtrl="Punktfunk Virtual Steam Controller (2015)"
-DeviceDescSwitchPro="Punktfunk Virtual Pro Controller"
-DeviceDescJoyConL  ="Punktfunk Virtual Joy-Con (L)"
-DeviceDescJoyConR  ="Punktfunk Virtual Joy-Con (R)"
-DeviceDesc8BitDoU2 ="Punktfunk Virtual 8BitDo Ultimate 2 Wireless"
-DeviceDesc8BitDoPro2="Punktfunk Virtual 8BitDo Pro 2"
-DeviceDesc8BitDoPro3="Punktfunk Virtual 8BitDo Pro 3"
-DeviceDescHoripad  ="Punktfunk Virtual Wireless HORIPAD For Steam"
-DeviceDescXbox     ="Punktfunk Virtual Xbox Wireless Controller"
+DeviceDesc         ="RubyFunk Virtual DualSense"
+DeviceDescDS4      ="RubyFunk Virtual DualShock 4"
+DeviceDescEdge     ="RubyFunk Virtual DualSense Edge"
+DeviceDescDeck     ="RubyFunk Virtual Steam Deck Controller"
+DeviceDescTriton   ="RubyFunk Virtual Steam Controller"
+DeviceDescSteamCtrl="RubyFunk Virtual Steam Controller (2015)"
+DeviceDescSwitchPro="RubyFunk Virtual Pro Controller"
+DeviceDescJoyConL  ="RubyFunk Virtual Joy-Con (L)"
+DeviceDescJoyConR  ="RubyFunk Virtual Joy-Con (R)"
+DeviceDesc8BitDoU2 ="RubyFunk Virtual 8BitDo Ultimate 2 Wireless"
+DeviceDesc8BitDoPro2="RubyFunk Virtual 8BitDo Pro 2"
+DeviceDesc8BitDoPro3="RubyFunk Virtual 8BitDo Pro 3"
+DeviceDescHoripad  ="RubyFunk Virtual Wireless HORIPAD For Steam"
+DeviceDescXbox     ="RubyFunk Virtual Xbox Wireless Controller"
 ; ⚠️ This one deliberately does NOT match the product string the driver serves for device_type 5.
 ; A real Xbox One S pad reports "Xbox Wireless Controller" over Bluetooth, exactly like the Series
 ; X|S pad above — the PID is the only thing that separates them on the wire. Device Manager,
 ; however, has to let a human tell our two virtual pads apart, and this string is ours to choose.
-DeviceDescXboxOneS ="Punktfunk Virtual Xbox One S Controller"
-DeviceDescXboxElite="Punktfunk Virtual Xbox Elite Wireless Controller Series 2"
-DeviceDescXboxNoFilter="Punktfunk Virtual Xbox Controller"
+DeviceDescXboxOneS ="RubyFunk Virtual Xbox One S Controller"
+DeviceDescXboxElite="RubyFunk Virtual Xbox Elite Wireless Controller Series 2"
+DeviceDescXboxNoFilter="RubyFunk Virtual Xbox Controller"

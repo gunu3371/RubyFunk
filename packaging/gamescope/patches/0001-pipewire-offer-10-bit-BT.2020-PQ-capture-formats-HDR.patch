@@ -66,7 +66,7 @@ index 76b3ea8..c84b19c 100644
 +// GStreamer's GstVideoTransferFunction / GstVideoColorPrimaries, where these landed together, so
 +// the numbers are identical on every implementation that has them at all. On one that does not,
 +// a consumer simply fails to intersect this pod and negotiates 8-bit — the same outcome as not
-+// offering HDR. (punktfunk's own consumer spells out the same 14 for the same reason.)
++// offering HDR. (rubyfunk's own consumer spells out the same 14 for the same reason.)
 +static constexpr uint32_t kSpaVideoTransferSmpte2084 = 14;
 +static constexpr uint32_t kSpaVideoColorPrimariesBt2020 = 7;
 +#endif

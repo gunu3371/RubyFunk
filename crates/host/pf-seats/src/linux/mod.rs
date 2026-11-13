@@ -1,10 +1,10 @@
 //! The Linux seat backend: a user, a logind session and a systemd unit per seat.
 //!
-//! The root daemon `punktfunk-seats` runs [`LinuxBackend`] behind [`socket`]. A seat is a
+//! The root daemon `rubyfunk-seats` runs [`LinuxBackend`] behind [`socket`]. A seat is a
 //! system-range user with its home under the box directory. Starting it writes the seat contract
-//! and a fresh management token, then starts `punktfunk-seat@<user>.service`: that unit logs the
+//! and a fresh management token, then starts `rubyfunk-seat@<user>.service`: that unit logs the
 //! user in through PAM and runs `seat-session`, which brings up a headless compositor and a stock
-//! `punktfunk-host serve`. Everything a seat runs descends from the unit, so the private
+//! `rubyfunk-host serve`. Everything a seat runs descends from the unit, so the private
 //! `compatdata` bind mounts reach it. A restart reads each unit's state back from systemd.
 //!
 //! The owner's row is the box owner's own account, adopted. Its unit runs the owner's host in a
@@ -17,7 +17,7 @@
 //! host admits only the devices the row's list does ([`devices`]). The daemon changes nothing on
 //! the account and ends nothing but its unit.
 //!
-//! A seat's pads are the daemon's too: its host asks the pad broker in the `punktfunk-seats`
+//! A seat's pads are the daemon's too: its host asks the pad broker in the `rubyfunk-seats`
 //! binary for them ([`LinuxBackend::running_account`] is its gate), and [`fence`] gives udev the
 //! user each one belongs to. The binary's uinput proxy, the seat's `/dev/uinput`, comes and goes
 //! with the unit ([`LinuxBackend::on_unit`]).
@@ -61,7 +61,7 @@ use std::time::{Duration, Instant};
 
 /// The supervisor's own state: the ledger, every seat's home and trust copy, the shared games
 /// folder. Root's alone; the box directory beside it is the door's, which reads its files only.
-pub const STATE_DIR: &str = "/var/lib/punktfunk-seats";
+pub const STATE_DIR: &str = "/var/lib/rubyfunk-seats";
 
 /// A seat's save exchange: `out` holds what its host exported for the owner's plugins, `in`
 /// what the owner's host hands back. The same path inside the seat's unit.
@@ -146,7 +146,7 @@ struct Inner {
     /// The box owner's account, once their row is known: whose home the box's library comes
     /// from and whose Steam a seat clones.
     owner: Mutex<Option<accounts::Passwd>>,
-    /// The `punktfunk` group's gid, once looked up: the door reads the box's library through it.
+    /// The `rubyfunk` group's gid, once looked up: the door reads the box's library through it.
     door_gid: OnceLock<u32>,
     /// A seat stopped since the ACL mask was last repaired.
     acl_dirty: AtomicBool,
@@ -370,12 +370,12 @@ fn stop_unit(inner: &Inner, seat: &Seat) -> Result<(), BackendError> {
     ended
 }
 
-/// Runs `systemctl --user <verb>` on the owner's own `punktfunk-host`. The owner's user units
+/// Runs `systemctl --user <verb>` on the owner's own `rubyfunk-host`. The owner's user units
 /// stand down while the row's unit runs, so `start` is what brings them back: the host, and the
 /// headless KDE session when the owner enabled it. A user with no manager has no login to host,
 /// and nothing runs. `setpriv` becomes the user without a PAM session.
 fn user_host(account: &str, verb: &str) {
-    const KDE_SESSION: &str = "punktfunk-kde-session.service";
+    const KDE_SESSION: &str = "rubyfunk-kde-session.service";
     let Ok(Some(user)) = accounts::lookup(account) else {
         return;
     };
@@ -396,7 +396,7 @@ fn user_host(account: &str, verb: &str) {
         all.extend_from_slice(args);
         run("systemctl_failed", "setpriv", &all)
     };
-    let mut units = vec![verb, "punktfunk-host.service"];
+    let mut units = vec![verb, "rubyfunk-host.service"];
     if verb == "start" && systemctl(&["is-enabled", "--quiet", KDE_SESSION]).is_ok() {
         units.push(KDE_SESSION);
     }
@@ -440,7 +440,7 @@ pub fn owner_at_desk(account: &str) -> bool {
 }
 
 impl LinuxBackend {
-    /// `box_dir` is the door's directory, `/var/lib/punktfunk`; `state` is [`STATE_DIR`].
+    /// `box_dir` is the door's directory, `/var/lib/rubyfunk`; `state` is [`STATE_DIR`].
     /// Creates the directories seats live in and starts the thread that keeps trust copies and
     /// the games ACL current.
     pub fn open(
@@ -659,7 +659,7 @@ impl LinuxBackend {
         token: &str,
     ) -> Result<(), BackendError> {
         let state = &self.inner.state;
-        let door = accounts::lookup("punktfunk")?;
+        let door = accounts::lookup("rubyfunk")?;
         shared::write_host_token(
             state,
             &seat.id,
@@ -814,8 +814,8 @@ impl LinuxBackend {
         check(
             group(socket::DOOR_GROUP),
             "door_group",
-            "the punktfunk-door group exists",
-            "The punktfunk-door group doesn't exist; reinstall the package that creates it.",
+            "the rubyfunk-door group exists",
+            "The rubyfunk-door group doesn't exist; reinstall the package that creates it.",
         );
         check(
             group("render"),
@@ -987,7 +987,7 @@ impl PlatformBackend for LinuxBackend {
                 ));
             }
             let token = session::mint_token();
-            let door = accounts::lookup("punktfunk")?;
+            let door = accounts::lookup("rubyfunk")?;
             shared::write_host_token(
                 state,
                 &seat.id,
@@ -1123,7 +1123,7 @@ impl PlatformBackend for LinuxBackend {
     }
 
     /// A root-owned copy of the certificate the seat's host serves, for the service to pin: from
-    /// `~/.config/punktfunk`, or for a person's row from the row's own config directory. Either
+    /// `~/.config/rubyfunk`, or for a person's row from the row's own config directory. Either
     /// is a user's, which root doesn't own, so the copy is taken through directory handles and
     /// never waits on what is there ([`shared::copy_pin`]).
     fn host_config_dir(&self, seat: &Seat) -> Option<PathBuf> {
@@ -1314,7 +1314,7 @@ impl LinuxBackend {
                 ));
             }
             let token = session::mint_token();
-            let door = accounts::lookup("punktfunk")?;
+            let door = accounts::lookup("rubyfunk")?;
             shared::write_host_token(
                 state,
                 &seat.id,
@@ -1656,13 +1656,13 @@ mod tests {
     #[test]
     fn doctor_reads_the_programs_systemd_would_run() {
         let show = "LoadState=loaded\n\
-            ExecStart={ path=/nix/store/abc-seats/libexec/punktfunk/seat-session ; argv[]=/nix/store/abc-seats/libexec/punktfunk/seat-session ; ignore_errors=no }\n\
-            ExecStopPost={ path=/nix/store/abc-seats/libexec/punktfunk/seat-reap ; argv[]=x %i ; ignore_errors=no }\n";
+            ExecStart={ path=/nix/store/abc-seats/libexec/rubyfunk/seat-session ; argv[]=/nix/store/abc-seats/libexec/rubyfunk/seat-session ; ignore_errors=no }\n\
+            ExecStopPost={ path=/nix/store/abc-seats/libexec/rubyfunk/seat-reap ; argv[]=x %i ; ignore_errors=no }\n";
         assert_eq!(
             super::exec_paths(show),
             [
-                std::path::PathBuf::from("/nix/store/abc-seats/libexec/punktfunk/seat-session"),
-                std::path::PathBuf::from("/nix/store/abc-seats/libexec/punktfunk/seat-reap"),
+                std::path::PathBuf::from("/nix/store/abc-seats/libexec/rubyfunk/seat-session"),
+                std::path::PathBuf::from("/nix/store/abc-seats/libexec/rubyfunk/seat-reap"),
             ]
         );
         assert!(super::exec_paths("LoadState=not-found\nExecStart=\n").is_empty());
@@ -1733,7 +1733,7 @@ mod tests {
     #[test]
     fn a_tool_is_found_on_the_path_and_a_missing_one_is_not() {
         assert!(which("sh").is_some());
-        assert!(which("no-such-tool-punktfunk").is_none());
+        assert!(which("no-such-tool-rubyfunk").is_none());
     }
 
     #[test]
@@ -1741,8 +1741,8 @@ mod tests {
         let error = run("x_failed", "sh", &["-c", "echo boom >&2; exit 3"]).unwrap_err();
         assert_eq!(error.code, "x_failed");
         assert_eq!(error.message, "sh -c: boom");
-        let missing = run("x_failed", "no-such-tool-punktfunk", &[]).unwrap_err();
-        assert!(missing.message.starts_with("run no-such-tool-punktfunk"));
+        let missing = run("x_failed", "no-such-tool-rubyfunk", &[]).unwrap_err();
+        assert!(missing.message.starts_with("run no-such-tool-rubyfunk"));
         assert_eq!(run("x", "echo", &["hi"]).unwrap(), "hi\n");
     }
 }

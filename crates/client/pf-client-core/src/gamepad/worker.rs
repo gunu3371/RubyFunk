@@ -11,10 +11,10 @@ use super::{is_steam_deck, set_valve_hidapi, Ctl, SelectChord, DISCONNECT_HOLD};
 use crate::menu_nav::{
     ring_sector, MenuEvent, MenuNav, MenuPulse, MenuSample, PadBattery, PadInfo,
 };
-use punktfunk_core::client::{ActuatorQuirks, NativeClient, RumbleCommand};
-use punktfunk_core::config::GamepadPref;
-use punktfunk_core::input::{gamepad as wire, InputEvent, InputKind};
-use punktfunk_core::quic::{HidOutput, RichInput};
+use rubyfunk_core::client::{ActuatorQuirks, NativeClient, RumbleCommand};
+use rubyfunk_core::config::GamepadPref;
+use rubyfunk_core::input::{gamepad as wire, InputEvent, InputKind};
+use rubyfunk_core::quic::{HidOutput, RichInput};
 use std::sync::mpsc::{Receiver, TryRecvError};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -202,11 +202,11 @@ fn menu_pads(ids: Vec<u32>, order: &[u32], info: impl Fn(u32) -> Option<PadInfo>
 /// Lowest free wire index, or `None` when every slot is taken. Lowest-free keeps indices
 /// stable: a disconnect frees only its own index, so a game never sees players shuffle.
 fn lowest_free_index(taken: &[u8]) -> Option<u8> {
-    (0..punktfunk_core::input::MAX_PADS as u8).find(|i| !taken.contains(i))
+    (0..rubyfunk_core::input::MAX_PADS as u8).find(|i| !taken.contains(i))
 }
 
 /// One per-transition event tagged with wire pad index (`flags`). Core folds these into
-/// seq'd [`GamepadState`](punktfunk_core::input::InputKind::GamepadState) keyed on that index.
+/// seq'd [`GamepadState`](rubyfunk_core::input::InputKind::GamepadState) keyed on that index.
 fn send(connector: &NativeClient, kind: InputKind, code: u32, x: i32, pad: u8) {
     let _ = connector.send_input(&InputEvent {
         kind,
@@ -675,7 +675,7 @@ impl Worker {
         let Some(index) = lowest_free_index(&taken) else {
             tracing::warn!(
                 id,
-                max = punktfunk_core::input::MAX_PADS,
+                max = rubyfunk_core::input::MAX_PADS,
                 "gamepad slots full — controller not forwarded"
             );
             return;
@@ -756,8 +756,8 @@ impl Worker {
                     }
                     if slot.audio_caps & 0x02 != 0 {
                         // Channel 1 powers up on the headphone jack; see `speaker_enable_packet`.
-                        let path = env_u8("PUNKTFUNK_PAD_SPEAKER_PATH").unwrap_or(0x20);
-                        let volume = env_u8("PUNKTFUNK_PAD_SPEAKER_VOLUME").unwrap_or(0x64);
+                        let path = env_u8("RUBYFUNK_PAD_SPEAKER_PATH").unwrap_or(0x20);
+                        let volume = env_u8("RUBYFUNK_PAD_SPEAKER_VOLUME").unwrap_or(0x64);
                         if let Err(e) = slot
                             .pad
                             .send_effect(&Ds5Feedback::speaker_enable_packet(volume, path))
@@ -1361,7 +1361,7 @@ impl Worker {
         let slot = self.slots.first();
         let pad = slot.map_or(0, |s| s.index);
         let presses: &[u32] = if bit == wire::BTN_MISC1 {
-            wire::quick_access_presses(punktfunk_core::config::pad_has_quick_access(
+            wire::quick_access_presses(rubyfunk_core::config::pad_has_quick_access(
                 slot.map_or(c.requested_gamepad, |s| s.declared),
                 c.requested_gamepad,
                 c.resolved_gamepad,
@@ -1592,7 +1592,7 @@ impl Worker {
             SensorType::Gyroscope => {
                 // Per-pad declaration, not the session echo: under Auto the Hello
                 // carries pad 0's kind while pad 1 may still have a gyro.
-                if !punktfunk_core::config::pad_motion_reaches(
+                if !rubyfunk_core::config::pad_motion_reaches(
                     slot.declared,
                     c.requested_gamepad,
                     c.resolved_gamepad,
@@ -2011,7 +2011,7 @@ mod slot_tests {
         // A freed middle index is reused before growing — pad 0 and pad 2 stay put.
         assert_eq!(lowest_free_index(&[0, 2]), Some(1));
         assert_eq!(lowest_free_index(&[2, 0]), Some(1));
-        let all: Vec<u8> = (0..punktfunk_core::input::MAX_PADS as u8).collect();
+        let all: Vec<u8> = (0..rubyfunk_core::input::MAX_PADS as u8).collect();
         assert_eq!(lowest_free_index(&all), None);
         let mut but_seven = all.clone();
         but_seven.retain(|&i| i != 7);

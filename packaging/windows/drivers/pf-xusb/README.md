@@ -15,7 +15,7 @@ instance (= player slot 0–3) with `CreateFile`, and polls it with buffered IOC
 - registers the XUSB interface with `WdfDeviceCreateDeviceInterface(device, &XUSB_GUID, NULL)`;
 - answers the XUSB IOCTLs (all `METHOD_BUFFERED`, delivered to user mode by the reflector) from
   controller state the host publishes into an **unnamed** shared DATA section reached over the
-  **sealed pad channel** (punktfunk-planning: `gamepad-channel-sealing.md`): the host duplicates the section
+  **sealed pad channel** (rubyfunk-planning: `gamepad-channel-sealing.md`): the host duplicates the section
   handle into this driver's WUDFHost, bootstrapped via the named `Global\pfxusb-boot-<index>`
   mailbox (`pf_driver_proto::gamepad::PadBootstrap`); a game's rumble (`SET_STATE`) is published
   back for the host to forward to the client.
@@ -70,13 +70,13 @@ the whole build/sign/stage flow in CI. The manual steps:
 
 ## Host integration (done)
 
-`crates/host/punktfunk-host/src/inject/windows/gamepad_windows.rs` is the Windows `GamepadManager` (used by
+`crates/host/rubyfunk-host/src/inject/windows/gamepad_windows.rs` is the Windows `GamepadManager` (used by
 `PadBackend::Xbox360`): it SwDeviceCreate's the `pf_xusb` companion, delivers the unnamed DATA
 section over the sealed channel (`PadChannel`), writes
 the XInput state from the client's gamepad frame (already XInput-convention) and forwards rumble. There
 is **no ViGEmBus dependency** anymore. The driver is built + signed from source in CI
 (`build-gamepad-drivers.ps1`) and installed by the host installer via
-`punktfunk-host.exe driver install --gamepad`.
+`rubyfunk-host.exe driver install --gamepad`.
 
 ## Multi-pad
 

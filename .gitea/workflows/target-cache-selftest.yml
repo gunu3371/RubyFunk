@@ -13,7 +13,7 @@ jobs:
   plant:
     runs-on: ubuntu-24.04
     container:
-      image: 192.168.1.58:5010/punktfunk-rust-ci:latest
+      image: 192.168.1.58:5010/rubyfunk-rust-ci:latest
     timeout-minutes: 15
     steps:
       # actions/cache resolves tar on PATH, so this shim halves every archive the save writes.
@@ -45,7 +45,7 @@ jobs:
     needs: plant
     runs-on: ubuntu-24.04
     container:
-      image: 192.168.1.58:5010/punktfunk-rust-ci:latest
+      image: 192.168.1.58:5010/rubyfunk-rust-ci:latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -78,7 +78,7 @@ jobs:
     needs: heal
     runs-on: ubuntu-24.04
     container:
-      image: 192.168.1.58:5010/punktfunk-rust-ci:latest
+      image: 192.168.1.58:5010/rubyfunk-rust-ci:latest
     timeout-minutes: 15
     steps:
       - id: target

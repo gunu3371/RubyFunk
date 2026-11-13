@@ -40,7 +40,7 @@ const why = (status: number | undefined, message: string): string => {
 	if (status === 404)
 		return "the host is too old for folder access requests — update it to let plugins ask for launcher folders";
 	if (status === 403)
-		return "this plugin has no identity of its own on this host, so it can't ask for folders — allow one with `punktfunk-host plugins grant`";
+		return "this plugin has no identity of its own on this host, so it can't ask for folders — allow one with `rubyfunk-host plugins grant`";
 	return `folder access request failed — ${message}`;
 };
 
@@ -120,7 +120,7 @@ const post = (
 export const unreachable = <T extends string | AccessRequestPath>(
 	dirs: ReadonlyArray<T>,
 ): T[] => {
-	const sandboxed = !!process.env.PUNKTFUNK_MGMT_UNIX;
+	const sandboxed = !!process.env.RUBYFUNK_MGMT_UNIX;
 	const seen = new Map<string, T>();
 	for (const entry of dirs) {
 		const dir = expand(pathOf(entry));

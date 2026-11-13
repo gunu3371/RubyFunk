@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <protocol name="ext_image_capture_source_v1">
-  <!-- Trimmed for punktfunk: the foreign-toplevel source manager is dropped. We capture
+  <!-- Trimmed for rubyfunk: the foreign-toplevel source manager is dropped. We capture
        outputs only, and it referenced an interface from a protocol we never bind. -->
   <copyright>
     Copyright © 2022 Andri Yngvason

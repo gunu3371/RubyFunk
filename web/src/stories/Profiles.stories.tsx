@@ -227,7 +227,7 @@ export const LinuxDoorUnavailable: Story = {
 			on: false,
 			changing: false,
 			unavailable:
-				"This install is missing the punktfunk-seats package. Install it: sudo pacman -S punktfunk-seats",
+				"This install is missing the rubyfunk-seats package. Install it: sudo pacman -S rubyfunk-seats",
 			onChange: noop,
 		},
 	},

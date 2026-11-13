@@ -36,14 +36,14 @@ use std::time::{Duration, Instant};
 /// read.
 fn selection_file() -> String {
     let dir = crate::session::runtime_dir();
-    format!("{dir}/punktfunk-xdph-output")
+    format!("{dir}/rubyfunk-xdph-output")
 }
 
 /// Shim xdph runs as `custom_picker_binary`. Empty stdout (no session has written
 /// the selection file) leaves xdph to its own fallback.
 fn picker_shim_path() -> String {
     let dir = crate::session::runtime_dir();
-    format!("{dir}/punktfunk-xdph-picker.sh")
+    format!("{dir}/rubyfunk-xdph-picker.sh")
 }
 
 fn xdph_config_path() -> Result<std::path::PathBuf> {
@@ -71,7 +71,7 @@ pub(crate) const SELECTOR: crate::portal_cast::Selector = crate::portal_cast::Se
     file: selection_file,
     line: crate::portal_picker::selection_line,
     ensure_config: ensure_xdph_config,
-    thread: "punktfunk-hypr-cast",
+    thread: "rubyfunk-hypr-cast",
     portal: "xdph",
 };
 
@@ -1695,11 +1695,11 @@ fn exec_line(cmd: &str) -> String {
 fn shim_body(sel: &str, fallback: Option<&str>) -> String {
     match fallback {
         Some(cmd) => format!(
-            "#!/bin/sh\n# Managed by punktfunk. Hands xdph the output this host is streaming; with\n# no selection pending, defers to the picker configured before us.\n[ -s \"{sel}\" ] && exec cat \"{sel}\"\n{}\n",
+            "#!/bin/sh\n# Managed by rubyfunk. Hands xdph the output this host is streaming; with\n# no selection pending, defers to the picker configured before us.\n[ -s \"{sel}\" ] && exec cat \"{sel}\"\n{}\n",
             exec_line(cmd)
         ),
         None => format!(
-            "#!/bin/sh\n# Managed by punktfunk.\n[ -s \"{sel}\" ] && exec cat \"{sel}\"\nexit 0\n"
+            "#!/bin/sh\n# Managed by rubyfunk.\n[ -s \"{sel}\" ] && exec cat \"{sel}\"\nexit 0\n"
         ),
     }
 }
@@ -1859,7 +1859,7 @@ mod tests {
 
     #[test]
     fn the_shim_never_falls_back_to_itself() {
-        let shim = "/run/user/1000/punktfunk-xdph-picker.sh";
+        let shim = "/run/user/1000/rubyfunk-xdph-picker.sh";
         assert_eq!(super::fallback_picker(None, Some(shim.into()), shim), None);
         assert_eq!(
             super::fallback_picker(Some(Some("/usr/bin/pick".into())), Some(shim.into()), shim)
@@ -2055,7 +2055,7 @@ mod tests {
         std::fs::write(&pick, "#!/bin/sh\necho \"picked $*\"\n").unwrap();
         std::fs::set_permissions(&pick, std::fs::Permissions::from_mode(0o755)).unwrap();
         let (sel, shim) = (home.path("no-selection"), home.path("shim.sh"));
-        let shim_path = "/run/user/1000/punktfunk-xdph-picker.sh";
+        let shim_path = "/run/user/1000/rubyfunk-xdph-picker.sh";
         for (cmd, line, picked) in [
             (
                 "~/bin/pick",

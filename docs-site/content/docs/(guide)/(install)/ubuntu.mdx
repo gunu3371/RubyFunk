@@ -1,6 +1,6 @@
 ---
 title: Ubuntu
-description: Install the Punktfunk host on Ubuntu 26.04 or newer with apt, in four steps.
+description: Install the RubyFunk host on Ubuntu 26.04 or newer with apt, in four steps.
 ---
 
 Install the host on **Ubuntu 26.04 or newer**, Desktop or Server. Ubuntu 24.04 installs the
@@ -34,7 +34,7 @@ Add the repo and install the host, the console and the plugin runner:
 <Install platform="debian" />
 
 `sudo apt upgrade` updates it from then on. Restart the host afterwards with
-`systemctl --user restart punktfunk-host`, or let the [console update it](/docs/updating).
+`systemctl --user restart rubyfunk-host`, or let the [console update it](/docs/updating).
 
 ## 3. Let it use your controllers
 
@@ -42,7 +42,7 @@ Join the groups, then **log out and back in**:
 
 ```sh
 sudo usermod -aG input "$USER"       # virtual gamepads
-sudo usermod -aG punktfunk "$USER"   # virtual Steam Deck controller
+sudo usermod -aG rubyfunk "$USER"   # virtual Steam Deck controller
 ```
 
 ## 4. Start it
@@ -50,14 +50,14 @@ sudo usermod -aG punktfunk "$USER"   # virtual Steam Deck controller
 From a terminal inside your desktop session:
 
 ```sh
-systemctl --user enable --now punktfunk-host punktfunk-web
+systemctl --user enable --now rubyfunk-host rubyfunk-web
 ```
 
 Ubuntu ships `ufw` turned off. If you turned it on, open the host, and the console for other
 devices:
 
 ```sh
-sudo ufw allow punktfunk-native && sudo ufw allow punktfunk-web
+sudo ufw allow rubyfunk-native && sudo ufw allow rubyfunk-web
 ```
 
 **Next:** [Quick Start, step 3](/docs/quickstart#3-open-the-web-console): open the console and pair

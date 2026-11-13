@@ -1,9 +1,9 @@
 ---
 title: Developers
-description: Build Punktfunk from a fresh clone, find your way around the code, test a change and get it merged.
+description: Build RubyFunk from a fresh clone, find your way around the code, test a change and get it merged.
 ---
 
-Build Punktfunk from a fresh clone, find your way around the code, and get a change merged. To
+Build RubyFunk from a fresh clone, find your way around the code, and get a change merged. To
 install and stream instead, start at the [Quick start](/docs/quickstart).
 
 ## First build
@@ -12,7 +12,7 @@ On Ubuntu 26.04 with [rustup](https://rustup.rs) and the
 [workspace packages](/docs/developers/build-from-source#workspace-prerequisites):
 
 ```sh
-git clone https://git.unom.io/unom/punktfunk.git && cd punktfunk
+git clone https://git.unom.io/unom/punktfunk.git && cd rubyfunk
 cargo build --workspace --locked
 cargo test --workspace --locked
 ```
@@ -32,5 +32,5 @@ it, or rustfmt reformats files you never touched. Then enable the git hooks:
 | [Releasing](/docs/developers/releasing) | Cut a stable release (maintainers) |
 | [Management API](/docs/developers/management-api) | Script the host over its REST API |
 | [Writing plugins](/docs/developers/writing-plugins) | Add a library source or automation to the host |
-| [Embedding](/docs/developers/embedding) | Link the C ABI (`punktfunk-ffi`) into your own client |
+| [Embedding](/docs/developers/embedding) | Link the C ABI (`rubyfunk-ffi`) into your own client |
 | [Multi-seat contract](/docs/developers/multi-seat-contract) | Change how the Windows host shares one box between players |

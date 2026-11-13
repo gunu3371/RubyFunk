@@ -29,13 +29,13 @@ export const logsToText = (rows: Row[]): string =>
 		)
 		.join("\n");
 
-/** `punktfunk-logs-20260730-142231.log` — sorts chronologically in a downloads folder. */
+/** `rubyfunk-logs-20260730-142231.log` — sorts chronologically in a downloads folder. */
 export const logFilename = (now: Date): string =>
-	`punktfunk-logs-${p(now.getFullYear(), 4)}${p(now.getMonth() + 1)}${p(now.getDate())}-${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}.log`;
+	`rubyfunk-logs-${p(now.getFullYear(), 4)}${p(now.getMonth() + 1)}${p(now.getDate())}-${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}.log`;
 
-/** `punktfunk-diagnostics-20260730-142231.txt` — the combined export's sibling name. */
+/** `rubyfunk-diagnostics-20260730-142231.txt` — the combined export's sibling name. */
 export const diagnosticsFilename = (now: Date): string =>
-	`punktfunk-diagnostics-${p(now.getFullYear(), 4)}${p(now.getMonth() + 1)}${p(now.getDate())}-${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}.txt`;
+	`rubyfunk-diagnostics-${p(now.getFullYear(), 4)}${p(now.getMonth() + 1)}${p(now.getDate())}-${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}.txt`;
 
 const banner = (title: string): string =>
 	`\n${"=".repeat(72)}\n== ${title}\n${"=".repeat(72)}\n`;
@@ -68,7 +68,7 @@ export const diagnosticsText = (parts: {
 }): string => {
 	const { generatedAt, checks, checksUnavailable, rows, bundles } = parts;
 	const out: string[] = [
-		`punktfunk diagnostics export`,
+		`rubyfunk diagnostics export`,
 		`generated: ${stamp(generatedAt.getTime())}`,
 		`host log lines: ${rows.length}`,
 		`device bundles: ${bundles.length}`,
@@ -130,7 +130,7 @@ export const downloadText = (text: string, filename: string): void => {
 export const detectShareMode = (): ShareMode | null => {
 	if (typeof navigator === "undefined") return null; // server render
 	// `canShare` decides on the file's type, not its bytes, so a stand-in probe file is enough.
-	if (canShareFiles([logFile("probe", "punktfunk-logs.log")])) return "share";
+	if (canShareFiles([logFile("probe", "rubyfunk-logs.log")])) return "share";
 	return typeof navigator.clipboard?.writeText === "function" ? "copy" : null;
 };
 

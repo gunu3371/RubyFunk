@@ -1,7 +1,7 @@
 //! JNI seam for the reachability probe: a bounded QUIC handshake to a saved host
-//! (`punktfunk_core::client::NativeClient::probe_identity`), reporting WHICH certificate
+//! (`rubyfunk_core::client::NativeClient::probe_identity`), reporting WHICH certificate
 //! answered. Like [`crate::wol`] it takes no session handle and links into the host workspace
-//! build (pure `jni` + `punktfunk_core`). Kotlin calls it periodically, on a background
+//! build (pure `jni` + `rubyfunk_core`). Kotlin calls it periodically, on a background
 //! dispatcher, to light the "online" pip for saved hosts that never advertise on mDNS (reached
 //! over Tailscale / VPN / another subnet) — the display-side companion to the dial-first
 //! connect fix.
@@ -10,7 +10,7 @@ use jni::errors::LogErrorAndDefault;
 use jni::objects::{JObject, JString};
 use jni::sys::{jint, jstring};
 use jni::EnvUnowned;
-use punktfunk_core::client::NativeClient;
+use rubyfunk_core::client::NativeClient;
 use std::time::Duration;
 
 /// `NativeBridge.nativeProbe(host, port, timeoutMs): String?` — the lowercase-hex SHA-256 of
@@ -19,7 +19,7 @@ use std::time::Duration;
 /// and the caller compares it against the record's pin.
 /// Blocking (builds its own runtime) — Kotlin runs it on `Dispatchers.IO`, never the main thread.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeProbe<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeProbe<'local>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
     host: JString<'local>,
@@ -31,7 +31,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeProbe<'loca
         let port = port.clamp(0, u16::MAX as jint) as u16;
         let timeout = Duration::from_millis(timeout_ms.max(0) as u64);
         match NativeClient::probe_identity(&host, port, timeout) {
-            Some(fp) => Ok(env.new_string(punktfunk_core::fp::hex(&fp))?.into_raw()),
+            Some(fp) => Ok(env.new_string(rubyfunk_core::fp::hex(&fp))?.into_raw()),
             None => Ok(std::ptr::null_mut()),
         }
     })

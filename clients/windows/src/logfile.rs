@@ -1,13 +1,13 @@
-//! Persistent client log file: `%LOCALAPPDATA%\punktfunk\logs\client.log`.
+//! Persistent client log file: `%LOCALAPPDATA%\rubyfunk\logs\client.log`.
 //!
-//! The shell is a `windows_subsystem` binary and spawns `punktfunk-session` with
+//! The shell is a `windows_subsystem` binary and spawns `rubyfunk-session` with
 //! `CREATE_NO_WINDOW` — a normal GUI/MSIX launch has NO console, so before this module every
 //! log line (the shell's and, worse, the session's whole receive/decode/present forensic
 //! trail) evaporated exactly when a user hit a problem worth reporting. The 2026-07 PyroWave
 //! latency-sawtooth field report had to be triaged from host logs alone because the client
 //! side had nowhere to land.
 //!
-//! Mirrors the host's convention (`%ProgramData%\punktfunk\logs`, size-capped): a file over
+//! Mirrors the host's convention (`%ProgramData%\rubyfunk\logs`, size-capped): a file over
 //! 10 MB is rotated to `.old` at the next client start, one generation kept. Everything is
 //! best-effort — a missing/locked directory degrades to plain stderr, never a startup failure.
 //!
@@ -25,12 +25,12 @@ const ROTATE_BYTES: u64 = 10 * 1024 * 1024;
 
 static SINK: OnceLock<Option<Arc<Mutex<File>>>> = OnceLock::new();
 
-/// The log directory we WRITE through: `%LOCALAPPDATA%\punktfunk\logs`.
+/// The log directory we WRITE through: `%LOCALAPPDATA%\rubyfunk\logs`.
 ///
 /// Correct to open files under, but NOT necessarily where the bytes land — see [`real_dir`].
 /// Anything shown to a user or handed to another process wants that one instead.
 fn log_dir() -> Option<PathBuf> {
-    Some(PathBuf::from(std::env::var_os("LOCALAPPDATA")?).join(r"punktfunk\logs"))
+    Some(PathBuf::from(std::env::var_os("LOCALAPPDATA")?).join(r"rubyfunk\logs"))
 }
 
 /// The log directory as it exists ON DISK — Settings ▸ About's "Open log folder" opens this in
@@ -153,10 +153,10 @@ mod tests {
     /// path as unresolvable and opens Documents instead, so the prefix has to come off.
     #[test]
     fn verbatim_disk_prefix_comes_off() {
-        let p = PathBuf::from(r"\\?\C:\Users\ada\AppData\Local\punktfunk\logs");
+        let p = PathBuf::from(r"\\?\C:\Users\ada\AppData\Local\rubyfunk\logs");
         assert_eq!(
             strip_verbatim(p),
-            PathBuf::from(r"C:\Users\ada\AppData\Local\punktfunk\logs")
+            PathBuf::from(r"C:\Users\ada\AppData\Local\rubyfunk\logs")
         );
     }
 
@@ -164,12 +164,12 @@ mod tests {
     #[test]
     fn verbatim_disk_prefix_comes_off_for_the_package_local_cache() {
         let p = PathBuf::from(
-            r"\\?\C:\Users\ada\AppData\Local\Packages\io.unom.punktfunk_8wekyb3d8bbwe\LocalCache\Local\punktfunk\logs",
+            r"\\?\C:\Users\ada\AppData\Local\Packages\io.github.gunu3371.rubyfunk_8wekyb3d8bbwe\LocalCache\Local\rubyfunk\logs",
         );
         assert_eq!(
             strip_verbatim(p),
             PathBuf::from(
-                r"C:\Users\ada\AppData\Local\Packages\io.unom.punktfunk_8wekyb3d8bbwe\LocalCache\Local\punktfunk\logs"
+                r"C:\Users\ada\AppData\Local\Packages\io.github.gunu3371.rubyfunk_8wekyb3d8bbwe\LocalCache\Local\rubyfunk\logs"
             )
         );
     }
@@ -179,17 +179,17 @@ mod tests {
     /// `PathBuf::push`'s separator logic at the bare `\\`, yields a path that opens nothing.
     #[test]
     fn verbatim_unc_prefix_becomes_a_plain_unc_path() {
-        let p = PathBuf::from(r"\\?\UNC\fileserv\profiles\ada\AppData\Local\punktfunk\logs");
+        let p = PathBuf::from(r"\\?\UNC\fileserv\profiles\ada\AppData\Local\rubyfunk\logs");
         assert_eq!(
             strip_verbatim(p),
-            PathBuf::from(r"\\fileserv\profiles\ada\AppData\Local\punktfunk\logs")
+            PathBuf::from(r"\\fileserv\profiles\ada\AppData\Local\rubyfunk\logs")
         );
     }
 
     /// An unpackaged dev run resolves to a path that was never verbatim — leave it alone.
     #[test]
     fn plain_path_is_untouched() {
-        let p = PathBuf::from(r"C:\Users\ada\AppData\Local\punktfunk\logs");
+        let p = PathBuf::from(r"C:\Users\ada\AppData\Local\rubyfunk\logs");
         assert_eq!(strip_verbatim(p.clone()), p);
     }
 

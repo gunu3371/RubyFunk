@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Type-check and lint punktfunk's Windows-gated capture and display Rust from a dev box that is not
+# Type-check and lint rubyfunk's Windows-gated capture and display Rust from a dev box that is not
 # Windows.
 #
 #   scripts/xcheck.sh                    # clippy -D warnings — the default
@@ -12,7 +12,7 @@
 #
 # CI compiles `#[cfg(target_os = "windows")]` code only on Windows, so a Windows-side edit made on a
 # Mac is otherwise unverifiable until that job runs. pf-frame, pf-win-display, pf-capture and
-# pf-vdisplay take punktfunk-core without its `quic` feature, so their Windows closure has no ring
+# pf-vdisplay take rubyfunk-core without its `quic` feature, so their Windows closure has no ring
 # or opus build script that needs the MSVC toolchain, and cargo checks them in the real workspace.
 #
 # There is no Linux leg: pf-vdisplay's Linux half reaches pipewire through pf-capture, whose build

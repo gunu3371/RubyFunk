@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck shell=bash
-# Single source of truth for punktfunk release/canary version numbers (Linux + macOS runners).
+# Single source of truth for rubyfunk release/canary version numbers (Linux + macOS runners).
 # The base version comes from the git tags, so no workflow carries a number to hand-bump.
 #
 # THE RULE:

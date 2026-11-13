@@ -1,4 +1,4 @@
-# Build the punktfunk-host / punktfunk-client / punktfunk-web / punktfunk-scripting pacman packages from
+# Build the rubyfunk-host / rubyfunk-client / rubyfunk-web / rubyfunk-scripting pacman packages from
 # packaging/arch/PKGBUILD and publish them to Gitea's Arch package registry, so Arch boxes
 # get new builds via `pacman -Syu`. Counterpart to deb.yml (apt) and rpm.yml (dnf/rpm-ostree).
 # Arch is rolling, so the packages build against whatever the archlinux:base-devel container
@@ -7,7 +7,7 @@
 # Registry (public, unom org) — box setup (once), see packaging/arch/README.md. The registry
 # SIGNS the DB + packages, so the box imports the registry key first (pacman-key --add +
 # --lsign-key), then no SigLevel line is needed (pacman's default Required verifies):
-#   [punktfunk]                         # or [punktfunk-canary] for main-push builds
+#   [rubyfunk]                         # or [rubyfunk-canary] for main-push builds
 #   Server = https://git.unom.io/api/packages/unom/arch/$repo/$arch
 #
 # REGISTRY_TOKEN: repo Actions secret, a PAT with write:package scope (shared with docker.yml).
@@ -56,10 +56,10 @@ on:
       - 'crates/host/pf-vdisplay/**'
       - 'crates/host/pf-win-display/**'
       - 'crates/host/pf-zerocopy/**'
-      - 'crates/host/punktfunk-encode-worker/**'
-      - 'crates/host/punktfunk-host/**'
+      - 'crates/host/rubyfunk-encode-worker/**'
+      - 'crates/host/rubyfunk-host/**'
       - 'crates/install/pf-update/**'
-      - 'crates/install/punktfunk-tray/**'
+      - 'crates/install/rubyfunk-tray/**'
       - 'clients/linux/**'
       - 'clients/session/**'
       - 'clients/shared/**'
@@ -79,22 +79,22 @@ on:
       - 'Cargo.toml'
       - 'Cargo.lock'
       - 'rust-toolchain.toml'
-      - 'scripts/60-punktfunk.rules'
-      - 'scripts/60-punktfunk-dualsense.conf'
-      - 'scripts/70-punktfunk-client.rules'
-      - 'scripts/99-punktfunk-net.conf'
-      - 'scripts/99-punktfunk-client-net.conf'
+      - 'scripts/60-rubyfunk.rules'
+      - 'scripts/60-rubyfunk-dualsense.conf'
+      - 'scripts/70-rubyfunk-client.rules'
+      - 'scripts/99-rubyfunk-net.conf'
+      - 'scripts/99-rubyfunk-client-net.conf'
       - 'scripts/headless/**'
       - 'scripts/host.env.example'
-      - 'scripts/io.unom.punktfunk.dm-helper.policy'
+      - 'scripts/io.github.gunu3371.rubyfunk.dm-helper.policy'
       - 'scripts/pf-dm-helper'
-      - 'scripts/punktfunk-host-desktop-session.conf'
-      - 'scripts/punktfunk-host.service'
-      - 'scripts/punktfunk-kde-session.service'
-      - 'scripts/punktfunk-modules.conf'
-      - 'scripts/punktfunk-scripting.service'
-      - 'scripts/punktfunk-web-init.service'
-      - 'scripts/punktfunk-web.service'
+      - 'scripts/rubyfunk-host-desktop-session.conf'
+      - 'scripts/rubyfunk-host.service'
+      - 'scripts/rubyfunk-kde-session.service'
+      - 'scripts/rubyfunk-modules.conf'
+      - 'scripts/rubyfunk-scripting.service'
+      - 'scripts/rubyfunk-web-init.service'
+      - 'scripts/rubyfunk-web.service'
       - 'scripts/web-init.sh'
       - 'scripts/alsa-ucm2/**'
       - 'scripts/ci/assert-cap-matrix.sh'
@@ -106,12 +106,12 @@ on:
       - 'ci/install-bun.sh'
       - '.gitea/workflows/arch.yml'
     # Single project version: a `vX.Y.Z` tag is THE release. main publishes to the
-    # `punktfunk-canary` pacman repo as X.Y.Z-0.<run#> (sorts below the eventual X.Y.Z-1),
-    # tags to `punktfunk` — separate repos, so neither channel can shadow the other.
+    # `rubyfunk-canary` pacman repo as X.Y.Z-0.<run#> (sorts below the eventual X.Y.Z-1),
+    # tags to `rubyfunk` — separate repos, so neither channel can shadow the other.
     tags: ['v*']
   # REBUILDING A PUBLISHED RELEASE, because on a rolling distro the ground moves under one.
   # Arch went FFmpeg 8 -> 9 (every libav soname +1) four minutes before v0.25.0 was tagged, and
-  # the release's punktfunk-host — which linked libav* back then — shipped a bound no up-to-date
+  # the release's rubyfunk-host — which linked libav* back then — shipped a bound no up-to-date
   # box could satisfy. pacman prepares the whole transaction at once, so it did not merely block
   # our package, it blocked those users' entire `pacman -Syu`. The host links no libav* now, but
   # any shared library can do this again. The repair is a rebuild of the SAME version at a HIGHER
@@ -122,7 +122,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Rebuild this published release (e.g. v0.25.0) into the stable `punktfunk` repo. Empty = ordinary canary build of the dispatched ref.'
+        description: 'Rebuild this published release (e.g. v0.25.0) into the stable `rubyfunk` repo. Empty = ordinary canary build of the dispatched ref.'
         required: false
         default: ''
       pkgrel:
@@ -159,7 +159,7 @@ jobs:
       # Everything the two pacman steps below used to download (~1 GB/run) is baked in,
       # plus bun, sccache and node (ci/arch-ci.Dockerfile). The steps stay as --needed
       # no-op guards for the one push where :latest lags an image-content change.
-      image: 192.168.1.58:5010/punktfunk-arch-ci:latest
+      image: 192.168.1.58:5010/rubyfunk-arch-ci:latest
     timeout-minutes: 90
     env:
       CARGO_HOME: /usr/local/cargo
@@ -204,8 +204,8 @@ jobs:
           restore-keys: cargo-home-arch-
 
       - name: Version + channel
-        # vX.Y.Z tag -> X.Y.Z-1 in the `punktfunk` repo; main push -> <next-minor>-0.<run#> in
-        # `punktfunk-canary`. scripts/ci/pf-version.sh owns the rule, including why the run number
+        # vX.Y.Z tag -> X.Y.Z-1 in the `rubyfunk` repo; main push -> <next-minor>-0.<run#> in
+        # `rubyfunk-canary`. scripts/ci/pf-version.sh owns the rule, including why the run number
         # is zero-padded; the leading `0.` sorts a canary BELOW the eventual `X.Y.Z-1` release.
         env:
           RELEASE_TAG: ${{ github.event.inputs.release_tag }}
@@ -220,7 +220,7 @@ jobs:
             # so "0.25.0-10" sorts BELOW "0.25.0-2" and the rebuild would never be advertised.
             V="${RELEASE_TAG#v}"
             R="${REBUILD_PKGREL:-2}"
-            REPO=punktfunk
+            REPO=rubyfunk
             case "$R" in
               ''|*[!0-9.]*) echo "::error::pkgrel '$R' is not digits+dots"; exit 1 ;;
               1) echo "::error::pkgrel 1 is the published build — a rebuild MUST go up (2, 3, …)"; exit 1 ;;
@@ -229,8 +229,8 @@ jobs:
             V="$PF_VERSION"
             R="$PF_RELEASE"
             case "$PF_CHANNEL" in
-              stable) REPO=punktfunk ;;
-              *)      REPO=punktfunk-canary ;;
+              stable) REPO=rubyfunk ;;
+              *)      REPO=rubyfunk-canary ;;
             esac
           fi
           echo "PF_PKGVER=$V" >> "$GITHUB_ENV"
@@ -279,7 +279,7 @@ jobs:
           # libcuda link stub — same trick as packaging/rpm/build-rpm.sh: the zerocopy FFI
           # links -lcuda but the builder has no GPU; synthesize every cu* symbol the source
           # references so a newly-added call can't silently break the link.
-          CU_SYMS="$(grep -rhoE '\bcu[A-Z][A-Za-z0-9_]*' crates/host/punktfunk-host/src/ | sort -u || true)"
+          CU_SYMS="$(grep -rhoE '\bcu[A-Z][A-Za-z0-9_]*' crates/host/rubyfunk-host/src/ | sort -u || true)"
           if [ -n "$CU_SYMS" ] && [ ! -e /usr/lib/libcuda.so ]; then
             STUB_C="$(mktemp --suffix=.c)"
             for s in $CU_SYMS; do printf 'int %s(void){return 0;}\n' "$s" >> "$STUB_C"; done
@@ -332,18 +332,18 @@ jobs:
       - name: Assert the capability matrix (Arch package)
         run: |
           bash scripts/ci/assert-cap-matrix.sh --self-test
-          bash scripts/ci/assert-cap-matrix.sh "$GITHUB_WORKSPACE"/dist/punktfunk-host-*.pkg.tar.zst
+          bash scripts/ci/assert-cap-matrix.sh "$GITHUB_WORKSPACE"/dist/rubyfunk-host-*.pkg.tar.zst
 
       # Every path packaging/linux/payload.txt names, read out of the built packages
-      # (usr/libexec/punktfunk/ is usr/lib/punktfunk/ here).
+      # (usr/libexec/rubyfunk/ is usr/lib/rubyfunk/ here).
       - name: Assert the shared payload (Arch packages)
         run: |
           bash scripts/ci/assert-payload-parity.sh --self-test
-          bash scripts/ci/assert-payload-parity.sh "$GITHUB_WORKSPACE"/dist/punktfunk-host-*.pkg.tar.zst \
-            "$GITHUB_WORKSPACE"/dist/punktfunk-client-*.pkg.tar.zst \
-            "$GITHUB_WORKSPACE"/dist/punktfunk-seats-[0-9]*.pkg.tar.zst
+          bash scripts/ci/assert-payload-parity.sh "$GITHUB_WORKSPACE"/dist/rubyfunk-host-*.pkg.tar.zst \
+            "$GITHUB_WORKSPACE"/dist/rubyfunk-client-*.pkg.tar.zst \
+            "$GITHUB_WORKSPACE"/dist/rubyfunk-seats-[0-9]*.pkg.tar.zst
 
-      # The patched gamescope punktfunk-host depends on (packaging/gamescope) — a separate pkgbase
+      # The patched gamescope rubyfunk-host depends on (packaging/gamescope) — a separate pkgbase
       # with a completely different dependency set, published into the same repo.
       #
       # CACHED on `packaging/gamescope/**`: it depends on nothing else in this repo, so a normal
@@ -354,11 +354,11 @@ jobs:
         id: gamescope
         with:
           path: dist-gamescope
-          key: punktfunk-gamescope-arch-${{ hashFiles('packaging/gamescope/**') }}
+          key: rubyfunk-gamescope-arch-${{ hashFiles('packaging/gamescope/**') }}
 
-      - name: Build punktfunk-gamescope (makepkg)
+      - name: Build rubyfunk-gamescope (makepkg)
         if: steps.gamescope.outputs.cache-hit != 'true'
-        # Required: punktfunk-host depends on it, so a host published without it cannot install.
+        # Required: rubyfunk-host depends on it, so a host published without it cannot install.
         run: |
           set -x
           # Baked into arch-ci — a no-op guard, like the dep step above.
@@ -379,7 +379,7 @@ jobs:
 
       # THE GATE THIS PIPELINE WAS MISSING. v0.25.0 shipped a soname bound the world had already
       # moved past — every affected user got "unable to satisfy dependency … required by
-      # punktfunk-host", and because pacman prepares one transaction, their whole system upgrade
+      # rubyfunk-host", and because pacman prepares one transaction, their whole system upgrade
       # stopped there. So ask the only question that matters before publishing: would a real,
       # up-to-date Arch box install this?
       #
@@ -400,14 +400,14 @@ jobs:
             pacman -U --print --noconfirm --dbpath /tmp/pf-instcheck --logfile /dev/null "$@" 2>&1
           }
           ls dist/*.pkg.tar.zst >/dev/null 2>&1 || { echo "::error::nothing in dist/ to check"; exit 1; }
-          ls dist-gamescope/*.pkg.tar.zst >/dev/null 2>&1 || { echo "::error::no punktfunk-gamescope to check"; exit 1; }
+          ls dist-gamescope/*.pkg.tar.zst >/dev/null 2>&1 || { echo "::error::no rubyfunk-gamescope to check"; exit 1; }
           rc=0
           # ONE transaction for the whole built set — the shape reality takes (the published repo
-          # carries the siblings, so `pacman -S punktfunk-host` resolves punktfunk-icons from it)
+          # carries the siblings, so `pacman -S rubyfunk-host` resolves rubyfunk-icons from it)
           # and the only shape -U --print can verify: file targets resolve against the sync db
           # PLUS each other, and a split-package dependency exists only as a sibling file here.
           # Checking one file at a time turned exactly that into a false "cannot be installed"
-          # (punktfunk-icons, run 16446). pacman's own error text names the offending package.
+          # (rubyfunk-icons, run 16446). pacman's own error text names the offending package.
           if out="$(check dist/*.pkg.tar.zst dist-gamescope/*.pkg.tar.zst)"; then
             echo "OK  the built set resolves together ($(echo "$out" | wc -l) targets)"
           else
@@ -417,10 +417,10 @@ jobs:
           fi
           if [ "$rc" != 0 ]; then
             echo "::error::refusing to publish: pacman would reject this on a current box, and a"
-            echo "::error::rejected dependency blocks the user's ENTIRE upgrade, not just punktfunk."
+            echo "::error::rejected dependency blocks the user's ENTIRE upgrade, not just rubyfunk."
             echo "::error::Usual cause: the arch-ci builder image lags Arch across a soname bump —"
             echo "::error::bump 'refreshed:' in ci/arch-ci.Dockerfile, let docker.yml republish it, re-run."
-            echo "::error::punktfunk-gamescope is cached on packaging/gamescope: bump its pkgrel to rebuild."
+            echo "::error::rubyfunk-gamescope is cached on packaging/gamescope: bump its pkgrel to rebuild."
             exit 1
           fi
 

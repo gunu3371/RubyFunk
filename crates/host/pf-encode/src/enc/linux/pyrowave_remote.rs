@@ -1,4 +1,4 @@
-//! Host half of `punktfunk-encode-worker`
+//! Host half of `rubyfunk-encode-worker`
 //! (design: `design/gpu-priority-capability-worker.md`). The worker half and the vocabulary
 //! they share are [`super::worker`].
 //!
@@ -403,7 +403,7 @@ pub(crate) fn open_preferring_worker(
     let path = match resolve_worker_path() {
         WorkerPath::Off => {
             tracing::info!(
-                "pyrowave: PUNKTFUNK_ENCODE_WORKER=off — encoding in-process at default GPU priority"
+                "pyrowave: RUBYFUNK_ENCODE_WORKER=off — encoding in-process at default GPU priority"
             );
             return inline();
         }
@@ -412,7 +412,7 @@ pub(crate) fn open_preferring_worker(
                 worker = WORKER_BIN,
                 "pyrowave: the encode worker was not found beside the host binary or on PATH — \
                  encoding in-process at default GPU priority (the GPU-preemption lever needs the \
-                 capability-carrying worker; set PUNKTFUNK_ENCODE_WORKER to its path)"
+                 capability-carrying worker; set RUBYFUNK_ENCODE_WORKER to its path)"
             );
             return inline();
         }
@@ -443,7 +443,7 @@ pub(crate) fn open_preferring_worker(
             worker = %path.display(),
             "pyrowave: every global queue priority class was refused — encoding at default \
              priority. The GPU-preemption lever is INERT without CAP_SYS_NICE on the encode \
-             WORKER binary (never on punktfunk-host — a capability there makes the host \
+             WORKER binary (never on rubyfunk-host — a capability there makes the host \
              unidentifiable to KWin and kills desktop streaming); PYROWAVE_QUEUE_PRIORITY=off \
              silences this"
         ),
@@ -466,7 +466,7 @@ pub(crate) fn open_preferring_worker(
     }))
 }
 
-/// A PyroWave session encoded in `punktfunk-encode-worker`, with the in-process encoder as the
+/// A PyroWave session encoded in `rubyfunk-encode-worker`, with the in-process encoder as the
 /// floor. See the module docs for the ladder.
 pub(crate) struct RemotePyroWave {
     /// Live worker, or `None` once this session is pinned in-process.
@@ -957,12 +957,12 @@ mod tests {
     #[test]
     fn a_missing_binary_is_a_spawn_failure() {
         let err = spawn_link(
-            Path::new("/nonexistent/punktfunk-encode-worker"),
+            Path::new("/nonexistent/rubyfunk-encode-worker"),
             &params(),
             40_000_000,
         )
         .unwrap_err();
-        assert!(format!("{err:#}").contains("punktfunk-encode-worker"));
+        assert!(format!("{err:#}").contains("rubyfunk-encode-worker"));
     }
 
     /// Ladder rung: the worker started, spoke, and did not open its encoder. An answer, not a
@@ -1041,7 +1041,7 @@ mod tests {
                 knobs: Knobs::from_env(),
             },
             bitrate_bps: 5_000_000,
-            worker_path: PathBuf::from("/usr/bin/punktfunk-encode-worker"),
+            worker_path: PathBuf::from("/usr/bin/rubyfunk-encode-worker"),
             caps: EncoderCaps::default(),
             stream: AuStream::default(),
             pending: VecDeque::new(),

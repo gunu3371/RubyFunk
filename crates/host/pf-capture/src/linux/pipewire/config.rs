@@ -12,7 +12,7 @@ use pf_zerocopy::{Ladder, Refusal};
 pub(super) struct StreamConfig {
     /// The producer's PipeWire node.
     pub(super) node_id: u32,
-    /// The open's options, `want_hdr` already dropped under `PUNKTFUNK_FORCE_SHM`. Its `knobs`
+    /// The open's options, `want_hdr` already dropped under `RUBYFUNK_FORCE_SHM`. Its `knobs`
     /// are the open's.
     pub(super) opts: CaptureOpts,
     /// Seeds negotiation and sizes a Mutter virtual monitor; `(w, h, hz)`.

@@ -31,7 +31,7 @@ Your gaming PC on Apple Vision Pro: in a window beside your apps, at up to 4K an
 ## Description (DE) — max 4000 characters
 
 ```
-Punktfunk ist die nächste Generation des lokalen Game-Streamings. Streame von deinem Linux-PC, Headless-Server oder Laptop auf deine Apple Vision Pro – mit niedriger Latenz und bereits eingebauter Unterstützung für virtuelle Displays. Das heißt, die Auflösung passt sich genau an das Gerät an, auf das du streamst. Windows-Hosts werden ebenfalls unterstützt. Sowohl unsere Client-Apps als auch Server/Hosts sind Open Source. Punktfunk unterscheidet sich von bestehenden Lösungen durch eine niedrigere Latenz, die wir durch unser eigenes, auf QUIC basierendes Protokoll erreichen.
+RubyFunk ist die nächste Generation des lokalen Game-Streamings. Streame von deinem Linux-PC, Headless-Server oder Laptop auf deine Apple Vision Pro – mit niedriger Latenz und bereits eingebauter Unterstützung für virtuelle Displays. Das heißt, die Auflösung passt sich genau an das Gerät an, auf das du streamst. Windows-Hosts werden ebenfalls unterstützt. Sowohl unsere Client-Apps als auch Server/Hosts sind Open Source. RubyFunk unterscheidet sich von bestehenden Lösungen durch eine niedrigere Latenz, die wir durch unser eigenes, auf QUIC basierendes Protokoll erreichen.
 
 Auf der Apple Vision Pro:
 • Spiele in einem Fenster neben deinen anderen Apps
@@ -55,7 +55,7 @@ Weitere Features:
 ## Description (EN) — max 4000 characters
 
 ```
-Punktfunk is the next generation of local game streaming. Stream from your Linux PC, headless server or laptop to your Apple Vision Pro — with low latency and built-in support for virtual displays. That means the resolution matches exactly the device you are streaming to. Windows hosts are supported as well. Both our client apps and the server/host are open source. Punktfunk sets itself apart from existing solutions through lower latency, which we achieve with our own QUIC-based protocol.
+RubyFunk is the next generation of local game streaming. Stream from your Linux PC, headless server or laptop to your Apple Vision Pro — with low latency and built-in support for virtual displays. That means the resolution matches exactly the device you are streaming to. Windows hosts are supported as well. Both our client apps and the server/host are open source. RubyFunk sets itself apart from existing solutions through lower latency, which we achieve with our own QUIC-based protocol.
 
 On Apple Vision Pro:
 • Play in a window beside your other apps
@@ -108,7 +108,7 @@ English in both.
 | `settings` | `05-settings` | Display settings |
 
 Capture them with `BUILD_VISIONOS=1 bash scripts/build-xcframework.sh`, then
-`OUT="$TMPDIR/shots" clients/apple/tools/screenshots.sh visionos`, with `PUNKTFUNK_SHOT_HERO`
+`OUT="$TMPDIR/shots" clients/apple/tools/screenshots.sh visionos`, with `RUBYFUNK_SHOT_HERO`
 naming the store images' game frame on the internal disk. The type is set over them, and the
 upload runs, where the other platforms' store images are composed. No fenced block in this
 section: `check-limits.py` reads each one as a field.
@@ -122,7 +122,7 @@ The steps of `review-notes.md`, rewritten for look-and-pinch and the stream wind
 ```
 WHAT THIS APP IS
 
-Punktfunk is a low-latency game- and desktop-streaming client. It streams from a "host" the user
+RubyFunk is a low-latency game- and desktop-streaming client. It streams from a "host" the user
 installs on their own gaming PC (Linux, or Windows 11 22H2+), over their own network. The host is
 separate open-source software we publish at https://git.unom.io/unom/punktfunk; it is not sold,
 and this app has no purchases.
@@ -133,8 +133,8 @@ No PC or account is needed. The app contains a demo host: a real host running in
 that renders a live desktop, encodes it and streams it through the same connect, decode, audio
 and input path a real PC uses. Like a demo login, it is reached with an address we give you:
 
-1. Launch Punktfunk and choose Add Host.
-2. Enter the address:  demo.punktfunk   (leave name and port as they are), then Add Host.
+1. Launch RubyFunk and choose Add Host.
+2. Enter the address:  demo.rubyfunk   (leave name and port as they are), then Add Host.
 3. A "Demo Host" card appears. Select it: the stream starts in the window. Pinch and drag to
    move the pointer, pinch to click, type on a keyboard or press controller buttons -- the host
    draws each input back and chimes.
@@ -149,7 +149,7 @@ Remove "Demo Host" from its host page to hide it again.
 
 WHY THE APP ASKS FOR WHAT IT ASKS FOR
 
-- Local Network: finds hosts via Bonjour (_punktfunk._udp) and connects to them -- the app's
+- Local Network: finds hosts via Bonjour (_rubyfunk._udp) and connects to them -- the app's
   entire purpose. The demo needs no permission.
 - Microphone (optional, off by default): audio goes to the user's own paired host, appearing
   there as a virtual microphone for voice chat. Never recorded, never sent to us.

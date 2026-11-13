@@ -908,7 +908,7 @@ mod tests {
     #[test]
     fn a_status_read_marks_installable_titles_by_their_download_and_the_grants() {
         use pf_client_core::library::InstallAction;
-        use punktfunk_core::quic::{GRANT_ALL, GRANT_LAUNCH};
+        use rubyfunk_core::quic::{GRANT_ALL, GRANT_LAUNCH};
         let shared = LibraryShared::default();
         let games: Vec<LibraryGame> = serde_json::from_str(
             r#"[{"id":"custom:a","title":"Quail","store":"custom","launcher":false,

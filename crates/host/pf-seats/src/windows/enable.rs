@@ -65,7 +65,7 @@ const KEEPER_LIMIT: Duration = Duration::from_secs(60);
 /// the cmdlet can't read is `Unknown`, after the cmdlet's error. `Available`, a role not
 /// installed, is the state enum's zero and false in PowerShell, so the state is tested against
 /// null. The licensing types 2 and 4 are Per Device and Per User. A GPU sits on PCI and isn't
-/// `Microsoft …`, the basic display driver: punktfunk's own display (`ROOT\…`) and a seat's
+/// `Microsoft …`, the basic display driver: rubyfunk's own display (`ROOT\…`) and a seat's
 /// (`SWD\…`) don't count. An installed role reads `RestartPending` until the restart that
 /// starts it: Windows reports `Installed` at once and stays in administration mode until then.
 const PROBE: &str = "$ProgressPreference='SilentlyContinue'; \
@@ -404,7 +404,7 @@ fn apply(host_path: &Path, allow_rdp_from_network: bool) -> WinResult<()> {
     if PACKAGE.iter().any(|name| !dir.join(name).is_file()) {
         return Err(refuse(
             "driver_missing",
-            "The seat display driver isn't on this machine. Reinstall punktfunk, then try again.",
+            "The seat display driver isn't on this machine. Reinstall rubyfunk, then try again.",
             dir.display(),
         ));
     }
@@ -488,7 +488,7 @@ pub(super) fn ensure_driver(host_path: &Path) -> WinResult<()> {
     if PACKAGE.iter().any(|name| !dir.join(name).is_file()) {
         return Err(refuse(
             "seat_display_driver",
-            "The seat display driver isn't on this machine. Reinstall punktfunk, then try again.",
+            "The seat display driver isn't on this machine. Reinstall rubyfunk, then try again.",
             dir.display(),
         ));
     }
@@ -836,7 +836,7 @@ fn trust_rdp_certificate(host_path: &Path) -> WinResult<()> {
     if !keeper.is_file() {
         return Err(refuse(
             "keeper_missing",
-            "A punktfunk file is missing. Reinstall punktfunk, then try again.",
+            "A rubyfunk file is missing. Reinstall rubyfunk, then try again.",
             keeper.display(),
         ));
     }

@@ -455,7 +455,7 @@ const ProfileRow: FC<{
  * Windows account taking the console in turn. */
 type Outcome = "shared" | "seats" | "account";
 
-/** The account a desktop of its own runs on: one punktfunk makes, or one the machine has. */
+/** The account a desktop of its own runs on: one rubyfunk makes, or one the machine has. */
 type SeatAccount = "new" | "existing";
 
 /**

@@ -4,7 +4,7 @@
 //! platform and GPU vendor is `video_ladder`; [`Decoder::new`] walks it and a rung
 //! that keeps failing demotes along it. [`native_evidence`] records which
 //! pairs have hardware validation; [`native_rung_admitted`] yields an unverified
-//! rung only to a verified rung usable on the same device. `PUNKTFUNK_DECODER`
+//! rung only to a verified rung usable on the same device. `RUBYFUNK_DECODER`
 //! pins skip that rule and still fall through after init failure.
 //! [`migrate_decoder_pref`] rewrites stored libavcodec names onto native pins.
 //!
@@ -49,9 +49,9 @@ use crate::video_vaapi_native::NativeVaapiDecoder;
 /// them here.
 pub use crate::video_vk::{QueueLock, QueueLockGuard, VulkanDecodeDevice};
 use crate::video_vk_native::{NativeCodec, NativeVulkanDecoder};
-/// Lives in punktfunk-core, where every settings screen reads it; re-exported so
+/// Lives in rubyfunk-core, where every settings screen reads it; re-exported so
 /// desktop callers keep `video::migrate_decoder_pref`.
-pub use punktfunk_core::decoder_pref::migrate_decoder_pref;
+pub use rubyfunk_core::decoder_pref::migrate_decoder_pref;
 
 /// One decoded frame. `pts_ns` is the host capture timestamp for
 /// capture→displayed latency at present time.
@@ -218,8 +218,8 @@ pub struct NativeVkFrame {
     pub poc: i32,
     /// Intra-refresh recovery-point SEI. [`Self::keyframe`] is never set for a
     /// wave, so without this the pump holds the last good picture until its 500 ms
-    /// backstop. Fed to [`punktfunk_core::reanchor::ReanchorGate::on_local_recovery`].
-    pub recovery: punktfunk_core::reanchor::LocalRecovery,
+    /// backstop. Fed to [`rubyfunk_core::reanchor::ReanchorGate::on_local_recovery`].
+    pub recovery: rubyfunk_core::reanchor::LocalRecovery,
     /// Every predicted-from picture decoded from a fully-available reference chain.
     /// Corroborates `USER_FLAG_RECOVERY_ANCHOR`: host tracks receipt, this tracks
     /// decode. When they disagree the freeze lifts onto a concealed picture.
@@ -252,22 +252,22 @@ impl DecodedImage {
 
     /// Intra-refresh recovery-point SEI. Only rungs with their own parser answer
     /// (native Vulkan, CPU H.264). Everyone else reports
-    /// [`punktfunk_core::reanchor::LocalRecovery::NONE`]. The CPU rung has no
+    /// [`rubyfunk_core::reanchor::LocalRecovery::NONE`]. The CPU rung has no
     /// [`Self::decode_order`]; openh264 is one-AU-in, one-picture-out.
-    pub fn local_recovery(&self) -> punktfunk_core::reanchor::LocalRecovery {
+    pub fn local_recovery(&self) -> rubyfunk_core::reanchor::LocalRecovery {
         match self {
             DecodedImage::NativeVk(f) => f.recovery,
             DecodedImage::Cpu(f) => f.recovery,
-            _ => punktfunk_core::reanchor::LocalRecovery::NONE,
+            _ => rubyfunk_core::reanchor::LocalRecovery::NONE,
         }
     }
 
     /// Corroboration for `USER_FLAG_RECOVERY_ANCHOR`. Only a rung that planned the
     /// AU knows its references: native Vulkan, native VAAPI, and native D3D11 answer.
     /// The CPU and PyroWave rungs report
-    /// [`punktfunk_core::reanchor::AnchorEvidence::Unavailable`] — silence is not refutation.
-    pub fn anchor_evidence(&self) -> punktfunk_core::reanchor::AnchorEvidence {
-        use punktfunk_core::reanchor::AnchorEvidence;
+    /// [`rubyfunk_core::reanchor::AnchorEvidence::Unavailable`] — silence is not refutation.
+    pub fn anchor_evidence(&self) -> rubyfunk_core::reanchor::AnchorEvidence {
+        use rubyfunk_core::reanchor::AnchorEvidence;
         let clean = match self {
             DecodedImage::NativeVk(f) => f.references_clean,
             #[cfg(target_os = "linux")]
@@ -346,8 +346,8 @@ pub struct CpuPlanarFrame {
     /// Intra keyframe (IDR) — the pump's post-loss re-anchor. See [`DecodedImage::is_keyframe`].
     pub keyframe: bool,
     /// Intra-refresh recovery (`RecoveryWatch`). [`Self::keyframe`] cannot answer
-    /// for a wave. H.264 only; AV1 reports [`punktfunk_core::reanchor::LocalRecovery::NONE`].
-    pub recovery: punktfunk_core::reanchor::LocalRecovery,
+    /// for a wave. H.264 only; AV1 reports [`rubyfunk_core::reanchor::LocalRecovery::NONE`].
+    pub recovery: rubyfunk_core::reanchor::LocalRecovery,
     /// The rung that decoded it, as the `stats:` decode-path tag: the CPU
     /// rung, or a hardware rung whose pictures only reach the screen by copy.
     pub path: &'static str,
@@ -387,7 +387,7 @@ impl CpuPlanarFrame {
         strides: [usize; 3],
         color: ColorDesc,
         keyframe: bool,
-        recovery: punktfunk_core::reanchor::LocalRecovery,
+        recovery: rubyfunk_core::reanchor::LocalRecovery,
     ) -> Result<CpuPlanarFrame> {
         anyhow::ensure!(width > 0 && height > 0, "empty picture {width}x{height}");
         let (cw, ch) = Self::chroma_dims(width, height);
@@ -469,7 +469,7 @@ impl CpuPlanarFrame {
             offsets,
             color,
             keyframe,
-            recovery: punktfunk_core::reanchor::LocalRecovery::NONE,
+            recovery: rubyfunk_core::reanchor::LocalRecovery::NONE,
             path,
         })
     }
@@ -634,9 +634,9 @@ pub(crate) const VIDEO_CODEC_OP_DECODE_AV1: u32 = 0x0000_0004;
 /// Presence here is "pf-vkdecode has a decoder", not auto admission ([`native_vulkan_usable`]).
 pub(crate) fn native_codec(wire: u8) -> Option<(NativeCodec, u32)> {
     match wire {
-        punktfunk_core::quic::CODEC_H264 => Some((NativeCodec::H264, VIDEO_CODEC_OP_DECODE_H264)),
-        punktfunk_core::quic::CODEC_HEVC => Some((NativeCodec::H265, VIDEO_CODEC_OP_DECODE_H265)),
-        punktfunk_core::quic::CODEC_AV1 => Some((NativeCodec::Av1, VIDEO_CODEC_OP_DECODE_AV1)),
+        rubyfunk_core::quic::CODEC_H264 => Some((NativeCodec::H264, VIDEO_CODEC_OP_DECODE_H264)),
+        rubyfunk_core::quic::CODEC_HEVC => Some((NativeCodec::H265, VIDEO_CODEC_OP_DECODE_H265)),
+        rubyfunk_core::quic::CODEC_AV1 => Some((NativeCodec::Av1, VIDEO_CODEC_OP_DECODE_AV1)),
         _ => None,
     }
 }
@@ -646,9 +646,9 @@ pub(crate) fn native_codec(wire: u8) -> Option<(NativeCodec, u32)> {
 #[cfg(windows)]
 fn native_d3d11_codec(wire: u8) -> Option<pf_dxvadec::Codec> {
     match wire {
-        punktfunk_core::quic::CODEC_H264 => Some(pf_dxvadec::Codec::H264),
-        punktfunk_core::quic::CODEC_HEVC => Some(pf_dxvadec::Codec::H265),
-        punktfunk_core::quic::CODEC_AV1 => Some(pf_dxvadec::Codec::Av1),
+        rubyfunk_core::quic::CODEC_H264 => Some(pf_dxvadec::Codec::H264),
+        rubyfunk_core::quic::CODEC_HEVC => Some(pf_dxvadec::Codec::H265),
+        rubyfunk_core::quic::CODEC_AV1 => Some(pf_dxvadec::Codec::Av1),
         _ => None,
     }
 }
@@ -658,9 +658,9 @@ fn native_d3d11_codec(wire: u8) -> Option<pf_dxvadec::Codec> {
 #[cfg(target_os = "linux")]
 fn native_vaapi_codec(wire: u8) -> Option<pf_vaapi::Codec> {
     match wire {
-        punktfunk_core::quic::CODEC_H264 => Some(pf_vaapi::Codec::H264),
-        punktfunk_core::quic::CODEC_HEVC => Some(pf_vaapi::Codec::H265),
-        punktfunk_core::quic::CODEC_AV1 => Some(pf_vaapi::Codec::Av1),
+        rubyfunk_core::quic::CODEC_H264 => Some(pf_vaapi::Codec::H264),
+        rubyfunk_core::quic::CODEC_HEVC => Some(pf_vaapi::Codec::H265),
+        rubyfunk_core::quic::CODEC_AV1 => Some(pf_vaapi::Codec::Av1),
         _ => None,
     }
 }
@@ -768,11 +768,11 @@ fn build_rung(
     Ok(built)
 }
 
-/// Log what `PUNKTFUNK_AU_FAULT` will do, including when the answer is nothing.
+/// Log what `RUBYFUNK_AU_FAULT` will do, including when the answer is nothing.
 /// The injector lives on the native Vulkan decode entry; silence on any other
 /// rung is indistinguishable from "injected and nothing detected it".
 fn report_au_fault_env(native_rung: bool) {
-    let Ok(spec) = std::env::var("PUNKTFUNK_AU_FAULT") else {
+    let Ok(spec) = std::env::var("RUBYFUNK_AU_FAULT") else {
         return;
     };
     if spec.is_empty() {
@@ -783,12 +783,12 @@ fn report_au_fault_env(native_rung: bool) {
         Some(_) if native_rung => {}
         Some(_) => tracing::warn!(
             value = %spec,
-            "PUNKTFUNK_AU_FAULT is armed, but this session is NOT on the native \
+            "RUBYFUNK_AU_FAULT is armed, but this session is NOT on the native \
              Vulkan rung — no AU will be corrupted and no detector will fire"
         ),
         None => tracing::warn!(
             value = %spec,
-            "PUNKTFUNK_AU_FAULT not understood (want drop|truncate|flip[:period]) \
+            "RUBYFUNK_AU_FAULT not understood (want drop|truncate|flip[:period]) \
              — ignored"
         ),
     }
@@ -836,7 +836,7 @@ fn log_note(note: Note, choice: &str, wire: u8, vk: Option<&VulkanDecodeDevice>)
             decode_video_caps = format_args!("0x{:X}", vk.map_or(0, |v| v.decode_video_caps)),
             codec_op_needed = format_args!("0x{:X}", native_codec(wire).map_or(0, |(_, op)| op)),
             device = vk.map_or("", |v| v.device_name.as_str()),
-            "PUNKTFUNK_DECODER=native-vulkan refused (needs an H.264, HEVC or AV1 \
+            "RUBYFUNK_DECODER=native-vulkan refused (needs an H.264, HEVC or AV1 \
              session and a presenter device whose decode family advertises that \
              codec) — standard ladder"
         ),
@@ -846,14 +846,14 @@ fn log_note(note: Note, choice: &str, wire: u8, vk: Option<&VulkanDecodeDevice>)
             "native VAAPI is this device's first hardware rung, but it has decoded \
              nothing on any hardware and the rung below it — native Vulkan Video — \
              has, for this codec, on this device: taking Vulkan first \
-             (PUNKTFUNK_DECODER=native-vaapi runs it anyway)"
+             (RUBYFUNK_DECODER=native-vaapi runs it anyway)"
         ),
         Note::VaapiGated => tracing::info!(
             "native VAAPI outside the presenter's automatic safety gate (pin overrides)"
         ),
         // A stored "software" preference otherwise skips hardware in silence.
         Note::SoftwareOnly => tracing::info!(
-            "software decode by preference (Settings decoder / PUNKTFUNK_DECODER) — \
+            "software decode by preference (Settings decoder / RUBYFUNK_DECODER) — \
              hardware decode not attempted"
         ),
         // A typo would otherwise decode as `auto` in silence.
@@ -872,7 +872,7 @@ impl Decoder {
 
     /// Build the decode ladder. `wire` is the Welcome `quic::CODEC_*`; `pref` is
     /// Settings (`hardware` reads as auto); `vk` is the presenter's device.
-    /// `PUNKTFUNK_DECODER` wins, then the setting; both default to auto.
+    /// `RUBYFUNK_DECODER` wins, then the setting; both default to auto.
     ///
     /// The order is `video_ladder::ladder`'s; the CPU rung follows it. `stream` is
     /// the construction-time shape probe.
@@ -882,7 +882,7 @@ impl Decoder {
         vk: Option<&VulkanDecodeDevice>,
         stream: StreamFormat,
     ) -> Result<Decoder> {
-        let stored = resolve_decoder_pref(std::env::var("PUNKTFUNK_DECODER").ok().as_deref(), pref);
+        let stored = resolve_decoder_pref(std::env::var("RUBYFUNK_DECODER").ok().as_deref(), pref);
         let choice = migrate_decoder_pref(&stored);
         if choice != stored {
             // Once per session, at `warn`: the stored name no longer exists, and
@@ -897,7 +897,7 @@ impl Decoder {
         }
         let rung = first_rung(&choice, wire, stream, vk, &[])?;
         // One exit every rung leaves through, so a session that never reaches the native
-        // constructor still reports `PUNKTFUNK_AU_FAULT`.
+        // constructor still reports `RUBYFUNK_AU_FAULT`.
         report_au_fault_env(rung.id() == Some(NativeRung::Vulkan));
         log_rung(rung.as_ref(), wire);
         Ok(Decoder {
@@ -991,7 +991,7 @@ impl Decoder {
         }
         Ok(Decoder {
             rung: Box::new(rung),
-            wire_codec: punktfunk_core::quic::CODEC_PYROWAVE,
+            wire_codec: rubyfunk_core::quic::CODEC_PYROWAVE,
             fails: 0,
             first_fail: None,
             want_keyframe: false,
@@ -1127,7 +1127,7 @@ impl Decoder {
     /// [`Self::decode_frame`] with the AU's own buffer: PyroWave reads it where it lies.
     pub fn decode_au(
         &mut self,
-        au: punktfunk_core::au::AuBuf,
+        au: rubyfunk_core::au::AuBuf,
         user_flags: u32,
         complete: bool,
     ) -> Result<Option<DecodedImage>> {
@@ -1138,7 +1138,7 @@ impl Decoder {
     }
 
     /// Memory the rung reads AUs from in place, for the session to lend; `None` = the heap.
-    pub fn au_memory(&self) -> Option<std::sync::Arc<dyn punktfunk_core::au::AuMemory>> {
+    pub fn au_memory(&self) -> Option<std::sync::Arc<dyn rubyfunk_core::au::AuMemory>> {
         self.rung.au_memory()
     }
 
@@ -1219,8 +1219,8 @@ mod tests {
     /// decoder as it was, with the typed refusal the pump turns into a codec ask.
     #[test]
     fn a_new_format_rebuilds_the_decoder_or_leaves_it() {
-        use punktfunk_core::quic::{CODEC_H264, CODEC_HEVC};
-        if std::env::var_os("PUNKTFUNK_DECODER").is_some() {
+        use rubyfunk_core::quic::{CODEC_H264, CODEC_HEVC};
+        if std::env::var_os("RUBYFUNK_DECODER").is_some() {
             return;
         }
         let sdr = StreamFormat::SDR_420_8;
@@ -1253,7 +1253,7 @@ mod tests {
         let y: Vec<u8> = vec![1, 2, 3, 4, 9, 9, 9, 5, 6, 7, 8, 9, 9, 9];
         let u: Vec<u8> = vec![10, 11, 9, 9, 9];
         let v: Vec<u8> = vec![20, 21, 9, 9, 9];
-        let none = punktfunk_core::reanchor::LocalRecovery::NONE;
+        let none = rubyfunk_core::reanchor::LocalRecovery::NONE;
         let f =
             CpuPlanarFrame::from_i420(4, 2, [&y, &u, &v], [7, 5, 5], color, true, none).unwrap();
         assert_eq!(f.plane(0), &[1, 2, 3, 4, 5, 6, 7, 8]);

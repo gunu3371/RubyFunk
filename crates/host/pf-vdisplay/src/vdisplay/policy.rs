@@ -69,7 +69,7 @@ impl KeepAlive {
 
 /// Linger once the last session leaves the display of device `fp`. A configured console
 /// decides, that device's overlay over the host's `keep_alive`, and outranks `env_ms`
-/// (`PUNKTFUNK_MONITOR_LINGER_MS`): a leftover knob never overrides the console.
+/// (`RUBYFUNK_MONITOR_LINGER_MS`): a leftover knob never overrides the console.
 /// Unconfigured: the knob, else teardown at once. A value that does not parse is unset.
 fn resolve_linger(
     configured: Option<&DisplayPolicy>,
@@ -91,7 +91,7 @@ fn resolve_linger(
 pub enum Topology {
     /// Resolved at acquire ([`super::effective_topology`]): exclusive on
     /// Windows and auto-detected Linux desktop; extend under an explicit
-    /// `PUNKTFUNK_COMPOSITOR` pin.
+    /// `RUBYFUNK_COMPOSITOR` pin.
     #[default]
     Auto,
     /// Add the virtual display(s); leave physical outputs alone.
@@ -286,7 +286,7 @@ pub struct DisplayPolicy {
     pub edid_lock: bool,
     /// Stream this physical connector (`DP-1`, `HDMI-A-2`) instead of a
     /// virtual display; `None` is the virtual path. Host-wide, orthogonal
-    /// to `preset`. `PUNKTFUNK_CAPTURE_MONITOR` overrides it so `host.env`
+    /// to `preset`. `RUBYFUNK_CAPTURE_MONITOR` overrides it so `host.env`
     /// can pin without a console write undoing it.
     #[serde(default)]
     pub capture_monitor: Option<String>,
@@ -1050,10 +1050,10 @@ impl DisplayPolicyStore {
     }
 
     /// Linger once the last session leaves the display of device `fp`: this store's
-    /// `keep_alive`, else `PUNKTFUNK_MONITOR_LINGER_MS`, else teardown at once. The env read
+    /// `keep_alive`, else `RUBYFUNK_MONITOR_LINGER_MS`, else teardown at once. The env read
     /// takes the lock: a release runs beside another session's setup.
     pub fn linger(&self, fp: Option<&str>) -> Linger {
-        let env_ms = crate::with_env_lock(|| std::env::var("PUNKTFUNK_MONITOR_LINGER_MS").ok());
+        let env_ms = crate::with_env_lock(|| std::env::var("RUBYFUNK_MONITOR_LINGER_MS").ok());
         resolve_linger(self.configured().as_ref(), fp, env_ms.as_deref())
     }
 
@@ -1062,7 +1062,7 @@ impl DisplayPolicyStore {
     }
 
     /// PnP-disable the monitors the isolate switched off. Default on;
-    /// `PUNKTFUNK_STANDBY_SINK_KEEP` vetoes it with every other PnP disable.
+    /// `RUBYFUNK_STANDBY_SINK_KEEP` vetoes it with every other PnP disable.
     pub fn pnp_disable_monitors(&self) -> bool {
         self.get().pnp_disable_monitors && self.standby_sink_neutralise()
     }
@@ -1080,7 +1080,7 @@ impl DisplayPolicyStore {
     /// Default on ([`standby_sink_neutralise`]). Monitors the isolate switched
     /// off are [`Self::pnp_disable_monitors`]'s, not this one's.
     pub fn standby_sink_neutralise(&self) -> bool {
-        standby_sink_neutralise(std::env::var("PUNKTFUNK_STANDBY_SINK_KEEP").ok().as_deref())
+        standby_sink_neutralise(std::env::var("RUBYFUNK_STANDBY_SINK_KEEP").ok().as_deref())
     }
 
     /// Persist + adopt. Memory changes only after the disk write; the
@@ -1451,7 +1451,7 @@ pub fn load_custom_presets() -> Vec<CustomPreset> {
 }
 
 /// Neutralise a connected-but-inactive external sink while streaming,
-/// unless `PUNKTFUNK_STANDBY_SINK_KEEP` is set (any value but `0`/`off`/empty).
+/// unless `RUBYFUNK_STANDBY_SINK_KEEP` is set (any value but `0`/`off`/empty).
 ///
 /// Default-on: standby HPD/DDC on an unused TV stalls the virtual head.
 /// Operator displays are out of scope — this selector only sees external
@@ -2065,7 +2065,7 @@ mod tests {
         let _ = std::fs::remove_file(&path);
     }
 
-    // The mgmt PUT's key-by-key merge: punktfunk-host `a_host_wide_put_keeps_every_key_it_omits`.
+    // The mgmt PUT's key-by-key merge: rubyfunk-host `a_host_wide_put_keeps_every_key_it_omits`.
 
     #[test]
     fn sanitize_clamps_an_absurd_linger_to_a_day() {

@@ -445,9 +445,9 @@ use Group::{Audio, GameMode, Input, Network, Seats, Streaming, System, Video};
 #[rustfmt::skip]
 pub static SETTINGS: &[Setting] = &[
     // --- Streaming
-    row("gamestream", "PUNKTFUNK_GAMESTREAM", Kind::Bool, D::Bool(false), Streaming, Restart, "GameStream", "moonlight"),
-    row("webtransport", "PUNKTFUNK_WEBTRANSPORT", Kind::Bool, D::Bool(false), Streaming, Restart, "Browser streaming", "clients"),
-    row("clipboard", "PUNKTFUNK_CLIPBOARD", Kind::Enum(&["off", "text", "files"]), D::Str("off"), Streaming, NextSession, "Shared clipboard", "clipboard")
+    row("gamestream", "RUBYFUNK_GAMESTREAM", Kind::Bool, D::Bool(false), Streaming, Restart, "GameStream", "moonlight"),
+    row("webtransport", "RUBYFUNK_WEBTRANSPORT", Kind::Bool, D::Bool(false), Streaming, Restart, "Browser streaming", "clients"),
+    row("clipboard", "RUBYFUNK_CLIPBOARD", Kind::Enum(&["off", "text", "files"]), D::Str("off"), Streaming, NextSession, "Shared clipboard", "clipboard")
         .only(LINUX_WINDOWS)
         .spellings(&[
             ("0", "off"),
@@ -461,10 +461,10 @@ pub static SETTINGS: &[Setting] = &[
             ("yes", "files"),
             ("all", "files"),
         ]),
-    row("host_name", "PUNKTFUNK_HOST_NAME", Kind::Text { max_len: 63 }, D::Str(""), Streaming, Restart, "Host name", "configuration"),
-    row("gamestream_encrypt", "PUNKTFUNK_GAMESTREAM_ENCRYPT", Kind::Enum(&["supported", "video", "off", "required"]), D::Str("supported"), Streaming, Restart, "GameStream encryption", "moonlight")
+    row("host_name", "RUBYFUNK_HOST_NAME", Kind::Text { max_len: 63 }, D::Str(""), Streaming, Restart, "Host name", "configuration"),
+    row("gamestream_encrypt", "RUBYFUNK_GAMESTREAM_ENCRYPT", Kind::Enum(&["supported", "video", "off", "required"]), D::Str("supported"), Streaming, Restart, "GameStream encryption", "moonlight")
         .advanced()
-        .aliases(&[Alias { name: "PUNKTFUNK_GS_ENCRYPT", value: None }])
+        .aliases(&[Alias { name: "RUBYFUNK_GS_ENCRYPT", value: None }])
         .spellings(&[
             ("1", "supported"),
             ("0", "off"),
@@ -473,42 +473,42 @@ pub static SETTINGS: &[Setting] = &[
             ("video_only", "video"),
             ("require", "required"),
         ]),
-    row("gamestream_adapt", "PUNKTFUNK_GAMESTREAM_ADAPT", Kind::Bool, D::Bool(true), Streaming, Restart, "Moonlight adaptive bitrate", "moonlight")
+    row("gamestream_adapt", "RUBYFUNK_GAMESTREAM_ADAPT", Kind::Bool, D::Bool(true), Streaming, Restart, "Moonlight adaptive bitrate", "moonlight")
         .advanced()
-        .aliases(&[Alias { name: "PUNKTFUNK_GS_ADAPT", value: None }]),
-    row("chacha20", "PUNKTFUNK_CHACHA20", Kind::Bool, D::Bool(true), Streaming, NextSession, "ChaCha20 cipher", "configuration").advanced(),
-    row("webtransport_origins", "PUNKTFUNK_WEBTRANSPORT_ORIGINS", Kind::List, D::List(&[]), Streaming, Restart, "Browser origins", "clients").advanced(),
+        .aliases(&[Alias { name: "RUBYFUNK_GS_ADAPT", value: None }]),
+    row("chacha20", "RUBYFUNK_CHACHA20", Kind::Bool, D::Bool(true), Streaming, NextSession, "ChaCha20 cipher", "configuration").advanced(),
+    row("webtransport_origins", "RUBYFUNK_WEBTRANSPORT_ORIGINS", Kind::List, D::List(&[]), Streaming, Restart, "Browser origins", "clients").advanced(),
     // --- Video
-    row("encoder", "PUNKTFUNK_ENCODER", Kind::Enum(ENCODERS), D::Str("auto"), Video, NextSession, "Encoder", "configuration").spellings(ENCODER_SPELLINGS),
-    row("ten_bit", "PUNKTFUNK_10BIT", Kind::Bool, D::Bool(true), Video, NextSession, "10-bit and HDR", "hdr"),
-    row("sdr10_widen", "PUNKTFUNK_10BIT_SDR_WIDEN", Kind::Bool, D::Bool(false), Video, NextSession, "Allow 10-bit SDR", "hdr").advanced(),
-    row("chroma_444", "PUNKTFUNK_444", Kind::Bool, D::Bool(true), Video, NextSession, "Full color 4:4:4", "configuration"),
-    row("max_fps", "PUNKTFUNK_MAX_FPS", Kind::Int { min: 0, max: 240, unit: "fps" }, D::Int(0), Video, NextSession, "Game frame limit", "gamescope").only(LINUX),
+    row("encoder", "RUBYFUNK_ENCODER", Kind::Enum(ENCODERS), D::Str("auto"), Video, NextSession, "Encoder", "configuration").spellings(ENCODER_SPELLINGS),
+    row("ten_bit", "RUBYFUNK_10BIT", Kind::Bool, D::Bool(true), Video, NextSession, "10-bit and HDR", "hdr"),
+    row("sdr10_widen", "RUBYFUNK_10BIT_SDR_WIDEN", Kind::Bool, D::Bool(false), Video, NextSession, "Allow 10-bit SDR", "hdr").advanced(),
+    row("chroma_444", "RUBYFUNK_444", Kind::Bool, D::Bool(true), Video, NextSession, "Full color 4:4:4", "configuration"),
+    row("max_fps", "RUBYFUNK_MAX_FPS", Kind::Int { min: 0, max: 240, unit: "fps" }, D::Int(0), Video, NextSession, "Game frame limit", "gamescope").only(LINUX),
     // 0 is the host's pick per compositor (`HostConfig::vdisplay_hz_mult_for`); 1 is off.
-    row("vdisplay_hz_mult", "PUNKTFUNK_VDISPLAY_HZ_MULT", Kind::Int { min: 0, max: 4, unit: "×" }, D::Int(0), Video, NextSession, "Display refresh multiple", "configuration").advanced().only(LINUX_WINDOWS),
+    row("vdisplay_hz_mult", "RUBYFUNK_VDISPLAY_HZ_MULT", Kind::Int { min: 0, max: 4, unit: "×" }, D::Int(0), Video, NextSession, "Display refresh multiple", "configuration").advanced().only(LINUX_WINDOWS),
     // `WIDTHxHEIGHT` sizes the virtual display offers beside the stream's own. The driver skips
     // any larger than the stream; ADD carries the first 16.
-    row("vdisplay_resolutions", "PUNKTFUNK_VDISPLAY_RESOLUTIONS", Kind::List, D::List(VDISPLAY_RESOLUTIONS), Video, NextSession, "Extra resolutions", "configuration").advanced().only(WINDOWS),
-    row("portal_cursor_mode", "PUNKTFUNK_PORTAL_CURSOR_MODE", Kind::Enum(&["auto", "embedded", "metadata", "hidden"]), D::Str("auto"), Video, NextSession, "Cursor capture", "configuration")
+    row("vdisplay_resolutions", "RUBYFUNK_VDISPLAY_RESOLUTIONS", Kind::List, D::List(VDISPLAY_RESOLUTIONS), Video, NextSession, "Extra resolutions", "configuration").advanced().only(WINDOWS),
+    row("portal_cursor_mode", "RUBYFUNK_PORTAL_CURSOR_MODE", Kind::Enum(&["auto", "embedded", "metadata", "hidden"]), D::Str("auto"), Video, NextSession, "Cursor capture", "configuration")
         .advanced()
         .only(LINUX)
         .spellings(&[("composited", "embedded"), ("meta", "metadata"), ("none", "hidden")]),
-    row("vulkan_encode", "PUNKTFUNK_VULKAN_ENCODE", Kind::Bool, D::Bool(true), Video, NextSession, "Vulkan encoding", "configuration").advanced().only(LINUX),
-    row("direct_capture", "PUNKTFUNK_DIRECT_CAPTURE", Kind::Bool, D::Bool(true), Video, NextSession, "Direct capture", "configuration").advanced().only(LINUX),
-    row("lazy_capture", "PUNKTFUNK_LAZY_CAPTURE", Kind::Bool, D::Bool(true), Video, NextSession, "On-demand capture", "configuration").advanced().only(LINUX),
-    row("kwin_paced", "PUNKTFUNK_KWIN_PACED", Kind::Bool, D::Bool(false), Video, NextSession, "KWin capture pacing", "kde").advanced().only(LINUX),
-    row("pyrowave_bpp", "PUNKTFUNK_PYROWAVE_BPP", Kind::Decimal { min: 0.25, max: 4.0, unit: "bits/pixel" }, D::Decimal(PYROWAVE_BPP), Video, NextSession, "PyroWave quality", "pyrowave"),
-    row("pyrowave_max_mbps", "PUNKTFUNK_PYROWAVE_MAX_MBPS", Kind::Int { min: 0, max: 10_000, unit: "Mbps" }, D::Int(0), Video, NextSession, "PyroWave bitrate cap", "pyrowave").advanced(),
+    row("vulkan_encode", "RUBYFUNK_VULKAN_ENCODE", Kind::Bool, D::Bool(true), Video, NextSession, "Vulkan encoding", "configuration").advanced().only(LINUX),
+    row("direct_capture", "RUBYFUNK_DIRECT_CAPTURE", Kind::Bool, D::Bool(true), Video, NextSession, "Direct capture", "configuration").advanced().only(LINUX),
+    row("lazy_capture", "RUBYFUNK_LAZY_CAPTURE", Kind::Bool, D::Bool(true), Video, NextSession, "On-demand capture", "configuration").advanced().only(LINUX),
+    row("kwin_paced", "RUBYFUNK_KWIN_PACED", Kind::Bool, D::Bool(false), Video, NextSession, "KWin capture pacing", "kde").advanced().only(LINUX),
+    row("pyrowave_bpp", "RUBYFUNK_PYROWAVE_BPP", Kind::Decimal { min: 0.25, max: 4.0, unit: "bits/pixel" }, D::Decimal(PYROWAVE_BPP), Video, NextSession, "PyroWave quality", "pyrowave"),
+    row("pyrowave_max_mbps", "RUBYFUNK_PYROWAVE_MAX_MBPS", Kind::Int { min: 0, max: 10_000, unit: "Mbps" }, D::Int(0), Video, NextSession, "PyroWave bitrate cap", "pyrowave").advanced(),
     // NVIDIA Instant Replay shares the NVENC engine with the stream. `auto` pauses it once a
     // stream falls behind while another app encodes; `on` pauses it for every stream.
-    row("instant_replay_pause", "PUNKTFUNK_INSTANT_REPLAY_PAUSE", TRI, D::Str("auto"), Video, Now, "Pause Instant Replay", "troubleshooting-stream").only(WINDOWS).spellings(TRI_SPELLINGS),
+    row("instant_replay_pause", "RUBYFUNK_INSTANT_REPLAY_PAUSE", TRI, D::Str("auto"), Video, Now, "Pause Instant Replay", "troubleshooting-stream").only(WINDOWS).spellings(TRI_SPELLINGS),
     // --- Audio
-    row("audio_output_mode", "PUNKTFUNK_AUDIO_OUTPUT_MODE", Kind::Enum(&["client_only", "host_and_client", "follow_default"]), D::Str("client_only"), Audio, NextSession, "Where audio plays", "configuration")
+    row("audio_output_mode", "RUBYFUNK_AUDIO_OUTPUT_MODE", Kind::Enum(&["client_only", "host_and_client", "follow_default"]), D::Str("client_only"), Audio, NextSession, "Where audio plays", "configuration")
         .only(LINUX_WINDOWS)
         // KEEP_DEFAULT first: a stale host-audio flag must not override "do not touch my devices".
         .aliases(&[
-            Alias { name: "PUNKTFUNK_KEEP_DEFAULT", value: Some("follow_default") },
-            Alias { name: "PUNKTFUNK_HOST_AUDIO", value: Some("host_and_client") },
+            Alias { name: "RUBYFUNK_KEEP_DEFAULT", value: Some("follow_default") },
+            Alias { name: "RUBYFUNK_HOST_AUDIO", value: Some("host_and_client") },
         ])
         .spellings(&[
             ("client", "client_only"),
@@ -516,67 +516,67 @@ pub static SETTINGS: &[Setting] = &[
             ("host", "host_and_client"),
             ("follow", "follow_default"),
         ]),
-    row("audio_quality", "PUNKTFUNK_AUDIO_QUALITY", Kind::Enum(&["low", "standard", "high"]), D::Str("high"), Audio, NextSession, "Audio quality", "configuration")
+    row("audio_quality", "RUBYFUNK_AUDIO_QUALITY", Kind::Enum(&["low", "standard", "high"]), D::Str("high"), Audio, NextSession, "Audio quality", "configuration")
         .spellings(&[("normal", "standard"), ("medium", "standard")]),
-    row("audio_hires", "PUNKTFUNK_AUDIO_HIRES", Kind::Bool, D::Bool(true), Audio, NextSession, "Lossless audio", "configuration"),
-    row("audio_voice_chat", "PUNKTFUNK_AUDIO_VOICE_CHAT", Kind::Enum(&["stream", "host"]), D::Str("stream"), Audio, NextSession, "Voice chat", "configuration")
+    row("audio_hires", "RUBYFUNK_AUDIO_HIRES", Kind::Bool, D::Bool(true), Audio, NextSession, "Lossless audio", "configuration"),
+    row("audio_voice_chat", "RUBYFUNK_AUDIO_VOICE_CHAT", Kind::Enum(&["stream", "host"]), D::Str("stream"), Audio, NextSession, "Voice chat", "configuration")
         .only(LINUX_WINDOWS)
         .spellings(&[("client", "stream"), ("speakers", "host")]),
     // Extra apps; the host always adds `DEFAULT_VOICE_APPS`.
-    row("audio_voice_apps", "PUNKTFUNK_AUDIO_VOICE_APPS", Kind::List, D::List(&[]), Audio, NextSession, "Voice chat apps", "configuration").only(LINUX_WINDOWS),
-    row("pad_audio", "PUNKTFUNK_PAD_AUDIO", Kind::Bool, D::Bool(true), Audio, NextSession, "Controller speaker", "controller-audio").only(LINUX_WINDOWS),
-    row("audio_redundancy", "PUNKTFUNK_AUDIO_REDUNDANCY", TRI, D::Str("auto"), Audio, NextSession, "Audio redundancy", "configuration")
+    row("audio_voice_apps", "RUBYFUNK_AUDIO_VOICE_APPS", Kind::List, D::List(&[]), Audio, NextSession, "Voice chat apps", "configuration").only(LINUX_WINDOWS),
+    row("pad_audio", "RUBYFUNK_PAD_AUDIO", Kind::Bool, D::Bool(true), Audio, NextSession, "Controller speaker", "controller-audio").only(LINUX_WINDOWS),
+    row("audio_redundancy", "RUBYFUNK_AUDIO_REDUNDANCY", TRI, D::Str("auto"), Audio, NextSession, "Audio redundancy", "configuration")
         .advanced()
         .spellings(TRI_SPELLINGS),
     // --- Input
-    row("gamepad", "PUNKTFUNK_GAMEPAD", Kind::Enum(GAMEPADS), D::Str("auto"), Input, NextSession, "Default gamepad", "input")
+    row("gamepad", "RUBYFUNK_GAMEPAD", Kind::Enum(GAMEPADS), D::Str("auto"), Input, NextSession, "Default gamepad", "input")
         .only(LINUX_WINDOWS)
         .spellings(GAMEPAD_SPELLINGS),
-    row("pen", "PUNKTFUNK_PEN", Kind::Bool, D::Bool(true), Input, NextSession, "Pen input", "input").only(LINUX_WINDOWS),
-    row("steam_gadget", "PUNKTFUNK_STEAM_GADGET", TRI, D::Str("auto"), Input, NextSession, "Steam USB gadget", "input")
+    row("pen", "RUBYFUNK_PEN", Kind::Bool, D::Bool(true), Input, NextSession, "Pen input", "input").only(LINUX_WINDOWS),
+    row("steam_gadget", "RUBYFUNK_STEAM_GADGET", TRI, D::Str("auto"), Input, NextSession, "Steam USB gadget", "input")
         .advanced()
         .only(LINUX)
         .spellings(TRI_SPELLINGS),
-    row("dualsense_usbip", "PUNKTFUNK_DUALSENSE_USBIP", Kind::Bool, D::Bool(false), Input, NextSession, "DualSense over USB/IP", "controller-audio").advanced().only(LINUX),
+    row("dualsense_usbip", "RUBYFUNK_DUALSENSE_USBIP", Kind::Bool, D::Bool(false), Input, NextSession, "DualSense over USB/IP", "controller-audio").advanced().only(LINUX),
     // --- Game Mode
-    row("gamescope_hdr", "PUNKTFUNK_GAMESCOPE_HDR", Kind::Bool, D::Bool(true), GameMode, NextSession, "Game Mode HDR", "gamescope").only(LINUX),
-    row("gamescope_managed", "PUNKTFUNK_GAMESCOPE_MANAGED", Kind::Bool, D::Bool(false), GameMode, NextSession, "Force managed mode", "gamescope").advanced().only(LINUX),
-    row("gamescope_vrr", "PUNKTFUNK_GAMESCOPE_VRR", Kind::Bool, D::Bool(true), GameMode, NextSession, "Adaptive sync", "gamescope").advanced().only(LINUX),
-    row("gamescope_sdr_nits", "PUNKTFUNK_GAMESCOPE_SDR_NITS", Kind::Int { min: 1, max: 10_000, unit: "nits" }, D::Int(203), GameMode, NextSession, "SDR brightness", "hdr").advanced().only(LINUX),
-    row("gamescope_refresh_rates", "PUNKTFUNK_GAMESCOPE_REFRESH_RATES", Kind::List, D::List(&[]), GameMode, NextSession, "Extra refresh rates", "gamescope").advanced().only(LINUX),
-    row("gamescope_splash", "PUNKTFUNK_GAMESCOPE_SPLASH", Kind::Bool, D::Bool(true), GameMode, NextSession, "Startup splash", "gamescope").advanced().only(LINUX),
-    row("gamescope_isolate", "PUNKTFUNK_GAMESCOPE_ISOLATE", Kind::Bool, D::Bool(true), GameMode, NextSession, "Per-session isolation", "gamescope").advanced().only(LINUX),
-    row("gamescope_grab_cursor", "PUNKTFUNK_GAMESCOPE_GRAB_CURSOR", Kind::Bool, D::Bool(false), GameMode, NextSession, "Grab the cursor", "gamescope").advanced().only(LINUX),
-    row("gamescope_bind", "PUNKTFUNK_GAMESCOPE_BIND", TRI, D::Str("auto"), GameMode, NextSession, "Bind patched gamescope", "gamescope")
+    row("gamescope_hdr", "RUBYFUNK_GAMESCOPE_HDR", Kind::Bool, D::Bool(true), GameMode, NextSession, "Game Mode HDR", "gamescope").only(LINUX),
+    row("gamescope_managed", "RUBYFUNK_GAMESCOPE_MANAGED", Kind::Bool, D::Bool(false), GameMode, NextSession, "Force managed mode", "gamescope").advanced().only(LINUX),
+    row("gamescope_vrr", "RUBYFUNK_GAMESCOPE_VRR", Kind::Bool, D::Bool(true), GameMode, NextSession, "Adaptive sync", "gamescope").advanced().only(LINUX),
+    row("gamescope_sdr_nits", "RUBYFUNK_GAMESCOPE_SDR_NITS", Kind::Int { min: 1, max: 10_000, unit: "nits" }, D::Int(203), GameMode, NextSession, "SDR brightness", "hdr").advanced().only(LINUX),
+    row("gamescope_refresh_rates", "RUBYFUNK_GAMESCOPE_REFRESH_RATES", Kind::List, D::List(&[]), GameMode, NextSession, "Extra refresh rates", "gamescope").advanced().only(LINUX),
+    row("gamescope_splash", "RUBYFUNK_GAMESCOPE_SPLASH", Kind::Bool, D::Bool(true), GameMode, NextSession, "Startup splash", "gamescope").advanced().only(LINUX),
+    row("gamescope_isolate", "RUBYFUNK_GAMESCOPE_ISOLATE", Kind::Bool, D::Bool(true), GameMode, NextSession, "Per-session isolation", "gamescope").advanced().only(LINUX),
+    row("gamescope_grab_cursor", "RUBYFUNK_GAMESCOPE_GRAB_CURSOR", Kind::Bool, D::Bool(false), GameMode, NextSession, "Grab the cursor", "gamescope").advanced().only(LINUX),
+    row("gamescope_bind", "RUBYFUNK_GAMESCOPE_BIND", TRI, D::Str("auto"), GameMode, NextSession, "Bind patched gamescope", "gamescope")
         .advanced()
         .only(LINUX)
         .spellings(TRI_SPELLINGS),
-    row("session_watch", "PUNKTFUNK_SESSION_WATCH", TRI, D::Str("auto"), GameMode, NextSession, "Follow mode switches", "gamescope")
+    row("session_watch", "RUBYFUNK_SESSION_WATCH", TRI, D::Str("auto"), GameMode, NextSession, "Follow mode switches", "gamescope")
         .advanced()
         .only(LINUX)
         .spellings(TRI_SPELLINGS),
     // --- Network
-    row("mdns", "PUNKTFUNK_MDNS", Kind::Bool, D::Bool(true), Network, Restart, "Local discovery", "troubleshooting-connect").advanced(),
-    row("idle_timeout_ms", "PUNKTFUNK_IDLE_TIMEOUT_MS", Kind::Int { min: 1_000, max: 120_000, unit: "ms" }, D::Int(8_000), Network, Restart, "Disconnect timeout", "configuration").advanced(),
+    row("mdns", "RUBYFUNK_MDNS", Kind::Bool, D::Bool(true), Network, Restart, "Local discovery", "troubleshooting-connect").advanced(),
+    row("idle_timeout_ms", "RUBYFUNK_IDLE_TIMEOUT_MS", Kind::Int { min: 1_000, max: 120_000, unit: "ms" }, D::Int(8_000), Network, Restart, "Disconnect timeout", "configuration").advanced(),
     // --- Seats: what every seat shares (design/web-console-structure-2026-10.md §2.1)
-    row("steam_prewarm", "PUNKTFUNK_STEAM_PREWARM", Kind::Int { min: 0, max: 8, unit: "seats" }, D::Int(1), Seats, Restart, "Seats kept warm", "profiles").only(LINUX_WINDOWS),
+    row("steam_prewarm", "RUBYFUNK_STEAM_PREWARM", Kind::Int { min: 0, max: 8, unit: "seats" }, D::Int(1), Seats, Restart, "Seats kept warm", "profiles").only(LINUX_WINDOWS),
     // 0 never stops one. The box's seat upkeep reads it once, at start.
-    row("seat_idle_stop", "PUNKTFUNK_SEAT_IDLE_STOP_MIN", Kind::Int { min: 0, max: 1_440, unit: "min" }, D::Int(240), Seats, Restart, "Stop idle seats", "profiles").only(LINUX_WINDOWS),
-    row("seat_end_on_game_exit", "PUNKTFUNK_SEAT_END_ON_GAME_EXIT", Kind::Bool, D::Bool(true), Seats, NextSession, "Seat game exit", "profiles").only(LINUX_WINDOWS),
+    row("seat_idle_stop", "RUBYFUNK_SEAT_IDLE_STOP_MIN", Kind::Int { min: 0, max: 1_440, unit: "min" }, D::Int(240), Seats, Restart, "Stop idle seats", "profiles").only(LINUX_WINDOWS),
+    row("seat_end_on_game_exit", "RUBYFUNK_SEAT_END_ON_GAME_EXIT", Kind::Bool, D::Bool(true), Seats, NextSession, "Seat game exit", "profiles").only(LINUX_WINDOWS),
     // `WIDTHxHEIGHT@HZ`; empty is no cap. A device's own cap outranks it.
-    row("seat_max_mode", "PUNKTFUNK_SEAT_MAX_MODE", Kind::Text { max_len: 24 }, D::Str(""), Seats, NextSession, "Seat mode cap", "profiles").only(LINUX_WINDOWS),
+    row("seat_max_mode", "RUBYFUNK_SEAT_MAX_MODE", Kind::Text { max_len: 24 }, D::Str(""), Seats, NextSession, "Seat mode cap", "profiles").only(LINUX_WINDOWS),
     // Off mounts the owner's Steam libraries read-only in a seat: it plays what is installed and
     // can't update or install there. The supervisor reads it at each seat start.
-    row("seat_library_writable", "PUNKTFUNK_SEAT_LIBRARY_WRITABLE", Kind::Bool, D::Bool(true), Seats, NextSession, "Seats update games", "profiles").only(LINUX),
+    row("seat_library_writable", "RUBYFUNK_SEAT_LIBRARY_WRITABLE", Kind::Bool, D::Bool(true), Seats, NextSession, "Seats update games", "profiles").only(LINUX),
     // GameInput has one focus for the whole PC: a window appearing in any session takes the pad
     // from a GameInput game in every other. Each app a seat or, while seats exist, the desk
     // starts gets the background-input quirk, so a desk game and a seat game each keep theirs.
     // The quirk is per exe name, for the whole PC. Off = the GameInput default fight.
-    row("seat_background_input", "PUNKTFUNK_SEAT_BACKGROUND_INPUT", Kind::Bool, D::Bool(true), Seats, Now, "Players keep controllers", "windows-seats").only(WINDOWS),
+    row("seat_background_input", "RUBYFUNK_SEAT_BACKGROUND_INPUT", Kind::Bool, D::Bool(true), Seats, Now, "Players keep controllers", "windows-seats").only(WINDOWS),
     // --- System
-    row("update_check", "PUNKTFUNK_UPDATE_CHECK", Kind::Bool, D::Bool(true), System, Now, "Check for updates", "updating"),
-    row("update_apply", "PUNKTFUNK_UPDATE_APPLY", Kind::Bool, D::Bool(true), System, Now, "Console updates", "updating").advanced(),
-    row("tray_autostart", "PUNKTFUNK_TRAY_AUTOSTART", Kind::Bool, D::Bool(true), System, Now, "Tray autostart", "configuration").only(LINUX_WINDOWS),
+    row("update_check", "RUBYFUNK_UPDATE_CHECK", Kind::Bool, D::Bool(true), System, Now, "Check for updates", "updating"),
+    row("update_apply", "RUBYFUNK_UPDATE_APPLY", Kind::Bool, D::Bool(true), System, Now, "Console updates", "updating").advanced(),
+    row("tray_autostart", "RUBYFUNK_TRAY_AUTOSTART", Kind::Bool, D::Bool(true), System, Now, "Tray autostart", "configuration").only(LINUX_WINDOWS),
 ];
 
 #[cfg(test)]
@@ -596,7 +596,7 @@ mod tests {
                 s.id
             );
             for name in std::iter::once(s.env).chain(s.aliases.iter().map(|a| a.name)) {
-                assert!(name.starts_with("PUNKTFUNK_"), "{name}");
+                assert!(name.starts_with("RUBYFUNK_"), "{name}");
                 assert!(envs.insert(name), "env name {name} is used twice");
             }
             assert!(s.title.split_whitespace().count() <= 3, "{} title", s.id);
@@ -700,7 +700,7 @@ mod tests {
     fn seats_are_kept_warm_one_at_a_time() {
         let s = find("steam_prewarm").expect("the row exists");
         assert_eq!(s.default.to_value(), Value::Number(1.into()));
-        assert_eq!(s.env, "PUNKTFUNK_STEAM_PREWARM");
+        assert_eq!(s.env, "RUBYFUNK_STEAM_PREWARM");
         assert!(
             s.validate(&Value::Number(0.into())).is_ok(),
             "0 turns it off"
@@ -740,7 +740,7 @@ mod tests {
         let s = find("sdr10_widen").expect("the row exists");
         assert_eq!(s.default.to_value(), Value::Bool(false));
         assert_eq!(s.apply, Apply::NextSession);
-        assert_eq!(s.env, "PUNKTFUNK_10BIT_SDR_WIDEN");
+        assert_eq!(s.env, "RUBYFUNK_10BIT_SDR_WIDEN");
     }
 
     #[test]

@@ -1,4 +1,4 @@
-# pf-xusb - punktfunk virtual Xbox 360 XUSB companion (UMDF2, classic XInput).
+# pf-xusb - rubyfunk virtual Xbox 360 XUSB companion (UMDF2, classic XInput).
 # A member of the in-tree drivers workspace (shares the vendored wdk-sys/wdk-build with the bindgen pin
 # + the crt-static .cargo/config), built from source per release like pf-vdisplay.
 [package]
@@ -7,7 +7,7 @@ edition.workspace = true
 version.workspace = true
 license.workspace = true
 publish = false
-description = "punktfunk virtual Xbox 360 XUSB companion (UMDF2 - classic XInput)"
+description = "rubyfunk virtual Xbox 360 XUSB companion (UMDF2 - classic XInput)"
 
 [package.metadata.wdk.driver-model]
 driver-type = "UMDF"

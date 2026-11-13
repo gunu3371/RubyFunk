@@ -13,8 +13,8 @@
 //! - `UHID_SET_REPORT` must be answered.
 #![allow(dead_code)]
 
-use punktfunk_core::input::{gamepad as gs, GamepadFrame};
-use punktfunk_core::quic::RichInput;
+use rubyfunk_core::input::{gamepad as gs, GamepadFrame};
+use rubyfunk_core::quic::RichInput;
 
 /// `hid-steam` matches VID/PID on `BUS_USB`; no usage-page probe.
 pub const STEAM_VENDOR: u32 = 0x28DE;
@@ -1120,12 +1120,12 @@ mod tests {
     /// `steam_get_serial` validates: `[0xAE, len, 0x01, ascii…]`.
     #[test]
     fn serial_reply_has_stripped_prefix() {
-        let r = serial_reply("PUNKTFUNK01");
+        let r = serial_reply("RUBYFUNK01");
         assert_eq!(r[0], 0x00); // report id, stripped by steam_recv_report
         assert_eq!(r[1], ID_GET_STRING_ATTRIBUTE); // becomes reply[0] after strip
         assert!((1..=21).contains(&r[2]));
         assert_eq!(r[3], ATTRIB_STR_UNIT_SERIAL);
-        assert_eq!(&r[4..4 + r[2] as usize], b"PUNKTFUNK01");
+        assert_eq!(&r[4..4 + r[2] as usize], b"RUBYFUNK01");
     }
 
     #[test]
@@ -1144,7 +1144,7 @@ mod tests {
     }
 
     fn raw_report(first: &[u8]) -> RichInput {
-        let mut data = [0u8; punktfunk_core::quic::HID_REPORT_MAX];
+        let mut data = [0u8; rubyfunk_core::quic::HID_REPORT_MAX];
         data[..first.len()].copy_from_slice(first);
         RichInput::HidReport {
             pad: 0,

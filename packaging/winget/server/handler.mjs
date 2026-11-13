@@ -1,4 +1,4 @@
-// Punktfunk's winget REST source — the read path only.
+// RubyFunk's winget REST source — the read path only.
 //
 // The winget client consumes exactly three endpoints. `microsoft/winget-cli-restsource`'s other 20
 // (`/packages/**` CRUD) are that reference implementation's ADMIN API for mutating a CosmosDB —

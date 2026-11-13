@@ -6,10 +6,10 @@
 //! wl_pointer promises all of a scroll event's fields land before `frame`, so
 //! nothing crosses the wire mid-frame.
 
-use punktfunk_core::input::scroll::{
+use rubyfunk_core::input::scroll::{
     ScrollAccumulator, ScrollPhase, ScrollSource, SCROLL_FLAG_AXIS_UNITS,
 };
-use punktfunk_core::input::InputEvent;
+use rubyfunk_core::input::InputEvent;
 
 /// `wl_pointer.axis_source`, reduced to what the wire vocabulary carries.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -223,7 +223,7 @@ pub fn forward_native_scroll(captured_before: bool, captured_after: bool, blocke
 #[cfg(test)]
 mod tests {
     use super::*;
-    use punktfunk_core::input::scroll::ScrollEvent;
+    use rubyfunk_core::input::scroll::ScrollEvent;
 
     fn decode(ev: &InputEvent) -> ScrollEvent {
         ScrollEvent::from_event(ev).expect("a frame event must validate")

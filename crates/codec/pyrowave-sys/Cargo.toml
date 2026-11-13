@@ -1,6 +1,6 @@
 [package]
 name = "pyrowave-sys"
-description = "Vendored PyroWave (Themaister's intra-only wavelet codec, Vulkan compute) built from source + bindgen over its C API — the LAN low-latency codec backend (design/pyrowave-codec-plan.md). Upstream pin recorded in vendor/pyrowave/PUNKTFUNK-VENDOR.txt; bumping it is a protocol-affecting change (§4.2)."
+description = "Vendored PyroWave (Themaister's intra-only wavelet codec, Vulkan compute) built from source + bindgen over its C API — the LAN low-latency codec backend (design/pyrowave-codec-plan.md). Upstream pin recorded in vendor/pyrowave/RUBYFUNK-VENDOR.txt; bumping it is a protocol-affecting change (§4.2)."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

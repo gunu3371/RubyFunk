@@ -49,11 +49,11 @@ pub struct OverlayFocus {
 
 impl OverlayFocus {
     /// `None` when this is not a gamescope Steam session, or when
-    /// `PUNKTFUNK_OVERLAY_MASK=0`. The caller then keeps its window-focus path,
+    /// `RUBYFUNK_OVERLAY_MASK=0`. The caller then keeps its window-focus path,
     /// which is the right signal everywhere the compositor actually moves focus.
     pub fn start() -> Option<OverlayFocus> {
-        if crate::env_on("PUNKTFUNK_OVERLAY_MASK") == Some(false) {
-            tracing::info!("overlay input mask disabled by PUNKTFUNK_OVERLAY_MASK");
+        if crate::env_on("RUBYFUNK_OVERLAY_MASK") == Some(false) {
+            tracing::info!("overlay input mask disabled by RUBYFUNK_OVERLAY_MASK");
             return None;
         }
         if !crate::gamescope::under_gamescope() {
@@ -62,7 +62,7 @@ impl OverlayFocus {
         let open = Arc::new(AtomicBool::new(false));
         let flag = open.clone();
         std::thread::Builder::new()
-            .name("punktfunk-overlay-focus".into())
+            .name("rubyfunk-overlay-focus".into())
             .spawn(move || watch(&flag))
             .map_err(|e| tracing::warn!(error = %e, "overlay focus watcher start failed"))
             .ok()?;

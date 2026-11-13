@@ -2,7 +2,7 @@
 //! own driver memory object or EGL, and handed to NVENC, so the CPU never copies
 //! pixels. VAAPI LINEAR-dmabuf passthrough is the same idea without the hop.
 //!
-//! `PUNKTFUNK_ZEROCOPY` unset defaults ON. `=0` opts out; `PUNKTFUNK_FORCE_SHM`
+//! `RUBYFUNK_ZEROCOPY` unset defaults ON. `=0` opts out; `RUBYFUNK_FORCE_SHM`
 //! forces SHM. Explicit `=1` ([`zerocopy_forced`]) keeps a failed negotiation
 //! erroring instead of falling back to CPU.
 //!
@@ -43,7 +43,7 @@ pub fn fd_identity(fd: std::os::fd::BorrowedFd<'_>) -> std::io::Result<(u64, u64
     Ok((st.st_dev as u64, st.st_ino as u64))
 }
 
-/// Parse a `PUNKTFUNK_*` boolean. Unrecognised spellings return `None` (the
+/// Parse a `RUBYFUNK_*` boolean. Unrecognised spellings return `None` (the
 /// flag's default), not false: `TRUE` as "off" inverted host-wide defaults.
 fn flag_opt(name: &str) -> Option<bool> {
     let v = std::env::var(name).ok()?;
@@ -59,7 +59,7 @@ fn flag_opt(name: &str) -> Option<bool> {
                 tracing::warn!(
                     flag = name,
                     value = %v,
-                    "unrecognised boolean value for this PUNKTFUNK_* flag — expected \
+                    "unrecognised boolean value for this RUBYFUNK_* flag — expected \
                      1/true/yes/on or 0/false/no/off (any case); using the flag's default"
                 );
             }
@@ -72,35 +72,35 @@ fn flag(name: &str) -> bool {
     flag_opt(name).unwrap_or(false)
 }
 
-/// `PUNKTFUNK_ZEROCOPY` is explicitly truthy. Failed negotiation then errors
+/// `RUBYFUNK_ZEROCOPY` is explicitly truthy. Failed negotiation then errors
 /// instead of falling back to CPU. Both negotiation latches read this.
 pub fn zerocopy_forced() -> bool {
-    flag_opt("PUNKTFUNK_ZEROCOPY") == Some(true)
+    flag_opt("RUBYFUNK_ZEROCOPY") == Some(true)
 }
 
-/// Zero-copy is on. Unset defaults ON; `PUNKTFUNK_ZEROCOPY=0` opts out.
+/// Zero-copy is on. Unset defaults ON; `RUBYFUNK_ZEROCOPY=0` opts out.
 /// Global env switch only; each capture's [`ZeroCopyHealth`] applies its own latches.
 pub fn enabled() -> bool {
-    flag_opt("PUNKTFUNK_ZEROCOPY").unwrap_or(true)
+    flag_opt("RUBYFUNK_ZEROCOPY").unwrap_or(true)
 }
 
-/// `PUNKTFUNK_NVENC_RAW=0` keeps the NVENC lane on the import path: the capture converts each
+/// `RUBYFUNK_NVENC_RAW=0` keeps the NVENC lane on the import path: the capture converts each
 /// frame into a CUDA buffer and the encoder copies it into a slot. Default on: the capture
 /// hands the encoder the held dmabuf and the worker's fused pass writes the slot directly.
 pub fn nvenc_raw_enabled() -> bool {
-    flag_opt("PUNKTFUNK_NVENC_RAW").unwrap_or(true)
+    flag_opt("RUBYFUNK_NVENC_RAW").unwrap_or(true)
 }
 
-/// `PUNKTFUNK_NVENC_DIRECT=0` keeps a LINEAR raw frame on the worker's copy. Default on: NVENC
+/// `RUBYFUNK_NVENC_DIRECT=0` keeps a LINEAR raw frame on the worker's copy. Default on: NVENC
 /// encodes the producer's buffer in place ([`direct`]).
 pub fn nvenc_direct_enabled() -> bool {
-    flag_opt("PUNKTFUNK_NVENC_DIRECT").unwrap_or(true)
+    flag_opt("RUBYFUNK_NVENC_DIRECT").unwrap_or(true)
 }
 
-/// `PUNKTFUNK_NVENC_RM_IMPORT=0` keeps the in-place lane on its EGL import. Default on: the
+/// `RUBYFUNK_NVENC_RM_IMPORT=0` keeps the in-place lane on its EGL import. Default on: the
 /// lane maps a buffer through the memory object NVIDIA's driver holds behind it ([`rm`]).
 pub fn nvenc_rm_import_enabled() -> bool {
-    flag_opt("PUNKTFUNK_NVENC_RM_IMPORT").unwrap_or(true)
+    flag_opt("RUBYFUNK_NVENC_RM_IMPORT").unwrap_or(true)
 }
 
 /// Can this box run the fused convert at all? Asks a worker to export the convert timeline,
@@ -150,15 +150,15 @@ pub fn fused_convert_modifiers(fourcc: u32) -> Vec<u64> {
 }
 
 /// GPU RGB→NV12 before NVENC. Default ON: NVENC's internal CSC otherwise
-/// runs on the SM the game saturates. `PUNKTFUNK_NV12=0` restores RGB/BGRx.
+/// runs on the SM the game saturates. `RUBYFUNK_NV12=0` restores RGB/BGRx.
 /// LINEAR (gamescope/Vulkan-bridge) captures ignore this.
 pub fn nv12_enabled() -> bool {
-    flag_opt("PUNKTFUNK_NV12").unwrap_or(true)
+    flag_opt("RUBYFUNK_NV12").unwrap_or(true)
 }
 
 /// GPU importer for a capture. Default is the worker subprocess so a driver
 /// fault on a producer-invalidated dmabuf kills the worker, not the host
-/// (`design/zerocopy-worker-isolation.md`). `PUNKTFUNK_ZEROCOPY_INPROC=1`
+/// (`design/zerocopy-worker-isolation.md`). `RUBYFUNK_ZEROCOPY_INPROC=1`
 /// imports in-process (debug / A-B only).
 pub enum Importer {
     Remote(client::RemoteImporter),
@@ -169,9 +169,9 @@ impl Importer {
     /// An importer whose every YUV convert (NV12, YUV444, the fused pass) writes the session's
     /// `full_range`, or studio. `Err` means no GPU import — callers fall back to CPU.
     pub fn new_for_capture(full_range: bool) -> anyhow::Result<Importer> {
-        if flag("PUNKTFUNK_ZEROCOPY_INPROC") {
+        if flag("RUBYFUNK_ZEROCOPY_INPROC") {
             tracing::warn!(
-                "PUNKTFUNK_ZEROCOPY_INPROC=1 — GPU import runs IN-PROCESS; a driver fault on a \
+                "RUBYFUNK_ZEROCOPY_INPROC=1 — GPU import runs IN-PROCESS; a driver fault on a \
                  dying compositor's dmabuf can take the whole host down (debug/A-B use only)"
             );
             return Ok(Importer::InProc(Box::new(EglImporter::new(full_range)?)));

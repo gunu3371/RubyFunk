@@ -13,7 +13,7 @@
 //! virtual displays.
 
 /// SMPTE ST.2086 mastering volume + CEA-861.3 content light level, in HDR10
-/// SEI fixed-point units. Field-for-field the wire `punktfunk_core::quic::HdrMeta`;
+/// SEI fixed-point units. Field-for-field the wire `rubyfunk_core::quic::HdrMeta`;
 /// this copy keeps the encoders free of the QUIC crate. `pf_encode` converts.
 /// `Pod`: the driver protocol carries it as its 28 bytes, and the derive rejects padding.
 #[repr(C)]
@@ -337,7 +337,7 @@ pub fn note_hdr_capture_failed(source: HdrSource) {
             HdrSource::VirtualOutput => tracing::warn!(
                 "HDR capture negotiation failed on the virtual output — this host will offer SDR \
                  for virtual outputs until a gamescope display is torn down or the host restarts \
-                 (gamescope: is the spawned build punktfunk's? see packaging/gamescope)"
+                 (gamescope: is the spawned build rubyfunk's? see packaging/gamescope)"
             ),
         }
     }

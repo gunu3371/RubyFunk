@@ -33,7 +33,7 @@ impl InjectorService {
     fn start_inner(pin: Option<std::path::PathBuf>) -> InjectorService {
         let (tx, rx) = std::sync::mpsc::channel::<InputEvent>();
         if let Err(e) = std::thread::Builder::new()
-            .name("punktfunk-injector".into())
+            .name("rubyfunk-injector".into())
             .spawn(move || injector_service_thread(rx, pin))
         {
             tracing::error!(error = %e, "injector service thread spawn failed — pointer/keyboard input disabled");
@@ -269,7 +269,7 @@ fn coalesce(events: Vec<InputEvent>) -> Vec<InputEvent> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use punktfunk_core::input::{InputEvent, InputKind, SCROLL_FLAG_PRECISE};
+    use rubyfunk_core::input::{InputEvent, InputKind, SCROLL_FLAG_PRECISE};
     use std::cell::RefCell;
     use std::rc::Rc;
 

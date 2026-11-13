@@ -1,8 +1,8 @@
 //! What this host reads of the seat contract, in one place.
 //!
 //! [`HostRole`] is what the process is: the console host, the door, or a seat's host. The seat
-//! supervisor (`pf-seats`) marks each seat host with `PUNKTFUNK_SEAT_SESSION=1` plus a
-//! `PUNKTFUNK_SEAT_ID`; the host never learns how those sessions come to exist. No marker is
+//! supervisor (`pf-seats`) marks each seat host with `RUBYFUNK_SEAT_SESSION=1` plus a
+//! `RUBYFUNK_SEAT_ID`; the host never learns how those sessions come to exist. No marker is
 //! the console host.
 //!
 //! `serve` fixes the role with [`resolve`]. Any other process reads the environment at each
@@ -24,7 +24,7 @@ pub enum HostRole {
     /// `serve --door`, on a host that is no seat's: it advertises, pairs,
     /// serves the console and places every connect on a seat, and never streams itself.
     Door,
-    /// `PUNKTFUNK_SEAT_SESSION=1`: a supervisor-managed seat owns this host, not the console.
+    /// `RUBYFUNK_SEAT_SESSION=1`: a supervisor-managed seat owns this host, not the console.
     /// It is never the door, whatever asks for one.
     Seat(SeatRole),
 }
@@ -36,12 +36,12 @@ pub enum SeatRole {
     /// real monitor, the box's Seat defaults and no settings of its own
     /// (`design/web-console-structure-2026-10.md` §2.1).
     Contract,
-    /// `PUNKTFUNK_SEAT_OWNER=1`: the box owner's own host behind the door, at the desk. It
+    /// `RUBYFUNK_SEAT_OWNER=1`: the box owner's own host behind the door, at the desk. It
     /// serves the owner profile and the light-seat profiles that play inside the owner's host.
     /// It reads the row's contract, but the box's session there is the owner's.
     Owner,
     /// The owner's row in the headless session the seat runner starts it in
-    /// (`PUNKTFUNK_SEAT_HEADLESS=1`). Its Game Mode is the host's, as a seat's is.
+    /// (`RUBYFUNK_SEAT_HEADLESS=1`). Its Game Mode is the host's, as a seat's is.
     OwnerHeadless,
 }
 
@@ -137,18 +137,18 @@ struct Resolved {
 static RESOLVED: std::sync::OnceLock<Resolved> = std::sync::OnceLock::new();
 
 /// The role variables as they are now. `door_flag` is `serve --door`. A seat host refuses
-/// pairing whatever `PUNKTFUNK_PAIRING` says. The own-account marker counts only beside the
+/// pairing whatever `RUBYFUNK_PAIRING` says. The own-account marker counts only beside the
 /// seat marker.
 fn read(door_flag: bool) -> Resolved {
     let var = |name: &str| std::env::var(name).ok();
     let role = HostRole::from_env_values(
-        var("PUNKTFUNK_SEAT_SESSION").as_deref(),
-        var("PUNKTFUNK_SEAT_OWNER").as_deref(),
-        var("PUNKTFUNK_SEAT_HEADLESS").as_deref(),
+        var("RUBYFUNK_SEAT_SESSION").as_deref(),
+        var("RUBYFUNK_SEAT_OWNER").as_deref(),
+        var("RUBYFUNK_SEAT_HEADLESS").as_deref(),
         door_flag,
     );
-    let refused = var("PUNKTFUNK_PAIRING").as_deref() == Some("refused");
-    let own = var("PUNKTFUNK_SEAT_OWN_ACCOUNT").as_deref() == Some("1");
+    let refused = var("RUBYFUNK_PAIRING").as_deref() == Some("refused");
+    let own = var("RUBYFUNK_SEAT_OWN_ACCOUNT").as_deref() == Some("1");
     Resolved {
         role,
         pairing_refused: role.is_seat_host() || refused,
@@ -174,7 +174,7 @@ pub fn role() -> HostRole {
 }
 
 /// Whether this seat host runs on a person's own account, on Linux or Windows: the supervisor
-/// sets `PUNKTFUNK_SEAT_OWN_ACCOUNT=1` beside the seat marker. Nothing else decides that a host
+/// sets `RUBYFUNK_SEAT_OWN_ACCOUNT=1` beside the seat marker. Nothing else decides that a host
 /// runs as a real person. [`resolve`] fixes it with the role.
 pub fn own_account() -> bool {
     current().own_account
@@ -182,15 +182,15 @@ pub fn own_account() -> bool {
 
 /// Each role variable, the one value that sets its marker, and what to say of any other.
 const MARKERS: [(&str, &str, &str); 5] = [
-    ("PUNKTFUNK_SEAT_SESSION", "1", ONLY_ONE),
-    ("PUNKTFUNK_SEAT_OWNER", "1", ONLY_ONE),
-    ("PUNKTFUNK_SEAT_HEADLESS", "1", ONLY_ONE),
-    ("PUNKTFUNK_PAIRING", "refused", ONLY_REFUSED),
-    ("PUNKTFUNK_SEAT_OWN_ACCOUNT", "1", ONLY_ONE),
+    ("RUBYFUNK_SEAT_SESSION", "1", ONLY_ONE),
+    ("RUBYFUNK_SEAT_OWNER", "1", ONLY_ONE),
+    ("RUBYFUNK_SEAT_HEADLESS", "1", ONLY_ONE),
+    ("RUBYFUNK_PAIRING", "refused", ONLY_REFUSED),
+    ("RUBYFUNK_SEAT_OWN_ACCOUNT", "1", ONLY_ONE),
 ];
 const ONLY_ONE: &str = "only the value 1 sets it";
 const ONLY_REFUSED: &str = "only the value refused sets it";
-const NO_SEAT_MARKER: &str = "PUNKTFUNK_SEAT_SESSION is not 1";
+const NO_SEAT_MARKER: &str = "RUBYFUNK_SEAT_SESSION is not 1";
 const ON_A_SEAT_HOST: &str = "a seat host is never the door";
 
 /// Each seat-contract setting that is set and changes nothing, with why: a role variable whose
@@ -213,10 +213,10 @@ pub fn ignored_values(
         (vec![("--door", door_flag)], ON_A_SEAT_HOST)
     } else {
         let seat = vec![
-            ("PUNKTFUNK_SEAT_OWNER", seat_owner == Some("1")),
-            ("PUNKTFUNK_SEAT_HEADLESS", seat_headless == Some("1")),
-            ("PUNKTFUNK_SEAT_OWN_ACCOUNT", own_account == Some("1")),
-            ("PUNKTFUNK_SEAT_ID", seat_id_set),
+            ("RUBYFUNK_SEAT_OWNER", seat_owner == Some("1")),
+            ("RUBYFUNK_SEAT_HEADLESS", seat_headless == Some("1")),
+            ("RUBYFUNK_SEAT_OWN_ACCOUNT", own_account == Some("1")),
+            ("RUBYFUNK_SEAT_ID", seat_id_set),
         ];
         (seat, NO_SEAT_MARKER)
     };
@@ -232,7 +232,7 @@ pub fn ignored_values(
 /// [`ignored_values`] of this process, for `serve` to warn of once at startup.
 pub fn ignored(door_flag: bool) -> Vec<(&'static str, &'static str)> {
     let values = MARKERS.map(|(name, ..)| std::env::var(name).ok());
-    let seat_id_set = std::env::var_os("PUNKTFUNK_SEAT_ID").is_some();
+    let seat_id_set = std::env::var_os("RUBYFUNK_SEAT_ID").is_some();
     ignored_values(
         values.each_ref().map(Option::as_deref),
         door_flag,
@@ -249,7 +249,7 @@ pub fn validate_seat_id(raw: &str) -> Result<&str, &'static str> {
             .all(|byte| matches!(byte, b'0'..=b'9' | b'a'..=b'f'));
     valid
         .then_some(raw)
-        .ok_or("PUNKTFUNK_SEAT_ID must be 32 lowercase hexadecimal characters")
+        .ok_or("RUBYFUNK_SEAT_ID must be 32 lowercase hexadecimal characters")
 }
 
 const SEAT_ID_LEN: usize = 32;
@@ -262,15 +262,15 @@ pub fn seat_id() -> Result<Option<String>, &'static str> {
         return Ok(None);
     }
     // A seat without an id would mint audio devnodes the console host also matches.
-    let raw = std::env::var_os("PUNKTFUNK_SEAT_ID")
-        .ok_or("PUNKTFUNK_SEAT_SESSION=1 without a PUNKTFUNK_SEAT_ID")?;
+    let raw = std::env::var_os("RUBYFUNK_SEAT_ID")
+        .ok_or("RUBYFUNK_SEAT_SESSION=1 without a RUBYFUNK_SEAT_ID")?;
     let text = raw
         .to_str()
-        .ok_or("PUNKTFUNK_SEAT_ID must be valid Unicode")?;
+        .ok_or("RUBYFUNK_SEAT_ID must be valid Unicode")?;
     validate_seat_id(text).map(|id| Some(id.to_owned()))
 }
 
-/// The box's config dir a seat host reads its trust from (`PUNKTFUNK_TRUST_DIR`): the
+/// The box's config dir a seat host reads its trust from (`RUBYFUNK_TRUST_DIR`): the
 /// identity, the pairing store, `profiles.json` and the device display overlays. Read only;
 /// the box host is their one writer. `None` on a host that is no seat's, as for [`seat_id`],
 /// and for a relative path.
@@ -278,7 +278,7 @@ pub fn trust_dir() -> Option<std::path::PathBuf> {
     if !role().is_seat_host() {
         return None;
     }
-    std::env::var_os("PUNKTFUNK_TRUST_DIR")
+    std::env::var_os("RUBYFUNK_TRUST_DIR")
         .map(std::path::PathBuf::from)
         .filter(|dir| dir.is_absolute())
 }
@@ -309,21 +309,21 @@ pub fn mark_excuses_drop(
             .is_ok_and(|age| age <= DISCONNECT_MARK_LIFE)
 }
 
-/// Where a host reads the box's library from (`PUNKTFUNK_LIBRARY_DIR`): `library*.json`,
+/// Where a host reads the box's library from (`RUBYFUNK_LIBRARY_DIR`): `library*.json`,
 /// `library-metadata/`, and on Windows the plugin manifests and grants an `exec` entry resolves
 /// against. A Windows seat names the box's config dir; on Linux the door and every seat but the
 /// owner's name the supervisor's copy of the owner's library. Read only; the box's host, or the
 /// owner's, is their one writer. `None` on every other host, and for a relative path.
 pub fn box_library_dir() -> Option<std::path::PathBuf> {
-    std::env::var_os("PUNKTFUNK_LIBRARY_DIR")
+    std::env::var_os("RUBYFUNK_LIBRARY_DIR")
         .map(std::path::PathBuf::from)
         .filter(|dir| dir.is_absolute())
 }
 
-/// A Windows seat's own `steam.exe` (`PUNKTFUNK_SEAT_STEAM`), which may not be copied yet. A seat
+/// A Windows seat's own `steam.exe` (`RUBYFUNK_SEAT_STEAM`), which may not be copied yet. A seat
 /// host starts Steam from nowhere else. `None` on every other host, and for a relative path.
 pub fn seat_steam() -> Option<std::path::PathBuf> {
-    std::env::var_os("PUNKTFUNK_SEAT_STEAM")
+    std::env::var_os("RUBYFUNK_SEAT_STEAM")
         .map(std::path::PathBuf::from)
         .filter(|exe| exe.is_absolute())
 }
@@ -335,19 +335,19 @@ pub fn library_dir() -> std::path::PathBuf {
 }
 
 /// Whether devices pair with the box and never with this host: every seat host, and any other
-/// host with `PUNKTFUNK_PAIRING=refused`. A knock is refused, a PIN window never opens.
+/// host with `RUBYFUNK_PAIRING=refused`. A knock is refused, a PIN window never opens.
 /// [`resolve`] fixes it with the role.
 pub fn pairing_refused() -> bool {
     current().pairing_refused
 }
 
 /// The seat supervisor's pad broker: a seat host asks here for the pads it cannot make itself.
-pub const PADS_SOCKET: &str = "/run/punktfunk/pads.sock";
+pub const PADS_SOCKET: &str = "/run/rubyfunk/pads.sock";
 
 /// The supervisor's uinput proxy for `account`, a CUSE device under `/dev`; the seat's unit
 /// binds it over `/dev/uinput`. Sysfs names it with `!` for each `/`.
 pub fn uinput_devname(account: &str) -> String {
-    format!("punktfunk/uinput-{account}")
+    format!("rubyfunk/uinput-{account}")
 }
 
 #[cfg(test)]
@@ -381,9 +381,9 @@ mod tests {
         assert!(!mark_excuses_drop(&u64::MAX.to_string(), since, at(1_010)));
     }
 
-    /// What each predicate answers, by the markers set. Inputs: `S` `PUNKTFUNK_SEAT_SESSION=1`,
-    /// `O` `PUNKTFUNK_SEAT_OWNER=1`, `H` `PUNKTFUNK_SEAT_HEADLESS=1`, `D` `serve --door`, `P`
-    /// `PUNKTFUNK_PAIRING=refused`, `A` `PUNKTFUNK_SEAT_OWN_ACCOUNT=1`. Answers, in [`answers`]'
+    /// What each predicate answers, by the markers set. Inputs: `S` `RUBYFUNK_SEAT_SESSION=1`,
+    /// `O` `RUBYFUNK_SEAT_OWNER=1`, `H` `RUBYFUNK_SEAT_HEADLESS=1`, `D` `serve --door`, `P`
+    /// `RUBYFUNK_PAIRING=refused`, `A` `RUBYFUNK_SEAT_OWN_ACCOUNT=1`. Answers, in [`answers`]'
     /// order: `s` seat host, `o` owner seat, `c` follows the contract, `r` runs a seat session,
     /// `d` door, `p` pairing refused, `e` a missing seat id is an error, `a` own account.
     const TRUTH: [(&str, &str); 64] = [
@@ -456,11 +456,11 @@ mod tests {
     /// Each role variable in [`TRUTH`]'s input order: its name, the value that sets its marker,
     /// and a value that must not.
     const VARS: [(&str, &str, &str); 5] = [
-        ("PUNKTFUNK_SEAT_SESSION", "1", "true"),
-        ("PUNKTFUNK_SEAT_OWNER", "1", "0"),
-        ("PUNKTFUNK_SEAT_HEADLESS", "1", "yes"),
-        ("PUNKTFUNK_PAIRING", "refused", "1"),
-        ("PUNKTFUNK_SEAT_OWN_ACCOUNT", "1", "true"),
+        ("RUBYFUNK_SEAT_SESSION", "1", "true"),
+        ("RUBYFUNK_SEAT_OWNER", "1", "0"),
+        ("RUBYFUNK_SEAT_HEADLESS", "1", "yes"),
+        ("RUBYFUNK_PAIRING", "refused", "1"),
+        ("RUBYFUNK_SEAT_OWN_ACCOUNT", "1", "true"),
     ];
 
     /// Set on the child only: `flag` for a `serve --door` process.
@@ -514,7 +514,7 @@ mod tests {
         child
             .args(["--exact", &format!("{module}::{test}"), "--nocapture"])
             .env(CHILD, "none")
-            .env_remove("PUNKTFUNK_SEAT_ID");
+            .env_remove("RUBYFUNK_SEAT_ID");
         for (name, ..) in VARS {
             child.env_remove(name);
         }
@@ -592,8 +592,8 @@ mod tests {
         ];
         for (marker, id, answer) in table {
             let mut child = child("a_seat_id_counts_only_with_the_seat_marker");
-            child.envs(marker.map(|value| ("PUNKTFUNK_SEAT_SESSION", value)));
-            child.envs(id.map(|value| ("PUNKTFUNK_SEAT_ID", value)));
+            child.envs(marker.map(|value| ("RUBYFUNK_SEAT_SESSION", value)));
+            child.envs(id.map(|value| ("RUBYFUNK_SEAT_ID", value)));
             assert_eq!(
                 printed(&mut child),
                 [answer],
@@ -639,7 +639,7 @@ mod tests {
                 (owner, NO_SEAT_MARKER),
                 (headless, NO_SEAT_MARKER),
                 (own, NO_SEAT_MARKER),
-                ("PUNKTFUNK_SEAT_ID", NO_SEAT_MARKER),
+                ("RUBYFUNK_SEAT_ID", NO_SEAT_MARKER),
             ]
         );
         assert_eq!(
@@ -659,8 +659,8 @@ mod tests {
         }
         let mut near_misses = child(TEST);
         near_misses.envs(VARS.map(|(name, _, near_miss)| (name, near_miss)));
-        near_misses.env("PUNKTFUNK_SEAT_ID", "stray");
-        let named = VARS.map(|(name, ..)| name).join(" ") + " PUNKTFUNK_SEAT_ID";
+        near_misses.env("RUBYFUNK_SEAT_ID", "stray");
+        let named = VARS.map(|(name, ..)| name).join(" ") + " RUBYFUNK_SEAT_ID";
         assert_eq!(printed(&mut near_misses), [named]);
 
         let mut seat = child(TEST);

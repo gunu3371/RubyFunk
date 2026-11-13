@@ -1,7 +1,7 @@
 #requires -Version 5.1
 <#
 .SYNOPSIS
-  One-shot DEV redeploy of the pf-vdisplay (punktfunk) virtual-display driver on the test box:
+  One-shot DEV redeploy of the pf-vdisplay (rubyfunk) virtual-display driver on the test box:
   (optional) build -> stop host -> stage+sign+install -> reload the adapter -> start host.
 
 .DESCRIPTION
@@ -19,24 +19,24 @@
   + Version_Number=10.0.26100.0, per drivers/deploy-dev.ps1); otherwise build separately and omit it.
 
 .PARAMETER Build       Run `cargo build --release` in packaging/windows/drivers first (needs the MSVC env).
-.PARAMETER Service     Host service name. Default PunktfunkHost.
+.PARAMETER Service     Host service name. Default RubyFunkHost.
 .PARAMETER Thumbprint  Passthrough to deploy-dev.ps1 (test-cert SHA-1). Omit to use its default.
 .PARAMETER Nefconc     Passthrough to deploy-dev.ps1 (nefconc.exe path). Omit to use its default.
 .PARAMETER Verify      After redeploy, probe to confirm ADD works (passes through to the reset's
-                       -Verify; needs -Probe or punktfunk-probe.exe on PATH).
-.PARAMETER Probe       Path to punktfunk-probe.exe for -Verify.
+                       -Verify; needs -Probe or rubyfunk-probe.exe on PATH).
+.PARAMETER Probe       Path to rubyfunk-probe.exe for -Verify.
 
 .EXAMPLE
   # already built the driver in an MSVC shell -> deploy it cleanly:
   powershell -ExecutionPolicy Bypass -File redeploy-pf-vdisplay.ps1
 .EXAMPLE
   # build + deploy + verify, from an MSVC dev shell:
-  powershell -ExecutionPolicy Bypass -File redeploy-pf-vdisplay.ps1 -Build -Verify -Probe C:\t-goal1\debug\punktfunk-probe.exe
+  powershell -ExecutionPolicy Bypass -File redeploy-pf-vdisplay.ps1 -Build -Verify -Probe C:\t-goal1\debug\rubyfunk-probe.exe
 #>
 [CmdletBinding()]
 param(
     [switch]$Build,
-    [string]$Service = 'PunktfunkHost',
+    [string]$Service = 'RubyFunkHost',
     [string]$Thumbprint,
     [string]$Nefconc,
     [switch]$Verify,

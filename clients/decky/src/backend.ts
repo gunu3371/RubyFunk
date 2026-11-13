@@ -1,6 +1,6 @@
 // Bridge to the Python backend (main.py) + shared types.
 //
-// Every call here is a thin shell over the headless `punktfunk` CLI, so these types are the
+// Every call here is a thin shell over the headless `rubyfunk` CLI, so these types are the
 // CLI's JSON shapes rather than anything this plugin invents. That is deliberate: the plugin
 // used to model the client's stores itself and drifted from them with every field the client
 // added.
@@ -14,7 +14,7 @@ export interface Preset {
 }
 
 /**
- * A host answering on mDNS right now (`punktfunk discover --json`).
+ * A host answering on mDNS right now (`rubyfunk discover --json`).
  *
  * `saved`/`paired` are annotated BY THE CLI against the saved-hosts store — fingerprint first,
  * address second. The plugin does not join the two lists itself; that rule living in one place
@@ -36,7 +36,7 @@ export interface DiscoveredHost {
 }
 
 /**
- * A host in the shared saved-hosts store (`punktfunk hosts list --probe --json`) — the same
+ * A host in the shared saved-hosts store (`rubyfunk hosts list --probe --json`) — the same
  * `client-known-hosts.json` the desktop client owns.
  *
  * `online` comes from a mDNS-INDEPENDENT probe, so a host reached over Tailscale/VPN is not
@@ -95,7 +95,7 @@ export interface PairResult extends CliResult {
 }
 
 /**
- * One title of a host's library (`punktfunk library <ref> --json`). `id` is store-qualified —
+ * One title of a host's library (`rubyfunk library <ref> --json`). `id` is store-qualified —
  * `steam:570`, `custom:…` — and is the handle a launch names; the Steam ones are what the game
  * page matches against Steam's own appids.
  */
@@ -109,7 +109,7 @@ export interface LibraryResult extends CliResult {
   games?: LibraryGame[];
 }
 
-/** One profile on a host, from `punktfunk profiles <ref> --json`. */
+/** One profile on a host, from `rubyfunk profiles <ref> --json`. */
 export interface HostProfile {
   id: string;
   display_name: string;
@@ -128,7 +128,7 @@ export interface ProfilesResult extends CliResult {
 }
 
 export interface RunnerInfo {
-  runner: string; // absolute path to bin/punktfunkrun.sh
+  runner: string; // absolute path to bin/rubyfunkrun.sh
   app_id: string; // flatpak app id
   exists: boolean;
   // Which client the backend resolved: the flatpak, a native install (.deb/rpm/sysext/AUR/nix),
@@ -148,7 +148,7 @@ export interface UpdateInfo {
   // The CLIENT versions independently of this plugin, and how it updates depends on how it was
   // installed. A flatpak is a per-user install `sudo flatpak update` never touches, compared by
   // OSTree commit; every other install (.deb/.rpm/pacman/sysext/nix/source) is compared by the
-  // client itself against the signed per-channel manifest (`punktfunk-client --check-update`).
+  // client itself against the signed per-channel manifest (`rubyfunk-client --check-update`).
   client_update_available: boolean;
   client_current: string; // installed client commit (flatpak) or version (native)
   client_latest: string; // newest client commit (flatpak) or version (native)
@@ -157,7 +157,7 @@ export interface UpdateInfo {
   // packaged root helper), "none" (nothing here can — show `client_command`).
   client_applier: string;
   client_command: string; // one copy-pastable line that updates this install by hand
-  client_opt_in: string; // set when one-tap WOULD work after `usermod -aG punktfunk-update`
+  client_opt_in: string; // set when one-tap WOULD work after `usermod -aG rubyfunk-update`
   // The client check couldn't complete — NEVER rendered as "up to date". "client-outdated" |
   // "client-unavailable" | "no-origin" | "fetch-failed" (flatpak: the remote was unreachable).
   client_error?: string;
@@ -234,7 +234,7 @@ export interface GameArt {
   hero_type?: string;
   logo?: string;
   logo_type?: string;
-  /** The icon's bytes (`jpg` from Steam's cache or CDN, `png` for the Punktfunk fallback). */
+  /** The icon's bytes (`jpg` from Steam's cache or CDN, `png` for the RubyFunk fallback). */
   icon?: string;
   icon_type?: string;
   /** A ready file for SetShortcutIcon — only set for the PNG fallback. */
@@ -264,7 +264,7 @@ export const streamRunning = callable<[], { running: boolean }>("stream_running"
 export const hostAction = callable<[action: string], { ok: boolean; error?: string }>(
   "host_action",
 );
-// End a title this device launched on the host (`punktfunk end-game`). `ok` when it is gone;
+// End a title this device launched on the host (`rubyfunk end-game`). `ok` when it is gone;
 // `notice` is the CLI's sentence either way.
 export const endGame = callable<
   [ref: string, gameId: string],
@@ -272,7 +272,7 @@ export const endGame = callable<
 >("end_game");
 export const checkUpdate = callable<[force: boolean], UpdateInfo>("check_update");
 // Update the client by whichever route its install supports: `flatpak update --user` for the
-// flatpak, `punktfunk-client --apply-update` (the packaged root helper) for a one-tap-capable
+// flatpak, `rubyfunk-client --apply-update` (the packaged root helper) for a one-tap-capable
 // native install. Everything else comes back `ok: false, error: "manual"` with `command` — the
 // line to run by hand. A package-manager run can take minutes; the backend allows 15.
 export const updateClient = callable<

@@ -29,7 +29,7 @@ pub(super) struct DisplayTracker {
     /// must not know about audio, and the audio thread cannot see the glass).
     ///
     /// Published RAW. The HUD shaves the OS present floor off its shown display / end-to-end
-    /// numbers (`StatsOverlay.osFloorMs` — metrics report what Punktfunk controls), but sound has
+    /// numbers (`StatsOverlay.osFloorMs` — metrics report what RubyFunk controls), but sound has
     /// to reach the ear when the light reaches the eye, and a floor-shaved reference would place
     /// audio a whole latch period early on every device. Presentation policy, not physics.
     video_e2e: Arc<AtomicU64>,
@@ -231,7 +231,7 @@ pub(super) fn picture_size(codec: &MediaCodec) -> Option<(i32, i32)> {
 /// The dataspace a format change leaves: the stream's own colour, else the decoder's report.
 pub(super) fn stream_dataspace(
     codec: &MediaCodec,
-    stream: Option<punktfunk_core::quic::ColorInfo>,
+    stream: Option<rubyfunk_core::quic::ColorInfo>,
 ) -> Option<DataSpace> {
     stream
         .map(|c| color_dataspace(&c))
@@ -273,8 +273,8 @@ fn reported_dataspace(codec: &MediaCodec) -> Option<DataSpace> {
 ///
 /// Full-range SDR is tagged sRGB: a desktop's pixels are sRGB-encoded, and SurfaceFlinger
 /// treats BT.709's transfer the same way. Studio-range SDR (an older host) is BT709.
-pub(super) fn color_dataspace(color: &punktfunk_core::quic::ColorInfo) -> DataSpace {
-    use punktfunk_core::quic::ColorInfo;
+pub(super) fn color_dataspace(color: &rubyfunk_core::quic::ColorInfo) -> DataSpace {
+    use rubyfunk_core::quic::ColorInfo;
     let full = color.full_range != 0;
     match (color.transfer, full) {
         (ColorInfo::TRC_PQ, true) => DataSpace::Bt2020Pq,
@@ -289,7 +289,7 @@ pub(super) fn color_dataspace(color: &punktfunk_core::quic::ColorInfo) -> DataSp
 /// [`color_dataspace`] as an ASurfaceControl layer on `sdk` takes it. Android 10 aborts the
 /// process and 11 ignores anything but sRGB, scRGB, P3 and full-range PQ, so `None` there sends
 /// a studio-range session to the SurfaceView, whose decoder tags its own buffers.
-pub(super) fn layer_dataspace(color: &punktfunk_core::quic::ColorInfo, sdk: u32) -> Option<i32> {
+pub(super) fn layer_dataspace(color: &rubyfunk_core::quic::ColorInfo, sdk: u32) -> Option<i32> {
     let ds = color_dataspace(color);
     (sdk >= 31 || matches!(ds, DataSpace::Srgb | DataSpace::Bt2020Pq)).then(|| i32::from(ds))
 }

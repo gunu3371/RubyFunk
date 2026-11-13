@@ -19,9 +19,9 @@ function pairErrorBody(error: string | undefined, name: string): string {
     case "unreachable":
       return `Couldn’t reach ${name}`;
     case "client-outdated":
-      return "Update the Punktfunk client to pair from here";
+      return "Update the RubyFunk client to pair from here";
     case "client-unavailable":
-      return "Couldn’t reach the Punktfunk client — is it still installed?";
+      return "Couldn’t reach the RubyFunk client — is it still installed?";
     default:
       return "Pairing failed";
   }
@@ -45,7 +45,7 @@ export const PairModal: FC<{
     try {
       const res = await pair(host.addr, host.port, pin, "Steam Deck");
       if (res.ok) {
-        toaster.toast({ title: "Punktfunk", body: `Paired with ${host.name}` });
+        toaster.toast({ title: "RubyFunk", body: `Paired with ${host.name}` });
         onPaired();
         closeModal?.();
       } else {

@@ -266,7 +266,7 @@ pub trait VirtualDisplay: Send {
     /// Default no-op; only gamescope spawn uses it.
     fn set_launch_command(&mut self, _cmd: Option<String>) {}
     /// Resolved gamescope sub-mode ([`resolve_gamescope_route`](crate::resolve_gamescope_route)).
-    /// Instance-local: env (`PUNKTFUNK_GAMESCOPE_NODE`/`_SESSION`) races concurrent sessions.
+    /// Instance-local: env (`RUBYFUNK_GAMESCOPE_NODE`/`_SESSION`) races concurrent sessions.
     /// Default no-op.
     fn set_gamescope_route(&mut self, _route: Option<crate::GamescopeRoute>) {}
     /// [`SessionIsolation`] for an independent gamescope spawn (`design/gamescope-multiuser.md`).

@@ -3,7 +3,7 @@
 # scripts/build-xcframework.sh run it, then diff include/.
 [package]
 name = "gen-headers"
-description = "Regenerate include/*.h from the punktfunk C ABI with cbindgen"
+description = "Regenerate include/*.h from the rubyfunk C ABI with cbindgen"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -17,7 +17,7 @@ cbindgen = "0.29"
 
 [dev-dependencies]
 # `abi_header_hash` compares the generated header with `ABI_HEADER_HASH`.
-punktfunk-core = { path = "../../crates/core/punktfunk-core" }
+rubyfunk-core = { path = "../../crates/core/rubyfunk-core" }
 
 [lints]
 workspace = true

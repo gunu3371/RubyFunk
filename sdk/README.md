@@ -1,19 +1,19 @@
-# @punktfunk/host
+# @rubyfunk/host
 
-TypeScript client for the [Punktfunk](https://git.unom.io/unom/punktfunk) host: every
+TypeScript client for the [RubyFunk](https://git.unom.io/unom/punktfunk) host: every
 management-API endpoint typed, plus the host's event stream with reconnect and resume. Built on
 [Effect](https://effect.website); you don't need to know Effect to use it.
 
 ## Install
 
-The package is on the unom npm registry. Point the `@punktfunk` scope at it once, in `.npmrc`:
+The package is on the unom npm registry. Point the `@rubyfunk` scope at it once, in `.npmrc`:
 
 ```ini
-@punktfunk:registry=https://git.unom.io/api/packages/unom/npm/
+@rubyfunk:registry=https://git.unom.io/api/packages/unom/npm/
 ```
 
 ```sh
-bun add @punktfunk/host effect     # or: npm i @punktfunk/host effect
+bun add @rubyfunk/host effect     # or: npm i @rubyfunk/host effect
 ```
 
 `effect` is a peer dependency, so your code and the SDK share one copy.
@@ -24,7 +24,7 @@ On the host box `connect()` needs no configuration: it reads the URL, token and 
 host writes to its config directory.
 
 ```ts
-import { connect } from "@punktfunk/host";
+import { connect } from "@rubyfunk/host";
 
 const pf = await connect();
 const clients = await pf.api.listPairedClients();
@@ -35,8 +35,8 @@ pf.events.on("stream.started", (e) => {
 });
 ```
 
-`@punktfunk/host/effect` exposes the same client as Effect services and streams, and
-`@punktfunk/host/core` is the Node-free build for a browser.
+`@rubyfunk/host/effect` exposes the same client as Effect services and streams, and
+`@rubyfunk/host/core` is the Node-free build for a browser.
 
 ## Docs
 
@@ -51,7 +51,7 @@ pf.events.on("stream.started", (e) => {
 
 ```sh
 bun install
-bun run gen        # regenerate src/gen/punktfunk.ts from ../api/openapi.json
+bun run gen        # regenerate src/gen/rubyfunk.ts from ../api/openapi.json
 bun run typecheck
 bun test
 ```

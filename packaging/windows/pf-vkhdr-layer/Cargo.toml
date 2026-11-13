@@ -2,7 +2,7 @@
 name = "pf-vkhdr-layer"
 version = "0.1.0"
 edition = "2024"
-description = "punktfunk Vulkan implicit layer: inject HDR10/scRGB surface formats on the virtual display so Vulkan games (id Tech, etc.) detect HDR over an IddCx virtual display"
+description = "rubyfunk Vulkan implicit layer: inject HDR10/scRGB surface formats on the virtual display so Vulkan games (id Tech, etc.) detect HDR over an IddCx virtual display"
 license = "MIT OR Apache-2.0"
 publish = false
 
@@ -30,6 +30,6 @@ opt-level = 2
 panic = "abort"
 strip = true
 
-# Standalone package (not a member of the main punktfunk cargo workspace) — it's a Windows-only
+# Standalone package (not a member of the main rubyfunk cargo workspace) — it's a Windows-only
 # cdylib built on its own by pack-host-installer.ps1, like the UMDF driver crates next to it.
 [workspace]

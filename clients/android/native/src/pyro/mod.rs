@@ -33,9 +33,9 @@ mod imp {
     use ndk::native_window::NativeWindow;
     use pf_client_video::video_color::ColorDesc;
     use pf_client_video::video_pyrowave::{DecodeTimeline, PyroWaveDecoder};
-    use punktfunk_core::au::AuMemory;
-    use punktfunk_core::client::NativeClient;
-    use punktfunk_core::error::PunktfunkError;
+    use rubyfunk_core::au::AuMemory;
+    use rubyfunk_core::client::NativeClient;
+    use rubyfunk_core::error::RubyFunkError;
     use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
     use std::sync::{mpsc, Arc};
     use std::time::{Duration, Instant};
@@ -192,7 +192,7 @@ mod imp {
     fn open_decoder(
         client: &NativeClient,
         dev: &PyroDevice,
-        mode: punktfunk_core::config::Mode,
+        mode: rubyfunk_core::config::Mode,
     ) -> Result<PyroWaveDecoder> {
         // The wavelet bitstream carries no VUI, so the colour contract is the handshake's.
         let color = ColorDesc {
@@ -206,7 +206,7 @@ mod imp {
             mode.width,
             mode.height,
             client.shard_payload as usize,
-            client.chroma_format == punktfunk_core::quic::CHROMA_IDC_444,
+            client.chroma_format == rubyfunk_core::quic::CHROMA_IDC_444,
             color,
             client.bit_depth >= 10,
         )
@@ -256,7 +256,7 @@ mod imp {
     ) {
         let result = run_inner(&client, &window, &shutdown, &stats, &opts);
         // Back to heap memory: the next lane lends its own ring, and this one can go.
-        client.set_au_memory(Arc::new(punktfunk_core::au::HeapPool::default()));
+        client.set_au_memory(Arc::new(rubyfunk_core::au::HeapPool::default()));
         if let Err(e) = result {
             if shutdown.load(Ordering::Relaxed) {
                 // Teardown, not a fault: Kotlin sets the flag and releases the Surface in the
@@ -319,7 +319,7 @@ mod imp {
             mode.width,
             mode.height,
             depth,
-            if client.chroma_format == punktfunk_core::quic::CHROMA_IDC_444 {
+            if client.chroma_format == rubyfunk_core::quic::CHROMA_IDC_444 {
                 "4:4:4"
             } else {
                 "4:2:0"
@@ -370,7 +370,7 @@ mod imp {
 
             let frame = match client.next_frame(Duration::from_millis(5)) {
                 Ok(f) => f,
-                Err(PunktfunkError::NoFrame) => {
+                Err(RubyFunkError::NoFrame) => {
                     if received == 0 && !warned_silent && started.elapsed() > NO_VIDEO_PATIENCE {
                         warned_silent = true;
                         log::warn!(
@@ -399,7 +399,7 @@ mod imp {
             };
             let pulled_ns = if want_stamps { now_realtime_ns() } else { 0 };
 
-            let aligned = frame.flags & punktfunk_core::packet::USER_FLAG_CHUNK_ALIGNED != 0;
+            let aligned = frame.flags & rubyfunk_core::packet::USER_FLAG_CHUNK_ALIGNED != 0;
             let decoded = match decoder.decode_au(frame.data, aligned, frame.complete) {
                 Ok(d) => d,
                 Err(e) => {
@@ -493,7 +493,7 @@ pub(crate) fn available() -> bool {
 /// `ndk` crate to name the window with (and no decode module to call it).
 #[cfg(all(target_os = "android", not(target_pointer_width = "64")))]
 pub(crate) fn run(
-    _client: std::sync::Arc<punktfunk_core::client::NativeClient>,
+    _client: std::sync::Arc<rubyfunk_core::client::NativeClient>,
     _window: ndk::native_window::NativeWindow,
     _shutdown: std::sync::Arc<std::sync::atomic::AtomicBool>,
     _stats: std::sync::Arc<crate::stats::VideoStats>,

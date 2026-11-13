@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the punktfunk-client .deb (the native GTK4 client) for Ubuntu/Debian desktops.
+# Build the rubyfunk-client .deb (the native GTK4 client) for Ubuntu/Debian desktops.
 #
 # Counterpart to build-deb.sh (the host package); same conventions: runtime Depends are
 # computed by dpkg-shlibdeps from the binaries' DT_NEEDED (GTK4/libadwaita, SDL3, the
@@ -14,7 +14,7 @@
 #
 # Usage: VERSION=0.0.1~ci42.gdeadbee [ARCH=amd64] [TARGET=<rust triple>] \
 #          bash packaging/debian/build-client-deb.sh
-# Output: dist/punktfunk-client_<version>_<arch>.deb
+# Output: dist/rubyfunk-client_<version>_<arch>.deb
 #
 # TARGET cross-compiles (and moves the binaries under target/<triple>/release). Set it
 # together with ARCH — e.g. ARCH=arm64 TARGET=aarch64-unknown-linux-gnu inside the
@@ -24,8 +24,8 @@ set -euo pipefail
 VERSION="${VERSION:?set VERSION (e.g. 0.0.1 or 0.0.1~ci42.gdeadbee)}"
 ARCH="${ARCH:-amd64}"
 TARGET="${TARGET:-}"
-PKG="punktfunk-client"
-CRATE="punktfunk-client-linux"
+PKG="rubyfunk-client"
+CRATE="rubyfunk-client-linux"
 ROOTDIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOTDIR"
 
@@ -42,17 +42,17 @@ fi
 BIN="$OUTDIR/$PKG"
 # The Vulkan/Skia session streamer the shell execs for a connect — shipped alongside the shell
 # (the shell resolves it as its /usr/bin sibling), or desktop streaming breaks.
-SESSION_BIN="$OUTDIR/punktfunk-session"
+SESSION_BIN="$OUTDIR/rubyfunk-session"
 # The headless CLI (design/client-architecture-split.md §4) ships with every client.
-CLI_BIN="$OUTDIR/punktfunk"
-# pf-update: the client's own copy of the root helper (`punktfunk-client --apply-update`).
+CLI_BIN="$OUTDIR/rubyfunk"
+# pf-update: the client's own copy of the root helper (`rubyfunk-client --apply-update`).
 UPDATE_BIN="$OUTDIR/pf-update"
 # Builds only when a binary is missing, so it tests every binary installed below. A caller with
 # a restored target must build first: an existing binary is packaged as-is, however old.
 if [ ! -x "$BIN" ] || [ ! -x "$SESSION_BIN" ] || [ ! -x "$CLI_BIN" ] || [ ! -x "$UPDATE_BIN" ]; then
-  echo "==> building $CRATE + punktfunk-client-session + punktfunk-cli + pf-update (release${TARGET:+ for $TARGET})"
-  cargo build --release --locked "${CARGO_TARGET_ARGS[@]}" -p "$CRATE" -p punktfunk-client-session \
-    -p punktfunk-cli -p pf-update
+  echo "==> building $CRATE + rubyfunk-client-session + rubyfunk-cli + pf-update (release${TARGET:+ for $TARGET})"
+  cargo build --release --locked "${CARGO_TARGET_ARGS[@]}" -p "$CRATE" -p rubyfunk-client-session \
+    -p rubyfunk-cli -p pf-update
 fi
 
 STAGE="$(mktemp -d)"
@@ -61,44 +61,42 @@ DOCDIR="$STAGE/usr/share/doc/$PKG"
 
 # --- file layout --------------------------------------------------------------
 install -Dm0755 "$BIN"                                   "$STAGE/usr/bin/$PKG"
-install -Dm0755 "$SESSION_BIN"                           "$STAGE/usr/bin/punktfunk-session"
-install -Dm0755 "$CLI_BIN"                               "$STAGE/usr/bin/punktfunk"
-install -Dm0644 packaging/linux/io.unom.punktfunk.desktop \
-                "$STAGE/usr/share/applications/io.unom.punktfunk.desktop"
+install -Dm0755 "$SESSION_BIN"                           "$STAGE/usr/bin/rubyfunk-session"
+install -Dm0755 "$CLI_BIN"                               "$STAGE/usr/bin/rubyfunk"
+install -Dm0644 packaging/linux/io.github.gunu3371.rubyfunk.desktop \
+                "$STAGE/usr/share/applications/io.github.gunu3371.rubyfunk.desktop"
 # Second launcher, straight into the gamepad console (`--browse`): the couch entry point a
 # TV/HTPC user picks from the app grid, and what gets added to Steam as a non-Steam game.
-install -Dm0644 packaging/linux/io.unom.punktfunk.console.desktop \
-                "$STAGE/usr/share/applications/io.unom.punktfunk.console.desktop"
+install -Dm0644 packaging/linux/io.github.gunu3371.rubyfunk.console.desktop \
+                "$STAGE/usr/share/applications/io.github.gunu3371.rubyfunk.console.desktop"
 # The app icon the desktop entry (and the About dialog) name. Without it the launcher falls
 # back to a generic monitor glyph, which is what shipped until now.
-install -Dm0644 packaging/linux/icons/hicolor/scalable/apps/io.unom.punktfunk.svg \
-                "$STAGE/usr/share/icons/hicolor/scalable/apps/io.unom.punktfunk.svg"
-# The CamelCase icon name, which desktop entries users already have still name.
-ln -s io.unom.punktfunk.svg "$STAGE/usr/share/icons/hicolor/scalable/apps/io.unom.Punktfunk.svg"
+install -Dm0644 packaging/linux/icons/hicolor/scalable/apps/io.github.gunu3371.rubyfunk.svg \
+                "$STAGE/usr/share/icons/hicolor/scalable/apps/io.github.gunu3371.rubyfunk.svg"
 # DualSense hidraw access (full pad fidelity through SDL's HIDAPI driver).
-install -Dm0644 scripts/70-punktfunk-client.rules \
-                "$STAGE/usr/lib/udev/rules.d/70-punktfunk-client.rules"
+install -Dm0644 scripts/70-rubyfunk-client.rules \
+                "$STAGE/usr/lib/udev/rules.d/70-rubyfunk-client.rules"
 # UDP receive-buffer tuning (32 MB) — without it the kernel clamps the client's SO_RCVBUF and
 # high-bitrate streams overflow it at the receiver (measured: 4 MB cap = 31.6% loss at 2 Gbps,
 # 32 MB = 0%). systemd-sysctl applies it at boot; the postinst applies it on install.
-install -Dm0644 scripts/99-punktfunk-client-net.conf \
-                "$STAGE/usr/lib/sysctl.d/99-punktfunk-client-net.conf"
-# One-tap client updates (`punktfunk-client --apply-update`, which is what the Decky plugin
+install -Dm0644 scripts/99-rubyfunk-client-net.conf \
+                "$STAGE/usr/lib/sysctl.d/99-rubyfunk-client-net.conf"
+# One-tap client updates (`rubyfunk-client --apply-update`, which is what the Decky plugin
 # runs): the same root helper the host package ships, under the CLIENT's own paths + its own
 # unit and polkit rule. Separate paths because dpkg refuses two packages owning one file, and a
-# client-only box must be able to install this without punktfunk-host. Opt-in = joining the
-# (shipped-empty) punktfunk-update group (punktfunk.sysusers).
-install -Dm0755 "$UPDATE_BIN"                      "$STAGE/usr/libexec/punktfunk/pf-update-client"
-install -Dm0644 packaging/linux/punktfunk-client-update.service \
-                "$STAGE/usr/lib/systemd/system/punktfunk-client-update.service"
-sed -i 's#/usr/libexec/punktfunk/pf-update#/usr/libexec/punktfunk/pf-update-client#' \
-       "$STAGE/usr/lib/systemd/system/punktfunk-client-update.service"
-install -Dm0644 packaging/linux/49-punktfunk-client-update.rules \
-                "$STAGE/usr/share/polkit-1/rules.d/49-punktfunk-client-update.rules"
-# The punktfunk-update group, from the same file the host package ships under its own name.
-install -Dm0644 packaging/linux/punktfunk.sysusers \
-                "$STAGE/usr/lib/sysusers.d/punktfunk-client.conf"
-# Install-kind + channel marker for the CLIENT, read by `punktfunk-client --check-update`
+# client-only box must be able to install this without rubyfunk-host. Opt-in = joining the
+# (shipped-empty) rubyfunk-update group (rubyfunk.sysusers).
+install -Dm0755 "$UPDATE_BIN"                      "$STAGE/usr/libexec/rubyfunk/pf-update-client"
+install -Dm0644 packaging/linux/rubyfunk-client-update.service \
+                "$STAGE/usr/lib/systemd/system/rubyfunk-client-update.service"
+sed -i 's#/usr/libexec/rubyfunk/pf-update#/usr/libexec/rubyfunk/pf-update-client#' \
+       "$STAGE/usr/lib/systemd/system/rubyfunk-client-update.service"
+install -Dm0644 packaging/linux/49-rubyfunk-client-update.rules \
+                "$STAGE/usr/share/polkit-1/rules.d/49-rubyfunk-client-update.rules"
+# The rubyfunk-update group, from the same file the host package ships under its own name.
+install -Dm0644 packaging/linux/rubyfunk.sysusers \
+                "$STAGE/usr/lib/sysusers.d/rubyfunk-client.conf"
+# Install-kind + channel marker for the CLIENT, read by `rubyfunk-client --check-update`
 # (planning: host-update-from-web-console.md §4.1). Its own directory, matching the RPM. A
 # canary build's version carries `~ciN`; anything else is stable.
 case "$VERSION" in
@@ -106,7 +104,7 @@ case "$VERSION" in
   *)     _pf_client_channel=stable ;;
 esac
 printf 'apt %s\n' "$_pf_client_channel" | \
-    install -Dm0644 /dev/stdin "$STAGE/usr/share/punktfunk-client/install-kind"
+    install -Dm0644 /dev/stdin "$STAGE/usr/share/rubyfunk-client/install-kind"
 install -Dm0644 LICENSE-MIT                              "$DOCDIR/LICENSE-MIT"
 install -Dm0644 LICENSE-APACHE                           "$DOCDIR/LICENSE-APACHE"
 install -Dm0644 README.md                                "$DOCDIR/README.md"
@@ -127,11 +125,11 @@ fi
 
 cat > "$DOCDIR/copyright" <<EOF
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: punktfunk
-Source: https://git.unom.io/unom/punktfunk
+Upstream-Name: rubyfunk
+Source: https://github.com/gunu3371/RubyFunk
 
 Files: *
-Copyright: unom and the punktfunk contributors
+Copyright: unom and the rubyfunk contributors
 License: MIT or Apache-2.0
  Dual-licensed. Full texts in /usr/share/doc/$PKG/LICENSE-MIT and
  /usr/share/doc/$PKG/LICENSE-APACHE.
@@ -179,11 +177,11 @@ Maintainer: unom <packages@unom.io>
 Installed-Size: $INSTALLED_KB
 Section: net
 Priority: optional
-Homepage: https://git.unom.io/unom/punktfunk
+Homepage: https://github.com/gunu3371/RubyFunk
 Depends: $SHDEPS
 Recommends: $RECOMMENDS
 Description: Low-latency desktop/game streaming client (punktfunk/2, GTK4)
- The native Linux client for punktfunk, a Linux-first low-latency desktop and
+ The native Linux client for rubyfunk, a Linux-first low-latency desktop and
  game streaming stack. Discovers hosts on the LAN (mDNS), trusts them via
  certificate pinning with a SPAKE2 PIN pairing ceremony, and streams HEVC video
  (GF(2^16) Leopard FEC + AES-GCM over UDP, QUIC control plane) with Opus audio,
@@ -191,7 +189,7 @@ Description: Low-latency desktop/game streaming client (punktfunk/2, GTK4)
  motion, adaptive triggers and lightbar through SDL3.
  .
  The host creates a virtual output at exactly this client's resolution and
- refresh rate — no scaling. See the punktfunk-host package for the host side.
+ refresh rate — no scaling. See the rubyfunk-host package for the host side.
 EOF
 
 cat > "$STAGE/DEBIAN/postinst" <<'EOF'
@@ -199,13 +197,13 @@ cat > "$STAGE/DEBIAN/postinst" <<'EOF'
 set -e
 if [ "$1" = "configure" ]; then
     # dpkg applies no sysusers.d file by itself.
-    systemd-sysusers punktfunk-client.conf >/dev/null 2>&1 || true
+    systemd-sysusers rubyfunk-client.conf >/dev/null 2>&1 || true
     # Pick up the DualSense hidraw rule without a reboot (best-effort, no-op in containers).
     udevadm control --reload-rules 2>/dev/null || true
     udevadm trigger --subsystem-match=hidraw 2>/dev/null || true
     update-desktop-database /usr/share/applications 2>/dev/null || true
     # Apply the UDP recv-buffer tuning now (also auto-applied at boot by systemd-sysctl).
-    sysctl -p /usr/lib/sysctl.d/99-punktfunk-client-net.conf >/dev/null 2>&1 || true
+    sysctl -p /usr/lib/sysctl.d/99-rubyfunk-client-net.conf >/dev/null 2>&1 || true
 fi
 exit 0
 EOF

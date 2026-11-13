@@ -21,23 +21,23 @@ pub struct ShotCtx {
     pub sender: ComponentSender<AppModel>,
 }
 
-/// `PUNKTFUNK_SHOT_SCENE`, when set, selects a scripted host-free scene for CI screenshots.
+/// `RUBYFUNK_SHOT_SCENE`, when set, selects a scripted host-free scene for CI screenshots.
 pub fn shot_scene() -> Option<String> {
-    std::env::var("PUNKTFUNK_SHOT_SCENE")
+    std::env::var("RUBYFUNK_SHOT_SCENE")
         .ok()
         .filter(|s| !s.is_empty())
 }
 
-/// `PUNKTFUNK_SHOT_SIZE=WxH`: the window size a scene opens at, for the narrow layouts.
+/// `RUBYFUNK_SHOT_SIZE=WxH`: the window size a scene opens at, for the narrow layouts.
 pub fn shot_size() -> Option<(i32, i32)> {
     shot_scene()?;
-    let size = std::env::var("PUNKTFUNK_SHOT_SIZE").ok()?;
+    let size = std::env::var("RUBYFUNK_SHOT_SIZE").ok()?;
     let (w, h) = size.split_once('x')?;
     Some((w.parse().ok()?, h.parse().ok()?))
 }
 
 /// Render one mock-populated, host-free scene over the already-presented window, then
-/// print `PF_SHOT_READY` once it has settled. When `PUNKTFUNK_SHOT_OUT=/path.png` is set
+/// print `PF_SHOT_READY` once it has settled. When `RUBYFUNK_SHOT_OUT=/path.png` is set
 /// the app CAPTURES ITSELF (widget snapshot → gsk render → PNG) — no Xvfb/ImageMagick
 /// needed. The stream and gamepad-library scenes are gone with the pages (both live in
 /// the session binary now).
@@ -60,7 +60,7 @@ pub fn run_shot(ctx: &ShotCtx, scene: &str) {
     let mock_advert =
         |key: &str, name: &str, addr: &str, fp: &str| crate::discovery::DiscoveredHost {
             key: key.to_string(),
-            fullname: format!("{key}._punktfunk._udp.local."),
+            fullname: format!("{key}._rubyfunk._udp.local."),
             name: name.to_string(),
             addr: addr.to_string(),
             port: 9777,
@@ -141,10 +141,10 @@ pub fn run_shot(ctx: &ShotCtx, scene: &str) {
                 speakers: vec![dev("alsa_output.mock-hdmi", "HDMI / DisplayPort Audio")],
                 mics: vec![dev("alsa_input.mock-usb", "USB Microphone Analog Stereo")],
             };
-            // `PUNKTFUNK_SHOT_SETTINGS_SCOPE=<preset id|name>` captures the dialog in
+            // `RUBYFUNK_SHOT_SETTINGS_SCOPE=<preset id|name>` captures the dialog in
             // PRESET scope — the second half of the settings surface (design
             // client-settings-profiles.md §5.1), where only presetable rows render.
-            let scope = std::env::var("PUNKTFUNK_SHOT_SETTINGS_SCOPE")
+            let scope = std::env::var("RUBYFUNK_SHOT_SETTINGS_SCOPE")
                 .ok()
                 .filter(|v| !v.is_empty())
                 .and_then(|reference| {
@@ -166,7 +166,7 @@ pub fn run_shot(ctx: &ShotCtx, scene: &str) {
             );
             // Optional page for the capture (general/display/input/audio/controllers);
             // the dialog opens on General otherwise.
-            if let Ok(page) = std::env::var("PUNKTFUNK_SHOT_SETTINGS_PAGE") {
+            if let Ok(page) = std::env::var("RUBYFUNK_SHOT_SETTINGS_PAGE") {
                 if !page.is_empty() {
                     use adw::prelude::PreferencesDialogExt as _;
                     dialog.set_visible_page_name(&page);
@@ -199,7 +199,7 @@ pub fn run_shot(ctx: &ShotCtx, scene: &str) {
         // A 10 000-title shelf scrolled top to bottom a page a frame; prints `PF_BENCH`.
         "library-bench" => {
             ctx.views.set_visible_child_name("library");
-            let n = std::env::var("PUNKTFUNK_BENCH_TITLES")
+            let n = std::env::var("RUBYFUNK_BENCH_TITLES")
                 .ok()
                 .and_then(|s| s.parse().ok())
                 .unwrap_or(10_000);
@@ -212,10 +212,10 @@ pub fn run_shot(ctx: &ShotCtx, scene: &str) {
                 bench_scroll(&window, &views)
             });
         }
-        other => tracing::warn!("unknown PUNKTFUNK_SHOT_SCENE={other:?}; showing hosts only"),
+        other => tracing::warn!("unknown RUBYFUNK_SHOT_SCENE={other:?}; showing hosts only"),
     }
 
-    let settle_ms = std::env::var("PUNKTFUNK_SHOT_SETTLE_MS")
+    let settle_ms = std::env::var("RUBYFUNK_SHOT_SETTLE_MS")
         .ok()
         .and_then(|v| v.parse().ok())
         .unwrap_or(900);
@@ -226,7 +226,7 @@ pub fn run_shot(ctx: &ShotCtx, scene: &str) {
         // renderer: `WidgetPaintable(window)` under the cairo software renderer doesn't
         // composite the `AdwDialog` overlay layer (the dialog IS presented — the
         // page-content scenes capture fine either way; CI uses GL or the X11 root-grab).
-        let self_capture = std::env::var("PUNKTFUNK_SHOT_OUT")
+        let self_capture = std::env::var("RUBYFUNK_SHOT_OUT")
             .ok()
             .filter(|p| !p.is_empty());
         if let Some(out) = &self_capture {
@@ -388,7 +388,7 @@ fn bench_scroll(window: &adw::ApplicationWindow, views: &adw::ViewStack) {
     let wall = Instant::now();
     let rows = adj.upper() as i64;
     list.add_tick_callback(move |_, _| {
-        let step = std::env::var("PUNKTFUNK_BENCH_STEP")
+        let step = std::env::var("RUBYFUNK_BENCH_STEP")
             .ok()
             .and_then(|s| s.parse::<f64>().ok())
             .unwrap_or(adj.page_size());

@@ -2,8 +2,8 @@
 //
 // Omarchy renders every registered `~/.config/omarchy/themed/*.tpl` from the active theme's
 // semantic `colors.toml` on each `omarchy-theme-set`, dropping the result in
-// `~/.local/state/omarchy/current/theme/`. We register `punktfunk.json.tpl` (installed by
-// `punktfunk-omarchy setup`, opt-in), so the file below is the theme expressed in exactly the four
+// `~/.local/state/omarchy/current/theme/`. We register `rubyfunk.json.tpl` (installed by
+// `rubyfunk-omarchy setup`, opt-in), so the file below is the theme expressed in exactly the four
 // values the console can act on.
 //
 // Deliberately a FILE read and not an integration: there is no Omarchy API to call, the host learns
@@ -44,7 +44,7 @@ export interface OmarchyTheme {
 function themePath(): string {
 	const state =
 		process.env.XDG_STATE_HOME?.trim() || join(homedir(), ".local", "state");
-	return join(state, "omarchy", "current", "theme", "punktfunk.json");
+	return join(state, "omarchy", "current", "theme", "rubyfunk.json");
 }
 
 /** A CSS colour we are willing to inline into a style attribute.

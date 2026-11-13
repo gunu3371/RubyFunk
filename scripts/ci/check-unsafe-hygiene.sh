@@ -154,7 +154,7 @@ END { exit bad ? 1 : 0 }
 ' $(cat "$tmp/files") > "$tmp/gate_b" 2>&1
 if [ -s "$tmp/gate_b" ]; then
     echo "GATE B — panic across an extern boundary aborts the process since Rust 1.81. Route the"
-    echo "         body through catch_unwind (see punktfunk-ffi) or waive a deliberate"
+    echo "         body through catch_unwind (see rubyfunk-ffi) or waive a deliberate"
     echo "         abort with '// panic-in-extern-ok: <reason>' on the line above the fn:"
     cat "$tmp/gate_b"
     fail=1
@@ -181,12 +181,12 @@ crates/host/pf-vdisplay/src/vdisplay/session.rs:4
 crates/codec/pf-vkdecode/tests/common/mod.rs:1
 crates/codec/pf-vkdecode/tests/gpu_parity.rs:2
 crates/host/pf-win-display/src/win_display.rs:2
-crates/core/punktfunk-core/src/quic/endpoint.rs:2
-crates/host/punktfunk-host/src/hostsys/identity.rs:3
-crates/host/punktfunk-host/src/library/art.rs:2
-crates/host/punktfunk-host/src/main.rs:2
-crates/host/punktfunk-host/src/mgmt/tests/mod.rs:2
-crates/host/punktfunk-host/src/windows/service/host_env.rs:1
+crates/core/rubyfunk-core/src/quic/endpoint.rs:2
+crates/host/rubyfunk-host/src/hostsys/identity.rs:3
+crates/host/rubyfunk-host/src/library/art.rs:2
+crates/host/rubyfunk-host/src/main.rs:2
+crates/host/rubyfunk-host/src/mgmt/tests/mod.rs:2
+crates/host/rubyfunk-host/src/windows/service/host_env.rs:1
 packaging/windows/drivers/pf-vdisplay/src/encode/thread.rs:1
 BASELINE
 

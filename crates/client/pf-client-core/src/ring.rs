@@ -45,7 +45,7 @@ pub enum RingCommand {
     /// A synthetic tap of one system button on the host's pad — a `gamepad::wire::BTN_*` bit
     /// (guide or `MISC1`), the same verb the session control socket exposes. `MISC1` is the
     /// Quick Access action: the embedder presses what that pad's host device reads as it
-    /// (`punktfunk_core::input::gamepad::quick_access_presses`).
+    /// (`rubyfunk_core::input::gamepad::quick_access_presses`).
     TapButton(u32),
     /// Step [`RingFacts::pad_mouse_target`] to the next controller-mouse mode: off, touchpad,
     /// full.
@@ -53,7 +53,7 @@ pub enum RingCommand {
     /// Emulate the next controller type for the rest of this stream
     /// ([`crate::overlay_actions::next_pad_type`]); each pad re-plugs as it.
     CyclePadType,
-    /// Flip this client's own speakers ([`punktfunk_core::client::AUDIO_MUTE_LOCAL`]). Never
+    /// Flip this client's own speakers ([`rubyfunk_core::client::AUDIO_MUTE_LOCAL`]). Never
     /// reaches the host, so a session joined to the same display keeps hearing the game.
     ToggleStreamMute,
 }
@@ -111,18 +111,18 @@ pub struct RingFacts {
     pub stats_tier: String,
     pub mic_available: bool,
     pub mic_muted: bool,
-    /// Why the speakers are silent: `punktfunk_core::client::AUDIO_MUTE_LOCAL` |
+    /// Why the speakers are silent: `rubyfunk_core::client::AUDIO_MUTE_LOCAL` |
     /// `AUDIO_MUTE_HOST`. The slot toggles the local bit; the overlay names both.
     pub audio_mute: u8,
     /// Wire pads the controller-mouse toggle acts on: the pad that opened the ring, else every
     /// live pad. `0` = no controller.
     pub pad_mouse_target: u16,
     /// The controller-mouse mode every target pad shares; a mixed set reads as off.
-    pub pad_mouse: punktfunk_core::input::PadMouseMode,
+    pub pad_mouse: rubyfunk_core::input::PadMouseMode,
     /// The host grants pointer input; controller mouse needs it.
     pub pointer_granted: bool,
     /// The controller type the host emulates; `Auto` = each pad as itself.
-    pub pad_type: punktfunk_core::config::GamepadPref,
+    pub pad_type: rubyfunk_core::config::GamepadPref,
     /// Live `(w, h, hz)`. `native_mode` is the Welcome native.
     pub mode: (u32, u32, u32),
     pub native_mode: (u32, u32, u32),

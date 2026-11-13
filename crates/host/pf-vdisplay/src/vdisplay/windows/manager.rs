@@ -397,7 +397,7 @@ fn warn_outside_console_session() {
         tracing::warn!(
             own_session = own,
             console_session = console,
-            "punktfunk seat host is intentionally outside the active console session — \
+            "rubyfunk seat host is intentionally outside the active console session — \
              the seat keeper must keep this RDP session active; display activation errors \
              that follow are real and mean the keeper or session is unavailable"
         );
@@ -405,7 +405,7 @@ fn warn_outside_console_session() {
         tracing::error!(
             own_session = own,
             console_session = console,
-            "punktfunk-host is NOT in the active console session — display activation, \
+            "rubyfunk-host is NOT in the active console session — display activation, \
              mode-set and capture will fail (disconnected RDP session?). Reconnect the \
              console (`tscon {own} /dest:console`) or run the host via the installed \
              service, which follows the console session"
@@ -2682,7 +2682,7 @@ fn process_slot_plan(
         std::result::Result<super::identity::WindowsSlotPlan, super::identity::WindowsSlotError>,
     > = OnceLock::new();
     *PLAN.get_or_init(|| {
-        let seat_override = std::env::var_os("PUNKTFUNK_SEAT_DISPLAY_SLOT");
+        let seat_override = std::env::var_os("RUBYFUNK_SEAT_DISPLAY_SLOT");
         super::identity::windows_slot_plan(
             seat_override.as_deref(),
             pf_win_display::seats_addon_reserves_display_slots(),
@@ -3415,7 +3415,7 @@ mod tests {
         }
         assert!(inner.group.pnp_disabled.is_empty());
 
-        // `PUNKTFUNK_STANDBY_SINK_KEEP` opts the park out, and a test sets no environment; so
+        // `RUBYFUNK_STANDBY_SINK_KEEP` opts the park out, and a test sets no environment; so
         // does the operator's `pnp_disable_monitors: false`, which this path used to ignore.
         let prefs = crate::policy::prefs();
         let parks = prefs.standby_sink_neutralise() && prefs.pnp_disable_monitors();

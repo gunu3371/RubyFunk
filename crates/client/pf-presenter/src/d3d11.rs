@@ -429,7 +429,7 @@ fn import(
 ) -> Result<Imported> {
     // Test hook: fault every import so demotion is exercisable without a broken driver.
     if fault == Some(HwFault::Import) {
-        bail!("injected import failure (PUNKTFUNK_HW_FAULT=import)");
+        bail!("injected import failure (RUBYFUNK_HW_FAULT=import)");
     }
     // DXGI R10G10B10A2 matches Vulkan A2B10G10R10_PACK32 (R in the low bits). NV12/P010
     // map to the two-plane formats; the CSC pass samples them through per-plane views.

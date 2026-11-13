@@ -16,15 +16,15 @@ import {
 describe("pluginStateDir", () => {
 	let saved: string | undefined;
 	beforeEach(() => {
-		saved = process.env.PUNKTFUNK_CONFIG_DIR;
+		saved = process.env.RUBYFUNK_CONFIG_DIR;
 	});
 	afterEach(() => {
-		if (saved === undefined) delete process.env.PUNKTFUNK_CONFIG_DIR;
-		else process.env.PUNKTFUNK_CONFIG_DIR = saved;
+		if (saved === undefined) delete process.env.RUBYFUNK_CONFIG_DIR;
+		else process.env.RUBYFUNK_CONFIG_DIR = saved;
 	});
 
 	test("resolves <config_dir>/plugin-state[/name] and honors the config-dir override", () => {
-		process.env.PUNKTFUNK_CONFIG_DIR = path.join("/tmp", "pf-cfg");
+		process.env.RUBYFUNK_CONFIG_DIR = path.join("/tmp", "pf-cfg");
 		expect(pluginStateDir()).toBe(path.join("/tmp", "pf-cfg", "plugin-state"));
 		expect(pluginStateDir("rom-manager")).toBe(
 			path.join("/tmp", "pf-cfg", "plugin-state", "rom-manager"),
@@ -32,7 +32,7 @@ describe("pluginStateDir", () => {
 	});
 
 	test("the per-plugin dir is nested under the shared root", () => {
-		process.env.PUNKTFUNK_CONFIG_DIR = path.join("/tmp", "pf-cfg2");
+		process.env.RUBYFUNK_CONFIG_DIR = path.join("/tmp", "pf-cfg2");
 		expect(pluginStateDir("x").startsWith(pluginStateDir())).toBe(true);
 	});
 });
@@ -40,15 +40,15 @@ describe("pluginStateDir", () => {
 describe("pluginIngestDir", () => {
 	let saved: string | undefined;
 	beforeEach(() => {
-		saved = process.env.PUNKTFUNK_CONFIG_DIR;
+		saved = process.env.RUBYFUNK_CONFIG_DIR;
 	});
 	afterEach(() => {
-		if (saved === undefined) delete process.env.PUNKTFUNK_CONFIG_DIR;
-		else process.env.PUNKTFUNK_CONFIG_DIR = saved;
+		if (saved === undefined) delete process.env.RUBYFUNK_CONFIG_DIR;
+		else process.env.RUBYFUNK_CONFIG_DIR = saved;
 	});
 
 	test("resolves <config_dir>/ingest[/name], distinct from plugin-state", () => {
-		process.env.PUNKTFUNK_CONFIG_DIR = path.join("/tmp", "pf-cfg3");
+		process.env.RUBYFUNK_CONFIG_DIR = path.join("/tmp", "pf-cfg3");
 		expect(pluginIngestDir()).toBe(path.join("/tmp", "pf-cfg3", "ingest"));
 		expect(pluginIngestDir("playnite")).toBe(
 			path.join("/tmp", "pf-cfg3", "ingest", "playnite"),
@@ -63,14 +63,14 @@ describe("publishedMgmtUrl / resolveConfig url", () => {
 	let dir: string;
 	beforeEach(() => {
 		saved = {
-			PUNKTFUNK_CONFIG_DIR: process.env.PUNKTFUNK_CONFIG_DIR,
-			PUNKTFUNK_MGMT_URL: process.env.PUNKTFUNK_MGMT_URL,
-			PUNKTFUNK_MGMT_TOKEN: process.env.PUNKTFUNK_MGMT_TOKEN,
+			RUBYFUNK_CONFIG_DIR: process.env.RUBYFUNK_CONFIG_DIR,
+			RUBYFUNK_MGMT_URL: process.env.RUBYFUNK_MGMT_URL,
+			RUBYFUNK_MGMT_TOKEN: process.env.RUBYFUNK_MGMT_TOKEN,
 		};
 		dir = fs.mkdtempSync(path.join(os.tmpdir(), "pf-endpoint-"));
-		process.env.PUNKTFUNK_CONFIG_DIR = dir;
-		delete process.env.PUNKTFUNK_MGMT_URL;
-		process.env.PUNKTFUNK_MGMT_TOKEN = "t"; // resolveConfig needs SOME token
+		process.env.RUBYFUNK_CONFIG_DIR = dir;
+		delete process.env.RUBYFUNK_MGMT_URL;
+		process.env.RUBYFUNK_MGMT_TOKEN = "t"; // resolveConfig needs SOME token
 	});
 	afterEach(() => {
 		for (const [k, v] of Object.entries(saved)) {
@@ -89,18 +89,18 @@ describe("publishedMgmtUrl / resolveConfig url", () => {
 		// exactly what `mgmt::endpoint_line` writes (KEY=VALUE, one line)
 		fs.writeFileSync(
 			path.join(dir, "mgmt-endpoint"),
-			"PUNKTFUNK_MGMT_URL=https://127.0.0.1:47995\n",
+			"RUBYFUNK_MGMT_URL=https://127.0.0.1:47995\n",
 		);
 		expect(publishedMgmtUrl()).toBe("https://127.0.0.1:47995");
 		expect((await resolveConfig()).url).toBe("https://127.0.0.1:47995");
 	});
 
-	test("an explicit PUNKTFUNK_MGMT_URL still wins over the published file", async () => {
+	test("an explicit RUBYFUNK_MGMT_URL still wins over the published file", async () => {
 		fs.writeFileSync(
 			path.join(dir, "mgmt-endpoint"),
-			"PUNKTFUNK_MGMT_URL=https://127.0.0.1:47995\n",
+			"RUBYFUNK_MGMT_URL=https://127.0.0.1:47995\n",
 		);
-		process.env.PUNKTFUNK_MGMT_URL = "https://127.0.0.1:50000/";
+		process.env.RUBYFUNK_MGMT_URL = "https://127.0.0.1:50000/";
 		expect((await resolveConfig()).url).toBe("https://127.0.0.1:50000");
 	});
 
@@ -116,13 +116,13 @@ describe("hostFetch", () => {
 	let saved: string | undefined;
 	let dir: string;
 	beforeEach(() => {
-		saved = process.env.PUNKTFUNK_CONFIG_DIR;
+		saved = process.env.RUBYFUNK_CONFIG_DIR;
 		dir = fs.mkdtempSync(path.join(os.tmpdir(), "pf-pin-"));
-		process.env.PUNKTFUNK_CONFIG_DIR = dir;
+		process.env.RUBYFUNK_CONFIG_DIR = dir;
 	});
 	afterEach(() => {
-		if (saved === undefined) delete process.env.PUNKTFUNK_CONFIG_DIR;
-		else process.env.PUNKTFUNK_CONFIG_DIR = saved;
+		if (saved === undefined) delete process.env.RUBYFUNK_CONFIG_DIR;
+		else process.env.RUBYFUNK_CONFIG_DIR = saved;
 		fs.rmSync(dir, { recursive: true, force: true });
 	});
 
@@ -133,7 +133,7 @@ describe("hostFetch", () => {
 		// CN-only, no SAN: the shape of the host's identity cert.
 		const made = spawnSync("openssl", [
 			"req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "1",
-			"-subj", "/CN=punktfunk-host", "-keyout", key, "-out", cert,
+			"-subj", "/CN=rubyfunk-host", "-keyout", key, "-out", cert,
 		]);
 		expect(made.status).toBe(0);
 		const server = Bun.serve({

@@ -1,7 +1,7 @@
-//! GNOME's window list, from punktfunk's own GNOME Shell extension over D-Bus.
+//! GNOME's window list, from rubyfunk's own GNOME Shell extension over D-Bus.
 //!
 //! Mutter offers Wayland clients no toplevel list, and the shell's `Introspect` API answers only
-//! GNOME's own portal and screencast services. The extension (`gnome-shell/punktfunk-windows@unom.io`,
+//! GNOME's own portal and screencast services. The extension (`gnome-shell/rubyfunk-windows@gunu3371.github.io`,
 //! embedded below) runs inside the shell and serves `ListWindows`: pid, class, focus and fullscreen
 //! per window, never titles.
 //!
@@ -15,12 +15,14 @@ use std::path::PathBuf;
 use std::sync::{Mutex, Once};
 use std::time::Duration;
 
-const UUID: &str = "punktfunk-windows@unom.io";
-const METADATA: &str = include_str!("../../../gnome-shell/punktfunk-windows@unom.io/metadata.json");
-const EXTENSION: &str = include_str!("../../../gnome-shell/punktfunk-windows@unom.io/extension.js");
+const UUID: &str = "rubyfunk-windows@gunu3371.github.io";
+const METADATA: &str =
+    include_str!("../../../gnome-shell/rubyfunk-windows@gunu3371.github.io/metadata.json");
+const EXTENSION: &str =
+    include_str!("../../../gnome-shell/rubyfunk-windows@gunu3371.github.io/extension.js");
 
-const BUS_NAME: &str = "io.unom.punktfunk.shell";
-const OBJECT_PATH: &str = "/io/unom/punktfunk/shell";
+const BUS_NAME: &str = "io.github.gunu3371.rubyfunk.shell";
+const OBJECT_PATH: &str = "/io/github/gunu3371/rubyfunk/shell";
 
 /// One read, connect to reply. The lease watcher asks every second.
 const READ_BUDGET: Duration = Duration::from_millis(800);

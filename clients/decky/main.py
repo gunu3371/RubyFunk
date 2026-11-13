@@ -1,12 +1,12 @@
 """
-punktfunk Decky plugin — backend.
+rubyfunk Decky plugin — backend.
 
 The Gaming-Mode UI (``src/index.tsx``) calls these methods over the Decky bridge. The actual
 STREAM is NOT launched here — it is launched by the frontend through Steam
-(SteamClient.Apps.RunGame on a hidden non-Steam shortcut that points at ``bin/punktfunkrun.sh``),
+(SteamClient.Apps.RunGame on a hidden non-Steam shortcut that points at ``bin/rubyfunkrun.sh``),
 because gamescope only focuses/fullscreens windows in the process tree Steam launched via
 ``reaper``. A flatpak spawned from this backend would be invisible/unfocused (gamescope#484).
-This backend is a THIN SHELL OVER THE HEADLESS CLI (``punktfunk``, shipped in every package
+This backend is a THIN SHELL OVER THE HEADLESS CLI (``rubyfunk``, shipped in every package
 since v0.22.0), plus the handful of things that are genuinely Steam's business. It used to be
 a second client — its own mDNS parser, its own host-store editor, its own settings writer —
 and every one of those was a copy of a rule that already lives in Rust, drifting from it. The
@@ -14,13 +14,13 @@ rule now has one home; this file builds argv and maps exit codes.
 
 Thin CLI shells — each is build argv, run, parse JSON, map the exit code:
 
-* **discover()** — ``punktfunk discover --json``: the LAN's hosts, already annotated with
+* **discover()** — ``rubyfunk discover --json``: the LAN's hosts, already annotated with
   whether this device has them saved and paired.
-* **hosts()** — ``punktfunk hosts list --probe --json``: the saved hosts with a live,
+* **hosts()** — ``rubyfunk hosts list --probe --json``: the saved hosts with a live,
   mDNS-independent reachability probe, and their preset bindings and pinned cards already
   resolved against the preset catalog.
-* **pair(addr, port, pin, name)** — ``punktfunk pair``: the SPAKE2 PIN ceremony.
-* **trust_host(addr, port, fp, name)** — ``punktfunk hosts add --fp``: step 1 of request
+* **pair(addr, port, pin, name)** — ``rubyfunk pair``: the SPAKE2 PIN ceremony.
+* **trust_host(addr, port, fp, name)** — ``rubyfunk hosts add --fp``: step 1 of request
   access, and the ONLY write this backend makes to the client's store.
 
 Kept because only a Decky plugin can do them:
@@ -34,7 +34,7 @@ Kept because only a Decky plugin can do them:
 * **kill_stream()** — force-stop a wedged client.
 
 What is deliberately NOT here: the stream launch. It goes through Steam
-(SteamClient.Apps.RunGame on a non-Steam shortcut pointing at ``bin/punktfunkrun.sh``),
+(SteamClient.Apps.RunGame on a non-Steam shortcut pointing at ``bin/rubyfunkrun.sh``),
 because gamescope only focuses/fullscreens windows in the process tree Steam launched via
 ``reaper`` — a client spawned from this backend would come up invisible and unfocused
 (gamescope#484). Settings, add-host-by-address, the library browser and preset editing are
@@ -54,27 +54,24 @@ from pathlib import Path
 
 import decky
 
-# Flatpak application id of the GTK client (packaging/flatpak/io.unom.punktfunk.yml).
-APP_ID = "io.unom.punktfunk"
-# The id before the lowercase rename. A Deck still on it is driven under it until its next client
-# update, which the remote's end-of-life marker turns into a rebase onto APP_ID.
-LEGACY_APP_ID = "io.unom.Punktfunk"
+# Flatpak application id of the GTK client (packaging/flatpak/io.github.gunu3371.rubyfunk.yml).
+APP_ID = "io.github.gunu3371.rubyfunk"
 
 def _runner_path() -> str:
-    """Absolute path to the launch wrapper shipped with the plugin (bin/punktfunkrun.sh)."""
-    return str(Path(decky.DECKY_PLUGIN_DIR) / "bin" / "punktfunkrun.sh")
+    """Absolute path to the launch wrapper shipped with the plugin (bin/rubyfunkrun.sh)."""
+    return str(Path(decky.DECKY_PLUGIN_DIR) / "bin" / "rubyfunkrun.sh")
 
 
 # --- Steam Input controller config injection (native touchscreen via the ts_n command) --------
 # The Deck's touchscreen only reaches the app as native wl_touch when a Steam Input layout with
 # the "Touchscreen Native Support" (controller_action ts_n) command is active for the game. We
-# ship that layout (controller_config/punktfunk.vdf, built on Steam's gamepad-fps template) and
+# ship that layout (controller_config/rubyfunk.vdf, built on Steam's gamepad-fps template) and
 # point our shortcuts at it, EmuDeck-style: drop it in controller_base/templates/ (so it is also
-# a selectable "Punktfunk" template) AND set each account's configset entry for our shortcut's
+# a selectable "RubyFunk" template) AND set each account's configset entry for our shortcut's
 # game key to that template. Steam keys non-Steam games by their LOWERCASE NAME (verified on the
-# Deck: our "Punktfunk" shortcut → the "punktfunk" configset key), so both our shortcuts (same
+# Deck: our "RubyFunk" shortcut → the "rubyfunk" configset key), so both our shortcuts (same
 # name) share one entry. controller_neptune = the Deck's built-in controller type.
-CONTROLLER_TEMPLATE = "punktfunk.vdf"
+CONTROLLER_TEMPLATE = "rubyfunk.vdf"
 
 
 def _steam_root() -> Path:
@@ -259,7 +256,7 @@ def _ssl_context() -> ssl.SSLContext:
 def _fetch_json(url: str, timeout: float = 8.0) -> dict:
     """Blocking HTTPS GET of a small JSON document (run in an executor)."""
     req = urllib.request.Request(
-        url, headers={"Accept": "application/json", "User-Agent": "punktfunk-decky"}
+        url, headers={"Accept": "application/json", "User-Agent": "rubyfunk-decky"}
     )
     with urllib.request.urlopen(req, timeout=timeout, context=_ssl_context()) as resp:
         return json.loads(resp.read().decode("utf-8", errors="replace"))
@@ -273,7 +270,7 @@ _MAX_ART_BYTES = 8 * 1024 * 1024
 def _fetch_bytes(url: str, timeout: float = 10.0) -> bytes:
     """Blocking HTTPS GET of a small binary (run in an executor). Raises on any failure, an
     over-long body included — a truncated image is worse than falling through to the next CDN."""
-    req = urllib.request.Request(url, headers={"User-Agent": "punktfunk-decky"})
+    req = urllib.request.Request(url, headers={"User-Agent": "rubyfunk-decky"})
     with urllib.request.urlopen(req, timeout=timeout, context=_ssl_context()) as resp:
         data = resp.read(_MAX_ART_BYTES + 1)
     if len(data) > _MAX_ART_BYTES:
@@ -284,7 +281,7 @@ def _fetch_bytes(url: str, timeout: float = 10.0) -> bytes:
 # --- a Steam game's own artwork, for the per-game stream shortcut -----------------------------
 #
 # A stream started from a game's page runs under a hidden shortcut NAMED after the game, so the
-# overlay, the "now playing" surfaces and friends see the game and not "Punktfunk". The art has
+# overlay, the "now playing" surfaces and friends see the game and not "RubyFunk". The art has
 # to match. Steam keeps every library image it has shown in `appcache/librarycache`; what is not
 # there is on the store CDN under the same file names.
 _ART_KINDS = (
@@ -363,14 +360,14 @@ def _flatpak() -> str | None:
 # --- which client is installed -------------------------------------------------------------
 #
 # The flatpak is the Deck's usual client, but a sysext, a .deb/.rpm, an AUR build, a nix profile
-# and a hand-built binary all install a NATIVE `punktfunk-client` instead. Every call goes
+# and a hand-built binary all install a NATIVE `rubyfunk-client` instead. Every call goes
 # through the one client found, which owns its identity, known-hosts and settings (the
 # flatpak's under ~/.var/app), so nothing else in this file cares which one answered.
-NATIVE_BIN = "punktfunk-client"
+NATIVE_BIN = "rubyfunk-client"
 # The headless CLI — the door this backend does almost everything through (discover, hosts,
 # pair, trust). Shipped beside the GTK client in every package since v0.22.0: /app/bin in the
-# flatpak, the same bindir as `punktfunk-client` natively.
-CLI_BIN = "punktfunk"
+# flatpak, the same bindir as `rubyfunk-client` natively.
+CLI_BIN = "rubyfunk"
 
 # Prefixes to try when PATH doesn't have it. The Decky backend runs with a minimal PATH, and
 # SteamOS's read-only /usr pushes native installs into a sysext or the user's own prefix.
@@ -378,7 +375,7 @@ _NATIVE_PREFIXES = (
     "/usr/bin",
     "/usr/local/bin",
     "/run/host/usr/bin",
-    "/var/lib/extensions/punktfunk/usr/bin",
+    "/var/lib/extensions/rubyfunk/usr/bin",
 )
 
 
@@ -398,7 +395,7 @@ def _flatpak_ref() -> dict | None:
     """The INSTALLED client flatpak resolved to a SCOPE and a BRANCH, or None when there is none.
 
     ``{"scope": "--user"|"--system", "branch": "canary", "arch": "aarch64", "app_id": APP_ID,
-    "ref": "io.unom.punktfunk//canary"}``. ``app_id`` is :data:`LEGACY_APP_ID` only when that is
+    "ref": "io.github.gunu3371.rubyfunk//canary"}``. ``app_id`` is the fork package identity, which is
     all the box has.
 
     The arch is read off the installed tree, not `os.uname()`: Decky's Python can be an x86_64
@@ -406,8 +403,8 @@ def _flatpak_ref() -> dict | None:
 
     ⭐⭐ **Naming no branch is not a shorthand for "the only one".** flatpak refuses an ambiguous
     ref rather than guessing at one, and the ambiguity does not need two branches *installed*:
-    the punktfunk remote publishes `stable` AND `canary`, so an unqualified
-    ``flatpak remote-info <origin> io.unom.punktfunk`` errors with "Multiple branches available"
+    the rubyfunk remote publishes `stable` AND `canary`, so an unqualified
+    ``flatpak remote-info <origin> io.github.gunu3371.rubyfunk`` errors with "Multiple branches available"
     on a Deck that has exactly one. That error is why the client update check silently answered
     "up to date" on every Deck — so every query downstream now names the ref in full.
 
@@ -427,7 +424,7 @@ def _flatpak_ref() -> dict | None:
         (Path(decky.DECKY_USER_HOME) / ".local" / "share" / "flatpak", "--user"),
         (Path("/var/lib/flatpak"), "--system"),
     )
-    for app_id in (APP_ID, LEGACY_APP_ID):
+    for app_id in (APP_ID,):
         for root, scope in scopes:
             try:
                 found = sorted(
@@ -495,10 +492,10 @@ def _client_argv() -> list[str] | None:
 def _cli_argv() -> list[str] | None:
     """The argv PREFIX that runs the headless CLI, or None when no client is installed.
 
-    Exactly the shape the old ``_session_argv`` used, pointed at ``punktfunk`` instead: the
+    Exactly the shape the old ``_session_argv`` used, pointed at ``rubyfunk`` instead: the
     flatpak ships both binaries in /app/bin so ``--command=`` picks the other one (**the app id
     stays LAST** — flatpak treats everything after it as the app's own argv), and a native
-    install puts the CLI in the same bindir as ``punktfunk-client``, so it is its sibling.
+    install puts the CLI in the same bindir as ``rubyfunk-client``, so it is its sibling.
     """
     prefix = _client_argv()
     if not prefix:
@@ -812,9 +809,8 @@ def _ctl_sockets() -> list[Path]:
     uid = os.environ.get("PF_UID") or "1000"
     run = Path(f"/run/user/{uid}")
     return [
-        run / "app" / APP_ID / "punktfunk-session-ctl.sock",
-        run / "app" / LEGACY_APP_ID / "punktfunk-session-ctl.sock",
-        run / "punktfunk-session-ctl.sock",
+        run / "app" / APP_ID / "rubyfunk-session-ctl.sock",
+        run / "rubyfunk-session-ctl.sock",
     ]
 
 
@@ -826,7 +822,7 @@ class Plugin:
     # Decky's frontend cannot spawn processes, not because it knows anything the client doesn't.
 
     async def discover(self) -> dict:
-        """Browse the LAN for hosts (``punktfunk discover --json``).
+        """Browse the LAN for hosts (``rubyfunk discover --json``).
 
         ``{ok: True, hosts: [{name, addr, port, fp, pair, id, mgmt, os, saved, paired}]}``, or
         ``{ok: False, error}`` — ``client-outdated`` when the installed client predates the
@@ -837,7 +833,7 @@ class Plugin:
 
     async def hosts(self) -> dict:
         """The saved hosts with a live reachability probe
-        (``punktfunk hosts list --probe --json``).
+        (``rubyfunk hosts list --probe --json``).
 
         ``--probe`` asks each host directly rather than waiting for an advert, so a host reached
         over a routed network (Tailscale/VPN) reports online instead of looking dead. Preset
@@ -847,7 +843,7 @@ class Plugin:
         return await _cli_json(["hosts", "list", "--probe", "--json"], timeout=30.0)
 
     async def pair(self, addr: str, port: int, pin: str, name: str = "Steam Deck") -> dict:
-        """The PIN ceremony (``punktfunk pair <addr:port> --pin - --name LABEL``).
+        """The PIN ceremony (``rubyfunk pair <addr:port> --pin - --name LABEL``).
 
         The operator arms pairing on the host, which shows a 4-digit PIN; entering it here
         verifies the host end to end and pins its fingerprint, so every later connect is silent.
@@ -883,7 +879,7 @@ class Plugin:
     async def request_access(
         self, addr: str, port: int, name: str = "Steam Deck", fp: str = ""
     ) -> dict:
-        """No-PIN pairing (``punktfunk pair <addr:port> --request-access --name LABEL --fp HEX``).
+        """No-PIN pairing (``rubyfunk pair <addr:port> --request-access --name LABEL --fp HEX``).
 
         Waits up to ~185 s for the host's operator to approve this Deck, pinned to ``fp``, the
         fingerprint the host advertised and ``trust_host`` saved. Without it the CLI takes the
@@ -912,7 +908,7 @@ class Plugin:
 
     async def trust_host(self, addr: str, port: int, fp: str, name: str = "") -> dict:
         """Step 1 of request access: save the host with the fingerprint it ADVERTISED
-        (``punktfunk hosts add <addr:port> --fp <hex> --name <label>``).
+        (``rubyfunk hosts add <addr:port> --fp <hex> --name <label>``).
 
         The record lands pinned but unpaired — "trusted" — which is exactly what a
         discovered-but-unapproved host is. The stream launched right after pins that same
@@ -934,7 +930,7 @@ class Plugin:
         return {"ok": False, "error": _cli_error(rc, err), "detail": detail}
 
     async def library(self, ref: str) -> dict:
-        """The host's game library (``punktfunk library <host-ref> --json``).
+        """The host's game library (``rubyfunk library <host-ref> --json``).
 
         ``{ok: True, games: [{id, store, title}]}`` — ``id`` is store-qualified (``steam:570``),
         which is what lets the game page match a host title to a Steam appid. Paired hosts
@@ -949,7 +945,7 @@ class Plugin:
         return await _cli_json(["library", ref, "--json"], timeout=20.0)
 
     async def profiles(self, ref: str) -> dict:
-        """Who plays on the host (``punktfunk profiles <host-ref> --json``).
+        """Who plays on the host (``rubyfunk profiles <host-ref> --json``).
 
         ``{ok: True, profiles: [{id, display_name, accent, owner, note, picture}], picked}``,
         a picture being a data URL or null. A host without profiles answers ``unresolved``,
@@ -1013,7 +1009,7 @@ class Plugin:
             else:
                 decky.logger.info("no icon for %s (hash %s)", appid, icon_hash[:8])
         if "icon" not in art:
-            # Never a gray box: the Punktfunk icon stands in when the game's own is nowhere.
+            # Never a gray box: the RubyFunk icon stands in when the game's own is nowhere.
             fallback = Path(decky.DECKY_PLUGIN_DIR) / "assets" / "icon.png"
             try:
                 art["icon"] = base64.b64encode(fallback.read_bytes()).decode()
@@ -1044,7 +1040,7 @@ class Plugin:
             return {"ok": False, "error": "write-failed", "detail": str(e)}
         return {"ok": True, "path": str(dest)}
 
-    async def apply_controller_config(self, name: str = "Punktfunk") -> dict:
+    async def apply_controller_config(self, name: str = "RubyFunk") -> dict:
         """Install our Steam Input layout (native touchscreen `ts_n` + gamepad passthrough) and
         point the shortcut(s) at it, so the Deck touchscreen reaches the client as native touch
         with zero manual controller setup. Best-effort + idempotent — a controller tweak must
@@ -1057,7 +1053,7 @@ class Plugin:
         applied: list[str] = []
         errors: list[str] = []
         # 1) Ship it as a selectable template (also the safe fallback if Steam clobbers the
-        #    configset write on exit): controller_base/templates/punktfunk.vdf.
+        #    configset write on exit): controller_base/templates/rubyfunk.vdf.
         try:
             tdir = _steam_root() / "controller_base" / "templates"
             tdir.mkdir(parents=True, exist_ok=True)
@@ -1149,7 +1145,7 @@ class Plugin:
         return {"running": any(p.is_socket() for p in _ctl_sockets())}
 
     async def end_game(self, ref: str, game_id: str) -> dict:
-        """End a title this device launched on the host (``punktfunk end-game <ref> --game ID``).
+        """End a title this device launched on the host (``rubyfunk end-game <ref> --game ID``).
 
         ``{ok: True, notice}`` once the game is gone — ended now, or not running any more (exit
         5). Anything else is ``{ok: False, error: <exit code>, notice}``: the CLI's own sentence,
@@ -1251,8 +1247,8 @@ class Plugin:
           installed in (a per-user install is one ``sudo flatpak update`` never reaches, and an
           unqualified ref is an error on a remote publishing more than one branch).
         * **native, one-tap capable** (.deb / .rpm / pacman with the packaged root helper and
-          the operator's group opt-in) — ``punktfunk-client --apply-update``, which starts the
-          fixed, parameterless ``punktfunk-client-update.service`` through polkit. This backend
+          the operator's group opt-in) — ``rubyfunk-client --apply-update``, which starts the
+          fixed, parameterless ``rubyfunk-client-update.service`` through polkit. This backend
           passes nothing to it; the helper derives everything from root-owned state.
         * **anything else** (sysext, nix, a source build, no opt-in) — refused with the exact
           command to run, which the UI shows. `check_update` reports the same, so the UI knows
@@ -1394,10 +1390,10 @@ class Plugin:
     # ---- Decky lifecycle ----
 
     async def _main(self):
-        decky.logger.info("punktfunk plugin loaded (runner=%s)", _runner_path())
+        decky.logger.info("rubyfunk plugin loaded (runner=%s)", _runner_path())
 
     async def _unload(self):
-        decky.logger.info("punktfunk plugin unloading")
+        decky.logger.info("rubyfunk plugin unloading")
 
     async def _uninstall(self):
-        decky.logger.info("punktfunk plugin uninstalled")
+        decky.logger.info("rubyfunk plugin uninstalled")

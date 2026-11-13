@@ -1,6 +1,6 @@
 // The device credential, end to end against a stub host — and the one thing that must never
 // drift: the bytes a signature covers, which the real host verifies with
-// `punktfunk_core::quic::auth_signed_message`.
+// `rubyfunk_core::quic::auth_signed_message`.
 
 import { describe, expect, it } from "bun:test";
 import {
@@ -85,7 +85,7 @@ describe("signedMessage", () => {
 		expect(Array.from(m.subarray(0, ctx.length))).toEqual(Array.from(ctx));
 		expect(m[ctx.length]).toBe(0xaa);
 		expect(m[ctx.length + 32]).toBe(0xbb);
-		// Pinned against the host: `punktfunk_core::quic::AUTH_SIG_CONTEXT` is exactly this.
+		// Pinned against the host: `rubyfunk_core::quic::AUTH_SIG_CONTEXT` is exactly this.
 		expect(DEVICE_AUTH_CONTEXT).toBe("punktfunk-device-auth-v1:");
 	});
 

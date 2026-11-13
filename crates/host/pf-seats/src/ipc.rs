@@ -22,7 +22,7 @@ pub const CONTROL_SCHEMA_VERSION: u32 = 1;
 pub const MAX_FRAME_BYTES: usize = 64 * 1024;
 
 /// The pipe the Windows service serves. `\\.\pipe\` is the local namespace.
-pub const PIPE_NAME: &str = r"\\.\pipe\punktfunk-seats";
+pub const PIPE_NAME: &str = r"\\.\pipe\rubyfunk-seats";
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -42,7 +42,7 @@ pub enum Command {
     /// Whether seats are on, with what turning them on needs.
     Seating,
     /// Turn seats on. Remote Desktop stays reachable from this machine only unless
-    /// `allow_rdp_from_network`. `prepare` first installs what Windows lacks and punktfunk may
+    /// `allow_rdp_from_network`. `prepare` first installs what Windows lacks and rubyfunk may
     /// set up itself: the Session Host role and a licensing mode.
     Enable {
         allow_rdp_from_network: bool,

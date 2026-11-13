@@ -19,7 +19,7 @@ import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 ICONS = ROOT / "crates/client/pf-console-ui/src/icons.rs"
-OUT = ROOT / "clients/apple/Sources/PunktfunkKit/Resources/PadMarks.xcassets"
+OUT = ROOT / "clients/apple/Sources/RubyFunkKit/Resources/PadMarks.xcassets"
 
 # The types the Controller type quick action steps through: asset name -> `icons.rs` const.
 MARKS = {

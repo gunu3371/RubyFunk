@@ -26,7 +26,7 @@ fn main() {
 #[cfg(target_os = "linux")]
 mod linux {
     use anyhow::{Context, Result};
-    use punktfunk_core::input::{InputEvent, InputKind};
+    use rubyfunk_core::input::{InputEvent, InputKind};
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::sync::Arc;
     use std::time::{Duration, Instant};

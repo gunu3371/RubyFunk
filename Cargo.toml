@@ -3,7 +3,7 @@ resolver = "2"
 members = [
     # crates/<group>: core and codec serve both sides; client and host never depend on each
     # other; install sits on core and host. scripts/ci/check-crate-groups.py holds the rule.
-    "crates/core/punktfunk-core",
+    "crates/core/rubyfunk-core",
     "crates/core/pf-dmabuf",
     "crates/core/pf-packed444",
     "crates/core/pf-update-check",
@@ -18,18 +18,18 @@ members = [
     "crates/codec/pf-dxvadec",
     "crates/codec/pyrowave-sys",
     "crates/codec/libvpl-sys",
-    "crates/client/punktfunk-ffi",
+    "crates/client/rubyfunk-ffi",
     "crates/client/pf-client-core",
     "crates/client/pf-client-video",
     "crates/client/pf-presenter",
     "crates/client/pf-console-ui",
-    "crates/host/punktfunk-host",
+    "crates/host/rubyfunk-host",
     # The capability-carrying PyroWave encode worker. A SEPARATE binary by design — never a
-    # hardlink of, or a subcommand of, punktfunk-host (design/gpu-priority-capability-worker.md).
-    "crates/host/punktfunk-encode-worker",
+    # hardlink of, or a subcommand of, rubyfunk-host (design/gpu-priority-capability-worker.md).
+    "crates/host/rubyfunk-encode-worker",
     # The Windows capture worker: Windows Graphics Capture and the encoder, as the signed-in
     # user. A separate binary by design (design/windows-wgc-capture.md §4.2).
-    "crates/host/punktfunk-capture-worker",
+    "crates/host/rubyfunk-capture-worker",
     "crates/host/pf-capture",
     "crates/host/pf-encode",
     "crates/host/pf-encode-core",
@@ -53,11 +53,11 @@ members = [
     "crates/host/pf-seat-audio",
     # The seat supervisor's binary, apart from its library: it links pf-inject for the pads it
     # builds, which the Windows seat keeper's own workspace cannot resolve beside IronRDP.
-    "crates/host/punktfunk-seats",
-    "crates/install/punktfunk-setup",
+    "crates/host/rubyfunk-seats",
+    "crates/install/rubyfunk-setup",
     # The Windows installer wizard (WinUI 3 over the same engine). Stub bin off-Windows.
-    "crates/install/punktfunk-setup-win",
-    "crates/install/punktfunk-tray",
+    "crates/install/rubyfunk-setup-win",
+    "crates/install/rubyfunk-tray",
     "crates/install/pf-update",
     "clients/probe",
     "clients/cli",
@@ -105,7 +105,7 @@ edition = "2024"
 rust-version = "1.85"
 license = "MIT OR Apache-2.0"
 authors = ["unom"]
-repository = "https://git.unom.io/unom/punktfunk"
+repository = "https://github.com/gunu3371/RubyFunk"
 
 # Pins every member must share. A member adds `optional` and its own features on top; cargo
 # unions them with the entry's.
@@ -129,7 +129,7 @@ ureq = { version = "3", default-features = false, features = ["rustls-no-provide
 
 # microsoft/windows-rs at one verified commit: windows-reactor is unpublished (0.0.0), and
 # `windows` comes from the same rev so its `windows-core` unifies with reactor's. Re-run
-# punktfunk-setup-win's tests/wizard_flow.rs on every bump. Host crates declare crates.io
+# rubyfunk-setup-win's tests/wizard_flow.rs on every bump. Host crates declare crates.io
 # `windows = "0.62"` inline: cargo can't rename a workspace entry per member.
 windows = { git = "https://github.com/microsoft/windows-rs", rev = "58217a690" }
 windows-reactor = { git = "https://github.com/microsoft/windows-rs", rev = "58217a690" }
@@ -170,7 +170,7 @@ cros-codecs = { path = "crates/codec/pf-bitstream/vendor/cros-codecs" }
 # something (a raw pointer, a borrowed HANDLE, a GPU object that must not be in flight).
 [workspace.lints.rust]
 unsafe_op_in_unsafe_fn = "deny"
-# The PS5 homebrew target (punktfunk/client-ps5) is a custom target JSON whose vendor rustc does
+# The PS5 homebrew target (rubyfunk/client-ps5) is a custom target JSON whose vendor rustc does
 # not list: `all(target_os = "freebsd", target_vendor = "sie")` gates it.
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_vendor, values("sie"))'] }
 
@@ -202,9 +202,9 @@ cast_ptr_alignment = "warn"
 opt-level = 3
 lto = "thin"
 codegen-units = 1
-# NOTE: deliberately NOT `panic = "abort"`. punktfunk-ffi ships as a cdylib/staticlib into
+# NOTE: deliberately NOT `panic = "abort"`. rubyfunk-ffi ships as a cdylib/staticlib into
 # third-party apps (Swift/Kotlin/C) and its C ABI catches panics at the boundary
-# (`catch_unwind` → `PunktfunkStatus::Panic`). `panic = "abort"` would make that guard a
+# (`catch_unwind` → `RubyFunkStatus::Panic`). `panic = "abort"` would make that guard a
 # no-op and let a stray panic abort the embedding application. Unwinding keeps the
 # documented isolation guarantee real.
 

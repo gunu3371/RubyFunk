@@ -11,13 +11,13 @@ const WSI_OFF_ENV: [(&str, &str); 2] = [
     ("ENABLE_GAMESCOPE_WSI", "0"),
 ];
 
-/// Same tree/rev as `punktfunk-gamescope`, own layer name — coexists with the distro's.
-const OUR_WSI_LAYER_DIR_DEFAULT: &str = "/usr/lib/punktfunk/vulkan/implicit_layer.d";
-const OUR_WSI_LAYER_MANIFEST_NAME: &str = "punktfunk_gamescope_wsi.json";
+/// Same tree/rev as `rubyfunk-gamescope`, own layer name — coexists with the distro's.
+const OUR_WSI_LAYER_DIR_DEFAULT: &str = "/usr/lib/rubyfunk/vulkan/implicit_layer.d";
+const OUR_WSI_LAYER_MANIFEST_NAME: &str = "rubyfunk_gamescope_wsi.json";
 
-/// FHS default; `PUNKTFUNK_GAMESCOPE_WSI_LAYER_DIR` for a store with no `/usr` (NixOS).
+/// FHS default; `RUBYFUNK_GAMESCOPE_WSI_LAYER_DIR` for a store with no `/usr` (NixOS).
 fn our_wsi_layer_dir() -> String {
-    std::env::var("PUNKTFUNK_GAMESCOPE_WSI_LAYER_DIR")
+    std::env::var("RUBYFUNK_GAMESCOPE_WSI_LAYER_DIR")
         .ok()
         .filter(|v| !v.trim().is_empty())
         .unwrap_or_else(|| OUR_WSI_LAYER_DIR_DEFAULT.to_string())
@@ -71,7 +71,7 @@ impl WsiPlan {
             // layer is then switched off by name, leaving exactly one gamescope WSI layer live — ours.
             Self::Ours => vec![
                 ("VK_ADD_IMPLICIT_LAYER_PATH", our_wsi_layer_dir()),
-                ("PUNKTFUNK_GAMESCOPE_WSI", "1".to_string()),
+                ("RUBYFUNK_GAMESCOPE_WSI", "1".to_string()),
                 ("DISABLE_GAMESCOPE_WSI", "1".to_string()),
                 ("ENABLE_GAMESCOPE_WSI", "0".to_string()),
             ],
@@ -171,7 +171,7 @@ mod tests {
         };
 
         assert_eq!(get("VK_ADD_IMPLICIT_LAYER_PATH"), our_wsi_layer_dir());
-        assert_eq!(get("PUNKTFUNK_GAMESCOPE_WSI"), "1");
+        assert_eq!(get("RUBYFUNK_GAMESCOPE_WSI"), "1");
         // The clobber-proof one, for exactly the reason the test above states.
         assert_eq!(get("DISABLE_GAMESCOPE_WSI"), "1");
         assert_eq!(get("ENABLE_GAMESCOPE_WSI"), "0");
@@ -206,7 +206,7 @@ mod tests {
         let env = WsiPlan::Ours.compositor_env();
         assert!(
             !env.iter()
-                .any(|(k, _)| *k == "VK_ADD_IMPLICIT_LAYER_PATH" || *k == "PUNKTFUNK_GAMESCOPE_WSI"),
+                .any(|(k, _)| *k == "VK_ADD_IMPLICIT_LAYER_PATH" || *k == "RUBYFUNK_GAMESCOPE_WSI"),
             "the compositor must not search or enable our WSI layer"
         );
         assert_eq!(

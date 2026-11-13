@@ -7,8 +7,8 @@
 //! not trust, gyro then accel as LE `i16`, battery, and a six-byte serial at 38.
 //! Offsets follow `SDL_hidapi_steam_hori.c`; `tests/motion_contract.rs` pins the units.
 
-use punktfunk_core::input::{gamepad as gs, GamepadFrame};
-use punktfunk_core::quic::RichInput;
+use rubyfunk_core::input::{gamepad as gs, GamepadFrame};
+use rubyfunk_core::quic::RichInput;
 use std::time::Duration;
 
 pub use pf_driver_proto::hori::{serial, NAME, PRODUCT, RDESC, REPORT_ID, REPORT_LEN, VENDOR};

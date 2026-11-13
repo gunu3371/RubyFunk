@@ -1,4 +1,4 @@
-//! Decoder-input capture behind `PUNKTFUNK_DUMP_VIDEO`.
+//! Decoder-input capture behind `RUBYFUNK_DUMP_VIDEO`.
 //!
 //! Writes each AU as [`crate::video::Decoder::decode_frame`] received it.
 //! The data file is the raw concatenation (a valid Annex-B / OBU stream for
@@ -24,19 +24,19 @@ pub struct AuDump {
 /// Wire codec byte → fixture extension (corpus file names).
 fn codec_ext(codec: u8) -> &'static str {
     match codec {
-        punktfunk_core::quic::CODEC_H264 => "h264",
-        punktfunk_core::quic::CODEC_HEVC => "h265",
-        punktfunk_core::quic::CODEC_AV1 => "av1",
-        punktfunk_core::quic::CODEC_PYROWAVE => "pyrowave",
+        rubyfunk_core::quic::CODEC_H264 => "h264",
+        rubyfunk_core::quic::CODEC_HEVC => "h265",
+        rubyfunk_core::quic::CODEC_AV1 => "av1",
+        rubyfunk_core::quic::CODEC_PYROWAVE => "pyrowave",
         _ => "bin",
     }
 }
 
 impl AuDump {
-    /// `PUNKTFUNK_DUMP_VIDEO` directory. `None` if unset or the files could not
+    /// `RUBYFUNK_DUMP_VIDEO` directory. `None` if unset or the files could not
     /// be created; both cases are already logged.
     pub fn from_env(codec: u8) -> Option<AuDump> {
-        let dir = std::env::var_os("PUNKTFUNK_DUMP_VIDEO")?;
+        let dir = std::env::var_os("RUBYFUNK_DUMP_VIDEO")?;
         let stamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_secs())
@@ -58,7 +58,7 @@ impl AuDump {
             Ok((data, idx)) => {
                 tracing::info!(
                     path = %data_path.display(),
-                    "PUNKTFUNK_DUMP_VIDEO: capturing decoder input"
+                    "RUBYFUNK_DUMP_VIDEO: capturing decoder input"
                 );
                 Some(AuDump {
                     data: BufWriter::new(data),
@@ -70,7 +70,7 @@ impl AuDump {
                 tracing::warn!(
                     error = %e,
                     dir = %dir.display(),
-                    "PUNKTFUNK_DUMP_VIDEO capture file create failed — capture disabled"
+                    "RUBYFUNK_DUMP_VIDEO capture file create failed — capture disabled"
                 );
                 None
             }
@@ -93,7 +93,7 @@ impl AuDump {
         match r {
             Ok(()) => true,
             Err(e) => {
-                tracing::warn!(error = %e, "PUNKTFUNK_DUMP_VIDEO write failed — capture disabled");
+                tracing::warn!(error = %e, "RUBYFUNK_DUMP_VIDEO write failed — capture disabled");
                 false
             }
         }
@@ -107,7 +107,7 @@ mod tests {
     #[test]
     fn the_capture_is_a_byte_faithful_concatenation_with_a_boundary_index() {
         let dir = std::env::temp_dir().join(format!("pf-au-dump-test-{}", std::process::id()));
-        let mut dump = AuDump::create(&dir, "t", punktfunk_core::quic::CODEC_HEVC)
+        let mut dump = AuDump::create(&dir, "t", rubyfunk_core::quic::CODEC_HEVC)
             .expect("capture files should be creatable in a temp dir");
         assert!(dump.write(&[1, 2, 3], 0x04, true));
         assert!(dump.write(&[9, 8], 0x00, false));

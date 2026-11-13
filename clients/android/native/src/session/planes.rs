@@ -15,7 +15,7 @@ use super::{jni_guard, lock_recover, SESSIONS};
 /// thread spawn leaves the session stopped and safely retryable.
 #[cfg(target_os = "android")]
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeStartVideo(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeStartVideo(
     mut env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -119,7 +119,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeStartVideo(
 /// then starts from a measured view rather than the window's guess. Not android-gated: pure `jni`
 /// + an atomic store, so it links on the host build too.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoSurfaceSize(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeVideoSurfaceSize(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -144,7 +144,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoSurfac
 /// rect; this is the one thing its size cannot say, the edges Crop to fill cuts off. Read live by
 /// both presenters. Out-of-range values reset to the full frame; no-op on a `0` handle.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoSourceCrop(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeVideoSourceCrop(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -170,7 +170,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoSource
 /// same way; the surface may come and go any number of times in a stream. No-op on a `0` handle.
 #[cfg(target_os = "android")]
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativePictureWindow(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativePictureWindow(
     mut env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -202,9 +202,9 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativePictureWind
 }
 
 /// `NativeBridge.nativePictureSurfaceSize(handle, width, height)` — the second picture window's
-/// live size, as [`Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoSurfaceSize`] is the first's.
+/// live size, as [`Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeVideoSurfaceSize`] is the first's.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativePictureSurfaceSize(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativePictureSurfaceSize(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -225,10 +225,10 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativePictureSurf
 }
 
 /// `NativeBridge.nativePictureCrop(handle, left, top, right, bottom)` — the part of the frame
-/// the second window shows, as [`Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoSourceCrop`]
+/// the second window shows, as [`Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeVideoSourceCrop`]
 /// is the first's.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativePictureCrop(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativePictureCrop(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -250,7 +250,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativePictureCrop
 /// `NativeBridge.nativePictureShown(handle, mask)` — which picture layers show: bit 0 the
 /// first window's, bit 1 the second's. A hidden layer keeps its window and takes no buffer.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativePictureShown(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativePictureShown(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -267,11 +267,11 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativePictureShow
 
 /// `NativeBridge.nativeVideoMime(handle): String` — the MediaCodec MIME for the codec the host
 /// resolved (`"video/hevc"` / `"video/avc"` / `"video/av01"`), so Kotlin can rank `MediaCodecList`
-/// decoders for it before calling [`Java_io_unom_punktfunk_kit_NativeBridge_nativeStartVideo`].
+/// decoders for it before calling [`Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeStartVideo`].
 /// Empty string on a `0` or closed handle. Cheap; safe on the UI thread.
 #[cfg(target_os = "android")]
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoMime<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeVideoMime<'local>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
     handle: jlong,
@@ -288,12 +288,14 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoMime<'
 
 /// `NativeBridge.nativeVideoCodecLabel(handle): String` — a short human label for the codec the
 /// host resolved (`"H.264"` / `"HEVC"` / `"AV1"` / `"PyroWave"`), for the stats HUD's video-feed
-/// line. Distinct from [`Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoMime`] because the MIME
+/// line. Distinct from [`Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeVideoMime`] because the MIME
 /// collapses PyroWave onto `video/hevc` and can't name it. Empty string on a `0` handle. Cheap;
 /// safe on the UI thread. Android-gated (reads `crate::decode`), matching `nativeVideoMime`.
 #[cfg(target_os = "android")]
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoCodecLabel<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeVideoCodecLabel<
+    'local,
+>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
     handle: jlong,
@@ -323,7 +325,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoCodecL
 /// Guarded like the teardown shims: this one runs third-party driver code, and a panic crossing
 /// `extern "system"` aborts the app. "No PyroWave" is the right answer for a driver that faults.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativePyrowaveCapable(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativePyrowaveCapable(
     _env: EnvUnowned,
     _this: JObject,
 ) -> jboolean {
@@ -333,7 +335,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativePyrowaveCap
 /// `NativeBridge.nativeStopVideo(handle)` — stop + join the decode thread (without closing the
 /// session). No-op on `0`.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeStopVideo(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeStopVideo(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -353,7 +355,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeStopVideo(
 /// thread that pops and discards instead; `off` stops and joins it. Idempotent either way, and a
 /// no-op on `0`.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoDrain(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeVideoDrain(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -371,13 +373,15 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoDrain(
 }
 
 /// `NativeBridge.nativeVideoStatsLines(handle, tier, advanced, panelHz, panelModeHz, preset):
-/// String?` — close the overlay window and return it formatted by `punktfunk_core::hud`, one
+/// String?` — close the overlay window and return it formatted by `rubyfunk_core::hud`, one
 /// `<role>\t<text>` per line, or `null` when no decode thread runs. `panelHz` is the rate this app
 /// may render at and `panelModeHz` the panel's mode (0 = unknown). Poll ~1 Hz; each call closes
 /// the window. Not android-gated — pure `jni` + connector reads, so it links on the host build too.
 #[unsafe(no_mangle)]
 #[allow(clippy::too_many_arguments)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoStatsLines<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeVideoStatsLines<
+    'local,
+>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
     handle: jlong,
@@ -387,7 +391,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoStatsL
     panel_mode_hz: jfloat,
     preset: JString<'local>,
 ) -> JString<'local> {
-    use punktfunk_core::hud::{self, Extra, Role, StatsVerbosity};
+    use rubyfunk_core::hud::{self, Extra, Role, StatsVerbosity};
     env.with_env(|env| -> jni::errors::Result<JString<'local>> {
         let Some(h) = SESSIONS.get(handle) else {
             return Ok(JString::default());
@@ -434,7 +438,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoStatsL
 
 /// The window as the companion panel's graphs read it, by the index `NativeBridge.STAT_*` names.
 /// Rates are per second of the window; a `-1` is a figure this platform does not have.
-fn sample_of(s: &punktfunk_core::hud::StatsSnapshot, judder: u32) -> Vec<f32> {
+fn sample_of(s: &rubyfunk_core::hud::StatsSnapshot, judder: u32) -> Vec<f32> {
     let secs = s.window_ms.max(1) as f32 / 1000.0;
     let per_sec = |n: u32| n as f32 / secs;
     let ms = |us: u32| us as f32 / 1000.0;
@@ -475,10 +479,12 @@ fn sample_of(s: &punktfunk_core::hud::StatsSnapshot, judder: u32) -> Vec<f32> {
 }
 
 /// `NativeBridge.nativeVideoStatsSample(handle): FloatArray?` — the last window
-/// [`Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoStatsLines`] formatted, as numbers, or
+/// [`Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeVideoStatsLines`] formatted, as numbers, or
 /// `null` before the first. Reads a copy; never closes a window.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoStatsSample<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeVideoStatsSample<
+    'local,
+>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
     handle: jlong,
@@ -522,7 +528,7 @@ fn panel_warning(rate: f32, mode: f32, stream_hz: u32, received: u32) -> Option<
 /// on a `0` handle. Not android-gated — pure `jni` + a connector read, so it links on the host
 /// build too. Cheap; safe on the UI thread.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoSize<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeVideoSize<'local>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
     handle: jlong,
@@ -549,10 +555,12 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoSize<'
 
 /// `NativeBridge.nativeVideoDecodedSize(handle): IntArray?` — the decoder's picture size as
 /// `[width, height]`, or `null` before the first output format (or on a `0` handle). Differs from
-/// [`Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoSize`] when the host frames the picture
+/// [`Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeVideoSize`] when the host frames the picture
 /// for this device. Cheap (one atomic load); safe on the UI thread.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoDecodedSize<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeVideoDecodedSize<
+    'local,
+>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
     handle: jlong,
@@ -577,7 +585,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeVideoDecode
 /// session (survives video stop/start across surface recreation). No-op on `0`. Not android-gated —
 /// pure `jni` + an atomic store, so it links on the host build too.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeSetVideoStatsEnabled(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeSetVideoStatsEnabled(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -597,7 +605,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeSetVideoSta
 /// No-op if already started or on a `0` handle. Best-effort: a failure leaves video streaming.
 #[cfg(target_os = "android")]
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeStartAudio(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeStartAudio(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -623,7 +631,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeStartAudio(
 /// closing the session). No-op on `0`.
 #[cfg(target_os = "android")]
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeStopAudio(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeStopAudio(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -645,7 +653,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeStopAudio(
 /// the rest of the session streaming.
 #[cfg(target_os = "android")]
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeStartMic(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeStartMic(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -680,7 +688,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeStartMic(
 /// surface recreate stops and restarts the mic, and a user who muted must stay muted through it.
 #[cfg(target_os = "android")]
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeStopMic(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeStopMic(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -706,7 +714,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeStopMic(
 /// app-side fix worth blocking a session on.
 #[unsafe(no_mangle)]
 #[cfg(target_os = "android")]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeStartPadAudio(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeStartPadAudio(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -758,7 +766,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeStartPadAud
 /// driving. Returns sample frames written, or negative on failure (see `pad_audio::SelfTest`).
 #[unsafe(no_mangle)]
 #[cfg(target_os = "android")]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativePadAudioSelfTest(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativePadAudioSelfTest(
     _env: EnvUnowned,
     _this: JObject,
     fd: jni::sys::jint,
@@ -781,7 +789,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativePadAudioSel
 /// `UsbDeviceConnection` as soon as this returns and not before.
 #[unsafe(no_mangle)]
 #[cfg(target_os = "android")]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeStopPadAudio(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeStopPadAudio(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -819,7 +827,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeStopPadAudi
 /// lit while muted, because the mic really is still open. What stops is the encode and the send —
 /// no captured audio leaves the process.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeSetMicMuted(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeSetMicMuted(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -840,7 +848,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeSetMicMuted
 /// lie about a mic that is being heard. `false` on a `0` handle. Cheap (one uncontended lock).
 #[cfg(target_os = "android")]
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeMicActive(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeMicActive(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -859,7 +867,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeMicActive(
 /// queues for AAudio — so the decoder holds its state, the ring keeps its cadence, and unmute
 /// lands in step instead of re-priming. No-op on `0`.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeSetStreamMuted(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeSetStreamMuted(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -877,7 +885,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeSetStreamMu
 /// from this; a local unmute leaves an operator mute standing and the player is owed the
 /// difference. `0` on a `0` handle.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeAudioMute(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeAudioMute(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,

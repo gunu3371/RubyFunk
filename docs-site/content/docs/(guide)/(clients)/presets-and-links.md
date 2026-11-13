@@ -1,11 +1,11 @@
 ---
 title: Presets and links
-description: How settings presets override your client defaults per host or per connect, and how punktfunk:// links start a stream from a shortcut, a script or a browser.
+description: How settings presets override your client defaults per host or per connect, and how rubyfunk:// links start a stream from a shortcut, a script or a browser.
 ---
 
 A settings preset is a named set of stream settings you attach to a host, a game or one connect. A
-`punktfunk://` link starts a stream you already set up, from a shortcut, a script or a browser.
-Both live in the Punktfunk apps, not in the host's web console.
+`rubyfunk://` link starts a stream you already set up, from a shortcut, a script or a browser.
+Both live in the RubyFunk apps, not in the host's web console.
 
 ## What a preset is
 
@@ -14,7 +14,7 @@ later changes to them. Changing a row pins it, even to the value the default has
 **Reset** makes it follow the default again.
 
 Presets stay on the device that made them; nothing syncs them. Linux keeps them in
-`~/.config/punktfunk/client-presets.json`, Windows in `%APPDATA%\punktfunk\client-presets.json`, the
+`~/.config/rubyfunk/client-presets.json`, Windows in `%APPDATA%\rubyfunk\client-presets.json`, the
 Apple and Android apps in their own storage.
 
 ## Creating and editing one
@@ -60,12 +60,12 @@ The active preset's name shows in the [stats overlay](/docs/stats).
 Deleting a preset says how many hosts and pinned cards use it. Those fall back to your default
 settings; nothing fails to connect.
 
-## `punktfunk://` links
+## `rubyfunk://` links
 
 A link starts a stream on a host this device already trusts:
 
 ```text
-punktfunk://connect/<host-ref>[?fp=<64-hex>][&host=<addr[:port]>][&launch=<id>][&preset=<ref>][&as=<profile>][&name=<label>]
+rubyfunk://connect/<host-ref>[?fp=<64-hex>][&host=<addr[:port]>][&launch=<id>][&preset=<ref>][&as=<profile>][&name=<label>]
 ```
 
 `<host-ref>` is a saved host's record id, its name (ignoring case), or `addr[:port]`, tried in that
@@ -89,9 +89,9 @@ Linux app handle it; Apple's library widget and **Open Game Library** shortcut u
 show a notice.
 
 ```text
-punktfunk://connect/Living%20Room%20PC
-punktfunk://connect/Living%20Room%20PC?launch=steam:570
-punktfunk://connect/Living%20Room%20PC?preset=Work
+rubyfunk://connect/Living%20Room%20PC
+rubyfunk://connect/Living%20Room%20PC?launch=steam:570
+rubyfunk://connect/Living%20Room%20PC?preset=Work
 ```
 
 These name the host by label, so each asks first. **Copy link** writes the record id instead, which
@@ -102,7 +102,7 @@ opens in one click.
 A link can do what clicking a card you already have does, and no more.
 
 - It carries references, never values: no resolution, bitrate or codec parameters.
-- It can't pair. `punktfunk://pair/…` is refused; [pairing](/docs/pairing) stays manual.
+- It can't pair. `rubyfunk://pair/…` is refused; [pairing](/docs/pairing) stays manual.
 - Only the record id connects without asking. A name or an address, including `host=`, shows **Open
   this link?** first, naming the host and the game.
 - A host you haven't saved is never connected. With an address, Linux, Windows and the Android app
@@ -126,31 +126,31 @@ record id, `host=` and, once pinned, `fp=`, so it survives an address change or 
 
 - **Linux**: a desktop entry in `~/.local/share/applications/`, from the host page or a game's
   details. Under Flatpak the app shows the URL for you to place yourself.
-- **Windows**: a `.lnk` on your Desktop that runs `punktfunk-client.exe` with the URL.
+- **Windows**: a `.lnk` on your Desktop that runs `rubyfunk-client.exe` with the URL.
 - **Android**: a home-screen shortcut with the game's cover, from a game's long-press menu or its
   **Details…** card in the controller interface. Android TV launchers don't take shortcuts.
 
 ## Starting a game from a frontend
 
-On Android, a game frontend that lists a folder of files can start a game through a `.punktfunk`
+On Android, a game frontend that lists a folder of files can start a game through a `.rubyfunk`
 launcher file.
 
 1. On a game, choose **Save launcher file…** (long-press it in the library, or its **Details…**
    card in the controller interface). Save it into the folder the frontend scans.
-2. Have the frontend open `.punktfunk` files with this activity and the file's URI:
+2. Have the frontend open `.rubyfunk` files with this activity and the file's URI:
 
    ```text
-   am start -n io.unom.punktfunk/io.unom.punktfunk.MainActivity -a android.intent.action.VIEW -d <file URI>
+   am start -n io.github.gunu3371.rubyfunk/io.github.gunu3371.rubyfunk.MainActivity -a android.intent.action.VIEW -d <file URI>
    ```
 
 A launcher file is the game's link on one line, as **Copy link** gives it, so a text editor can
 make one too. The rules above apply: a link to a host you haven't paired shows a notice.
 
-From a script, use the [`punktfunk` command](/docs/clients#scripting-the-punktfunk-cli):
+From a script, use the [`rubyfunk` command](/docs/clients#scripting-the-rubyfunk-cli):
 
 ```bash
-punktfunk presets list
-punktfunk open --yes 'punktfunk://connect/Desk?preset=Work'
+rubyfunk presets list
+rubyfunk open --yes 'rubyfunk://connect/Desk?preset=Work'
 ```
 
 `--yes` answers the confirmation a name or address raises.

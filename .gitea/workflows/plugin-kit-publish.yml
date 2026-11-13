@@ -1,10 +1,10 @@
-# Publish the plugin framework (@punktfunk/plugin-kit) to the Gitea npm registry
+# Publish the plugin framework (@rubyfunk/plugin-kit) to the Gitea npm registry
 # (https://git.unom.io/api/packages/unom/npm/).
 #
 # Trigger: push a tag `plugin-kit-vX.Y.Z` (must equal plugin-kit/package.json "version"),
 # or run manually. Versions independently of the app's `v*` and the SDK's `sdk-v*` tags.
 #
-# The kit's devDependency on @punktfunk/host is `file:../sdk`, so the SDK's dist must be
+# The kit's devDependency on @rubyfunk/host is `file:../sdk`, so the SDK's dist must be
 # built BEFORE the kit's `bun install` copies it.
 #
 # Auth: REGISTRY_TOKEN — the same repo Actions secret sdk-publish.yml uses.
@@ -51,23 +51,23 @@ jobs:
         run: bash ../scripts/ci/retry.sh 3 bun install --frozen-lockfile --ignore-scripts
 
       # bun 1.3 installs a `file:` dependency by copying its DIRECTORIES but symlinking each
-      # top-level FILE to itself — `node_modules/@punktfunk/host/package.json -> package.json`, a
+      # top-level FILE to itself — `node_modules/@rubyfunk/host/package.json -> package.json`, a
       # dangling self-reference. `dist/` therefore arrives intact while the manifest that points at
-      # it does not, so module resolution dies at the first step and every `@punktfunk/host` import
+      # it does not, so module resolution dies at the first step and every `@rubyfunk/host` import
       # reads as "cannot find module". Replacing the tree with a real copy is the whole fix; drop
       # this step once bun links `file:` deps correctly again.
       - name: "Repair the file: dependency (bun 1.3 self-symlink)"
         working-directory: plugin-kit
         run: |
           # -f follows the link, so this is true only when the manifest actually resolves.
-          if test -f node_modules/@punktfunk/host/package.json; then
+          if test -f node_modules/@rubyfunk/host/package.json; then
             echo "bun linked it correctly — this step can go"
           else
-            rm -rf node_modules/@punktfunk/host
-            cp -R ../sdk node_modules/@punktfunk/host
+            rm -rf node_modules/@rubyfunk/host
+            cp -R ../sdk node_modules/@rubyfunk/host
           fi
-          test -f node_modules/@punktfunk/host/package.json
-          test -f node_modules/@punktfunk/host/dist/index.d.ts
+          test -f node_modules/@rubyfunk/host/package.json
+          test -f node_modules/@rubyfunk/host/dist/index.d.ts
 
       # The kit had no biome config and no lint step, while every plugin repo that consumes it does
       # — so its source drifted (unused imports, formatting) with nothing to catch it. Now gated

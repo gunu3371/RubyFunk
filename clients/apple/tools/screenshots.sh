@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# App Store screenshot driver for the Punktfunk Apple client.
+# App Store screenshot driver for the RubyFunk Apple client.
 #
-# Launches the app in "shot mode" (PUNKTFUNK_SHOT_SCENE=<name> → one mock-populated screen,
-# full-bleed; see Sources/PunktfunkClient/Screenshots/) once per scene per device, and lets the OS
+# Launches the app in "shot mode" (RUBYFUNK_SHOT_SCENE=<name> → one mock-populated screen,
+# full-bleed; see Sources/RubyFunkClient/Screenshots/) once per scene per device, and lets the OS
 # capture the REAL rendered UI:
 #   • macOS  → the app captures its own windows through the window server, then exits.
 #   • iOS/iPadOS/tvOS → a booted Simulator + `xcrun simctl io booted screenshot` (native pixels =
@@ -34,8 +34,8 @@
 #   tools/screenshots.sh ios ipad tvos  # specific platforms
 #   tools/screenshots.sh visionos       # needs BUILD_VISIONOS=1 xcframework slices; not in `all`
 #   OUT=~/Desktop/shots tools/screenshots.sh all
-#   PUNKTFUNK_SHOT_HERO=~/frame.png tools/screenshots.sh ios   # real captured frame for the hero
-#   PUNKTFUNK_SHOT_FPS=120 tools/screenshots.sh ios ipad       # HUD refresh; Simulators report 60
+#   RUBYFUNK_SHOT_HERO=~/frame.png tools/screenshots.sh ios   # real captured frame for the hero
+#   RUBYFUNK_SHOT_FPS=120 tools/screenshots.sh ios ipad       # HUD refresh; Simulators report 60
 #
 # Keep SCENES in sync with ShotScenes.all.
 
@@ -45,7 +45,7 @@ APPLE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$APPLE_DIR"
 
 OUT="${OUT:-$APPLE_DIR/screenshots}"
-BUNDLE_ID="io.unom.punktfunk"
+BUNDLE_ID="io.github.gunu3371.rubyfunk"
 
 # The App Store set, in listing order — the first three are what most people ever see, so they are
 # the stream itself, the machines it found, and their games. Everything else in
@@ -77,20 +77,20 @@ shoot_macos() {
   # pixels — SwiftUI has no release-only visuals. xcodebuild, not `swift build`: SwiftPM copies
   # asset catalogs uncompiled, which blanks every OS mark and launcher icon.
   require_xcode
-  log "macOS — building (xcodebuild PunktfunkClient)…"
+  log "macOS — building (xcodebuild RubyFunkClient)…"
   local dd="${PF_SHOT_DERIVED_DATA:-$APPLE_DIR/.build/shots-macos}"
-  xcodebuild -project Punktfunk.xcodeproj -scheme PunktfunkClient -configuration Debug \
+  xcodebuild -project RubyFunk.xcodeproj -scheme RubyFunkClient -configuration Debug \
     -destination platform=macOS -derivedDataPath "$dd" CODE_SIGNING_ALLOWED=NO build >/dev/null \
     || die "macOS: xcodebuild failed"
-  local bin="$dd/Build/Products/Debug/PunktfunkClient"
+  local bin="$dd/Build/Products/Debug/RubyFunkClient"
   [ -x "$bin" ] || die "build produced no $bin"
 
   for scene in "${SCENES[@]}"; do
     local logf; logf="$(mktemp)"
     # The app captures its own windows once the scene has settled, then exits (MacSelfCapture).
     # English on every target: the app otherwise follows the machine's locale ("vor 2 Std.").
-    PUNKTFUNK_SHOT_SCENE="$scene" PUNKTFUNK_SHOT_SELFCAPTURE="$OUT" \
-      PUNKTFUNK_SHOT_DELAY="${PUNKTFUNK_SHOT_DELAY:-$((SETTLE * 1000))}" \
+    RUBYFUNK_SHOT_SCENE="$scene" RUBYFUNK_SHOT_SELFCAPTURE="$OUT" \
+      RUBYFUNK_SHOT_DELAY="${RUBYFUNK_SHOT_DELAY:-$((SETTLE * 1000))}" \
       "$bin" -AppleLanguages '(en)' -AppleLocale en_US >"$logf" 2>&1 &
     local pid=$! dest="$OUT/mac-$scene.png"
     for _ in $(seq 1 150); do kill -0 "$pid" 2>/dev/null || break; sleep 0.2; done
@@ -197,7 +197,7 @@ shoot_sim() {
   # prebuilt-vs-source swift-syntax makes no difference. Until Xcode fixes the planner, the
   # workaround is temporarily unlinking SwiftUINavigationTransitions from the tvOS target
   # (HomeView's use is canImport-guarded — the push transition degrades to the crossfade).
-  xcodebuild -project Punktfunk.xcodeproj -scheme "$scheme" -configuration Debug \
+  xcodebuild -project RubyFunk.xcodeproj -scheme "$scheme" -configuration Debug \
     -sdk "$sdk" -destination "id=$udid" -derivedDataPath "$dd" \
     CODE_SIGNING_ALLOWED=NO build >/dev/null \
     || die "$prefix: xcodebuild failed"
@@ -213,12 +213,12 @@ shoot_sim() {
     xcrun simctl terminate "$udid" "$BUNDLE_ID" 2>/dev/null || true
     # `env` with an array: bash decides what is an assignment BEFORE expanding, so a
     # ${VAR:+NAME=...} word would be run as the command name instead.
-    local envs=("SIMCTL_CHILD_PUNKTFUNK_SHOT_SCENE=$scene")
-    [ "$prefix" = ipad-13 ] && envs+=("SIMCTL_CHILD_PUNKTFUNK_SHOT_ORIENTATION=landscape")
-    [ -n "${PUNKTFUNK_SHOT_HERO:-}" ] \
-      && envs+=("SIMCTL_CHILD_PUNKTFUNK_SHOT_HERO=$PUNKTFUNK_SHOT_HERO")
-    [ -n "${PUNKTFUNK_SHOT_FPS:-}" ] \
-      && envs+=("SIMCTL_CHILD_PUNKTFUNK_SHOT_FPS=$PUNKTFUNK_SHOT_FPS")
+    local envs=("SIMCTL_CHILD_RUBYFUNK_SHOT_SCENE=$scene")
+    [ "$prefix" = ipad-13 ] && envs+=("SIMCTL_CHILD_RUBYFUNK_SHOT_ORIENTATION=landscape")
+    [ -n "${RUBYFUNK_SHOT_HERO:-}" ] \
+      && envs+=("SIMCTL_CHILD_RUBYFUNK_SHOT_HERO=$RUBYFUNK_SHOT_HERO")
+    [ -n "${RUBYFUNK_SHOT_FPS:-}" ] \
+      && envs+=("SIMCTL_CHILD_RUBYFUNK_SHOT_FPS=$RUBYFUNK_SHOT_FPS")
     # In OUT, not mktemp: the simulator writes nothing to a file under /var/folders.
     local applog="$OUT/.$prefix-$scene.log"
     rm -f "$applog"
@@ -257,20 +257,20 @@ pixels() { sips -g pixelWidth -g pixelHeight "$1" 2>/dev/null | awk '/pixel/{pri
 for target in "$@"; do
   case "$target" in
     macos) shoot_macos ;;
-    ios)   shoot_sim 'iPhone 16 Pro Max'   Punktfunk-iOS  iphonesimulator  iphone-6.9 iOS 'iPhone 16 Pro Max' ;;
-    ipad)  shoot_sim 'iPad Pro 13|iPad Pro .*M4|iPad Pro \(13' Punktfunk-iOS iphonesimulator ipad-13 iOS 'iPad Pro 13-inch (M4)' ;;
-    tvos)  shoot_sim 'Apple TV'            Punktfunk-tvOS appletvsimulator appletv    tvOS 'Apple TV 4K' ;;
+    ios)   shoot_sim 'iPhone 16 Pro Max'   RubyFunk-iOS  iphonesimulator  iphone-6.9 iOS 'iPhone 16 Pro Max' ;;
+    ipad)  shoot_sim 'iPad Pro 13|iPad Pro .*M4|iPad Pro \(13' RubyFunk-iOS iphonesimulator ipad-13 iOS 'iPad Pro 13-inch (M4)' ;;
+    tvos)  shoot_sim 'Apple TV'            RubyFunk-tvOS appletvsimulator appletv    tvOS 'Apple TV 4K' ;;
     visionos)
       # A device of the 4K type captures 3840×2160. The other type's 2732×2048 the store refuses.
       [ -n "$SCENES_GIVEN" ] || SCENES=("${VISION_SCENES[@]}")
-      shoot_sim 'Apple Vision Pro \(' Punktfunk-iOS xrsimulator visionpro visionOS 'Apple Vision Pro'
+      shoot_sim 'Apple Vision Pro \(' RubyFunk-iOS xrsimulator visionpro visionOS 'Apple Vision Pro'
       ;;
     all)
       shoot_macos
       if xcrun --find simctl >/dev/null 2>&1; then
-        shoot_sim 'iPhone 16 Pro Max' Punktfunk-iOS iphonesimulator iphone-6.9 iOS 'iPhone 16 Pro Max'
-        shoot_sim 'iPad Pro 13|iPad Pro .*M4|iPad Pro \(13' Punktfunk-iOS iphonesimulator ipad-13 iOS 'iPad Pro 13-inch (M4)'
-        shoot_sim 'Apple TV' Punktfunk-tvOS appletvsimulator appletv tvOS 'Apple TV 4K'
+        shoot_sim 'iPhone 16 Pro Max' RubyFunk-iOS iphonesimulator iphone-6.9 iOS 'iPhone 16 Pro Max'
+        shoot_sim 'iPad Pro 13|iPad Pro .*M4|iPad Pro \(13' RubyFunk-iOS iphonesimulator ipad-13 iOS 'iPad Pro 13-inch (M4)'
+        shoot_sim 'Apple TV' RubyFunk-tvOS appletvsimulator appletv tvOS 'Apple TV 4K'
       else
         warn "Skipping iOS/iPadOS/tvOS — full Xcode not found (Command Line Tools only)."
       fi

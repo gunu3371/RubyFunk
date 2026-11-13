@@ -62,12 +62,12 @@ const VISIBILITY_SHOW: i8 = 1;
 /// `ASURFACE_TRANSACTION_VISIBILITY_HIDE`.
 const VISIBILITY_HIDE: i8 = 0;
 
-/// [`HdrMeta`](punktfunk_core::quic::HdrMeta) (ST.2086 G, B, R in 1/50000; mastering luminance in
+/// [`HdrMeta`](rubyfunk_core::quic::HdrMeta) (ST.2086 G, B, R in 1/50000; mastering luminance in
 /// 0.0001 nits) as the NDK's float structs. A block with a zero field means "unknown" and is
 /// `None`, as Codec2 treats it for the decoder's own Surface: SurfaceFlinger takes a sent MaxCLL
 /// as the layer's peak, so a zero one declares a 0-nit picture.
 fn hdr_metadata(
-    m: &punktfunk_core::quic::HdrMeta,
+    m: &rubyfunk_core::quic::HdrMeta,
 ) -> (Option<AHdrMetadataSmpte2086>, Option<AHdrMetadataCta8613>) {
     let xy = |[x, y]: [u16; 2]| AColorXy {
         x: f32::from(x) / 50_000.0,
@@ -393,7 +393,7 @@ impl Layer {
         // SAFETY: `window.ptr()` is the live `ANativeWindow` the decode thread owns; the name is a
         // static NUL-terminated string; the call returns null on failure (checked).
         let sc =
-            unsafe { (api.create_from_window)(window.ptr().as_ptr(), c"punktfunk-video".as_ptr()) };
+            unsafe { (api.create_from_window)(window.ptr().as_ptr(), c"rubyfunk-video".as_ptr()) };
         if sc.is_null() {
             log::warn!("asc: createFromWindow returned null — falling back to SurfaceView");
             return None;
@@ -446,7 +446,7 @@ impl Layer {
         src_h: i32,
         fence_fd: RawFd,
         dataspace: i32,
-        hdr: Option<&punktfunk_core::quic::HdrMeta>,
+        hdr: Option<&rubyfunk_core::quic::HdrMeta>,
         frame_rate: f32,
     ) {
         // SAFETY: every setter takes the caller's live transaction + this layer's live `sc` +
@@ -540,7 +540,7 @@ pub(crate) fn present(
     acquire_fence: &mut Option<OwnedFd>,
     desired_present_ns: i64,
     dataspace: i32,
-    hdr: Option<&punktfunk_core::quic::HdrMeta>,
+    hdr: Option<&rubyfunk_core::quic::HdrMeta>,
     frame_rate: f32,
     seq: u64,
     ev_tx: &mpsc::Sender<DecodeEvent>,
@@ -650,7 +650,7 @@ fn merge_fences(a: OwnedFd, b: OwnedFd) -> OwnedFd {
     };
     // SAFETY: two valid fence fds we own; `sync_merge` returns a new fd (or `-1`) and leaves both
     // inputs ours to close, which the `OwnedFd` drops do.
-    let fd = unsafe { (api.merge)(c"punktfunk-release".as_ptr(), a.as_raw_fd(), b.as_raw_fd()) };
+    let fd = unsafe { (api.merge)(c"rubyfunk-release".as_ptr(), a.as_raw_fd(), b.as_raw_fd()) };
     if fd < 0 {
         return a;
     }

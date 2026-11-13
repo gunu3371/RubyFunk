@@ -361,8 +361,8 @@ fn record_raw(h: HRAWINPUT) {
         return;
     }
     let name = device_name(raw.header.hDevice);
-    // hidclass names the collections after the SwDevice enumerator: `HID\PUNKTFUNK&COL0n`.
-    let ours = name.contains("HID#PUNKTFUNK&COL");
+    // hidclass names the collections after the SwDevice enumerator: `HID\RUBYFUNK&COL0n`.
+    let ours = name.contains("HID#RUBYFUNK&COL");
     DEVICES
         .lock()
         .unwrap_or_else(PoisonError::into_inner)

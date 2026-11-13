@@ -1,6 +1,6 @@
 [package]
 name = "pf-presenter"
-description = "The Vulkan session presenter — SDL3 window, ash swapchain, frame present, input capture; the stage-2 presenter of punktfunk-planning linux-client-rearchitecture.md"
+description = "The Vulkan session presenter — SDL3 window, ash swapchain, frame present, input capture; the stage-2 presenter of rubyfunk-planning linux-client-rearchitecture.md"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -11,7 +11,7 @@ repository.workspace = true
 # `scroll`/`touch` are pure modules built on every platform; `input`/`run` take the
 # client-core dependency only on Linux+Windows.
 [dependencies]
-punktfunk-core = { path = "../../core/punktfunk-core", default-features = false }
+rubyfunk-core = { path = "../../core/rubyfunk-core", default-features = false }
 
 # Same Linux+Windows gating as the rest of the client stack (dmabuf import is the one
 # Linux-only module — see lib.rs).
@@ -21,7 +21,7 @@ punktfunk-core = { path = "../../core/punktfunk-core", default-features = false 
 # Otherwise a consumer that deliberately builds us without `pyrowave` still drags the vendored
 # C++ in — fatal on Windows ARM64, where Granite has no SIMD path.
 pf-client-core = { path = "../pf-client-core", default-features = false, features = ["desktop"] }
-punktfunk-core = { path = "../../core/punktfunk-core", features = ["quic", "serde"] }
+rubyfunk-core = { path = "../../core/rubyfunk-core", features = ["quic", "serde"] }
 # `--probe-decode` reports the driver's own video-format answers through pf-vkdecode's
 # query rather than a second copy of it — a probe that keeps its own copy is a probe
 # that eventually disagrees with the code it exists to explain (VIDEO_BASE's doc says

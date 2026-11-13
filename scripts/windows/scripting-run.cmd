@@ -1,13 +1,13 @@
 @echo off
-rem punktfunk plugin/script runner launcher - the action the PunktfunkScripting scheduled task runs.
+rem rubyfunk plugin/script runner launcher - the action the RubyFunkScripting scheduled task runs.
 rem
 rem OPT-IN: the installer registers that task DISABLED (the runner is inert until you add automation).
-rem Enable it once you have scripts/plugins:  Enable-ScheduledTask -TaskName PunktfunkScripting
+rem Enable it once you have scripts/plugins:  Enable-ScheduledTask -TaskName RubyFunkScripting
 rem
 rem Lays out next to the installed payload: {app}\scripting\scripting-run.cmd + runner-cli.js and
 rem {app}\bun\bun.exe (so %~dp0 = {app}\scripting\). The runner discovers the operator's units under
-rem %ProgramData%\punktfunk\{scripts,plugins}; a plugin's connect() auto-wires to the host's SCOPED
-rem plugin-token + identity cert in %ProgramData%\punktfunk\ (written by the host's `serve`). The
+rem %ProgramData%\rubyfunk\{scripts,plugins}; a plugin's connect() auto-wires to the host's SCOPED
+rem plugin-token + identity cert in %ProgramData%\rubyfunk\ (written by the host's `serve`). The
 rem task runs as NT AUTHORITY\LocalService - `plugins enable` grants it read on exactly those two
 rem files. No env editing.
 setlocal EnableExtensions
@@ -16,11 +16,11 @@ set "BUN=%~dp0..\bun\bun.exe"
 set "RUNNER=%~dp0runner-cli.js"
 
 if not exist "%RUNNER%" (
-  echo [punktfunk-scripting] runner bundle missing at "%RUNNER%".
+  echo [rubyfunk-scripting] runner bundle missing at "%RUNNER%".
   exit /b 1
 )
 if not exist "%BUN%" (
-  echo [punktfunk-scripting] bundled bun missing at "%BUN%".
+  echo [rubyfunk-scripting] bundled bun missing at "%BUN%".
   exit /b 1
 )
 
@@ -35,12 +35,12 @@ rem `plugins enable` makes writable for LocalService; the file inherits Users-re
 rem dir, so `type` it from any prompt. One previous run is kept as runner.log.1. If the dir isn't
 rem writable (task started before `plugins enable` ever ran), start unlogged rather than not at all.
 rem ponytail: no size cap within one run - rotate on size if a chatty plugin ever fills a disk.
-set "LOG=%ProgramData%\punktfunk\plugin-state\runner.log"
+set "LOG=%ProgramData%\rubyfunk\plugin-state\runner.log"
 set "LOGGED="
 if exist "%LOG%" move /y "%LOG%" "%LOG%.1" >nul 2>&1
 copy /y nul "%LOG%" >nul 2>&1 && set "LOGGED=1"
 if defined LOGGED (
-  >> "%LOG%" echo [punktfunk-scripting] %DATE% %TIME% starting "%BUN%" "%RUNNER%" as %USERNAME%
+  >> "%LOG%" echo [rubyfunk-scripting] %DATE% %TIME% starting "%BUN%" "%RUNNER%" as %USERNAME%
   "%BUN%" "%RUNNER%" >> "%LOG%" 2>&1
 ) else (
   "%BUN%" "%RUNNER%"

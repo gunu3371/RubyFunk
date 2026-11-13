@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Self-check for the pieces of `punktfunk-omarchy` that parse or generate a file the USER owns,
+# Self-check for the pieces of `rubyfunk-omarchy` that parse or generate a file the USER owns,
 # plus the firewall source list — all without root or an Omarchy box.
 #
 #     bash packaging/linux/omarchy/selftest.sh
@@ -10,7 +10,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-SCRIPT=./punktfunk-omarchy
+SCRIPT=./rubyfunk-omarchy
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 fails=0
@@ -35,8 +35,8 @@ mkdir -p "$WORK/hypr"
 cat > "$WORK/hypr/xdph.conf" <<'EOF'
 screencopy {
     allow_token_by_default = true
-    # punktfunk: previous custom_picker_binary = hyprland-preview-share-picker
-    custom_picker_binary = /run/user/1000/punktfunk-xdph-picker.sh
+    # rubyfunk: previous custom_picker_binary = hyprland-preview-share-picker
+    custom_picker_binary = /run/user/1000/rubyfunk-xdph-picker.sh
 }
 EOF
 cat > "$WORK/expected" <<'EOF'
@@ -51,8 +51,8 @@ check "their picker comes back and their other keys survive" "$WORK/expected" "$
 # 2. The key did not exist before us: restoring must REMOVE our line, not blank it or invent a value.
 cat > "$WORK/hypr/xdph.conf" <<'EOF'
 screencopy {
-    # punktfunk: previous custom_picker_binary = (none)
-    custom_picker_binary = /run/user/1000/punktfunk-xdph-picker.sh
+    # rubyfunk: previous custom_picker_binary = (none)
+    custom_picker_binary = /run/user/1000/rubyfunk-xdph-picker.sh
 }
 EOF
 printf 'screencopy {\n}\n' > "$WORK/expected"
@@ -85,7 +85,7 @@ echo "hooks.json"
 for combo in "hooks_json" "idle_hooks_json" "hooks_json idle_hooks_json"; do
   # shellcheck disable=SC2086
   XDG_CONFIG_HOME="$WORK/fresh-${combo// /-}" write_hooks $combo >/dev/null
-  f="$WORK/fresh-${combo// /-}/punktfunk/hooks.json"
+  f="$WORK/fresh-${combo// /-}/rubyfunk/hooks.json"
   if python3 -c "import json,sys; d=json.load(open(sys.argv[1])); assert d['hooks'] and all('on' in h and 'run' in h for h in d['hooks'])" "$f"; then
     printf '  ok   valid JSON for [%s]\n' "$combo"
   else
@@ -94,11 +94,11 @@ for combo in "hooks_json" "idle_hooks_json" "hooks_json idle_hooks_json"; do
 done
 
 # 6. An existing hooks.json is the operator's document: print, never overwrite.
-mkdir -p "$WORK/mine/punktfunk"
-echo '{"hooks":[{"on":"stream.started","webhook":"https://example.invalid/x"}]}' > "$WORK/mine/punktfunk/hooks.json"
-cp "$WORK/mine/punktfunk/hooks.json" "$WORK/expected"
+mkdir -p "$WORK/mine/rubyfunk"
+echo '{"hooks":[{"on":"stream.started","webhook":"https://example.invalid/x"}]}' > "$WORK/mine/rubyfunk/hooks.json"
+cp "$WORK/mine/rubyfunk/hooks.json" "$WORK/expected"
 XDG_CONFIG_HOME="$WORK/mine" write_hooks hooks_json >/dev/null
-check "an operator's own hooks.json is never overwritten" "$WORK/expected" "$WORK/mine/punktfunk/hooks.json"
+check "an operator's own hooks.json is never overwritten" "$WORK/expected" "$WORK/mine/rubyfunk/hooks.json"
 
 echo "omarchy menu merge"
 
@@ -126,15 +126,15 @@ if XDG_CONFIG_HOME="$WORK/menu" menu_is_valid "$f"; then
 else
   printf '  FAIL the merged menu does not parse\n'; cat "$f"; fails=$((fails + 1))
 fi
-if grep -q '"personal.notes"' "$f" && grep -q '"punktfunk-host.console"' "$f"; then
+if grep -q '"personal.notes"' "$f" && grep -q '"rubyfunk-host.console"' "$f"; then
   printf "  ok   the user's rows survived and ours were added\n"
 else
   printf "  FAIL rows lost in the merge\n"; fails=$((fails + 1))
 fi
 
 missing=
-for id in punktfunk-host.dedicated punktfunk-host.mirror punktfunk-host.pin \
-          punktfunk-host.unpair punktfunk-host.gamestream; do
+for id in rubyfunk-host.dedicated rubyfunk-host.mirror rubyfunk-host.pin \
+          rubyfunk-host.unpair rubyfunk-host.gamestream; do
   grep -q "\"$id\"" "$f" || missing="$missing $id"
 done
 if [[ -z "$missing" ]]; then
@@ -142,14 +142,14 @@ if [[ -z "$missing" ]]; then
 else
   printf '  FAIL menu missing ids:%s\n' "$missing"; fails=$((fails + 1))
 fi
-if grep -q 'punktfunk-omarchy mode --status | grep -qx dedicated' "$f" &&
-   grep -q 'punktfunk-omarchy mode --status | grep -qx mirror' "$f"; then
+if grep -q 'rubyfunk-omarchy mode --status | grep -qx dedicated' "$f" &&
+   grep -q 'rubyfunk-omarchy mode --status | grep -qx mirror' "$f"; then
   printf '  ok   dedicated and this-screen rows check mode --status\n'
 else
   printf '  FAIL dedicated/mirror rows do not check mode --status\n'; fails=$((fails + 1))
 fi
-if grep -q '"punktfunk-host.dedicated".*aliases' "$f" ||
-   grep -q '"punktfunk-host.mirror".*aliases' "$f"; then
+if grep -q '"rubyfunk-host.dedicated".*aliases' "$f" ||
+   grep -q '"rubyfunk-host.mirror".*aliases' "$f"; then
   printf '  FAIL new host rows must not add aliases\n'; fails=$((fails + 1))
 else
   printf '  ok   new host rows have no aliases\n'
@@ -157,7 +157,7 @@ fi
 
 # Idempotent: a second run must not stack a second copy.
 XDG_CONFIG_HOME="$WORK/menu" setup_menu >/dev/null 2>&1
-n=$(grep -c '"punktfunk-host.console"' "$f")
+n=$(grep -c '"rubyfunk-host.console"' "$f")
 if [[ "$n" == "1" ]]; then printf '  ok   re-running does not duplicate the block\n'
 else printf '  FAIL block appears %s times after two runs\n' "$n"; fails=$((fails + 1)); fi
 
@@ -185,11 +185,11 @@ chmod +x "$WORK/bin/omarchy-webapp-install" "$WORK/bin/omarchy-webapp-remove"
 
 # A CHILD bash, not a subshell: `set -e` is suppressed for everything inside an `if` condition,
 # subshells and called functions included, so an in-process call would pass even while the real
-# `punktfunk-omarchy setup` dies. The child re-sources the script, so its own `set -euo pipefail`
+# `rubyfunk-omarchy setup` dies. The child re-sources the script, so its own `set -euo pipefail`
 # is what governs — the same shell state an operator gets.
 if env HOME="$WORK/webapp" XDG_CONFIG_HOME="$WORK/webapp/config" PATH="$WORK/bin:$PATH" \
      bash -c "source $SCRIPT help >/dev/null 2>&1; setup_webapp" >/dev/null 2>&1 &&
-   grep -q '"punktfunk-host.console"' "$WORK/webapp/config/omarchy/extensions/omarchy-menu.jsonc"
+   grep -q '"rubyfunk-host.console"' "$WORK/webapp/config/omarchy/extensions/omarchy-menu.jsonc"
 then
   printf '  ok   setup_webapp completes with no prior entry and reaches the menu\n'
 else
@@ -199,12 +199,12 @@ fi
 echo "bar widget"
 
 # The shell registers a freshly copied plugin asynchronously, so `plugin_known` must poll the
-# list rather than trust the first answer. The stub lists punktfunk from its third call on.
+# list rather than trust the first answer. The stub lists rubyfunk from its third call on.
 mkdir -p "$WORK/om/bin"
 cat > "$WORK/om/bin/omarchy" <<'EOF'
 #!/bin/sh
 n=$(cat "$OM_CALLS" 2>/dev/null || echo 0); n=$((n + 1)); echo "$n" > "$OM_CALLS"
-[ "$1 $2" = "plugin list" ] && [ "$n" -ge 3 ] && echo "punktfunk   enabled   third-party bar-widget   Punktfunk"
+[ "$1 $2" = "plugin list" ] && [ "$n" -ge 3 ] && echo "rubyfunk   enabled   third-party bar-widget   RubyFunk"
 exit 0
 EOF
 chmod +x "$WORK/om/bin/omarchy"
@@ -255,16 +255,16 @@ check "lan_sources preinstalls the tailscale0 and wt0 rules" "$WORK/expected-lan
 
 # A CIDR takes a `from` rule and an interface an `in on` rule; `remove` must name each the same way.
 sudo() { printf '%s\n' "$*" >> "$WORK/actual-ufw"; }
-ufw_rule 10.0.0.0/8 app punktfunk-native
-ufw_rule wt0 app punktfunk-native
-ufw_unrule 10.0.0.0/8 app punktfunk-native
-ufw_unrule wt0 app punktfunk-native
+ufw_rule 10.0.0.0/8 app rubyfunk-native
+ufw_rule wt0 app rubyfunk-native
+ufw_unrule 10.0.0.0/8 app rubyfunk-native
+ufw_unrule wt0 app rubyfunk-native
 unset -f sudo
 {
-  printf '%s\n' "ufw allow from 10.0.0.0/8 to any app punktfunk-native comment $TAG"
-  printf '%s\n' "ufw allow in on wt0 to any app punktfunk-native comment $TAG"
-  printf '%s\n' "ufw --force delete allow from 10.0.0.0/8 to any app punktfunk-native"
-  printf '%s\n' "ufw --force delete allow in on wt0 to any app punktfunk-native"
+  printf '%s\n' "ufw allow from 10.0.0.0/8 to any app rubyfunk-native comment $TAG"
+  printf '%s\n' "ufw allow in on wt0 to any app rubyfunk-native comment $TAG"
+  printf '%s\n' "ufw --force delete allow from 10.0.0.0/8 to any app rubyfunk-native"
+  printf '%s\n' "ufw --force delete allow in on wt0 to any app rubyfunk-native"
 } > "$WORK/expected-ufw"
 check "a CIDR and an interface each get their own ufw rule" "$WORK/expected-ufw" "$WORK/actual-ufw"
 
@@ -279,11 +279,11 @@ while IFS='|' read -r body want; do
     printf '  FAIL %s -> %s, want %s\n' "$body" "${got:-none}" "${want:-none}"; fails=$((fails + 1))
   fi
 done <<'EOF'
-PUNKTFUNK_MGMT_BIND=0.0.0.0:47991\n|47991
-PUNKTFUNK_MGMT_BIND="[::]:48123"\n|48123
-PUNKTFUNK_MGMT_BIND=0.0.0.0:47990\n|
-# PUNKTFUNK_MGMT_BIND=0.0.0.0:48123\n|
-PUNKTFUNK_MGMT_BIND=0.0.0.0:47991\nPUNKTFUNK_MGMT_BIND=\n|
+RUBYFUNK_MGMT_BIND=0.0.0.0:47991\n|47991
+RUBYFUNK_MGMT_BIND="[::]:48123"\n|48123
+RUBYFUNK_MGMT_BIND=0.0.0.0:47990\n|
+# RUBYFUNK_MGMT_BIND=0.0.0.0:48123\n|
+RUBYFUNK_MGMT_BIND=0.0.0.0:47991\nRUBYFUNK_MGMT_BIND=\n|
 EOF
 if [[ -z "$(moved_mgmt_port "$WORK/absent.env")" ]]; then
   printf '  ok   no host.env -> none\n'
@@ -301,34 +301,34 @@ else
   printf '  FAIL mode --status without a file: %s\n' "${got:-<empty>}"; fails=$((fails + 1))
 fi
 
-mkdir -p "$mod/punktfunk"
+mkdir -p "$mod/rubyfunk"
 printf '{ "preset": "default", "capture_monitor": null, "max_displays": 4 }\n' \
-  > "$mod/punktfunk/display-settings.json"
+  > "$mod/rubyfunk/display-settings.json"
 if got=$(XDG_CONFIG_HOME="$mod" "$SCRIPT" mode --status) && [[ "$got" == "dedicated" ]]; then
   printf '  ok   mode --status is dedicated when capture_monitor is null\n'
 else
   printf '  FAIL mode --status null pin: %s\n' "${got:-<empty>}"; fails=$((fails + 1))
 fi
 
-printf 'PUNKTFUNK_MGMT_BIND=127.0.0.1:47990\nPUNKTFUNK_CAPTURE_MONITOR=DP-9\n' \
-  > "$mod/punktfunk/host.env"
+printf 'RUBYFUNK_MGMT_BIND=127.0.0.1:47990\nRUBYFUNK_CAPTURE_MONITOR=DP-9\n' \
+  > "$mod/rubyfunk/host.env"
 if got=$(XDG_CONFIG_HOME="$mod" "$SCRIPT" mode --status) && [[ "$got" == "mirror" ]]; then
   printf '  ok   mode --status honors the stronger host.env screen pin\n'
 else
   printf '  FAIL mode --status ignored host.env: %s\n' "${got:-<empty>}"; fails=$((fails + 1))
 fi
 
-XDG_CONFIG_HOME="$mod" write_capture_monitor "$mod/punktfunk/display-settings.json" "" >/dev/null
+XDG_CONFIG_HOME="$mod" write_capture_monitor "$mod/rubyfunk/display-settings.json" "" >/dev/null
 if got=$(XDG_CONFIG_HOME="$mod" "$SCRIPT" mode --status) && [[ "$got" == "dedicated" ]] &&
-   grep -qx 'PUNKTFUNK_MGMT_BIND=127.0.0.1:47990' "$mod/punktfunk/host.env" &&
-   ! grep -q '^PUNKTFUNK_CAPTURE_MONITOR=' "$mod/punktfunk/host.env"; then
+   grep -qx 'RUBYFUNK_MGMT_BIND=127.0.0.1:47990' "$mod/rubyfunk/host.env" &&
+   ! grep -q '^RUBYFUNK_CAPTURE_MONITOR=' "$mod/rubyfunk/host.env"; then
   printf '  ok   dedicated clears the stronger host.env screen pin\n'
 else
   printf '  FAIL dedicated left the host.env screen pin active\n'; fails=$((fails + 1))
 fi
 
 printf '{ "preset": "default", "capture_monitor": "DP-2", "max_displays": 4 }\n' \
-  > "$mod/punktfunk/display-settings.json"
+  > "$mod/rubyfunk/display-settings.json"
 if got=$(XDG_CONFIG_HOME="$mod" "$SCRIPT" mode --status) && [[ "$got" == "mirror" ]]; then
   printf '  ok   mode --status is mirror when capture_monitor is set\n'
 else
@@ -336,14 +336,14 @@ else
 fi
 
 # Write helpers only — `mode dedicated` would try-restart the real user unit.
-XDG_CONFIG_HOME="$mod" write_capture_monitor "$mod/punktfunk/display-settings.json" "" >/dev/null
+XDG_CONFIG_HOME="$mod" write_capture_monitor "$mod/rubyfunk/display-settings.json" "" >/dev/null
 if got=$(XDG_CONFIG_HOME="$mod" "$SCRIPT" mode --status) && [[ "$got" == "dedicated" ]] &&
    python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d["capture_monitor"] is None; assert d["preset"]=="default"; assert d["max_displays"]==4' \
-     "$mod/punktfunk/display-settings.json"; then
+     "$mod/rubyfunk/display-settings.json"; then
   printf '  ok   dedicated clears capture_monitor and keeps the other axes\n'
 else
   printf '  FAIL dedicated did not clear the pin in place\n'; fails=$((fails + 1))
-  cat "$mod/punktfunk/display-settings.json"
+  cat "$mod/rubyfunk/display-settings.json"
 fi
 
 mkdir -p "$WORK/bin"
@@ -352,7 +352,7 @@ cat > "$WORK/bin/systemctl" <<'EOF'
 echo "systemctl $*" >> "${SYSTEMCTL_LOG:-/dev/null}"
 exit 0
 EOF
-cat > "$WORK/bin/punktfunk-host" <<'EOF'
+cat > "$WORK/bin/rubyfunk-host" <<'EOF'
 #!/bin/sh
 if [ "$1" = "list-monitors" ]; then
   cat <<'MON'
@@ -364,23 +364,23 @@ MON
 fi
 exit 1
 EOF
-chmod +x "$WORK/bin/systemctl" "$WORK/bin/punktfunk-host"
+chmod +x "$WORK/bin/systemctl" "$WORK/bin/rubyfunk-host"
 
 SYSTEMCTL_LOG="$WORK/systemctl.log"
 : > "$SYSTEMCTL_LOG"
-printf 'PUNKTFUNK_CAPTURE_MONITOR=DP-9\n' > "$mod/punktfunk/host.env"
+printf 'RUBYFUNK_CAPTURE_MONITOR=DP-9\n' > "$mod/rubyfunk/host.env"
 if PATH="$WORK/bin:$PATH" SYSTEMCTL_LOG="$SYSTEMCTL_LOG" XDG_CONFIG_HOME="$mod" \
      "$SCRIPT" mode mirror >/dev/null &&
    got=$(XDG_CONFIG_HOME="$mod" "$SCRIPT" mode --status) && [[ "$got" == "mirror" ]] &&
    python3 -c 'import json,sys; assert json.load(open(sys.argv[1]))["capture_monitor"]=="eDP-1"' \
-     "$mod/punktfunk/display-settings.json" &&
-   ! grep -q '^PUNKTFUNK_CAPTURE_MONITOR=' "$mod/punktfunk/host.env"; then
+     "$mod/rubyfunk/display-settings.json" &&
+   ! grep -q '^RUBYFUNK_CAPTURE_MONITOR=' "$mod/rubyfunk/host.env"; then
   printf '  ok   mode mirror pins the primary connector and clears host.env\n'
 else
   printf '  FAIL mode mirror did not pin the primary\n'; fails=$((fails + 1))
-  cat "$mod/punktfunk/display-settings.json" 2>/dev/null || true
+  cat "$mod/rubyfunk/display-settings.json" 2>/dev/null || true
 fi
-if grep -q 'try-restart punktfunk-host' "$SYSTEMCTL_LOG"; then
+if grep -q 'try-restart rubyfunk-host' "$SYSTEMCTL_LOG"; then
   printf '  ok   mode mirror reloads the host unit\n'
 else
   printf '  FAIL mode mirror did not try-restart the host\n'; fails=$((fails + 1))
@@ -403,20 +403,20 @@ else
   printf '  ok   two untagged heads are not a pin\n'
 fi
 
-gs="$WORK/gs/punktfunk"
+gs="$WORK/gs/rubyfunk"
 mkdir -p "$gs"
-punktfunk-host() { printf '%s\n' "$*" > "$WORK/gs/host-cmd"; }
-printf 'PUNKTFUNK_MGMT_BIND=127.0.0.1:47990\nPUNKTFUNK_GAMESTREAM=0\n' > "$gs/host.env"
+rubyfunk-host() { printf '%s\n' "$*" > "$WORK/gs/host-cmd"; }
+printf 'RUBYFUNK_MGMT_BIND=127.0.0.1:47990\nRUBYFUNK_GAMESTREAM=0\n' > "$gs/host.env"
 XDG_CONFIG_HOME="$WORK/gs" enable_gamestream
-if ! grep -q '^PUNKTFUNK_GAMESTREAM=' "$gs/host.env" &&
-   grep -qx 'PUNKTFUNK_MGMT_BIND=127.0.0.1:47990' "$gs/host.env" &&
+if ! grep -q '^RUBYFUNK_GAMESTREAM=' "$gs/host.env" &&
+   grep -qx 'RUBYFUNK_MGMT_BIND=127.0.0.1:47990' "$gs/host.env" &&
    grep -qx 'settings set gamestream true' "$WORK/gs/host-cmd"; then
   printf '  ok   GameStream opt-in stores the setting and drops the host.env pin\n'
 else
   printf '  FAIL GameStream opt-in left a host.env pin or skipped the store\n'; fails=$((fails + 1))
   cat "$gs/host.env"
 fi
-unset -f punktfunk-host
+unset -f rubyfunk-host
 
 pin_json='{"v":1,"data":{"pin_pending":true,"pending":[{"uniqueid":"u1","fingerprint":"abc123def456","peer_ip":"10.0.0.8"}]}}'
 if rows=$(ctl_json_rows "$pin_json" pin) && [[ "$rows" == $'u1\tabc123def456\t10.0.0.8' ]]; then
@@ -439,12 +439,12 @@ if grep -q 'autostart, ufw' <<<"$help_out"; then
 else
   printf '  FAIL help dropped the ufw setup mention\n'; fails=$((fails + 1))
 fi
-if grep -q 'punktfunk-omarchy mode' <<<"$help_out"; then
+if grep -q 'rubyfunk-omarchy mode' <<<"$help_out"; then
   printf '  ok   help names mode\n'
 else
   printf '  FAIL help dropped mode\n'; fails=$((fails + 1))
 fi
-if grep -qE 'punktfunk-omarchy (pin|unpair|gamestream)[[:space:]]' <<<"$help_out"; then
+if grep -qE 'rubyfunk-omarchy (pin|unpair|gamestream)[[:space:]]' <<<"$help_out"; then
   printf '  FAIL hidden menu verbs leaked into public help\n'; fails=$((fails + 1))
 else
   printf '  ok   pin, unpair and gamestream stay out of public help\n'

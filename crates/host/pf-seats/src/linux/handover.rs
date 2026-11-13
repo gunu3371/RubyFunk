@@ -21,7 +21,7 @@ use std::time::{Duration, Instant};
 use zeroize::Zeroizing;
 
 /// Where the supervisor hands the password out: root's alone, `0600`.
-pub const SOCKET_PATH: &str = "/run/punktfunk/seats-login.sock";
+pub const SOCKET_PATH: &str = "/run/rubyfunk/seats-login.sock";
 /// The longest the supervisor keeps a password for its helper.
 pub(super) const LIFETIME: Duration = Duration::from_secs(30);
 /// A peer sends its request at once and reads the answer at once.
@@ -563,7 +563,7 @@ mod tests {
     /// Only the unified hierarchy's line, ending in this account's unit, counts.
     #[test]
     fn a_process_is_in_the_unit_its_cgroup_names() {
-        let unit = "0::/system.slice/system-punktfunk\\x2dseat.slice/punktfunk-seat@jdoe.service\n";
+        let unit = "0::/system.slice/system-rubyfunk\\x2dseat.slice/punktfunk-seat@jdoe.service\n";
         assert!(in_unit(unit, "jdoe"));
         assert!(!in_unit(unit, "jdo"));
         assert!(!in_unit(unit, "alice"));

@@ -2,16 +2,16 @@
 
 ## The core problem, stated plainly
 
-Punktfunk is the client half of a two-part system: it streams from a host on the user's own PC.
+RubyFunk is the client half of a two-part system: it streams from a host on the user's own PC.
 Guideline 2.1(a) asks for a way to exercise every feature, and a reviewer has no such PC. Build
 0.37.0 was rejected on exactly that (September 14, 2026), with no notes attached.
 
-The app answers it with a **built-in demo host** (`Home/DemoMode.swift`, `punktfunk-ffi`'s `demo_host.rs`): a
+The app answers it with a **built-in demo host** (`Home/DemoMode.swift`, `rubyfunk-ffi`'s `demo_host.rs`): a
 real `punktfunk/1` host on `127.0.0.1` inside the app. It renders a live desktop that reacts to
 every input, encodes it with VideoToolbox and streams it through the same connect, decode, audio,
 HUD and input path a real PC uses.
 
-No screen offers it, so users never see it. Adding a host at the address **`demo.punktfunk`**
+No screen offers it, so users never see it. Adding a host at the address **`demo.rubyfunk`**
 saves a "Demo Host" card whose library holds four sample titles. The notes give that address the
 way they would give a demo login. No external host, PIN or video is needed. Paste the notes below.
 
@@ -26,7 +26,7 @@ entitlement answers live.
 ```
 WHAT THIS APP IS
 
-Punktfunk is a low-latency game- and desktop-streaming client. It streams from a "host" the user
+RubyFunk is a low-latency game- and desktop-streaming client. It streams from a "host" the user
 installs on their own gaming PC (Linux, or Windows 11 22H2+), over their own network. The host is
 separate open-source software we publish at https://git.unom.io/unom/punktfunk; it is not sold,
 and this app has no purchases.
@@ -37,9 +37,9 @@ No PC or account is needed. The app contains a demo host: a real host running in
 that renders a live desktop, encodes it and streams it through the same connect, decode, audio
 and input path a real PC uses. Like a demo login, it is reached with an address we give you:
 
-1. Launch Punktfunk and choose Add Host (Apple TV: "Add Host" on the Hosts tab; with a game
+1. Launch RubyFunk and choose Add Host (Apple TV: "Add Host" on the Hosts tab; with a game
    controller: the "Add Host" tile).
-2. Enter the address:  demo.punktfunk   (leave name and port as they are), then Add Host.
+2. Enter the address:  demo.rubyfunk   (leave name and port as they are), then Add Host.
 3. A "Demo Host" card appears. Select it: the stream starts. Move the pointer with the Siri
    Remote touch surface, a mouse or touch; click, type or press controller buttons -- the host
    draws each input back and chimes.
@@ -53,7 +53,7 @@ Remove "Demo Host" from its host page to hide it again.
 
 WHY THE APP ASKS FOR WHAT IT ASKS FOR
 
-- Local Network: finds hosts via Bonjour (_punktfunk._udp) and connects to them -- the app's
+- Local Network: finds hosts via Bonjour (_rubyfunk._udp) and connects to them -- the app's
   entire purpose. The demo needs no permission.
 - Microphone (optional, off by default): audio goes to the user's own paired host, appearing
   there as a virtual microphone for voice chat. Never recorded, never sent to us.
@@ -83,7 +83,7 @@ Privacy policy: https://unom.io/en/legal/privacy#punktfunk-apps
 
 ## Before you submit — checklist
 
-- [ ] On a fresh install of each platform, add `demo.punktfunk` and stream. On Apple TV use the
+- [ ] On a fresh install of each platform, add `demo.rubyfunk` and stream. On Apple TV use the
       **Siri Remote alone**: "requires an accessory to navigate" is a tvOS rejection.
 - [ ] From the Demo Host card, open the library and launch a title; the stream names it.
 - [ ] Confirm the privacy policy URL still resolves.
@@ -93,7 +93,7 @@ Privacy policy: https://unom.io/en/legal/privacy#punktfunk-apps
 ## Separately worth checking: the privacy manifest
 
 There is **no `PrivacyInfo.xcprivacy`** anywhere in `clients/apple`. The app does use
-`UserDefaults` (`HostStore` reads the `group.io.unom.punktfunk` suite), and `UserDefaults` is one of
+`UserDefaults` (`HostStore` reads the `group.io.github.gunu3371.rubyfunk` suite), and `UserDefaults` is one of
 Apple's "required reason" APIs, which are expected to be declared in a privacy manifest. Apps
 missing a declaration typically get an automated **ITMS-91053** notice on upload.
 

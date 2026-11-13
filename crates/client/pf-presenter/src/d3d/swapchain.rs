@@ -7,7 +7,7 @@ use super::{dxgi_error, OwnedHandle};
 use crate::hdr_model::Format;
 use crate::vk::PresentPref;
 use anyhow::{Context as _, Result};
-use punktfunk_core::quic::HdrMeta;
+use rubyfunk_core::quic::HdrMeta;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
 use std::time::Instant;

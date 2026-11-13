@@ -4,7 +4,7 @@ import { describe, expect, test } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { Punktfunk } from "@punktfunk/host";
+import type { RubyFunk } from "@rubyfunk/host";
 import { Effect, Schema } from "effect";
 import {
 	defineMetadataPlugin,
@@ -146,8 +146,8 @@ interface Call {
 
 describe("defineMetadataPlugin", () => {
 	test("pushes, serves the Choose dialog, and re-resolves on a pin", async () => {
-		const previous = process.env.PUNKTFUNK_CONFIG_DIR;
-		process.env.PUNKTFUNK_CONFIG_DIR = fs.mkdtempSync(
+		const previous = process.env.RUBYFUNK_CONFIG_DIR;
+		process.env.RUBYFUNK_CONFIG_DIR = fs.mkdtempSync(
 			path.join(os.tmpdir(), "pf-metadata-"),
 		);
 		const library: LibraryEntry[] = [
@@ -169,7 +169,7 @@ describe("defineMetadataPlugin", () => {
 				return {};
 			},
 			events: { on: () => () => {} },
-		} as unknown as Punktfunk;
+		} as unknown as RubyFunk;
 		const plugin = defineMetadataPlugin({
 			name: "fake",
 			configSchema: Schema.Struct({}),
@@ -190,7 +190,7 @@ describe("defineMetadataPlugin", () => {
 					{ key: "m-other", label: `${term}!`, thumb: "file:///etc/passwd" },
 				]),
 		});
-		const main = plugin.def.main as (pf: Punktfunk) => Promise<void>;
+		const main = plugin.def.main as (pf: RubyFunk) => Promise<void>;
 		const done = main(pf);
 		const pushes = () =>
 			calls.filter(
@@ -295,8 +295,8 @@ describe("defineMetadataPlugin", () => {
 		} finally {
 			process.emit("SIGTERM");
 			await done;
-			if (previous === undefined) delete process.env.PUNKTFUNK_CONFIG_DIR;
-			else process.env.PUNKTFUNK_CONFIG_DIR = previous;
+			if (previous === undefined) delete process.env.RUBYFUNK_CONFIG_DIR;
+			else process.env.RUBYFUNK_CONFIG_DIR = previous;
 		}
 	});
 });

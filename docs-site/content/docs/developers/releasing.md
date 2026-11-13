@@ -20,7 +20,7 @@ to a channel is [Release channels](/docs/channels).
 `scripts/ci/pf-version.sh` (and its PowerShell twin `pf-version.ps1`) derives every version, so
 nothing is bumped by hand to move canary: cutting `v0.40.0` moves the next canary to `0.41.0`.
 Where a store needs a numeric version (MSIX, the App Store), a `-rc` or `+meta` suffix is dropped.
-The Linux packages hand the version to the build as `PUNKTFUNK_BUILD_VERSION`, which `--version`
+The Linux packages hand the version to the build as `RUBYFUNK_BUILD_VERSION`, which `--version`
 reports; the Windows packer stamps it into the finished binary.
 
 ## Cut a stable release
@@ -36,7 +36,7 @@ reports; the Windows packer stamps it into the finished binary.
    cargo metadata --offline --format-version 1 >/dev/null
    cargo metadata --offline --format-version 1 \
      --manifest-path packaging/windows/drivers/Cargo.toml >/dev/null
-   cargo run -p punktfunk-host --locked -- openapi > api/openapi.json
+   cargo run -p rubyfunk-host --locked -- openapi > api/openapi.json
    cp api/openapi.json docs-site/public/openapi.json
    ```
 

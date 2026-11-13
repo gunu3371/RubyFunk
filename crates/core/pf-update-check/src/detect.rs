@@ -25,32 +25,32 @@ impl Product {
     ///
     /// Separate files: a box can carry both packages, and two packages owning one path is a
     /// packaging conflict. The client file is in its own directory because the host RPM
-    /// claims `%{_datadir}/punktfunk/*` — a sibling would be owned by both subpackages.
+    /// claims `%{_datadir}/rubyfunk/*` — a sibling would be owned by both subpackages.
     pub fn marker_path(self) -> &'static str {
         match self {
-            Product::Host => "/usr/share/punktfunk/install-kind",
-            Product::Client => "/usr/share/punktfunk-client/install-kind",
+            Product::Host => "/usr/share/rubyfunk/install-kind",
+            Product::Client => "/usr/share/rubyfunk-client/install-kind",
         }
     }
 
     /// Merged sysext identity. Presence means `/usr` came from that image, even if a leftover marker remains.
     pub fn sysext_marker(self) -> &'static str {
         match self {
-            Product::Host => "/usr/lib/extension-release.d/extension-release.punktfunk",
-            Product::Client => "/usr/lib/extension-release.d/extension-release.punktfunk-client",
+            Product::Host => "/usr/lib/extension-release.d/extension-release.rubyfunk",
+            Product::Client => "/usr/lib/extension-release.d/extension-release.rubyfunk-client",
         }
     }
 
     pub fn binary(self) -> &'static str {
         match self {
-            Product::Host => "punktfunk-host",
-            Product::Client => "punktfunk-client",
+            Product::Host => "rubyfunk-host",
+            Product::Client => "rubyfunk-client",
         }
     }
 }
 
 /// `CHANNEL=stable|canary` for the sysext updater.
-const SYSEXT_CONF: &str = "/etc/punktfunk-sysext.conf";
+const SYSEXT_CONF: &str = "/etc/rubyfunk-sysext.conf";
 
 /// Present on rpm-ostree and bootc boxes.
 pub const OSTREE_BOOTED: &str = "/run/ostree-booted";
@@ -58,7 +58,7 @@ pub const OSTREE_BOOTED: &str = "/run/ostree-booted";
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InstallKind {
     WindowsInstaller,
-    /// Client only — the sandboxed GTK app (`io.unom.punktfunk`).
+    /// Client only — the sandboxed GTK app (`io.github.gunu3371.rubyfunk`).
     Flatpak,
     Sysext,
     RpmOstree,
@@ -106,16 +106,16 @@ pub struct Probe {
 }
 
 /// The Deck build's checkout, under `$HOME`.
-pub const SOURCE_CHECKOUT: &str = "punktfunk";
+pub const SOURCE_CHECKOUT: &str = "rubyfunk";
 
 /// Where a Deck build's checkout comes from. A system copy has no checkout to ask, so a door
 /// built from a fork reads as behind.
-pub const SOURCE_REMOTE: &str = "https://git.unom.io/unom/punktfunk";
+pub const SOURCE_REMOTE: &str = "https://github.com/gunu3371/RubyFunk";
 
 /// The copy of a Deck build that its door and seats run, outside the owner's 0700 home
 /// (`scripts/steamdeck/door.sh`). `source-head` and `source-commit` beside it are the checkout's
 /// `.git/HEAD` and the commit it was built from.
-pub const STEAMOS_SYSTEM_COPY: &str = "/opt/punktfunk/host";
+pub const STEAMOS_SYSTEM_COPY: &str = "/opt/rubyfunk/host";
 
 /// A system copy built from `built`, against its branch's `git ls-remote` line: 1 when the tip has
 /// moved on, 0 when it hasn't, `None` when the remote has no such branch.
@@ -173,7 +173,7 @@ pub fn classify(p: &Probe, product: Product) -> (InstallKind, Channel) {
             .exe
             .to_string_lossy()
             .to_ascii_lowercase()
-            .contains("\\program files\\punktfunk");
+            .contains("\\program files\\rubyfunk");
         return if installed {
             (
                 InstallKind::WindowsInstaller,
@@ -256,44 +256,44 @@ pub fn parse_marker(text: &str, ostree_booted: bool) -> Option<(InstallKind, Cha
 
 /// One-line, copy-pastable "how to update" hint. No placeholders.
 ///
-/// The apt and dnf hints upgrade every installed `punktfunk*` package, the set pf-update's
+/// The apt and dnf hints upgrade every installed `rubyfunk*` package, the set pf-update's
 /// one-click apply upgrades, so the console and plugin runner move with the host.
 pub fn update_command(kind: InstallKind, product: Product) -> String {
     let bin = product.binary();
     match (kind, product) {
         (InstallKind::WindowsInstaller, _) => {
-            "winget upgrade unom.PunktfunkHost   (or re-run the newer installer)".into()
+            "winget upgrade gunu3371.RubyFunkHost   (or re-run the newer installer)".into()
         }
-        (InstallKind::Flatpak, _) => "flatpak update --user io.unom.punktfunk".into(),
+        (InstallKind::Flatpak, _) => "flatpak update --user io.github.gunu3371.rubyfunk".into(),
         // The signed feed carries the host image only; the client sysext is a local rebuild.
-        (InstallKind::Sysext, Product::Host) => "sudo punktfunk-sysext update   (an image you \
+        (InstallKind::Sysext, Product::Host) => "sudo rubyfunk-sysext update   (an image you \
              built with packaging/arch/build-sysext.sh: rebuild it the same way)"
             .into(),
         (InstallKind::Sysext, Product::Client) => {
             "rebuild the client sysext: bash packaging/arch/build-sysext.sh <new .pkg.tar.zst> \
-             && sudo cp punktfunk-client.raw /var/lib/extensions/ && sudo systemd-sysext refresh"
+             && sudo cp rubyfunk-client.raw /var/lib/extensions/ && sudo systemd-sysext refresh"
                 .into()
         }
         (InstallKind::RpmOstree, Product::Host) => {
-            "sudo /usr/share/punktfunk/update-punktfunk.sh   (staged; reboot to finish)".into()
+            "sudo /usr/share/rubyfunk/update-rubyfunk.sh   (staged; reboot to finish)".into()
         }
         (InstallKind::RpmOstree, Product::Client) => {
             format!("sudo rpm-ostree update --uninstall {bin} --install {bin}   (staged; reboot to finish)")
         }
         (InstallKind::Apt, _) => {
-            r"sudo apt update && sudo apt install --only-upgrade $(dpkg-query -W -f='${Package}\n' 'punktfunk*')".into()
+            r"sudo apt update && sudo apt install --only-upgrade $(dpkg-query -W -f='${Package}\n' 'rubyfunk*')".into()
         }
-        (InstallKind::Dnf, _) => "sudo dnf upgrade 'punktfunk*'".into(),
+        (InstallKind::Dnf, _) => "sudo dnf upgrade 'rubyfunk*'".into(),
         (InstallKind::Pacman, _) => "sudo pacman -Syu".into(),
         (InstallKind::SteamosSource, _) => {
-            "bash ~/punktfunk/scripts/steamdeck/update.sh --pull".into()
+            "bash ~/rubyfunk/scripts/steamdeck/update.sh --pull".into()
         }
-        (InstallKind::Nix, _) => "nix flake update punktfunk   (then rebuild your system)".into(),
+        (InstallKind::Nix, _) => "nix flake update rubyfunk   (then rebuild your system)".into(),
         (InstallKind::Source, Product::Host) => {
-            "git pull && cargo build --release -p punktfunk-host".into()
+            "git pull && cargo build --release -p rubyfunk-host".into()
         }
         (InstallKind::Source, Product::Client) => {
-            "git pull && cargo build --release -p punktfunk-client-linux".into()
+            "git pull && cargo build --release -p rubyfunk-client-linux".into()
         }
     }
 }
@@ -326,7 +326,7 @@ mod tests {
     }
 
     fn host_probe() -> Probe {
-        probe("/usr/bin/punktfunk-host")
+        probe("/usr/bin/rubyfunk-host")
     }
 
     #[test]
@@ -349,28 +349,28 @@ mod tests {
     #[test]
     fn ladder_nix_store_path() {
         let mut p = host_probe();
-        p.exe = PathBuf::from("/nix/store/abc123-punktfunk-host-0.22.2/bin/punktfunk-host");
+        p.exe = PathBuf::from("/nix/store/abc123-rubyfunk-host-0.22.2/bin/rubyfunk-host");
         assert_eq!(classify(&p, Product::Host).0, InstallKind::Nix);
     }
 
     #[test]
     fn ladder_cargo_target_is_source_even_under_home() {
         let mut p = host_probe();
-        p.exe = PathBuf::from("/home/deck/punktfunk/target/release/punktfunk-host");
+        p.exe = PathBuf::from("/home/deck/rubyfunk/target/release/rubyfunk-host");
         assert_eq!(classify(&p, Product::Host).0, InstallKind::Source);
     }
 
     #[test]
     fn ladder_deck_build_is_steamos_source() {
         let mut p = host_probe();
-        p.exe = PathBuf::from("/home/deck/punktfunk/target-steamos/release/punktfunk-host");
+        p.exe = PathBuf::from("/home/deck/rubyfunk/target-steamos/release/rubyfunk-host");
         assert_eq!(classify(&p, Product::Host).0, InstallKind::SteamosSource);
     }
 
     #[test]
     fn a_deck_build_follows_the_branch_its_checkout_tracks() {
         let mut p = host_probe();
-        p.exe = PathBuf::from("/home/deck/punktfunk/target-steamos/release/punktfunk-host");
+        p.exe = PathBuf::from("/home/deck/rubyfunk/target-steamos/release/rubyfunk-host");
         for (head, channel) in [
             (Some("ref: refs/heads/stable\n"), Channel::Stable),
             (Some("ref: refs/heads/main\n"), Channel::Canary),
@@ -390,13 +390,13 @@ mod tests {
         }
     }
 
-    /// The door runs as `punktfunk`, whose home is not the owner's; the copy's own stamp of the
+    /// The door runs as `rubyfunk`, whose home is not the owner's; the copy's own stamp of the
     /// checkout's branch is its channel.
     #[test]
     fn a_deck_builds_system_copy_is_still_the_deck_build() {
         let mut p = host_probe();
-        p.exe = PathBuf::from("/opt/punktfunk/host/punktfunk-host");
-        p.home = Some(PathBuf::from("/var/lib/punktfunk"));
+        p.exe = PathBuf::from("/opt/rubyfunk/host/rubyfunk-host");
+        p.home = Some(PathBuf::from("/var/lib/rubyfunk"));
         p.source_head = Some("ref: refs/heads/stable\n".into());
         assert_eq!(
             classify(&p, Product::Host),
@@ -411,7 +411,7 @@ mod tests {
 
     #[test]
     fn ladder_user_owned_client_is_plain_source() {
-        let mut p = probe("/home/deck/.local/bin/punktfunk-client");
+        let mut p = probe("/home/deck/.local/bin/rubyfunk-client");
         p.marker = None;
         assert_eq!(classify(&p, Product::Client).0, InstallKind::Source);
     }
@@ -453,7 +453,7 @@ mod tests {
 
     #[test]
     fn flatpak_wins_over_every_file_rung() {
-        let mut p = probe("/app/bin/punktfunk-client");
+        let mut p = probe("/app/bin/rubyfunk-client");
         p.flatpak = true;
         p.sysext = true;
         p.marker = Some("pacman canary".into());
@@ -467,7 +467,7 @@ mod tests {
     fn windows_installed_vs_loose_build() {
         let mut p = Probe {
             windows: true,
-            exe: PathBuf::from("C:\\Program Files\\Punktfunk\\punktfunk-host.exe"),
+            exe: PathBuf::from("C:\\Program Files\\RubyFunk\\rubyfunk-host.exe"),
             version: "0.23.10118".into(),
             ..Default::default()
         };
@@ -475,20 +475,20 @@ mod tests {
             classify(&p, Product::Host),
             (InstallKind::WindowsInstaller, Channel::Canary)
         );
-        p.exe = PathBuf::from("C:\\src\\punktfunk\\target\\release\\punktfunk-host.exe");
+        p.exe = PathBuf::from("C:\\src\\rubyfunk\\target\\release\\rubyfunk-host.exe");
         assert_eq!(classify(&p, Product::Host).0, InstallKind::Source);
     }
 
     #[test]
-    fn package_hints_upgrade_every_installed_punktfunk_package() {
+    fn package_hints_upgrade_every_installed_rubyfunk_package() {
         for product in [Product::Host, Product::Client] {
             assert_eq!(
                 update_command(InstallKind::Apt, product),
-                r"sudo apt update && sudo apt install --only-upgrade $(dpkg-query -W -f='${Package}\n' 'punktfunk*')"
+                r"sudo apt update && sudo apt install --only-upgrade $(dpkg-query -W -f='${Package}\n' 'rubyfunk*')"
             );
             assert_eq!(
                 update_command(InstallKind::Dnf, product),
-                "sudo dnf upgrade 'punktfunk*'"
+                "sudo dnf upgrade 'rubyfunk*'"
             );
         }
         assert!(update_command(InstallKind::Flatpak, Product::Client).contains("flatpak update"));

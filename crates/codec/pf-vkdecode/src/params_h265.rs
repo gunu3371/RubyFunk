@@ -85,7 +85,7 @@ impl std::fmt::Display for H265ParamsError {
                 write!(
                     f,
                     "4:4:4 with separate_colour_plane_flag (ChromaArrayType 0) is \
-                     outside the punktfunk decode envelope"
+                     outside the rubyfunk decode envelope"
                 )
             }
             H265ParamsError::InvalidChromaFormatIdc(idc) => {
@@ -94,7 +94,7 @@ impl std::fmt::Display for H265ParamsError {
             H265ParamsError::UnsupportedChromaFormat(idc) => {
                 write!(
                     f,
-                    "chroma_format_idc {idc} is outside the punktfunk decode envelope \
+                    "chroma_format_idc {idc} is outside the rubyfunk decode envelope \
                      (4:2:0 and 4:4:4 only)"
                 )
             }
@@ -104,7 +104,7 @@ impl std::fmt::Display for H265ParamsError {
             } => {
                 write!(
                     f,
-                    "bit depth {}/{} is outside the punktfunk decode envelope \
+                    "bit depth {}/{} is outside the rubyfunk decode envelope \
                      (8- and 10-bit, luma == chroma)",
                     luma_minus8 + 8,
                     chroma_minus8 + 8

@@ -112,45 +112,45 @@ mod tests {
     #[test]
     fn a_reinstall_takes_its_folder_out_of_the_queue() {
         let ops = queue(&[
-            r"*1\??\C:\Windows\System32\punktfunk\pf_seat_audio-949f.dll",
+            r"*1\??\C:\Windows\System32\rubyfunk\pf_seat_audio-949f.dll",
             "",
-            r"*1\??\C:\Program Files\punktfunk\unins000.exe",
+            r"*1\??\C:\Program Files\rubyfunk\unins000.exe",
             "",
-            r"*1\??\C:\Program Files\punktfunk",
+            r"*1\??\C:\Program Files\rubyfunk",
             "",
-            r"*1\??\C:\Program Files\punktfunk-other\keep.exe",
+            r"*1\??\C:\Program Files\rubyfunk-other\keep.exe",
             "",
             r"*1\??\C:\Temp\new.exe",
-            r"*1!\??\C:\Program Files\punktfunk\replaced.exe",
+            r"*1!\??\C:\Program Files\rubyfunk\replaced.exe",
         ]);
-        let kept = without_deletes_under(&ops, r"c:\program files\PUNKTFUNK\").unwrap();
+        let kept = without_deletes_under(&ops, r"c:\program files\RUBYFUNK\").unwrap();
         assert_eq!(
             kept,
             queue(&[
-                r"*1\??\C:\Windows\System32\punktfunk\pf_seat_audio-949f.dll",
+                r"*1\??\C:\Windows\System32\rubyfunk\pf_seat_audio-949f.dll",
                 "",
-                r"*1\??\C:\Program Files\punktfunk-other\keep.exe",
+                r"*1\??\C:\Program Files\rubyfunk-other\keep.exe",
                 "",
                 r"*1\??\C:\Temp\new.exe",
-                r"*1!\??\C:\Program Files\punktfunk\replaced.exe",
+                r"*1!\??\C:\Program Files\rubyfunk\replaced.exe",
             ])
         );
         assert_eq!(
-            without_deletes_under(&kept, r"C:\Program Files\punktfunk"),
+            without_deletes_under(&kept, r"C:\Program Files\rubyfunk"),
             None
         );
     }
 
     #[test]
     fn a_last_delete_without_the_terminator_still_counts() {
-        let data: Vec<u16> = r"\??\C:\Program Files\punktfunk\unins000.exe"
+        let data: Vec<u16> = r"\??\C:\Program Files\rubyfunk\unins000.exe"
             .encode_utf16()
             .chain([0, 0])
             .collect();
         let ops = decode(&data);
         assert_eq!(ops.len(), 1);
         assert_eq!(
-            without_deletes_under(&ops, r"C:\Program Files\punktfunk"),
+            without_deletes_under(&ops, r"C:\Program Files\rubyfunk"),
             Some(Vec::new())
         );
         let broken = queue(&[r"\??\C:\a", "", ""]);
@@ -159,8 +159,8 @@ mod tests {
 
     #[test]
     fn only_the_exact_file_counts_as_queued() {
-        let ops = queue(&[r"*1\??\C:\Windows\System32\punktfunk\a.dll", ""]);
-        assert!(deletes(&ops, r"C:\Windows\System32\punktfunk\A.DLL"));
-        assert!(!deletes(&ops, r"C:\Windows\System32\punktfunk"));
+        let ops = queue(&[r"*1\??\C:\Windows\System32\rubyfunk\a.dll", ""]);
+        assert!(deletes(&ops, r"C:\Windows\System32\rubyfunk\A.DLL"));
+        assert!(!deletes(&ops, r"C:\Windows\System32\rubyfunk"));
     }
 }

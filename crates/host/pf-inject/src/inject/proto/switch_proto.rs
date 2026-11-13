@@ -9,8 +9,8 @@
 //! tests and hid-nintendo.c.
 
 use pf_driver_proto::switch::{self as wire, STICK_CENTER, STICK_RANGE};
-use punktfunk_core::input::{gamepad as gs, GamepadFrame};
-use punktfunk_core::quic::RichInput;
+use rubyfunk_core::input::{gamepad as gs, GamepadFrame};
+use rubyfunk_core::quic::RichInput;
 
 pub const SWITCH_VENDOR: u32 = 0x057E; // Nintendo Co., Ltd
 pub const SWITCH_PRODUCT: u32 = 0x2009; // Pro Controller

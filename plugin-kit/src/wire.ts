@@ -1,6 +1,6 @@
 // The library-provider wire schemas — a browser-safe module (no node imports) so plugin
 // CONTRACTS can share these types with their UIs. Mirrors the host's `ProviderEntryInput`
-// (crates/host/punktfunk-host library/custom.rs); test/wire-contract.test.ts pins the fields. Identity
+// (crates/host/rubyfunk-host library/custom.rs); test/wire-contract.test.ts pins the fields. Identity
 // codecs: plain JSON shapes, so values pass through unencoded.
 import { Schema } from "effect";
 
@@ -45,7 +45,7 @@ export type Artwork = typeof Artwork.Type;
  * | `emulator` | a catalog emulator id (`pcsx2`); `args` name `platform`, `file`, and optionally `core` and `extra` | both |
  *
  * `exec` is how a tile the host cannot name on its own (a ROM through whichever emulator the
- * operator configured) still launches. The template — program and argv — lives in the `punktfunk`
+ * operator configured) still launches. The template — program and argv — lives in the `rubyfunk`
  * block of your package.json, which ships in the reviewed tarball; the entry only supplies values
  * for its `{param}` placeholders in `args`, and the host checks each against the character class
  * the template declares. A plugin never composes a command line, and nothing it says at runtime

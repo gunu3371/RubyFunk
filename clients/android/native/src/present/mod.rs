@@ -15,7 +15,7 @@ pub(crate) mod slots;
 pub(crate) mod store;
 pub(crate) mod verdict;
 
-use punktfunk_core::phase::{CadenceHealth, SlotIntervals};
+use rubyfunk_core::phase::{CadenceHealth, SlotIntervals};
 
 /// The grid period while none is known, and the frame interval of an unnegotiated rate: one
 /// 120 Hz frame.

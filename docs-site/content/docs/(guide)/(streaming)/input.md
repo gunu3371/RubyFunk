@@ -59,7 +59,7 @@ then ⌃⌘F, to leave fullscreen.
 permission to grant.
 
 **Android:** Android keeps **Alt+Tab**, the **Windows** key and the **Language** key for itself.
-To send them, turn on **Punktfunk keyboard shortcuts** under Android's Accessibility settings;
+To send them, turn on **RubyFunk keyboard shortcuts** under Android's Accessibility settings;
 the app offers this at launch when a keyboard is attached, and under **Settings → Input →
 Keyboard shortcuts**. On Android 13 and newer a build from outside the Play Store first needs
 **Allow restricted settings** on the app's info page. Without the service, **Alt+`** stands in
@@ -127,12 +127,12 @@ Two advanced settings control this: **Guide button** and **Hold Select for guide
 | Apple TV | tvOS keeps it | On |
 
 If Steam or the Xbox Game Bar on your own device also watches the guide button, both react; turn
-that off on your device. On macOS and iOS 27 and newer, add Punktfunk to **Home Button
-Overrides** in the system's game controller settings; while the system keeps the button, Punktfunk's
+that off on your device. On macOS and iOS 27 and newer, add RubyFunk to **Home Button
+Overrides** in the system's game controller settings; while the system keeps the button, RubyFunk's
 **Controllers** settings link there. The dial's **Guide button** and **Quick access menu** buttons press
 the host's pad for you. **Quick access menu** needs Steam on the host: it presses the pad's own
 button where the virtual pad has one, and Guide with A on every other pad. On a
-Deck, the Punktfunk panel's **Host menus** buttons do the same ([Steam Deck](/docs/steam-deck)).
+Deck, the RubyFunk panel's **Host menus** buttons do the same ([Steam Deck](/docs/steam-deck)).
 
 ## Mouse modes
 
@@ -333,9 +333,9 @@ so drawing apps on the host see a real pen.
 
 | Host | Appears as |
 |---|---|
-| Linux | A **Punktfunk Pen** tablet for the session, mapped by your compositor. Needs `/dev/uinput`, the `input` group step of your [install guide](/docs/install) |
+| Linux | A **RubyFunk Pen** tablet for the session, mapped by your compositor. Needs `/dev/uinput`, the `input` group step of your [install guide](/docs/install) |
 | Windows 10 1809 and newer | A system pen with pressure, tilt, rotation, barrel button and eraser |
 
 Without host support, the stylus works as a finger, without pressure or tilt. To turn pen off
 for every client, switch off **Pen input** in the web console under **Host → Input**,
-or set `PUNKTFUNK_PEN=0` in [`host.env`](/docs/configuration). It applies from the next session.
+or set `RUBYFUNK_PEN=0` in [`host.env`](/docs/configuration). It applies from the next session.

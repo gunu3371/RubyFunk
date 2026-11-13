@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Build PunktfunkCore.xcframework for the Apple clients — run ON A MAC with Xcode + rustup.
+# Build RubyFunkCore.xcframework for the Apple clients — run ON A MAC with Xcode + rustup.
 #
 #   rustup target add aarch64-apple-darwin x86_64-apple-darwin   # + aarch64-apple-ios for iOS
 #   bash scripts/build-xcframework.sh
 #
-# Output: clients/apple/PunktfunkCore.xcframework (consumed by clients/apple/Package.swift).
-# The library is clients/apple/native: the C ABI (punktfunk-ffi) WITH the `quic` feature (the
-# punktfunk/1 connection API), so the bundled header gets PUNKTFUNK_FEATURE_QUIC pre-defined, plus
-# the Skia console (`punktfunk_console.h`).
+# Output: clients/apple/RubyFunkCore.xcframework (consumed by clients/apple/Package.swift).
+# The library is clients/apple/native: the C ABI (rubyfunk-ffi) WITH the `quic` feature (the
+# punktfunk/1 connection API), so the bundled header gets RUBYFUNK_FEATURE_QUIC pre-defined, plus
+# the Skia console (`rubyfunk_console.h`).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 # CI points CARGO_TARGET_DIR at a dir that outlives the job (scripts/ci/mac-cargo-target.sh).
@@ -126,26 +126,26 @@ fi
 # "object file was built for newer macOS version" warnings.
 skia_fetch "${TARGETS_MAC[@]}"
 for t in "${TARGETS_MAC[@]}"; do
-    MACOSX_DEPLOYMENT_TARGET=14.0 cargo build --release -p punktfunk-client-apple --target "$t"
+    MACOSX_DEPLOYMENT_TARGET=14.0 cargo build --release -p rubyfunk-client-apple --target "$t"
 done
 if [[ "$BUILD_IOS" == "1" ]]; then
     skia_fetch aarch64-apple-ios aarch64-apple-ios-sim
-    IPHONEOS_DEPLOYMENT_TARGET=17.0 cargo build --release -p punktfunk-client-apple --target aarch64-apple-ios
-    IPHONEOS_DEPLOYMENT_TARGET=17.0 cargo build --release -p punktfunk-client-apple --target aarch64-apple-ios-sim
+    IPHONEOS_DEPLOYMENT_TARGET=17.0 cargo build --release -p rubyfunk-client-apple --target aarch64-apple-ios
+    IPHONEOS_DEPLOYMENT_TARGET=17.0 cargo build --release -p rubyfunk-client-apple --target aarch64-apple-ios-sim
 fi
 if [[ "$BUILD_TVOS" == "1" ]]; then
     skia_fetch aarch64-apple-tvos aarch64-apple-tvos-sim
     # Tier-3 targets: no prebuilt std — $NIGHTLY + -Zbuild-std compiles it from rust-src.
-    TVOS_DEPLOYMENT_TARGET=17.0 cargo "+$NIGHTLY" build --release -p punktfunk-client-apple \
+    TVOS_DEPLOYMENT_TARGET=17.0 cargo "+$NIGHTLY" build --release -p rubyfunk-client-apple \
         -Z build-std=std,panic_abort --target aarch64-apple-tvos
-    TVOS_DEPLOYMENT_TARGET=17.0 cargo "+$NIGHTLY" build --release -p punktfunk-client-apple \
+    TVOS_DEPLOYMENT_TARGET=17.0 cargo "+$NIGHTLY" build --release -p rubyfunk-client-apple \
         -Z build-std=std,panic_abort --target aarch64-apple-tvos-sim
 fi
 if [[ "$BUILD_VISIONOS" == "1" ]]; then
     skia_fetch aarch64-apple-visionos aarch64-apple-visionos-sim
-    XROS_DEPLOYMENT_TARGET=26.0 cargo "+$NIGHTLY" build --release -p punktfunk-client-apple \
+    XROS_DEPLOYMENT_TARGET=26.0 cargo "+$NIGHTLY" build --release -p rubyfunk-client-apple \
         -Z build-std=std,panic_abort --target aarch64-apple-visionos
-    XROS_DEPLOYMENT_TARGET=26.0 cargo "+$NIGHTLY" build --release -p punktfunk-client-apple \
+    XROS_DEPLOYMENT_TARGET=26.0 cargo "+$NIGHTLY" build --release -p rubyfunk-client-apple \
         -Z build-std=std,panic_abort --target aarch64-apple-visionos-sim
 fi
 
@@ -154,45 +154,45 @@ trap 'rm -rf "$STAGE"' EXIT
 
 mkdir -p "$STAGE/macos"
 lipo -create \
-    "$TARGET_DIR"/aarch64-apple-darwin/release/libpunktfunk_apple.a \
-    "$TARGET_DIR"/x86_64-apple-darwin/release/libpunktfunk_apple.a \
-    -output "$STAGE/macos/libpunktfunk_apple.a"
+    "$TARGET_DIR"/aarch64-apple-darwin/release/librubyfunk_apple.a \
+    "$TARGET_DIR"/x86_64-apple-darwin/release/librubyfunk_apple.a \
+    -output "$STAGE/macos/librubyfunk_apple.a"
 
 # Headers dir: the generated C headers (core's with the quic API force-enabled) + a modulemap
-# so Swift can `import PunktfunkCore`. Regenerated first: no build step writes include/.
+# so Swift can `import RubyFunkCore`. Regenerated first: no build step writes include/.
 cargo run -q -p gen-headers
 mkdir -p "$STAGE/include"
 {
-    echo "#define PUNKTFUNK_FEATURE_QUIC 1"
-    cat include/punktfunk_core.h
-} > "$STAGE/include/punktfunk_core.h"
-cp include/punktfunk_console.h "$STAGE/include/"
+    echo "#define RUBYFUNK_FEATURE_QUIC 1"
+    cat include/rubyfunk_core.h
+} > "$STAGE/include/rubyfunk_core.h"
+cp include/rubyfunk_console.h "$STAGE/include/"
 cat > "$STAGE/include/module.modulemap" <<'EOF'
-module PunktfunkCore {
-    header "punktfunk_core.h"
-    header "punktfunk_console.h"
+module RubyFunkCore {
+    header "rubyfunk_core.h"
+    header "rubyfunk_console.h"
     export *
 }
 EOF
 
-ARGS=(-library "$STAGE/macos/libpunktfunk_apple.a" -headers "$STAGE/include")
+ARGS=(-library "$STAGE/macos/librubyfunk_apple.a" -headers "$STAGE/include")
 if [[ "$BUILD_IOS" == "1" ]]; then
-    ARGS+=(-library "$TARGET_DIR"/aarch64-apple-ios/release/libpunktfunk_apple.a -headers "$STAGE/include")
-    ARGS+=(-library "$TARGET_DIR"/aarch64-apple-ios-sim/release/libpunktfunk_apple.a -headers "$STAGE/include")
+    ARGS+=(-library "$TARGET_DIR"/aarch64-apple-ios/release/librubyfunk_apple.a -headers "$STAGE/include")
+    ARGS+=(-library "$TARGET_DIR"/aarch64-apple-ios-sim/release/librubyfunk_apple.a -headers "$STAGE/include")
 fi
 if [[ "$BUILD_TVOS" == "1" ]]; then
-    ARGS+=(-library "$TARGET_DIR"/aarch64-apple-tvos/release/libpunktfunk_apple.a -headers "$STAGE/include")
-    ARGS+=(-library "$TARGET_DIR"/aarch64-apple-tvos-sim/release/libpunktfunk_apple.a -headers "$STAGE/include")
+    ARGS+=(-library "$TARGET_DIR"/aarch64-apple-tvos/release/librubyfunk_apple.a -headers "$STAGE/include")
+    ARGS+=(-library "$TARGET_DIR"/aarch64-apple-tvos-sim/release/librubyfunk_apple.a -headers "$STAGE/include")
 fi
 if [[ "$BUILD_VISIONOS" == "1" ]]; then
-    ARGS+=(-library "$TARGET_DIR"/aarch64-apple-visionos/release/libpunktfunk_apple.a -headers "$STAGE/include")
-    ARGS+=(-library "$TARGET_DIR"/aarch64-apple-visionos-sim/release/libpunktfunk_apple.a -headers "$STAGE/include")
+    ARGS+=(-library "$TARGET_DIR"/aarch64-apple-visionos/release/librubyfunk_apple.a -headers "$STAGE/include")
+    ARGS+=(-library "$TARGET_DIR"/aarch64-apple-visionos-sim/release/librubyfunk_apple.a -headers "$STAGE/include")
 fi
 
 # Cargo does NOT fingerprint MACOSX_DEPLOYMENT_TARGET — units cached from a build without
 # it keep their old minos forever. Refuse to ship anything newer than the package floor
 # (objects BELOW it, e.g. rustup's precompiled std at 11.0, are fine and unavoidable).
-obj="$STAGE/macos/libpunktfunk_apple.a"
+obj="$STAGE/macos/librubyfunk_apple.a"
 bad=$(otool -l "$obj" 2>/dev/null | awk '/minos/ {print $2}' | sort -uV | awk -F. '$1 > 14' | head -1)
 if [[ -n "$bad" ]]; then
     echo "ERROR: $obj contains objects built for macOS $bad (> 14.0)." >&2
@@ -213,11 +213,11 @@ if ! xcodebuild -version >/dev/null 2>&1; then
     done
 fi
 
-rm -rf clients/apple/PunktfunkCore.xcframework
-"${XCODEBUILD[@]}" -create-xcframework "${ARGS[@]}" -output clients/apple/PunktfunkCore.xcframework
+rm -rf clients/apple/RubyFunkCore.xcframework
+"${XCODEBUILD[@]}" -create-xcframework "${ARGS[@]}" -output clients/apple/RubyFunkCore.xcframework
 
 # Xcode (unlike `swift build`) refuses to EMBED an unsigned xcframework: the app targets in
-# Punktfunk.xcodeproj fail with "The framework 'PunktfunkCore.xcframework' is unsigned". So
+# RubyFunk.xcodeproj fail with "The framework 'RubyFunkCore.xcframework' is unsigned". So
 # sign the bundle here. Identity: $CODESIGN_IDENTITY if set, else the first "Apple Development"
 # identity in the keychain, else ad-hoc ("-") — ad-hoc satisfies `swift build` and most local
 # Xcode runs; a real identity is needed for device/distribution. --timestamp=none keeps it
@@ -228,10 +228,10 @@ if [[ -z "$SIGN_ID" ]]; then
         | awk -F'"' '/Apple Development/ {print $2; exit}')
 fi
 SIGN_ID="${SIGN_ID:--}" # ad-hoc fallback when no real identity is available
-if codesign --force --timestamp=none --sign "$SIGN_ID" clients/apple/PunktfunkCore.xcframework; then
-    echo "OK: clients/apple/PunktfunkCore.xcframework (signed: $SIGN_ID)"
+if codesign --force --timestamp=none --sign "$SIGN_ID" clients/apple/RubyFunkCore.xcframework; then
+    echo "OK: clients/apple/RubyFunkCore.xcframework (signed: $SIGN_ID)"
 else
-    echo "WARN: clients/apple/PunktfunkCore.xcframework built but NOT signed — Xcode app" >&2
+    echo "WARN: clients/apple/RubyFunkCore.xcframework built but NOT signed — Xcode app" >&2
     echo "      builds will report it unsigned. Set CODESIGN_IDENTITY and re-run." >&2
-    echo "OK: clients/apple/PunktfunkCore.xcframework (unsigned)"
+    echo "OK: clients/apple/RubyFunkCore.xcframework (unsigned)"
 fi

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Assert the file-capability matrix of a BUILT package, not of the source tree.
 #
-#   usr/bin/punktfunk-host           MUST carry no capability, ever.   -> hard fail
-#   usr/bin/punktfunk-encode-worker  MUST carry exactly cap_sys_nice=ep -> hard fail
+#   usr/bin/rubyfunk-host           MUST carry no capability, ever.   -> hard fail
+#   usr/bin/rubyfunk-encode-worker  MUST carry exactly cap_sys_nice=ep -> hard fail
 #
 # WHY THIS EXISTS. 0.26.0-1 shipped `cap_sys_nice=ep` on the host binary through five packaging
 # channels at once. KWin identifies a Wayland client by resolving its /proc/<pid>/exe and matching
@@ -34,8 +34,8 @@
 # which is why the sysext path proves its own reader with a capability round-trip first.
 set -euo pipefail
 
-HOST_REL='usr/bin/punktfunk-host'
-WORKER_REL='usr/bin/punktfunk-encode-worker'
+HOST_REL='usr/bin/rubyfunk-host'
+WORKER_REL='usr/bin/rubyfunk-encode-worker'
 WANT_WORKER_CAPS='cap_sys_nice=ep'
 
 RC=0
@@ -109,7 +109,7 @@ scriptlet_strip_comments() { sed -e 's/#.*$//'; }
 scriptlet_host_grant() {
   scriptlet_strip_comments \
     | grep -E 'setcap' \
-    | grep -E 'punktfunk-host' \
+    | grep -E 'rubyfunk-host' \
     | grep -E 'cap_[a-z_]+[=+]' \
     | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' \
     | head -1 || true
@@ -119,7 +119,7 @@ scriptlet_host_grant() {
 scriptlet_worker_grant() {
   scriptlet_strip_comments \
     | grep -E 'setcap' \
-    | grep -E 'punktfunk-encode-worker' \
+    | grep -E 'rubyfunk-encode-worker' \
     | grep -oE 'cap_[a-z_]+[=+][a-z]+' \
     | head -1 || true
 }
@@ -329,16 +329,16 @@ self_test() {
     if [ "$ok" = 1 ]; then printf '  ok    %-42s\n' "$label"
     else printf '  FAIL  %-42s host_grant=%s worker=%s\n' "$label" "${gh:-<none>}" "${gw:-<none>}"; failures=$((failures + 1)); fi
   }
-  _sl='_grant() { setcap '"'"'cap_sys_nice=ep'"'"' usr/bin/punktfunk-encode-worker; }
-_revoke() { setcap -r usr/bin/punktfunk-host 2>/dev/null || true; }'
+  _sl='_grant() { setcap '"'"'cap_sys_nice=ep'"'"' usr/bin/rubyfunk-encode-worker; }
+_revoke() { setcap -r usr/bin/rubyfunk-host 2>/dev/null || true; }'
   _slcase "what this repo ships" "$_sl" no 'cap_sys_nice=ep'
-  _sl='# setcap '"'"'cap_sys_nice=ep'"'"' usr/bin/punktfunk-host   <- only a comment
-setcap '"'"'cap_sys_nice=ep'"'"' usr/bin/punktfunk-encode-worker'
+  _sl='# setcap '"'"'cap_sys_nice=ep'"'"' usr/bin/rubyfunk-host   <- only a comment
+setcap '"'"'cap_sys_nice=ep'"'"' usr/bin/rubyfunk-encode-worker'
   _slcase "a commented-out host grant is not a grant" "$_sl" no 'cap_sys_nice=ep'
-  _sl='setcap '"'"'cap_sys_nice=ep'"'"' usr/bin/punktfunk-host
-setcap '"'"'cap_sys_nice=ep'"'"' usr/bin/punktfunk-encode-worker'
+  _sl='setcap '"'"'cap_sys_nice=ep'"'"' usr/bin/rubyfunk-host
+setcap '"'"'cap_sys_nice=ep'"'"' usr/bin/rubyfunk-encode-worker'
   _slcase "0.26.0-1 scriptlet (must be caught)" "$_sl" yes 'cap_sys_nice=ep'
-  _sl='setcap -r usr/bin/punktfunk-host 2>/dev/null || true'
+  _sl='setcap -r usr/bin/rubyfunk-host 2>/dev/null || true'
   _slcase "removal only, no worker grant" "$_sl" no ''
 
   if [ "$failures" != 0 ]; then err "self-test: $failures case(s) wrong"; return 1; fi
@@ -374,7 +374,7 @@ main() {
 # Sourceable: `source scripts/ci/assert-cap-matrix.sh` defines the readers and `assert_matrix`
 # without running anything, so they can be driven from a test harness on a box that has none of
 # the packaging tools (this is how the scriptlet reader is exercised against the real
-# packaging/arch/punktfunk-host.install and the real dpkg postinst).
+# packaging/arch/rubyfunk-host.install and the real dpkg postinst).
 if [ "${BASH_SOURCE[0]}" = "$0" ]; then
   main "$@"
   exit $?

@@ -758,7 +758,7 @@ fn connect_within(path: &std::path::Path) -> std::io::Result<std::os::unix::net:
     Ok(socket.into())
 }
 
-/// Operator session-recovery hook (`PUNKTFUNK_RECOVER_SESSION_CMD`) when a client connects with
+/// Operator session-recovery hook (`RUBYFUNK_RECOVER_SESSION_CMD`) when a client connects with
 /// no live graphical session. Detached `sh -c`; one launch per minute so a retrying client cannot
 /// stack restarts. Returns whether a recovery is underway so the handshake can tell the client to retry.
 #[cfg(target_os = "linux")]

@@ -300,9 +300,9 @@ impl SteamUsbip {
     }
 }
 
-/// Default on. `PUNKTFUNK_STEAM_USBIP=0` skips usbip; `open` still degrades if `vhci_hcd` is missing.
+/// Default on. `RUBYFUNK_STEAM_USBIP=0` skips usbip; `open` still degrades if `vhci_hcd` is missing.
 pub fn usbip_preferred() -> bool {
-    pf_host_config::env_on("PUNKTFUNK_STEAM_USBIP") != Some(false)
+    pf_host_config::env_on("RUBYFUNK_STEAM_USBIP") != Some(false)
 }
 
 #[cfg(test)]
@@ -422,7 +422,7 @@ mod tests {
     fn usbip_deck_binds_and_tears_down() {
         ensure_modules();
         let mut pad = SteamUsbip::open(0).expect("open SteamUsbip (root + vhci_hcd?)");
-        let st = SteamState::from_gamepad(punktfunk_core::input::gamepad::BTN_A, 0, 0, 0, 0, 0, 0);
+        let st = SteamState::from_gamepad(rubyfunk_core::input::gamepad::BTN_A, 0, 0, 0, 0, 0, 0);
         let start = Instant::now();
         while start.elapsed() < Duration::from_millis(800) {
             pad.write_state(&st);

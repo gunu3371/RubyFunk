@@ -1109,7 +1109,7 @@ fn drain_releases(rx: &mpsc::Receiver<SliceRelease>, ledger: &mut SurfaceLedger)
     }
 }
 
-/// One-second window of hand-off costs. `info` under `PUNKTFUNK_PRESENT_DEBUG=1` (the
+/// One-second window of hand-off costs. `info` under `RUBYFUNK_PRESENT_DEBUG=1` (the
 /// presenter's window switch) or when a frame stalled; `debug` otherwise.
 struct HandoffWindow {
     start: Instant,
@@ -1135,7 +1135,7 @@ impl HandoffWindow {
             begin_retries: 0,
             begin_wait: Duration::ZERO,
             blt_us: Vec::with_capacity(256),
-            debug: punktfunk_core::env_on("PUNKTFUNK_PRESENT_DEBUG") == Some(true),
+            debug: rubyfunk_core::env_on("RUBYFUNK_PRESENT_DEBUG") == Some(true),
         }
     }
 
@@ -1154,7 +1154,7 @@ impl HandoffWindow {
         if self.frames == 0 || self.start.elapsed() < Duration::from_secs(1) {
             return;
         }
-        let blt = punktfunk_core::hud::Summary::of(&mut self.blt_us);
+        let blt = rubyfunk_core::hud::Summary::of(&mut self.blt_us);
         let (blt_p50_us, blt_max_us) = (blt.p50_us, blt.max_us);
         let stalled = self.begin_retries > 0 || self.acquire_stalls > 0;
         // Both arms carry the same fields: `tracing` levels are not runtime values.
@@ -1627,9 +1627,9 @@ pub fn adapter_driver_version(luid: [u8; 8]) -> Option<[u16; 4]> {
 /// window's `HMONITOR`, for Hello `display_hdr`, so the host EDID matches this panel. No
 /// `monitor` or no match uses the output at the desktop origin. `None` when advanced color
 /// is off — claiming HDR for an SDR desktop would steer host tone-mapping wrong.
-/// `PUNKTFUNK_CLIENT_PEAK_NITS` still overrides; see
-/// `punktfunk_core::client::display_hdr_env_override`.
-pub fn display_hdr_volume(monitor: Option<isize>) -> Option<punktfunk_core::quic::HdrMeta> {
+/// `RUBYFUNK_CLIENT_PEAK_NITS` still overrides; see
+/// `rubyfunk_core::client::display_hdr_env_override`.
+pub fn display_hdr_volume(monitor: Option<isize>) -> Option<rubyfunk_core::quic::HdrMeta> {
     use windows::Win32::dxgi::{IDXGIOutput6, DXGI_OUTPUT_DESC1};
     // SAFETY: plain DXGI factory creation — no arguments to get wrong; the returned
     // interface is owned by this scope and dropped with it.
@@ -1672,7 +1672,7 @@ pub fn display_hdr_volume(monitor: Option<isize>) -> Option<punktfunk_core::quic
 /// The ST.2086 shape of one output's colour facts; `None` for an SDR colorspace.
 fn hdr_meta_from_output(
     d: &windows::Win32::dxgi::DXGI_OUTPUT_DESC1,
-) -> Option<punktfunk_core::quic::HdrMeta> {
+) -> Option<rubyfunk_core::quic::HdrMeta> {
     use windows::Win32::dxgi::DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
     if d.ColorSpace != DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020 {
         return None;
@@ -1684,7 +1684,7 @@ fn hdr_meta_from_output(
             (v[1] * 50_000.0).round().clamp(0.0, 65_535.0) as u16,
         ]
     };
-    Some(punktfunk_core::quic::HdrMeta {
+    Some(rubyfunk_core::quic::HdrMeta {
         // ST.2086 primary order is G, B, R (see the HdrMeta docs); DXGI reports R/G/B.
         display_primaries: [c(d.GreenPrimary), c(d.BluePrimary), c(d.RedPrimary)],
         white_point: c(d.WhitePoint),

@@ -9,8 +9,8 @@
 use anyhow::{Context as _, Result};
 use ash::vk;
 use ash::vk::Handle as _;
-use punktfunk_core::au::{AuMemory, AuStore};
 use pyrowave_sys as pw;
+use rubyfunk_core::au::{AuMemory, AuStore};
 use std::any::Any;
 use std::ptr::NonNull;
 use std::sync::{Arc, Mutex};

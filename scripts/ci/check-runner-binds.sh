@@ -8,15 +8,15 @@
 set -eu
 cd "$(dirname "$0")/../.."
 
-UNIT=scripts/punktfunk-scripting.service
-AA=packaging/linux/apparmor/punktfunk-scripting
+UNIT=scripts/rubyfunk-scripting.service
+AA=packaging/linux/apparmor/rubyfunk-scripting
 
 names=$(grep -rhoE 'path\.join\((configDir\(\)|configDir|config), "[^"]+"' sdk/src |
 	sed -E 's/.*"([^"]+)"/\1/' | sort -u)
 
 rc=0
 for n in $names; do
-	grep -q "punktfunk/$n" "$UNIT" || {
+	grep -q "rubyfunk/$n" "$UNIT" || {
 		echo "$UNIT: the runner reads \$config/$n and this unit never binds it"
 		rc=1
 	}

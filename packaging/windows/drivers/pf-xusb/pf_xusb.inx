@@ -1,5 +1,5 @@
 ;/*++
-; punktfunk virtual Xbox 360 XUSB companion — a non-HID UMDF2 driver that registers the XUSB
+; rubyfunk virtual Xbox 360 XUSB companion — a non-HID UMDF2 driver that registers the XUSB
 ; device-interface GUID {EC87F1E3-...} and answers the buffered XInput IOCTLs, so classic
 ; XInputGetState() reads the pad without a kernel bus driver (the HIDMaestro approach). System class,
 ; hosted by the in-box WUDFRd reflector. Created per-session by the host via SwDeviceCreate
@@ -95,7 +95,7 @@ UmdfLibraryVersion=$UMDFVERSION$
 ServiceBinary=%13%\pf_xusb.dll
 
 [Strings]
-ProviderString = "Punktfunk"
+ProviderString = "RubyFunk"
 StdMfg         = "(Standard system devices)"
-DiskId1        = "Punktfunk XUSB Installation Disk"
-DeviceDesc     = "Punktfunk Virtual Xbox 360 (XUSB)"
+DiskId1        = "RubyFunk XUSB Installation Disk"
+DeviceDesc     = "RubyFunk Virtual Xbox 360 (XUSB)"

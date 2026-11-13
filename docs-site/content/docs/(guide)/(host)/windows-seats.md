@@ -7,7 +7,7 @@ A seat gives a [profile](/docs/profiles) a Windows desktop of its own, so two to
 play on one PC **at the same time**, each with their own games, Steam and saves.
 
 Playing at the same time is the part that needs **Windows Server**: Microsoft licenses concurrent
-Remote Desktop sessions there and nowhere else, and punktfunk doesn't work around that (see
+Remote Desktop sessions there and nowhere else, and rubyfunk doesn't work around that (see
 [Windows 11](#windows-11)). If you don't need to play at once — if the people sharing the PC take
 turns — you want [take-turns profiles](/docs/profiles#on-windows) instead. Those give each person
 their own account, Steam and saves on **any** edition of Windows, with no Server, no Remote Desktop
@@ -23,12 +23,12 @@ and no extra licence. This page is only for playing at the same time.
 | Licences | A Remote Desktop Services CAL for every player: [Microsoft's rules](https://learn.microsoft.com/windows-server/remote/remote-desktop-services/rds-client-access-license). Windows runs 120 days without a licence server. After that, seats sign in only with CALs from [one](https://learn.microsoft.com/windows-server/remote/remote-desktop-services/rds-activate-license-server). **Doctor** counts the days down. |
 | Steam | Installed in its usual folder, `C:\Program Files (x86)\Steam`, and opened once. Seats get their sound from it, and their Steam games. |
 
-Each seat is a Windows account of its own, `pf_seat1` to `pf_seat4`, made and managed by punktfunk.
+Each seat is a Windows account of its own, `pf_seat1` to `pf_seat4`, made and managed by rubyfunk.
 Nobody signs in to those accounts by hand.
 
 A seat can sign in to an account this PC already has instead: one of its standard accounts, with
 its own Steam and saves. Under **Add profile**, pick **Own desktop**, then **Existing account**,
-the account and its Windows password. Sign the account out first. punktfunk keeps the password
+the account and its Windows password. Sign the account out first. rubyfunk keeps the password
 sealed on this PC.
 
 - While it's a seat, nobody signs in to that account at the PC or by hand. A seat starting ends
@@ -88,15 +88,15 @@ stops after **Stop an idle seat after** under **Host** → **Seats**.
 ## Steam on a seat
 
 Steam runs once per Windows PC under its usual name, and a second start closes the first. So each
-seat gets a copy of the PC's Steam of its own, and punktfunk points every usual way of opening
+seat gets a copy of the PC's Steam of its own, and rubyfunk points every usual way of opening
 Steam on a seat at that copy:
 
 - the shared **Steam** icon on the desktop and in the Start menu,
 - `steam://` links, such as a game's desktop shortcut,
 - **Run Steam when my computer starts** in the seat's Steam,
-- games started from punktfunk's library.
+- games started from rubyfunk's library.
 
-While seats are on, the shared Steam icons start `punktfunk-tray.exe --steam`, which opens the
+While seats are on, the shared Steam icons start `rubyfunk-tray.exe --steam`, which opens the
 seat's copy on a seat and the PC's own Steam for everyone else. Turning seats off puts them back.
 The copy is made the first time a seat starts; until it lands, Steam games don't start on that
 seat.
@@ -127,7 +127,7 @@ don't allow anyone to "work around any technical restrictions or limitations in 
 Taking turns is one person at a time, so it stays inside those terms; concurrent seats would not.
 
 Tools that lift the one-session limit exist, TermWrap and other Remote Desktop wrappers among them.
-Using one to run concurrent seats breaks those terms. punktfunk doesn't include, install or
+Using one to run concurrent seats breaks those terms. rubyfunk doesn't include, install or
 recommend one, and you don't need one to take turns. On a PC that already has such a wrapper, seats
 turn on with this warning and without support: `A Remote Desktop wrapper lets this desktop edition
 of Windows run concurrent seats. Only Windows Server is supported for that.`
@@ -136,7 +136,7 @@ of Windows run concurrent seats. Only Windows Server is supported for that.`
 
 **Profiles** shows the doctor's verdict under the cards. Press **Doctor** for every check, the PC's
 first and then one group per seat, each with the next move. A seat's own log is
-`C:\ProgramData\punktfunk\seats\hosts\<seat id>\host.log`, readable by Administrators.
+`C:\ProgramData\rubyfunk\seats\hosts\<seat id>\host.log`, readable by Administrators.
 
 ### The console doesn't open from another computer
 
@@ -183,20 +183,20 @@ pick the profile.
 ### Steam closes on another seat
 
 That Steam was started as the PC's own, from `steam.exe` itself. Start Steam from the **Steam**
-icon on the desktop or in the Start menu, or from punktfunk's library.
+icon on the desktop or in the Start menu, or from rubyfunk's library.
 
 ### A game loses its controller when someone else switches apps
 
 The game reads controllers through Microsoft GameInput, which gives them to one app on the whole
 PC: the one that came to the front last, on any seat or on the PC itself. While the PC has seats,
-punktfunk lets every game a seat or the PC itself starts keep its controller in the background,
+rubyfunk lets every game a seat or the PC itself starts keep its controller in the background,
 so a window opening on a seat never takes the pad from a game at the desk, or the other way
 round. That is **Players keep their controllers** under **Settings** → **Seats**, on by default.
 A game picks it up at its next start, so restart one that was already running.
 
 ### A controller plugged into the PC appears on a seat
 
-Controllers plugged into the PC belong to the desk. punktfunk marks each one for the console
+Controllers plugged into the PC belong to the desk. rubyfunk marks each one for the console
 session as soon as it appears, so a seat's games and Steam don't list it, XInput there doesn't
 count it, and GameInput there delivers nothing from it. Two things Windows leaves outside that
 mark: Windows.Gaming.Input on a seat keeps listing an Xbox controller plugged into the PC,
@@ -210,7 +210,7 @@ Install Steam, open it once, then stop and start the seat.
 
 ### Seats stream without a picture
 
-Windows' own Remote Desktop display driver is newer than punktfunk's. Update punktfunk.
+Windows' own Remote Desktop display driver is newer than rubyfunk's. Update rubyfunk.
 
 ### Remote Desktop's days without a licence server are over
 
@@ -220,6 +220,6 @@ player: [Activate the Remote Desktop Services license server](https://learn.micr
 ## Turn seats off
 
 Untick **Seats are on** under **Profiles** → **Seats**. Every seat stops and Remote Desktop goes
-back to how it was. Uninstalling punktfunk does the same. The seat accounts go when you remove
+back to how it was. Uninstalling rubyfunk does the same. The seat accounts go when you remove
 their profiles. A profile on an existing account gives that account back instead: the account, its
 files and its Steam copy stay.

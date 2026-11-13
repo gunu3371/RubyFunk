@@ -339,7 +339,7 @@ fn set_blocking(fd: &OwnedFd) -> Result<()> {
 /// Mutter session stands in for the host app (Mutter has no `wl-clipboard`).
 ///
 /// ```text
-/// cargo test -p punktfunk-host --bin punktfunk-host -- --ignored --nocapture clipboard::mutter::live
+/// cargo test -p rubyfunk-host --bin rubyfunk-host -- --ignored --nocapture clipboard::mutter::live
 /// ```
 ///
 /// Skips when Mutter is not running, so `--ignored` off-GNOME is a no-op.
@@ -465,7 +465,7 @@ mod live {
             let paste_side = async {
                 while let Some(ev) = rx.recv().await {
                     if let ClipEvent::Paste { responder, .. } = ev {
-                        responder.respond(b"punktfunk-served".to_vec()).await;
+                        responder.respond(b"rubyfunk-served".to_vec()).await;
                     }
                 }
             };
@@ -473,7 +473,7 @@ mod live {
                 r = helper.read_text() => r,
                 _ = paste_side => Vec::new(),
             };
-            assert_eq!(read, b"punktfunk-served");
+            assert_eq!(read, b"rubyfunk-served");
         });
     }
 }

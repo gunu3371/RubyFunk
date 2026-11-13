@@ -1,9 +1,9 @@
-// `@punktfunk/host/effect` — the Effect-native surface (RFC §7): the `PunktfunkHost` service
+// `@rubyfunk/host/effect` — the Effect-native surface (RFC §7): the `RubyFunkHost` service
 // tag + live layer, the wire schemas, typed errors, and Stream accessors. The package root
-// (`@punktfunk/host`) is the Promise facade; this entry is for plugins and Effect programs.
+// (`@rubyfunk/host`) is the Promise facade; this entry is for plugins and Effect programs.
 //
 //   import { Effect, Stream } from "effect";
-//   import { PunktfunkHost, PunktfunkHostLive, events } from "@punktfunk/host/effect";
+//   import { RubyFunkHost, RubyFunkHostLive, events } from "@rubyfunk/host/effect";
 //
 //   const program = Effect.gen(function* () {
 //     yield* events().pipe(
@@ -11,12 +11,12 @@
 //       Stream.runForEach((e) => Effect.log(`stream started: ${e.stream.mode}`)),
 //     );
 //   });
-//   Effect.runPromise(program.pipe(Effect.provide(PunktfunkHostLive())));
+//   Effect.runPromise(program.pipe(Effect.provide(RubyFunkHostLive())));
 import { Effect, Layer, type Schema as S, Stream } from "effect";
 import {
 	EventStreamError,
 	makeService,
-	PunktfunkHost,
+	RubyFunkHost,
 	type RequestError,
 	TransportError,
 	type VersionSkew,
@@ -30,14 +30,14 @@ export * from "./core.js";
 export { type ConnectOptions, configDir, resolveConfig } from "./config.js";
 
 /**
- * The live layer: resolves URL/token/CA (env → host files) and provides [`PunktfunkHost`].
+ * The live layer: resolves URL/token/CA (env → host files) and provides [`RubyFunkHost`].
  * Node only, because the resolution is; a browser builds a connection and uses `layerFrom`.
  */
 export const layer = (
 	options?: ConnectOptions,
-): Layer.Layer<PunktfunkHost, TransportError> =>
+): Layer.Layer<RubyFunkHost, TransportError> =>
 	Layer.effect(
-		PunktfunkHost,
+		RubyFunkHost,
 		Effect.tryPromise({
 			try: () => resolveConfig(options),
 			catch: (cause) => new TransportError({ cause }),
@@ -45,31 +45,31 @@ export const layer = (
 	);
 
 /** RFC-spelled alias of [`layer`]. */
-export const PunktfunkHostLive = layer;
+export const RubyFunkHostLive = layer;
 
-/** The decoded lifecycle-event stream of the ambient [`PunktfunkHost`]. */
+/** The decoded lifecycle-event stream of the ambient [`RubyFunkHost`]. */
 export const events = (
 	opts?: EventStreamOptions,
-): Stream.Stream<HostEvent, EventStreamError, PunktfunkHost> =>
-	Stream.unwrap(Effect.map(PunktfunkHost, (s) => s.events(opts)));
+): Stream.Stream<HostEvent, EventStreamError, RubyFunkHost> =>
+	Stream.unwrap(Effect.map(RubyFunkHost, (s) => s.events(opts)));
 
 /** Every SSE frame verbatim (the `dropped` marker + unknown kinds included). */
 export const eventsRaw = (
 	opts?: EventStreamOptions,
-): Stream.Stream<SseFrame, EventStreamError, PunktfunkHost> =>
-	Stream.unwrap(Effect.map(PunktfunkHost, (s) => s.eventsRaw(opts)));
+): Stream.Stream<SseFrame, EventStreamError, RubyFunkHost> =>
+	Stream.unwrap(Effect.map(RubyFunkHost, (s) => s.eventsRaw(opts)));
 
 /** One management-API request under `/api/v1` on the ambient service. */
 export const request = (
 	method: string,
 	path: string,
 	body?: unknown,
-): Effect.Effect<unknown, RequestError, PunktfunkHost> =>
-	Effect.flatMap(PunktfunkHost, (s) => s.request(method, path, body));
+): Effect.Effect<unknown, RequestError, RubyFunkHost> =>
+	Effect.flatMap(RubyFunkHost, (s) => s.request(method, path, body));
 
 /** GET + schema-validate on the ambient service (schemas from [`api`]). */
 export const get = <A, I>(
 	path: string,
 	schema: S.Codec<A, I>,
-): Effect.Effect<A, RequestError | VersionSkew, PunktfunkHost> =>
-	Effect.flatMap(PunktfunkHost, (s) => s.get(path, schema));
+): Effect.Effect<A, RequestError | VersionSkew, RubyFunkHost> =>
+	Effect.flatMap(RubyFunkHost, (s) => s.get(path, schema));

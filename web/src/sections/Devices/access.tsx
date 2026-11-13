@@ -17,7 +17,7 @@ import { m } from "@/paraglide/messages";
  * The access-control vocabulary + the ONE picker for all three grant moments — the approve
  * dialog, the Pair sheet, and the paired-row edit sheet (design: per-client-access.md §6).
  *
- * Grant bits mirror `punktfunk-core` `quic/access.rs` (wire == store; reserved bits must be
+ * Grant bits mirror `rubyfunk-core` `quic/access.rs` (wire == store; reserved bits must be
  * zero). The preset label is DERIVED from the mask, never stored — no drift, and a mask the
  * presets don't cover honestly displays as "Custom".
  */

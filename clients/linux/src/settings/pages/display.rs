@@ -212,8 +212,8 @@ fn resolution(b: &Build) -> Field {
             .map(String::as_str)
             .collect::<Vec<_>>(),
     );
-    let width = size_row("Width", punktfunk_core::resolutions::MIN_WIDTH);
-    let height = size_row("Height", punktfunk_core::resolutions::MIN_HEIGHT);
+    let width = size_row("Width", rubyfunk_core::resolutions::MIN_WIDTH);
+    let height = size_row("Height", rubyfunk_core::resolutions::MIN_HEIGHT);
     let aspect = ChoiceRow::new(
         &b.dialog,
         b.inline,
@@ -287,7 +287,7 @@ fn resolution(b: &Build) -> Field {
             s.match_window = i == 1;
             (s.width, s.height) = match i {
                 0 | 1 => (0, 0),
-                i if i == custom => punktfunk_core::resolutions::custom(
+                i if i == custom => rubyfunk_core::resolutions::custom(
                     width.value() as u32,
                     height.value() as u32,
                     &s.codec,
@@ -343,7 +343,7 @@ fn render_scale(b: &Build) -> Field {
         let (choice, percent) = (choice.clone(), percent.clone());
         move |s: &Settings| {
             let at = index::render_scale(s);
-            percent.set_value(f64::from(punktfunk_core::render_scale::percent(
+            percent.set_value(f64::from(rubyfunk_core::render_scale::percent(
                 s.render_scale,
             )));
             percent.set_visible(at == index::CUSTOM_SCALE);
@@ -355,7 +355,7 @@ fn render_scale(b: &Build) -> Field {
         move |s: &mut Settings| {
             s.render_scale = match RENDER_SCALES.get(choice.selected() as usize) {
                 Some(&stop) => stop,
-                None => punktfunk_core::render_scale::from_percent(percent.value() as u32),
+                None => rubyfunk_core::render_scale::from_percent(percent.value() as u32),
             };
         }
     };
@@ -450,7 +450,7 @@ fn bitrate_row(b: &Build) -> (Field, Rc<dyn Fn(bool)>) {
 /// row moves; a warning row follows while this device's link is short of it. The returned
 /// closure shows both under PyroWave.
 fn pyrowave_quality_row(b: &Build) -> (Field, Rc<dyn Fn(bool)>) {
-    use punktfunk_core::pyrowave::{BPP_DEFAULT, BPP_FLOOR, BPP_MAX};
+    use rubyfunk_core::pyrowave::{BPP_DEFAULT, BPP_FLOOR, BPP_MAX};
     let scale = gtk::Scale::with_range(gtk::Orientation::Horizontal, BPP_FLOOR, BPP_MAX, 0.1);
     scale.set_draw_value(false);
     scale.set_round_digits(1);
@@ -471,7 +471,7 @@ fn pyrowave_quality_row(b: &Build) -> (Field, Rc<dyn Fn(bool)>) {
     // Weak: the store outlives the dialog and keeps its listeners.
     let refresh: Rc<dyn Fn()> = {
         let (store, preset_id, native) = (Rc::downgrade(b.store), b.preset_id.clone(), b.native);
-        let link = punktfunk_core::transport::ifinfo::local_link_facts(None);
+        let link = rubyfunk_core::transport::ifinfo::local_link_facts(None);
         let (row, warning, scale, shown) = (
             row.downgrade(),
             warning.downgrade(),

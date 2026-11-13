@@ -2,7 +2,7 @@
 //! [`StallWatch`] found, with the OS display events that coincide.
 //!
 //! Probes and the DxgKrnl ETW session ride the report as evidence when
-//! `PUNKTFUNK_IDD_DIAG` turned them on; they name no class.
+//! `RUBYFUNK_IDD_DIAG` turned them on; they name no class.
 
 use super::*;
 use crate::knobs::Knobs;
@@ -96,7 +96,7 @@ impl StallWatch {
             probes = evidence.probes.as_ref().map(tracing::field::display),
             etw = evidence.etw.as_deref().unwrap_or("unavailable"),
             // Presents from any process vs virtual-display kernel-queue adds,
-            // both only under PUNKTFUNK_IDD_DIAG.
+            // both only under RUBYFUNK_IDD_DIAG.
             etw_presents = evidence.etw_counts.map(|c| c.presents),
             etw_queue_adds = evidence.etw_counts.map(|c| c.queue_adds),
             // 0 = nothing to compose. >0 = damage existed and DWM composed none of it.
@@ -128,7 +128,7 @@ impl StallWatch {
                      metronomic arm: a connected-but-inactive display's standby servicing \
                      (see connected_inactive), then display-poller software (the SteelSeries \
                      GG / SignalRGB class). Lowering the GPU-priority defaults \
-                     (setx /M PFVD_NO_RT_GPU 1 / PUNKTFUNK_GPU_PRIORITY_CLASS=high) has \
+                     (setx /M PFVD_NO_RT_GPU 1 / RUBYFUNK_GPU_PRIORITY_CLASS=high) has \
                      quieted some AMD boxes but masks this class at most — attenuation, not \
                      attribution. A compose-silence tally does NOT exonerate the display \
                      stack — a frozen presenter reads identically"
@@ -184,7 +184,7 @@ impl StallWatch {
                      correlate 'slow display-descriptor poll' lines), or the DWM present \
                      clock (try a different refresh rate). Lowering the GPU-priority \
                      defaults (setx /M PFVD_NO_RT_GPU 1 / \
-                     PUNKTFUNK_GPU_PRIORITY_CLASS=high) has quieted some AMD boxes but \
+                     RUBYFUNK_GPU_PRIORITY_CLASS=high) has quieted some AMD boxes but \
                      masks this class at most — a quiet A/B is attenuation, not \
                      attribution. If connected_inactive lists a \
                      display, its standby servicing is a suspect — cursor motion through \

@@ -5,7 +5,7 @@ import type {
 	Candidate as SourceCandidate,
 	Image as SourceImage,
 	MetadataStatus as SourceStatus,
-} from "@punktfunk/plugin-kit/wire";
+} from "@rubyfunk/plugin-kit/wire";
 import { useQuery } from "@tanstack/react-query";
 import { pluginSurfaceOrThrow } from "./pluginSurface";
 

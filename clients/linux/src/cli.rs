@@ -1,5 +1,5 @@
 //! Command-line entry paths: argv helpers, the headless flows (pair/wake/library), the
-//! exec handoff to `punktfunk-session` for `--connect`/`--browse`.
+//! exec handoff to `rubyfunk-session` for `--connect`/`--browse`.
 
 use crate::trust::{KnownHost, KnownHosts};
 use gtk::glib;
@@ -18,10 +18,10 @@ pub fn arg_flag(flag: &str) -> bool {
     std::env::args().any(|a| a == flag)
 }
 
-/// A positional `punktfunk://` (or the `pf://` input alias) anywhere in argv — the deep-link
+/// A positional `rubyfunk://` (or the `pf://` input alias) anywhere in argv — the deep-link
 /// door (design/client-deep-links.md §4.1). It is positional, not a flag, because that is what
-/// `Exec=punktfunk-client %u` hands us, what a `.desktop` shortcut embeds, and what a browser's
-/// "Open Punktfunk?" prompt ends up invoking. Validation happens later, in the shared parser —
+/// `Exec=rubyfunk-client %u` hands us, what a `.desktop` shortcut embeds, and what a browser's
+/// "Open RubyFunk?" prompt ends up invoking. Validation happens later, in the shared parser —
 /// this only decides whether argv contains something addressed to us.
 pub fn deep_link_arg() -> Option<String> {
     std::env::args()
@@ -59,7 +59,7 @@ fn parse_host_port(target: &str) -> (String, Option<u16>) {
 }
 
 /// `--connect` / `--browse`: streams and the console library live in the
-/// `punktfunk-session` Vulkan binary — replace this process with it, forwarding the
+/// `rubyfunk-session` Vulkan binary — replace this process with it, forwarding the
 /// relevant argv verbatim. With neither flag (a [`couch_launch`]) it opens the console home.
 /// This keeps the Decky wrapper (which launches the SHELL with these flags) working unchanged
 /// until it's repointed at the session binary.
@@ -96,7 +96,7 @@ pub fn exec_session() -> glib::ExitCode {
         cmd.arg("--browse");
     }
     let err = cmd.exec(); // only returns on failure
-    eprintln!("exec punktfunk-session: {err}");
+    eprintln!("exec rubyfunk-session: {err}");
     glib::ExitCode::FAILURE
 }
 
@@ -239,9 +239,9 @@ impl Selector {
     }
 }
 
-/// `--omarchy-menu on|off|sync` — Punktfunk's rows in the Omarchy menu (Super+Space): a root
+/// `--omarchy-menu on|off|sync` — RubyFunk's rows in the Omarchy menu (Super+Space): a root
 /// submenu, open/console rows, and one connect row per saved host, kept in sync by every
-/// binary that changes the store. `on` is the consent step (mirroring `punktfunk-omarchy
+/// binary that changes the store. `on` is the consent step (mirroring `rubyfunk-omarchy
 /// setup` on the host side); `off` removes exactly our block; `sync` rewrites it now.
 fn headless_omarchy_menu(verb: &str) -> glib::ExitCode {
     use pf_client_core::omarchy_menu as menu;
@@ -255,16 +255,16 @@ fn headless_omarchy_menu(verb: &str) -> glib::ExitCode {
     };
     match verb {
         "on" => match menu::enable() {
-            Ok(()) => done("Punktfunk added to the Omarchy menu (Super+Space) — it follows your saved hosts from here"),
+            Ok(()) => done("RubyFunk added to the Omarchy menu (Super+Space) — it follows your saved hosts from here"),
             Err(e) => failed(e),
         },
         "off" => match menu::disable() {
-            Ok(()) => done("Punktfunk removed from the Omarchy menu"),
+            Ok(()) => done("RubyFunk removed from the Omarchy menu"),
             Err(e) => failed(e),
         },
         "sync" => {
             if !menu::enabled() {
-                return done("not enabled — run `punktfunk-client --omarchy-menu on` first");
+                return done("not enabled — run `rubyfunk-client --omarchy-menu on` first");
             }
             match menu::enable() {
                 Ok(()) => done("menu rows rewritten from the saved hosts"),
@@ -359,13 +359,13 @@ pub fn headless_forget_host(selector: &str) -> glib::ExitCode {
 /// The version this binary was built as — the CI-stamped string (`0.23.0~ci10250.gab12cd34`
 /// and friends) when built by a packaging job, the crate version otherwise. See `build.rs`.
 pub fn version_string() -> &'static str {
-    env!("PUNKTFUNK_VERSION")
+    env!("RUBYFUNK_VERSION")
 }
 
 /// `--version` — one line, so a packaging script's run-the-binary gate and the Decky plugin
 /// can both ask "what is installed here?" without a display or a config dir.
 fn headless_version() -> glib::ExitCode {
-    println!("punktfunk-client {}", version_string());
+    println!("rubyfunk-client {}", version_string());
     glib::ExitCode::SUCCESS
 }
 
@@ -402,7 +402,7 @@ fn headless_check_update() -> glib::ExitCode {
             // Says what it is, in words, instead of a raw HTTP status. The exit code still
             // reports "could not tell" (see the doc comment above): an empty channel is the
             // absence of evidence that this build is current, and a mistyped
-            // PUNKTFUNK_UPDATE_FEED is indistinguishable from one out here.
+            // RUBYFUNK_UPDATE_FEED is indistinguishable from one out here.
             println!(
                 "update     nothing published on the {} channel yet",
                 status.channel
@@ -433,7 +433,7 @@ fn headless_check_update() -> glib::ExitCode {
 fn update_apply_line(status: &pf_client_core::update::Status) -> String {
     use pf_client_core::update::Applier;
     match status.applier {
-        Applier::Helper => format!("punktfunk-client --apply-update   ({})", status.command),
+        Applier::Helper => format!("rubyfunk-client --apply-update   ({})", status.command),
         Applier::Flatpak => status.command.clone(),
         Applier::None => status.command.clone(),
     }

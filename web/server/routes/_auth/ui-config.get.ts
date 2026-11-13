@@ -36,7 +36,7 @@ export interface UiConfig {
 	 */
 	theme: OmarchyTheme | null;
 	/**
-	 * True when the console answers on more than this machine (`PUNKTFUNK_UI_BIND`). Settings says
+	 * True when the console answers on more than this machine (`RUBYFUNK_UI_BIND`). Settings says
 	 * so out loud: an operator who never chose that should find out where they look at settings,
 	 * not from `ss -ltnp`. `false` under `vite dev`, which stamps no bind.
 	 */

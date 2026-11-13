@@ -1,6 +1,6 @@
 //! Deterministic decoder-input damage for integrity tests.
 //!
-//! [`AuFault::from_spec`] parses `PUNKTFUNK_AU_FAULT=<mode>[:<period>]`.
+//! [`AuFault::from_spec`] parses `RUBYFUNK_AU_FAULT=<mode>[:<period>]`.
 //! Invalid or zero-period specs stay inert. Default period is 60.
 //! Every `period`-th offered AU is selected, counting from the first.
 //! AUs shorter than 16 bytes pass unchanged.
@@ -9,7 +9,7 @@
 //! `Flip` XORs one payload byte and may stay valid syntax, so neither planner
 //! nor driver is guaranteed to report it. Missing `queryResultStatusSupport`
 //! is unmeasured, not clean. Unselected AUs are borrowed; owned bytes exist
-//! only on the selected call. Runs after `PUNKTFUNK_AU_DUMP`, so dumps stay
+//! only on the selected call. Runs after `RUBYFUNK_AU_DUMP`, so dumps stay
 //! clean wire input. Evidence: `tests/fault_detection.rs`.
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -49,7 +49,7 @@ pub struct AuFault {
 }
 
 impl AuFault {
-    /// Parse `PUNKTFUNK_AU_FAULT=<mode>[:<period>]`. `None` leaves the injector
+    /// Parse `RUBYFUNK_AU_FAULT=<mode>[:<period>]`. `None` leaves the injector
     /// inert — a typo must not half-arm a live stream.
     pub fn from_spec(spec: &str) -> Option<AuFault> {
         let spec = spec.trim();

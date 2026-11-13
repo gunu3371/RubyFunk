@@ -8,7 +8,7 @@ index 1f84184..8b5d7a9 100644
  
 -	// Worst case estimate.
 -	info.size = aligned_width * aligned_height * 2;
-+	// Worst case estimate. PUNKTFUNK PATCH (patches/0001-payload-data-444-sizing.patch):
++	// Worst case estimate. RUBYFUNK PATCH (patches/0001-payload-data-444-sizing.patch):
 +	// 4:4:4 carries 3 samples per pixel vs 4:2:0's 1.5 — the same per-sample headroom
 +	// needs twice the bytes, or busy 4:4:4 content overruns this buffer on the GPU and
 +	// corrupts the adjacent meta/bucket allocations (nondeterministic bad bitstreams and

@@ -428,7 +428,7 @@ pub fn unwindow(au: &[u8], chunk: usize) -> anyhow::Result<Vec<u8>> {
 /// grant a fresh `max(bytes/4, 128 KiB)` microburst per sealed batch — the
 /// overrun the pacer exists to stop.
 const STREAM_CHUNK_TARGET_BYTES: usize = 256 * 1024;
-/// Clamp for `PUNKTFUNK_PYROWAVE_CHUNK_KIB` (see [`stream_chunk_step`]).
+/// Clamp for `RUBYFUNK_PYROWAVE_CHUNK_KIB` (see [`stream_chunk_step`]).
 const STREAM_CHUNK_MIN_KIB: usize = 4;
 const STREAM_CHUNK_MAX_KIB: usize = 8192;
 
@@ -438,8 +438,8 @@ const STREAM_CHUNK_MAX_KIB: usize = 8192;
 /// 0) is excluded from partial delivery; the whole-AU path still hands the
 /// consumer a blurred partial. PyroWave clients opt into partial delivery
 /// unconditionally, so flipping the default is a live behaviour change.
-/// `PUNKTFUNK_PYROWAVE_STREAMED_AU=1` arms it. Outer gates remain the client's
-/// `VIDEO_CAP_STREAMED_AU` and the host's `PUNKTFUNK_STREAMED_AU`.
+/// `RUBYFUNK_PYROWAVE_STREAMED_AU=1` arms it. Outer gates remain the client's
+/// `VIDEO_CAP_STREAMED_AU` and the host's `RUBYFUNK_STREAMED_AU`.
 fn stream_armed() -> bool {
     crate::knobs::get().pyrowave_streamed_au == 1
 }
@@ -455,7 +455,7 @@ fn chunk_step(window: usize, target: usize) -> usize {
 /// Dense AUs are one atomic pyrowave packet with no window framing, so a cut
 /// is neither shard-aligned nor a parse boundary. Real sessions set
 /// `plan.wire_chunk = Some(session.shard_payload())`.
-/// `PUNKTFUNK_PYROWAVE_CHUNK_KIB` overrides the target (clamped to
+/// `RUBYFUNK_PYROWAVE_CHUNK_KIB` overrides the target (clamped to
 /// [`STREAM_CHUNK_MIN_KIB`]..=[`STREAM_CHUNK_MAX_KIB`]); garbage uses the default.
 /// Reads the knobs in force; [`AuStream`] latches the answer per encoder.
 pub fn stream_chunk_step(wire_chunk: Option<usize>) -> Option<usize> {

@@ -1,7 +1,7 @@
 //! Reachability probes: whether a saved host answers as itself, and where.
 
 use super::{hex, rekey_addr, same_pin, KnownHost};
-use punktfunk_core::client::NativeClient;
+use rubyfunk_core::client::NativeClient;
 use std::time::Duration;
 
 /// How long each probe of a shell's sweep waits. Presence is that sweep and nothing else: a

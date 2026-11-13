@@ -11,7 +11,7 @@ test("a nullable number becomes anyOf with a null branch", () => {
 });
 
 test("the committed client decodes every optional body field", async () => {
-	const client = await Bun.file(new URL("../src/gen/punktfunk.ts", import.meta.url)).text();
+	const client = await Bun.file(new URL("../src/gen/rubyfunk.ts", import.meta.url)).text();
 	const bodies = client.split("\n").filter((l) => /^export const \w+ = /.test(l) && !/^export const \w+Params = /.test(l));
 	expect(bodies.filter((l) => l.includes("Schema.Never"))).toEqual([]);
 });

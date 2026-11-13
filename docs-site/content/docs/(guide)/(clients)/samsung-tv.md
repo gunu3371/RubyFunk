@@ -1,10 +1,10 @@
 ---
 title: Samsung TV
-description: Stream to a Samsung TV with the Punktfunk app for Tizen — turn on browser streaming on the host, put the set in Developer Mode, install the app, pair and play.
+description: Stream to a Samsung TV with the RubyFunk app for Tizen — turn on browser streaming on the host, put the set in Developer Mode, install the app, pair and play.
 ---
 
 The Samsung TV app is the [browser client](/docs/browser-client) packaged for Tizen: the same
-page, started in Punktfunk Console for the remote. It lives in its own repository,
+page, started in RubyFunk Console for the remote. It lives in its own repository,
 [client-tizen](https://github.com/punktfunk/client-tizen). It runs on sets from 2024 on (Tizen
 8.0). It is a preview, and it is sideloaded: Samsung's store does not carry it.
 
@@ -18,9 +18,9 @@ same by hand.
    streaming**.
 2. Leave **Browser origins** as it is. The list is a rule for browser pages; the TV app is not one
    and is admitted either way. Pairing is what lets it stream.
-3. Click **Restart Punktfunk**.
+3. Click **Restart RubyFunk**.
 4. The TV reaches the host on TCP 47990 (the management port, where it first asks for the browser
-   plane) and UDP 9778 (the plane itself, in the `punktfunk-native` firewall profile — see
+   plane) and UDP 9778 (the plane itself, in the `rubyfunk-native` firewall profile — see
    [Ports](/docs/ports)).
 
 ## 2. Put the TV in Developer Mode
@@ -41,28 +41,28 @@ is a desktop app for Windows, macOS, Linux and Android that signs in to your Sam
 makes the certificate for your set and installs apps on it.
 
 1. Install Apps2Samsung and sign in to your Samsung account when it asks.
-2. Pick **punktfunk** from its list and your TV as the target, then install.
+2. Pick **rubyfunk** from its list and your TV as the target, then install.
 
 **By hand, with Samsung's tools.** For developers, or a set Apps2Samsung does not reach.
 
-1. Download `punktfunk-tizen-<version>.wgt` from the latest
+1. Download `rubyfunk-tizen-<version>.wgt` from the latest
    [client-tizen release](https://github.com/punktfunk/client-tizen/releases/latest). It is
    unsigned.
 2. Clone [client-tizen](https://github.com/punktfunk/client-tizen) and build its Tizen CLI image:
-   `docker build --platform linux/amd64 -t punktfunk-tizen-cli:10.0 tools/toolchain`. It holds
+   `docker build --platform linux/amd64 -t rubyfunk-tizen-cli:10.0 tools/toolchain`. It holds
    Tizen SDK 10.0's `web-cli` (`tizen`, `sdb`) and the Samsung certificate extension; `sdb` is
    Intel-only, which is why it is an amd64 image.
 3. Make a Samsung distributor certificate for your set: `sdb connect <tv address>:26101`, read the
-   DUID with `sdb shell 0 getduid`, and run `samsung-tv-cert --duid <DUID> --profile punktfunk`
+   DUID with `sdb shell 0 getduid`, and run `samsung-tv-cert --duid <DUID> --profile rubyfunk`
    (a browser login to your Samsung account is the one manual step).
-4. Sign and install: `tools/sign.sh punktfunk-tizen-<version>.wgt`, then
+4. Sign and install: `tools/sign.sh rubyfunk-tizen-<version>.wgt`, then
    `TV=<tv address> tools/sign.sh install`. The script's header lists the three signing traps it
    handles: no keyring in the container, a `.p12` Java cannot read, and a password that looks like
    base64.
 
 ## 4. Pair and stream
 
-1. Open **punktfunk** from the Apps page. It starts in Punktfunk Console.
+1. Open **rubyfunk** from the Apps page. It starts in RubyFunk Console.
 2. **Add a host** and type the host's address with the remote (the on-screen keyboard opens).
 3. Choose **Request access**, then approve the TV in the host's console under **Devices → Waiting
    for approval** ([Pairing](/docs/pairing#approve-it-from-the-console-no-pin)).

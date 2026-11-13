@@ -1,6 +1,6 @@
 ---
 title: Browser Client
-description: Stream from a Punktfunk host in a browser tab — turn on browser streaming, run the page on your network, pair once, and play.
+description: Stream from a RubyFunk host in a browser tab — turn on browser streaming, run the page on your network, pair once, and play.
 ---
 
 Stream in a browser tab with nothing to install: you run the page once on your network, and any
@@ -19,9 +19,9 @@ Samsung TV the same page installs as an app: [Samsung TV](/docs/samsung-tv).
    [from outside your network](#from-outside-your-network). Left empty, any page open in a browser
    on your network can reach the host. The list is a rule for browser pages: the Samsung TV app
    sends no origin and is admitted either way, and pairing is what lets it stream.
-3. Click **Restart Punktfunk**.
-4. Open UDP 9778 on the host. On Linux it is in the `punktfunk-native` firewall profile; on
-   Windows the host adds its **Punktfunk Browser** rule at the restart ([Ports](/docs/ports)).
+3. Click **Restart RubyFunk**.
+4. Open UDP 9778 on the host. On Linux it is in the `rubyfunk-native` firewall profile; on
+   Windows the host adds its **RubyFunk Browser** rule at the restart ([Ports](/docs/ports)).
    The video goes from the host to the browser directly.
 
 ## 2. Run the page
@@ -45,11 +45,11 @@ The container finds hosts that announce themselves on your network. Settings, un
 | Setting | Default | |
 |---|---|---|
 | `TLS_NAMES` | — | The names and addresses you open the page at, which its own certificate covers. It answers only to the names listed, to IP addresses and to names no public DNS holds (`localhost`, one word like `desk`, `.local`, `.home.arpa`, `.internal`). With your own certificate and none listed, it answers to any name |
-| `PUNKTFUNK_HOSTS` | — | Hosts it can't find: `name=address[:port][#fingerprint]`, comma-separated. A host on this machine is found like any other; to list it, give its LAN address, not `127.0.0.1`, which a browser reads as its own machine |
+| `RUBYFUNK_HOSTS` | — | Hosts it can't find: `name=address[:port][#fingerprint]`, comma-separated. A host on this machine is found like any other; to list it, give its LAN address, not `127.0.0.1`, which a browser reads as its own machine |
 | `TLS` | `self-signed` | `off` behind a reverse proxy, or `cert.pem,key.pem` |
 | `LISTEN` | `0.0.0.0:8443` | Address and port the page is served on |
 | `DISCOVER` | on | `0` stops it looking for hosts |
-| `ADD_HOSTS` | on | `0` stops it reaching a host typed by address. Either way, it reaches a typed address only once a Punktfunk host has answered there |
+| `ADD_HOSTS` | on | `0` stops it reaching a host typed by address. Either way, it reaches a typed address only once a RubyFunk host has answered there |
 
 ## 3. Open it and pair
 
@@ -96,7 +96,7 @@ curl -O https://raw.githubusercontent.com/punktfunk/client-web/main/deploy/tails
 ```
 
 In `compose.tailscale.yaml`, set `TLS_NAMES` to the page's tailnet name, and list your hosts in
-`PUNKTFUNK_HOSTS` by their tailnet addresses: hosts don't announce themselves across a tailnet.
+`RUBYFUNK_HOSTS` by their tailnet addresses: hosts don't announce themselves across a tailnet.
 Start it with your Tailscale auth key:
 
 ```sh
@@ -156,7 +156,7 @@ Streaming over this path is a preview, and a browser that pairs over it asks
 
 ## Console mode
 
-The controller button in the top bar switches the page to Punktfunk Console, the interface every
+The controller button in the top bar switches the page to RubyFunk Console, the interface every
 client draws for a TV and a gamepad: hosts, pairing, the library and settings, all by D-pad.
 **Leave console mode** switches back. To start in it, open `https://<that machine>:8443/?ui=console`.
 

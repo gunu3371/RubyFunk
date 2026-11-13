@@ -5,7 +5,7 @@
 
   bun is both the build tool AND the runtime: vite.config's Nitro noExternals bundles every dep
   into the self-contained .output (no node_modules, nothing for bun to fail to resolve). The
-  console runs as a supervised child of the PunktfunkHost service (bun {app}\web\.output\server\
+  console runs as a supervised child of the RubyFunkHost service (bun {app}\web\.output\server\
   index.mjs on :47992), so the swap is: stop the service (its kill-on-close job takes the console's
   bun down and unlocks the files), replace {app}\web\.output, start the service - the supervisor
   brings the console back by itself. Needs an elevated shell (service control + Program Files).
@@ -14,7 +14,7 @@ $ErrorActionPreference = 'Stop'
 $repo = Split-Path (Split-Path $PSScriptRoot)
 $web  = Join-Path $repo 'web'
 $bun  = 'C:\Users\Public\bun\bin\bun.exe'
-$app  = 'C:\Program Files\punktfunk'
+$app  = 'C:\Program Files\rubyfunk'
 if (-not (Test-Path $bun)) { throw "bun not found at $bun" }
 
 Set-Location $web
@@ -30,9 +30,9 @@ if (-not (Test-Path $appWeb)) {
   return
 }
 
-Write-Host "swapping $appWeb\.output (stopping the PunktfunkHost service) ..."
+Write-Host "swapping $appWeb\.output (stopping the RubyFunkHost service) ..."
 $dst = Join-Path $appWeb '.output'
-& net stop PunktfunkHost | Out-Null
+& net stop RubyFunkHost | Out-Null
 try {
   # The removal MUST succeed before the copy. A merge of two builds is not a degraded
   # install, it is a dead one: Nitro's entry.mjs imports its siblings by content hash, so a
@@ -48,10 +48,10 @@ try {
   Copy-Item (Join-Path $web '.output') -Destination $appWeb -Recurse -Force
 }
 finally {
-  & net start PunktfunkHost | Out-Null
+  & net start RubyFunkHost | Out-Null
 }
 
-# The console serves HTTPS-only (PUNKTFUNK_UI_SECURE=1, the host's own cert) - probe with curl.exe
+# The console serves HTTPS-only (RUBYFUNK_UI_SECURE=1, the host's own cert) - probe with curl.exe
 # (-k for the self-signed cert; Invoke-WebRequest under Windows PowerShell 5.1, which this script
 # runs under, has no -SkipCertificateCheck), retrying while the service/bun cold-starts.
 #
@@ -69,5 +69,5 @@ if ($body -match '<html|<!DOCTYPE html') {
 } elseif ($body -match 'Cannot find module|ResolveMessage') {
   Write-Error "BROKEN - /login answered with a bun module-resolution error, i.e. .output is inconsistent: $body"
 } else {
-  Write-Warning "console swapped but /login did not serve HTML yet - check %ProgramData%\punktfunk\logs\web.log. Last body: $body"
+  Write-Warning "console swapped but /login did not serve HTML yet - check %ProgramData%\rubyfunk\logs\web.log. Last body: $body"
 }

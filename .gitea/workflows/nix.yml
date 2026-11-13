@@ -1,7 +1,7 @@
 # Nix packaging gate. Until this existed, NOTHING in CI ever evaluated flake.nix: the word "nix"
 # appeared in exactly one workflow file, and only in a comment about bun2nix breaking a Windows
 # step. Every Nix regression therefore reached main invisibly and was found by hand on a Nix box —
-# `nix build .#punktfunk-web` was broken for 553 commits before anyone noticed (see the bun-nix job
+# `nix build .#rubyfunk-web` was broken for 553 commits before anyone noticed (see the bun-nix job
 # in ci.yml for that story).
 #
 # Four tiers, because a full `nix flake check` builds the whole Rust workspace with crane and would
@@ -26,7 +26,7 @@
 #             that check runs them, so `--no-build` is enough. Keep them pure: a shell script in
 #             the derivation body would only run under a full `nix flake check`, which builds the
 #             hour-long Rust packages.
-#   * bun   — actually BUILDS punktfunk-web + punktfunk-scripting. These are the two derivations
+#   * bun   — actually BUILDS rubyfunk-web + rubyfunk-scripting. These are the two derivations
 #             whose inputs churn constantly (every dependency bump moves a lockfile) and they cost
 #             minutes, not hours, because neither compiles Rust. This is the end-to-end proof that
 #             the generated bun.nix really does materialise a working node_modules offline — it
@@ -36,7 +36,7 @@
 #   * vm    — `checks.<system>.nixos-vm` boots the module with the real packages and checks the
 #             user units run. It builds the host, so it runs on labelled pull requests only.
 #
-#   * cache — builds the Rust packages + gamescope, publishes every punktfunk store path to
+#   * cache — builds the Rust packages + gamescope, publishes every rubyfunk store path to
 #             https://nix.unom.io, then moves a channel branch to the published commit:
 #               `v*` tag                     → nix-stable
 #               nightly, or dispatch on main → nix-canary (the nightly skips a commit it has)
@@ -52,12 +52,12 @@
 #             Only OUR paths are published — see the step for why that is both correct and the
 #             difference between ~300 MB and several GB per publish.
 #
-# On a PR only the vm tier builds a Rust package (the host); the client and punktfunk-gamescope are
+# On a PR only the vm tier builds a Rust package (the host); the client and rubyfunk-gamescope are
 # the expensive ones and their inputs are already gated by the `rust` job in ci.yml. Build them on a
 # PR by hand on a Nix box, or with the `build-rust` / `build-gamescope` dispatch inputs below.
 #
-# ⚠ punktfunk-gamescope matters more than it looks: `host.gamescopeHdr` DEFAULTS TRUE, so it is on
-# the critical path of every `services.punktfunk.host.enable = true` build. It patches whatever
+# ⚠ rubyfunk-gamescope matters more than it looks: `host.gamescopeHdr` DEFAULTS TRUE, so it is on
+# the critical path of every `services.rubyfunk.host.enable = true` build. It patches whatever
 # gamescope the pinned nixpkgs carries, so a nixpkgs bump — not a change of ours — is what breaks
 # it, and the first person to find out would be an operator whose system rebuild fails. The nightly
 # `cache` run compiles it, so a flake.lock bump that breaks it goes red here within a day; the
@@ -88,24 +88,24 @@ on:
       - "packaging/nix/**"
       - "packaging/bazzite/host.env"
       - "packaging/kde/host.env"
-      - "packaging/gamescope/build-punktfunk-gamescope.sh"
+      - "packaging/gamescope/build-rubyfunk-gamescope.sh"
       - "packaging/linux/restart-user-units.sh"
-      - "packaging/linux/punktfunk-seat*"
+      - "packaging/linux/rubyfunk-seat*"
       - "packaging/linux/seat-*"
       - "packaging/linux/*door*"
-      - "packaging/linux/65-punktfunk-seats.rules"
-      - "packaging/linux/io.unom.punktfunk*.desktop"
+      - "packaging/linux/65-rubyfunk-seats.rules"
+      - "packaging/linux/io.github.gunu3371.rubyfunk*.desktop"
       - "packaging/linux/icons/**"
-      - "scripts/60-punktfunk*"
-      - "scripts/70-punktfunk-client.rules"
+      - "scripts/60-rubyfunk*"
+      - "scripts/70-rubyfunk-client.rules"
       - "scripts/headless/**"
       - "scripts/host.env.example"
-      - "scripts/punktfunk-host-desktop-session.conf"
-      - "scripts/punktfunk-host.service"
+      - "scripts/rubyfunk-host-desktop-session.conf"
+      - "scripts/rubyfunk-host.service"
       - "scripts/web-init.sh"
-      - "scripts/punktfunk-web.service"
-      - "scripts/punktfunk-web-init.service"
-      - "scripts/punktfunk-scripting.service"
+      - "scripts/rubyfunk-web.service"
+      - "scripts/rubyfunk-web-init.service"
+      - "scripts/rubyfunk-scripting.service"
       - "web/web.env.example"
       - "web/.npmrc"
       - "api/openapi.json"
@@ -124,24 +124,24 @@ on:
       - "packaging/nix/**"
       - "packaging/bazzite/host.env"
       - "packaging/kde/host.env"
-      - "packaging/gamescope/build-punktfunk-gamescope.sh"
+      - "packaging/gamescope/build-rubyfunk-gamescope.sh"
       - "packaging/linux/restart-user-units.sh"
-      - "packaging/linux/punktfunk-seat*"
+      - "packaging/linux/rubyfunk-seat*"
       - "packaging/linux/seat-*"
       - "packaging/linux/*door*"
-      - "packaging/linux/65-punktfunk-seats.rules"
-      - "packaging/linux/io.unom.punktfunk*.desktop"
+      - "packaging/linux/65-rubyfunk-seats.rules"
+      - "packaging/linux/io.github.gunu3371.rubyfunk*.desktop"
       - "packaging/linux/icons/**"
-      - "scripts/60-punktfunk*"
-      - "scripts/70-punktfunk-client.rules"
+      - "scripts/60-rubyfunk*"
+      - "scripts/70-rubyfunk-client.rules"
       - "scripts/headless/**"
       - "scripts/host.env.example"
-      - "scripts/punktfunk-host-desktop-session.conf"
-      - "scripts/punktfunk-host.service"
+      - "scripts/rubyfunk-host-desktop-session.conf"
+      - "scripts/rubyfunk-host.service"
       - "scripts/web-init.sh"
-      - "scripts/punktfunk-web.service"
-      - "scripts/punktfunk-web-init.service"
-      - "scripts/punktfunk-scripting.service"
+      - "scripts/rubyfunk-web.service"
+      - "scripts/rubyfunk-web-init.service"
+      - "scripts/rubyfunk-scripting.service"
       - "web/web.env.example"
       - "web/.npmrc"
       - "api/openapi.json"
@@ -156,11 +156,11 @@ on:
   workflow_dispatch:
     inputs:
       build-rust:
-        description: "Also build punktfunk-host + punktfunk-client (slow: full Rust workspace)"
+        description: "Also build rubyfunk-host + rubyfunk-client (slow: full Rust workspace)"
         type: boolean
         default: false
       build-gamescope:
-        description: "Also build punktfunk-gamescope (patched gamescope from source; run after a flake.lock bump)"
+        description: "Also build rubyfunk-gamescope (patched gamescope from source; run after a flake.lock bump)"
         type: boolean
         default: false
 
@@ -292,20 +292,20 @@ jobs:
           # The ~2k bun tarball fetch derivations exceed the container's default 1024-fd
           # soft limit ("error: creating pipe: Too many open files").
           ulimit -n 65536 2>/dev/null || ulimit -n "$(ulimit -Hn)" || true
-          "$NIX" build --print-build-logs .#punktfunk-web .#punktfunk-scripting
+          "$NIX" build --print-build-logs .#rubyfunk-web .#rubyfunk-scripting
 
       # Both launchers exec pkgs.bun from the store; confirm they were produced and are real entry
       # points rather than dangling wrappers.
       - name: Smoke the built launchers
         run: |
           set -eu
-          web=$("$NIX" path-info .#punktfunk-web)
-          scripting=$("$NIX" path-info .#punktfunk-scripting)
-          test -x "$web/bin/punktfunk-web-server" || { echo "no punktfunk-web-server in $web" >&2; exit 1; }
-          test -x "$scripting/bin/punktfunk-scripting" || { echo "no punktfunk-scripting in $scripting" >&2; exit 1; }
+          web=$("$NIX" path-info .#rubyfunk-web)
+          scripting=$("$NIX" path-info .#rubyfunk-scripting)
+          test -x "$web/bin/rubyfunk-web-server" || { echo "no rubyfunk-web-server in $web" >&2; exit 1; }
+          test -x "$scripting/bin/rubyfunk-scripting" || { echo "no rubyfunk-scripting in $scripting" >&2; exit 1; }
           # The console must be the bun bundle, not a node one — the same assertion packages.nix
           # makes at build time, re-checked on the installed output.
-          grep -q 'Bun\.serve' "$web/share/punktfunk-web/.output/server/index.mjs" \
+          grep -q 'Bun\.serve' "$web/share/rubyfunk-web/.output/server/index.mjs" \
             || { echo "installed console is not a bun bundle" >&2; exit 1; }
           echo "bun packages OK: $web  $scripting"
 
@@ -362,7 +362,7 @@ jobs:
             "$NIX" flake update nixpkgs || echo "::warning::nixpkgs did not update; publishing the current lock"
             if ! git diff --quiet flake.lock; then
               day="$(node -p 'new Date(JSON.parse(require("fs").readFileSync("flake.lock")).nodes.nixpkgs.locked.lastModified * 1e3).toISOString().slice(0, 10)')"
-              git -c user.name="punktfunk CI" -c user.email=ci@noreply.git.unom.io commit -q flake.lock \
+              git -c user.name="rubyfunk CI" -c user.email=ci@noreply.git.unom.io commit -q flake.lock \
                 -m "chore(nix): bump nixpkgs to nixos-unstable $day" -m "[skip ci]"
             fi
           fi
@@ -381,15 +381,15 @@ jobs:
         if: ${{ steps.cachecfg.outputs.go == 'true' }}
         env:
           CANARY: ${{ steps.cachecfg.outputs.canary }}
-        # Everything a user can install. punktfunk-gamescope earns its place here more than any
+        # Everything a user can install. rubyfunk-gamescope earns its place here more than any
         # other: host.gamescopeHdr DEFAULTS TRUE, so without it in the cache every
-        # `services.punktfunk.host.enable = true` still compiles a compositor from source.
+        # `services.rubyfunk.host.enable = true` still compiles a compositor from source.
         run: |
           set -eu
           build() {
             "$NIX" build --print-build-logs \
-              .#punktfunk-host .#punktfunk-client .#punktfunk-tray \
-              .#punktfunk-web .#punktfunk-scripting .#punktfunk-seats .#punktfunk-gamescope
+              .#rubyfunk-host .#rubyfunk-client .#rubyfunk-tray \
+              .#rubyfunk-web .#rubyfunk-scripting .#rubyfunk-seats .#rubyfunk-gamescope
           }
           # A bump that does not build (nixpkgs' gamescope moving past our patches) still publishes
           # main on the current lock, unless nix-canary already holds it; the last step then fails.
@@ -421,23 +421,23 @@ jobs:
           # "Illegal option". The two places below where a pipeline's LEFT side must be able to fail
           # the step are written as redirects instead, so nothing depends on pipefail.
           set -eu
-          PKGS=".#punktfunk-host .#punktfunk-client .#punktfunk-tray .#punktfunk-web .#punktfunk-scripting .#punktfunk-seats .#punktfunk-gamescope"
+          PKGS=".#rubyfunk-host .#rubyfunk-client .#rubyfunk-tray .#rubyfunk-web .#rubyfunk-scripting .#rubyfunk-seats .#rubyfunk-gamescope"
 
           # 1) Pick what to publish. PUBLISH ONLY OUR OWN PATHS — this is the difference between
           #    ~300 MB and several GB per run, and it is not a corner cut: a runtime closure here
           #    is our binaries plus stock nixpkgs (gtk4, glibc, …), and every stock path is
           #    already on cache.nixos.org, served by a real CDN. Mirroring them onto unom-1 would
           #    cost disk and home-to-cloud bandwidth to serve a WORSE copy of what users already
-          #    have. Nothing in nixpkgs is named punktfunk, so the name filter is exact.
-          paths="$("$NIX" path-info -r $PKGS | grep -- '-punktfunk' || true)"
-          [ -n "$paths" ] || { echo "::error::no punktfunk store paths in the closure — the name filter is broken"; exit 1; }
+          #    have. Nothing in nixpkgs is named rubyfunk, so the name filter is exact.
+          paths="$("$NIX" path-info -r $PKGS | grep -- '-rubyfunk' || true)"
+          [ -n "$paths" ] || { echo "::error::no rubyfunk store paths in the closure — the name filter is broken"; exit 1; }
           echo "$paths"
           # The filter is a string match, so it would fail SILENTLY if a pname ever changed — and
           # the package most likely to drift is gamescope, the most expensive one to lose. Assert
           # every built output is actually covered rather than discovering it as a user rebuild.
           for out in $("$NIX" build --print-out-paths $PKGS); do
             printf '%s\n' "$paths" | grep -qxF "$out" \
-              || { echo "::error::$out is not matched by the '-punktfunk' filter — publish would silently omit it"; exit 1; }
+              || { echo "::error::$out is not matched by the '-rubyfunk' filter — publish would silently omit it"; exit 1; }
           done
 
           # 2) Sign into a local binary cache. The secret is the whole `name:base64` line from
@@ -450,8 +450,8 @@ jobs:
           # drift — and on the first run this log line is where the value for README.md comes from.
           # Redirect, not `| tee`: without pipefail a failing nix would be masked by tee's success
           # and publish an EMPTY public key, which every user would then pin.
-          "$NIX" key convert-secret-to-public < "$KEYDIR/key" > nix-cache/punktfunk-cache.pub
-          cat nix-cache/punktfunk-cache.pub
+          "$NIX" key convert-secret-to-public < "$KEYDIR/key" > nix-cache/rubyfunk-cache.pub
+          cat nix-cache/rubyfunk-cache.pub
           rm -rf "$KEYDIR"
           echo "publishing $(find nix-cache -name '*.narinfo' | wc -l) paths, $(du -sh nix-cache | cut -f1)"
 
@@ -475,7 +475,7 @@ jobs:
           # No --delete: superseded paths are aged out by prune.sh below instead, so a client
           # mid-download is never pulled out from under.
           bash scripts/ci/retry.sh 5 rsync -az --info=stats1 -e "$SSH" nix-cache/nar/ "$DEST:$DEPLOY_DIR/site/nar/"
-          bash scripts/ci/retry.sh 5 rsync -az -e "$SSH" nix-cache/nix-cache-info nix-cache/punktfunk-cache.pub nix-cache/*.narinfo "$DEST:$DEPLOY_DIR/site/"
+          bash scripts/ci/retry.sh 5 rsync -az -e "$SSH" nix-cache/nix-cache-info nix-cache/rubyfunk-cache.pub nix-cache/*.narinfo "$DEST:$DEPLOY_DIR/site/"
           # prune.sh never ages out the latest stable release's narinfos.
           if [ "$CHANNEL" = stable ]; then
             (cd nix-cache && printf '%s\n' *.narinfo) > stable.narinfos
@@ -546,7 +546,7 @@ jobs:
       - name: Build the Rust packages (dispatch opt-in)
         if: ${{ github.event.inputs.build-rust == 'true' || github.event.inputs.build-rust == true }}
         run: |
-          "$NIX" build --print-build-logs .#punktfunk-host .#punktfunk-client .#punktfunk-seats
+          "$NIX" build --print-build-logs .#rubyfunk-host .#rubyfunk-client .#rubyfunk-seats
 
       # The patched compositor. Separate from build-rust because its failure mode is different: it
       # tracks nixpkgs' gamescope, not our Rust, so it wants a run after a flake.lock bump rather
@@ -556,4 +556,4 @@ jobs:
       - name: Build the patched gamescope (dispatch opt-in)
         if: ${{ github.event.inputs.build-gamescope == 'true' || github.event.inputs.build-gamescope == true }}
         run: |
-          "$NIX" build --print-build-logs .#punktfunk-gamescope
+          "$NIX" build --print-build-logs .#rubyfunk-gamescope

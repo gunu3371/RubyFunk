@@ -1,6 +1,6 @@
 ---
 title: Build from source
-description: Compile the Linux host when no package fits your release, and build every other part of Punktfunk from a clone.
+description: Compile the Linux host when no package fits your release, and build every other part of RubyFunk from a clone.
 ---
 
 Compile the Linux host yourself, or build a client, the web console, the docs site or the Windows
@@ -29,9 +29,9 @@ keyframe to recover from every lost frame.
 sudo apt install build-essential clang libclang-dev pkg-config cmake git curl \
   libpipewire-0.3-dev libopus-dev libwayland-dev libxkbcommon-dev libdrm-dev \
   libgl-dev libegl-dev libgbm-dev
-git clone https://git.unom.io/unom/punktfunk.git && cd punktfunk
-cargo build --release --locked -p punktfunk-host -p punktfunk-encode-worker \
-  --features punktfunk-host/nvenc,punktfunk-host/vulkan-encode
+git clone https://git.unom.io/unom/punktfunk.git && cd rubyfunk
+cargo build --release --locked -p rubyfunk-host -p rubyfunk-encode-worker \
+  --features rubyfunk-host/nvenc,rubyfunk-host/vulkan-encode
 ```
 
 ### Fedora
@@ -40,9 +40,9 @@ cargo build --release --locked -p punktfunk-host -p punktfunk-encode-worker \
 sudo dnf install gcc gcc-c++ clang clang-devel cmake nasm git pkgconf-pkg-config \
   pipewire-devel wayland-devel libxkbcommon-devel opus-devel \
   mesa-libGL-devel mesa-libgbm-devel
-git clone https://git.unom.io/unom/punktfunk.git && cd punktfunk
-cargo build --release --locked -p punktfunk-host -p punktfunk-encode-worker \
-  --features punktfunk-host/nvenc,punktfunk-host/vulkan-encode
+git clone https://git.unom.io/unom/punktfunk.git && cd rubyfunk
+cargo build --release --locked -p rubyfunk-host -p rubyfunk-encode-worker \
+  --features rubyfunk-host/nvenc,rubyfunk-host/vulkan-encode
 ```
 
 Without `mesa-libGL-devel` the link fails with `cannot find -lGL`. To build an RPM instead, use the
@@ -51,14 +51,14 @@ then run `packaging/rpm/build-rpm.sh` inside it.
 
 ### Arch (PKGBUILD)
 
-The split `PKGBUILD` in `packaging/arch/` builds `punktfunk-host` and `punktfunk-client`. Set
-`PF_WITH_WEB=1` to also build `punktfunk-web` and `PF_WITH_SCRIPTING=1` for `punktfunk-scripting`
+The split `PKGBUILD` in `packaging/arch/` builds `rubyfunk-host` and `rubyfunk-client`. Set
+`PF_WITH_WEB=1` to also build `rubyfunk-web` and `PF_WITH_SCRIPTING=1` for `rubyfunk-scripting`
 (both need `bun`):
 
 ```sh
-git clone https://git.unom.io/unom/punktfunk.git && cd punktfunk/packaging/arch
+git clone https://git.unom.io/unom/punktfunk.git && cd rubyfunk/packaging/arch
 PF_SRCDIR="$(git rev-parse --show-toplevel)" makepkg -f --holdver   # builds the working tree
-sudo pacman -U punktfunk-host-*.pkg.tar.zst
+sudo pacman -U rubyfunk-host-*.pkg.tar.zst
 ```
 
 NVENC and EGL come from `nvidia-utils`. On a builder without a GPU, link the CUDA stub first (the
@@ -73,19 +73,19 @@ The box also needs what [Requirements](/docs/requirements) lists for your GPU. R
 inside your desktop session; it detects the compositor:
 
 ```sh
-target/release/punktfunk-host serve              # native clients only
-target/release/punktfunk-host serve --gamestream # plus Moonlight (trusted LAN only)
+target/release/rubyfunk-host serve              # native clients only
+target/release/rubyfunk-host serve --gamestream # plus Moonlight (trusted LAN only)
 ```
 
-The host finds `punktfunk-encode-worker` beside itself and runs PyroWave and the NVIDIA frame
+The host finds `rubyfunk-encode-worker` beside itself and runs PyroWave and the NVIDIA frame
 convert there at raised GPU priority. Grant it the capability the packages grant:
-`sudo setcap cap_sys_nice=ep target/release/punktfunk-encode-worker`.
+`sudo setcap cap_sys_nice=ep target/release/rubyfunk-encode-worker`.
 
-To run the host as a user service from a clone at `~/punktfunk`, copy
-`scripts/punktfunk-host.service` to `~/.config/systemd/user/`, then:
+To run the host as a user service from a clone at `~/rubyfunk`, copy
+`scripts/rubyfunk-host.service` to `~/.config/systemd/user/`, then:
 
 ```sh
-systemctl --user daemon-reload && systemctl --user enable --now punktfunk-host
+systemctl --user daemon-reload && systemctl --user enable --now rubyfunk-host
 ```
 
 [Running as a service](/docs/running-as-a-service) covers the rest.
@@ -106,11 +106,11 @@ The first build downloads a prebuilt Skia (about 19 MB) for the console UI.
 ## Linux client
 
 ```sh
-cargo build --release -p punktfunk-client-linux -p punktfunk-client-session -p punktfunk-cli
-target/release/punktfunk-client
+cargo build --release -p rubyfunk-client-linux -p rubyfunk-client-session -p rubyfunk-cli
+target/release/rubyfunk-client
 ```
 
-It needs GTK 4.16+, libadwaita 1.5+ and SDL3. The shell starts `punktfunk-session` from beside
+It needs GTK 4.16+, libadwaita 1.5+ and SDL3. The shell starts `rubyfunk-session` from beside
 itself, so build both. More:
 [clients/linux](https://git.unom.io/unom/punktfunk/src/branch/main/clients/linux/README.md).
 
@@ -120,9 +120,9 @@ Install the MSVC toolchain, CMake and LLVM (libclang). In PowerShell, keep the t
 
 ```powershell
 $env:CARGO_TARGET_DIR = 'C:\t'
-cargo build --release -p punktfunk-host --features nvenc,qsv
-cargo build --release -p punktfunk-tray
-cargo build --release -p punktfunk-client-windows -p punktfunk-client-session -p punktfunk-cli
+cargo build --release -p rubyfunk-host --features nvenc,qsv
+cargo build --release -p rubyfunk-tray
+cargo build --release -p rubyfunk-client-windows -p rubyfunk-client-session -p rubyfunk-cli
 ```
 
 `CARGO_HOME` must be an ASCII path; SDL3's build breaks otherwise. Pack the host installer with
@@ -144,7 +144,7 @@ $env:Version_Number = '10.0.26100.0'
 
 `drivers-cargo.ps1` runs cargo through a short drive letter, because the CMake builds inside
 overflow `MAX_PATH`. To install a build on a test box, run `deploy-dev.ps1 -Install` from an
-elevated shell after stopping the host (`punktfunk-host service stop`). Signing and the dev loop:
+elevated shell after stopping the host (`rubyfunk-host service stop`). Signing and the dev loop:
 [packaging/windows](https://git.unom.io/unom/punktfunk/src/branch/main/packaging/windows/README.md).
 
 ## Apple client
@@ -154,7 +154,7 @@ On a Mac with Xcode 26.5:
 ```sh
 rustup target add aarch64-apple-darwin x86_64-apple-darwin
 bash scripts/build-xcframework.sh     # BUILD_IOS=1 / BUILD_TVOS=1 add those slices
-cd clients/apple && open Punktfunk.xcodeproj
+cd clients/apple && open RubyFunk.xcodeproj
 ```
 
 tvOS slices build on a pinned nightly with `rust-src`; the script names it. More:
@@ -178,7 +178,7 @@ The APK lands in `app/build/outputs/apk/debug/`. More:
 
 ```sh
 cd clients/decky
-pnpm install && pnpm run package                # → out/punktfunk-v<ver>.zip
+pnpm install && pnpm run package                # → out/rubyfunk-v<ver>.zip
 DECK=deck@<deck-ip> pnpm run deploy              # install on a Deck and restart the loader
 ```
 
@@ -195,13 +195,13 @@ All three run on [Bun](https://bun.sh). Run `bun install` in the directory first
 | `sdk/` | `bun src/runner-cli.ts` | The runner with your scripts and installed plugins (`--list` shows them) |
 | `docs-site/` | `bun run dev` | This site on `http://localhost:3001/docs` |
 
-`PUNKTFUNK_MGMT_URL` points the console's dev server at another host. More:
+`RUBYFUNK_MGMT_URL` points the console's dev server at another host. More:
 [web](https://git.unom.io/unom/punktfunk/src/branch/main/web/README.md),
 [sdk](https://git.unom.io/unom/punktfunk/src/branch/main/sdk/README.md),
 [docs-site](https://git.unom.io/unom/punktfunk/src/branch/main/docs-site/README.md).
 
 ## Client builds on 32-bit ARM
 
-A client that embeds `punktfunk-core` can add the `chacha-aws-lc-rs` feature to cut streaming CPU
+A client that embeds `rubyfunk-core` can add the `chacha-aws-lc-rs` feature to cut streaming CPU
 on 32-bit ARM devices such as webOS TVs. The client still has to ask for ChaCha20 when it connects;
 hosts need no change.

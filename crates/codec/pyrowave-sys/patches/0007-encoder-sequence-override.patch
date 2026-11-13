@@ -1,4 +1,4 @@
-Encoder wire-sequence override — PUNKTFUNK LOCAL PATCH.
+Encoder wire-sequence override — RUBYFUNK LOCAL PATCH.
 
 Not upstream. Exposes `Encoder::set_next_sequence(uint32_t)` (and a
 `pyrowave_encoder_set_next_sequence` C entry) so the caller can stamp the 3-bit wire sequence
@@ -47,7 +47,7 @@ index 4bd2975..a30676a 100644
  pyrowave_encoder_compute_block_active_words(pyrowave_encoder encoder,
  		int bands, uint32_t *words, size_t word_count);
  
-+// PUNKTFUNK LOCAL EXTENSION (patches/0007-encoder-sequence-override.patch), not upstream.
++// RUBYFUNK LOCAL EXTENSION (patches/0007-encoder-sequence-override.patch), not upstream.
 +// The wire sequence counter is 3 bits (PyroWave::SequenceCountMask, pyrowave_common.hpp);
 +// exported here so callers mask with the codec's own value instead of a copied literal.
 +#define PYROWAVE_SEQUENCE_MASK 0x7u
@@ -71,7 +71,7 @@ index ded4fa8..8dc897d 100644
  			encoder, packets, packet_boundary, 0, out_packets, bitstream, size);
  }
  
-+// PUNKTFUNK LOCAL EXTENSION (patches/0007-encoder-sequence-override.patch), not upstream.
++// RUBYFUNK LOCAL EXTENSION (patches/0007-encoder-sequence-override.patch), not upstream.
 +pyrowave_result
 +pyrowave_encoder_set_next_sequence(pyrowave_encoder encoder, uint32_t sequence)
 +{
@@ -93,7 +93,7 @@ index 8b5d7a9..e8bebe2 100644
  	return impl->encode(cmd, views, buffers);
  }
  
-+// PUNKTFUNK: see the declaration in pyrowave_encoder.hpp. Impl::encode PRE-increments
++// RUBYFUNK: see the declaration in pyrowave_encoder.hpp. Impl::encode PRE-increments
 +// (sequence_count = (sequence_count + 1) & mask before stamping), so store one less than the value
 +// the caller wants stamped — the setter's contract is about the next ENCODE, not the next store.
 +void Encoder::set_next_sequence(uint32_t sequence)
@@ -112,7 +112,7 @@ index 355f82c..1f3b32d 100644
  	bool init(Vulkan::Device *device, int width, int height, ChromaSubsampling chroma);
  	bool encode(Vulkan::CommandBuffer &cmd, const ViewBuffers &views, const BitstreamBuffers &buffers);
  
-+	// PUNKTFUNK: override the 3-bit wire sequence counter the NEXT encode will stamp.
++	// RUBYFUNK: override the 3-bit wire sequence counter the NEXT encode will stamp.
 +	// The counter is per-Encoder, so alternating two encoder objects to overlap frames emits
 +	// 1,1,2,2,3,3... and the decoder reads a repeated value as "more blocks of the same frame".
 +	// See crates/codec/pyrowave-sys/patches/0007-encoder-sequence-override.patch.

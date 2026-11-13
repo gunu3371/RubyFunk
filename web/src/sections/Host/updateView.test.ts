@@ -19,7 +19,7 @@ const idle: UpdateStatus = {
 	apply: "notify",
 	available: false,
 	channel: "stable",
-	channel_hint: "apt upgrade punktfunk",
+	channel_hint: "apt upgrade rubyfunk",
 	check_disabled: false,
 	current_version: "0.45.0",
 	install_kind: "apt",
@@ -102,9 +102,9 @@ const panelCases: [string, Partial<UpdateStatus>, boolean, object][] = [
 	],
 	[
 		"available, notify, opt-in offered",
-		{ manifest, available: true, opt_in_hint: "usermod -aG punktfunk-update" },
+		{ manifest, available: true, opt_in_hint: "usermod -aG rubyfunk-update" },
 		false,
-		{ kind: "how-to", optInHint: "usermod -aG punktfunk-update" },
+		{ kind: "how-to", optInHint: "usermod -aG rubyfunk-update" },
 	],
 	[
 		"an empty opt-in hint draws nothing",

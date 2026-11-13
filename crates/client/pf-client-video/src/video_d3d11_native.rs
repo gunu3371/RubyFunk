@@ -1562,9 +1562,9 @@ fn ring_pool(
     driver_min: u16,
 ) -> Result<(ID3D11Texture2D, u32)> {
     let pool_size = pf_dxvadec::pool_size(dpb_slots, driver_min);
-    // `PUNKTFUNK_DXVA_SHARED_POOL=1` shares the pool by NT handle; `=srv` also binds it for
+    // `RUBYFUNK_DXVA_SHARED_POOL=1` shares the pool by NT handle; `=srv` also binds it for
     // sampling. A probe for a zero-copy pool: nothing imports it.
-    let shared_pool = std::env::var("PUNKTFUNK_DXVA_SHARED_POOL").ok();
+    let shared_pool = std::env::var("RUBYFUNK_DXVA_SHARED_POOL").ok();
     let shared = (D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE) as u32;
     let (bind_extra, misc): (u32, u32) = match shared_pool.as_deref() {
         Some("1") => (0, shared),

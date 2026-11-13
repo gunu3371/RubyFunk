@@ -1,6 +1,6 @@
 ---
 title: NixOS
-description: Install the Punktfunk host on NixOS from the repo's flake — add the binary cache, import the module, enable the host.
+description: Install the RubyFunk host on NixOS from the repo's flake — add the binary cache, import the module, enable the host.
 ---
 
 Install the host on **NixOS 24.11 or newer**, `x86_64-linux`, from the repo's flake and NixOS
@@ -11,23 +11,23 @@ module. The guided installer doesn't cover NixOS.
 ```nix
 nix.settings = {
   substituters = [ "https://nix.unom.io" ];
-  trusted-public-keys = [ "punktfunk-cache-1:yhOJmHxzg6tzXpxSFzlYn6Pc6r0jHprsWqt8MZC654o=" ];
+  trusted-public-keys = [ "rubyfunk-cache-1:yhOJmHxzg6tzXpxSFzlYn6Pc6r0jHprsWqt8MZC654o=" ];
 };
 ```
 
 The host, the client and the patched gamescope build against your system's nixpkgs, so they can
-load its GPU driver. The cache holds them only for punktfunk's own nixpkgs; on any other, each
+load its GPU driver. The cache holds them only for rubyfunk's own nixpkgs; on any other, each
 update compiles them, which can take an hour or more. To take them from the cache, let your nixpkgs
-follow punktfunk's:
+follow rubyfunk's:
 
 ```nix
-inputs.nixpkgs.follows = "punktfunk/nixpkgs";
+inputs.nixpkgs.follows = "rubyfunk/nixpkgs";
 ```
 
-Your system then runs the nixpkgs punktfunk pins: canary moves it to the newest nixos-unstable each
+Your system then runs the nixpkgs rubyfunk pins: canary moves it to the newest nixos-unstable each
 night, stable carries the one from its release.
 
-Don't set `inputs.punktfunk.inputs.nixpkgs.follows`: the console and runner then miss the cache too
+Don't set `inputs.rubyfunk.inputs.nixpkgs.follows`: the console and runner then miss the cache too
 ([packaging/nix](https://git.unom.io/unom/punktfunk/src/branch/main/packaging/nix/README.md#binary-cache)).
 
 ## 2. Import the module and enable the host
@@ -40,9 +40,9 @@ Don't set `inputs.punktfunk.inputs.nixpkgs.follows`: the console and runner then
 A typical host block:
 
 ```nix
-services.punktfunk.host = {
+services.rubyfunk.host = {
   enable = true;
-  users = [ "alice" ];     # joins the input and punktfunk groups
+  users = [ "alice" ];     # joins the input and rubyfunk groups
   openFirewall = true;
   desktopSession = true;   # on a machine somebody logs into
   settings = { RUST_LOG = "info"; };   # written to host.env
@@ -61,7 +61,7 @@ a headless or gamescope box.
 From your desktop session:
 
 ```sh
-systemctl --user enable --now punktfunk-host punktfunk-web
+systemctl --user enable --now rubyfunk-host rubyfunk-web
 ```
 
 On a box nobody logs into, set `autoStart = true` and enable lingering for the host user instead.
@@ -75,5 +75,5 @@ a device.
   [packaging/nix](https://git.unom.io/unom/punktfunk/src/branch/main/packaging/nix/README.md).
 - Run the host without NixOS (wrapped in [nixGL](https://github.com/nix-community/nixGL) for the
   GPU drivers): `nix run 'git+https://git.unom.io/unom/punktfunk?ref=nix-stable#punktfunk-host' -- serve`.
-- Update: `nix flake update punktfunk`, then `sudo nixos-rebuild switch`. Remove:
+- Update: `nix flake update rubyfunk`, then `sudo nixos-rebuild switch`. Remove:
   [Uninstall](/docs/uninstall#nixos).

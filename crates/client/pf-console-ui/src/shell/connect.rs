@@ -8,7 +8,7 @@ use crate::screens::{ConnectIntent, Nav, ProfileAsk, Screen, Seated};
 use pf_client_core::console::OverlayAction;
 use pf_client_core::profiles::{seat_gate, ListedProfile, ProfilePick, SeatGate, UnlockNeed};
 use pf_client_core::unlock::{self, Gate, Pending};
-use punktfunk_core::quic::v2::msg::ProfileUnlock;
+use rubyfunk_core::quic::v2::msg::ProfileUnlock;
 use skia_safe::Rect;
 
 /// One connect from the press to the stream, one phase at a time.
@@ -191,7 +191,7 @@ pub(super) struct LaunchHost {
 ///
 /// Every launch begins with the launcher's own window (Steam booting, a
 /// desktop) — the first thing a player used to see of a game. The host tells
-/// `launching` from `running` per lease (`punktfunk-host::gamelease`), and a
+/// `launching` from `running` per lease (`rubyfunk-host::gamelease`), and a
 /// paired client may read it, so the hold polls that until it changes.
 ///
 /// Raised at the press rather than at the first frame, because the shelf is

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Link profiles, named after the simulator's scenarios and carrying its numbers
-# (crates/core/punktfunk-core/src/abr/sim/scenarios.rs). Sourced by rig.sh.
+# (crates/core/rubyfunk-core/src/abr/sim/scenarios.rs). Sourced by rig.sh.
 #
 # Unmeasured in both tiers, and worth knowing before you read a row: a keyframe
 # here is IDR_PCT (10x) of an ordinary frame and the simulator's is 4x. Nobody
@@ -69,14 +69,14 @@ profile() {
       MODE=3840x2160x120; ACHIEVABLE_KBPS=150000
       ;;
     # The 2.5 G host → 1 G client hop: a 1 Gbit/s link whose queue is one switch's SRAM
-    # (1 ms ≈ 125 KB). A line-rate burst (`PUNKTFUNK_DELIVERY=burst`) overruns it on IDRs;
+    # (1 ms ≈ 125 KB). A line-rate burst (`RUBYFUNK_DELIVERY=burst`) overruns it on IDRs;
     # a frame paced at the link rate does not.
     lan_1g_switch)
       RATE_KBIT=1000000; DELAY_MS=1; BUFFER_MS=1
       MODE=3840x2160x120; ACHIEVABLE_KBPS=150000
       ;;
     # An untuned receiver on 1 Gbit/s: a queue the size of Linux's default socket buffer
-    # (2 ms ≈ 250 KB). `PUNKTFUNK_DELIVERY=smooth` keeps a frame under it.
+    # (2 ms ≈ 250 KB). `RUBYFUNK_DELIVERY=smooth` keeps a frame under it.
     lan_1g_smallbuf)
       RATE_KBIT=1000000; DELAY_MS=1; BUFFER_MS=2
       MODE=3840x2160x120; ACHIEVABLE_KBPS=150000

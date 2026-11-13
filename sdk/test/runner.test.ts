@@ -71,11 +71,11 @@ describe("discovery", () => {
 		write(evil, "export {};");
 		fs.chmodSync(evil, 0o777);
 		write(
-			path.join(d.pluginsDir, "node_modules", "punktfunk-plugin-x", "package.json"),
-			JSON.stringify({ name: "punktfunk-plugin-x", main: "index.js" }),
+			path.join(d.pluginsDir, "node_modules", "rubyfunk-plugin-x", "package.json"),
+			JSON.stringify({ name: "rubyfunk-plugin-x", main: "index.js" }),
 		);
 		write(
-			path.join(d.pluginsDir, "node_modules", "punktfunk-plugin-x", "index.js"),
+			path.join(d.pluginsDir, "node_modules", "rubyfunk-plugin-x", "index.js"),
 			"export default { name: 'x', main: async () => {} };",
 		);
 		write(
@@ -88,35 +88,35 @@ describe("discovery", () => {
 		expect(units.map((u) => u.name)).toEqual([
 			"a-script",
 			"b-script",
-			"punktfunk-plugin-x",
+			"rubyfunk-plugin-x",
 		]);
 		expect(logs.join("\n")).toContain("REFUSING");
 		expect(logs.join("\n")).toContain("evil.ts");
 	});
 
-	test("discovers scoped @punktfunk/plugin-* packages (not other scoped pkgs)", () => {
+	test("discovers scoped @rubyfunk/plugin-* packages (not other scoped pkgs)", () => {
 		const d = mkdirs("discover-scoped");
 		write(
-			path.join(d.pluginsDir, "node_modules", "@punktfunk", "plugin-y", "package.json"),
-			JSON.stringify({ name: "@punktfunk/plugin-y", module: "dist/index.js" }),
+			path.join(d.pluginsDir, "node_modules", "@rubyfunk", "plugin-y", "package.json"),
+			JSON.stringify({ name: "@rubyfunk/plugin-y", module: "dist/index.js" }),
 		);
 		write(
-			path.join(d.pluginsDir, "node_modules", "@punktfunk", "plugin-y", "dist", "index.js"),
+			path.join(d.pluginsDir, "node_modules", "@rubyfunk", "plugin-y", "dist", "index.js"),
 			"export default { name: 'y', main: async () => {} };",
 		);
 		// A non-plugin scoped package (e.g. the SDK itself) is ignored.
 		write(
-			path.join(d.pluginsDir, "node_modules", "@punktfunk", "host", "package.json"),
-			JSON.stringify({ name: "@punktfunk/host" }),
+			path.join(d.pluginsDir, "node_modules", "@rubyfunk", "host", "package.json"),
+			JSON.stringify({ name: "@rubyfunk/host" }),
 		);
 		const units = discoverUnits(d);
-		expect(units.map((u) => u.name)).toEqual(["@punktfunk/plugin-y"]);
+		expect(units.map((u) => u.name)).toEqual(["@rubyfunk/plugin-y"]);
 	});
 
-	test("discovers plugins in ANY scope, not just @punktfunk", () => {
+	test("discovers plugins in ANY scope, not just @rubyfunk", () => {
 		// Plugin-store catalog entries must be scoped so the scope can map to that entry's
 		// registry, so a third-party plugin necessarily arrives under its own scope. Discovery
-		// limited to @punktfunk would let it install and then never run.
+		// limited to @rubyfunk would let it install and then never run.
 		const d = mkdirs("discover-foreign-scope");
 		write(
 			path.join(d.pluginsDir, "node_modules", "@retro-hub", "plugin-z", "package.json"),
@@ -130,40 +130,40 @@ describe("discovery", () => {
 	});
 
 	test("a plugin's LIBRARY is not a unit — top-level dependencies win", () => {
-		// Regression from a live install: `@punktfunk/plugin-kit` is the framework kit-built
+		// Regression from a live install: `@rubyfunk/plugin-kit` is the framework kit-built
 		// plugins depend on. It matches the `plugin-*` convention exactly and lands in
 		// node_modules transitively, so a convention-only scan would import and run the framework
 		// as if it were a plugin.
 		const d = mkdirs("discover-toplevel");
 		for (const name of ["plugin-real", "plugin-kit"]) {
 			write(
-				path.join(d.pluginsDir, "node_modules", "@punktfunk", name, "package.json"),
-				JSON.stringify({ name: `@punktfunk/${name}`, main: "index.js" }),
+				path.join(d.pluginsDir, "node_modules", "@rubyfunk", name, "package.json"),
+				JSON.stringify({ name: `@rubyfunk/${name}`, main: "index.js" }),
 			);
 			write(
-				path.join(d.pluginsDir, "node_modules", "@punktfunk", name, "index.js"),
+				path.join(d.pluginsDir, "node_modules", "@rubyfunk", name, "index.js"),
 				"export default { name: 'p', main: async () => {} };",
 			);
 		}
 		write(
 			path.join(d.pluginsDir, "package.json"),
-			JSON.stringify({ dependencies: { "@punktfunk/plugin-real": "^1.0.0" } }),
+			JSON.stringify({ dependencies: { "@rubyfunk/plugin-real": "^1.0.0" } }),
 		);
-		expect(discoverUnits(d).map((u) => u.name)).toEqual(["@punktfunk/plugin-real"]);
+		expect(discoverUnits(d).map((u) => u.name)).toEqual(["@rubyfunk/plugin-real"]);
 	});
 
 	test("no package.json at all falls back to the naming convention", () => {
 		// Hand-assembled or older trees must still run, not silently discover nothing.
 		const d = mkdirs("discover-nodeps");
 		write(
-			path.join(d.pluginsDir, "node_modules", "punktfunk-plugin-legacy", "package.json"),
-			JSON.stringify({ name: "punktfunk-plugin-legacy", main: "index.js" }),
+			path.join(d.pluginsDir, "node_modules", "rubyfunk-plugin-legacy", "package.json"),
+			JSON.stringify({ name: "rubyfunk-plugin-legacy", main: "index.js" }),
 		);
 		write(
-			path.join(d.pluginsDir, "node_modules", "punktfunk-plugin-legacy", "index.js"),
+			path.join(d.pluginsDir, "node_modules", "rubyfunk-plugin-legacy", "index.js"),
 			"export default { name: 'l', main: async () => {} };",
 		);
-		expect(discoverUnits(d).map((u) => u.name)).toEqual(["punktfunk-plugin-legacy"]);
+		expect(discoverUnits(d).map((u) => u.name)).toEqual(["rubyfunk-plugin-legacy"]);
 	});
 
 	test("an emptied dependency list means nothing to run", () => {
@@ -173,11 +173,11 @@ describe("discovery", () => {
 		// plugin — seen on-glass.
 		const d = mkdirs("discover-emptied");
 		write(
-			path.join(d.pluginsDir, "node_modules", "@punktfunk", "plugin-kit", "package.json"),
-			JSON.stringify({ name: "@punktfunk/plugin-kit", main: "index.js" }),
+			path.join(d.pluginsDir, "node_modules", "@rubyfunk", "plugin-kit", "package.json"),
+			JSON.stringify({ name: "@rubyfunk/plugin-kit", main: "index.js" }),
 		);
 		write(
-			path.join(d.pluginsDir, "node_modules", "@punktfunk", "plugin-kit", "index.js"),
+			path.join(d.pluginsDir, "node_modules", "@rubyfunk", "plugin-kit", "index.js"),
 			"export default {};",
 		);
 		write(path.join(d.pluginsDir, "package.json"), JSON.stringify({ name: "plugins" }));
@@ -269,7 +269,7 @@ describe("writePluginToken", () => {
 		const file = writePluginToken(config, state, "demo");
 		expect(file).toBe(path.join(state, ".plugin-token"));
 		expect(fs.lstatSync(file as string).isSymbolicLink()).toBe(false);
-		expect(fs.readFileSync(file as string, "utf8")).toBe("PUNKTFUNK_PLUGIN_TOKEN=demo-token\n");
+		expect(fs.readFileSync(file as string, "utf8")).toBe("RUBYFUNK_PLUGIN_TOKEN=demo-token\n");
 		expect(fs.readFileSync(victim, "utf8")).toBe("untouched");
 	});
 });
@@ -295,7 +295,7 @@ describe("spawnAgainIfKilled (the ACL read's guard against a misfired timeout)",
 });
 
 describe("windowsSddlUnsafeReason (the sshd rule's Windows half, pure)", () => {
-	// What a file under the host's ACL'd %ProgramData%\punktfunk actually looks like: owned by
+	// What a file under the host's ACL'd %ProgramData%\rubyfunk actually looks like: owned by
 	// Administrators, protected DACL, admin/SYSTEM/OWNER-RIGHTS full + Users read-execute.
 	const LOCKED =
 		"O:BAG:SYD:PAI(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;OW)(A;;0x1200a9;;;BU)";
@@ -444,14 +444,14 @@ describe("supervision", () => {
 
 	test("a plugin with a manifest gets a process of its own when asked (the Windows shape)", async () => {
 		const d = mkdirs("own-process");
-		const pkg = path.join(d.pluginsDir, "node_modules", "punktfunk-plugin-lonely");
+		const pkg = path.join(d.pluginsDir, "node_modules", "rubyfunk-plugin-lonely");
 		const counter = path.join(d.dir, "count.txt");
 		write(
 			path.join(pkg, "package.json"),
 			JSON.stringify({
-				name: "punktfunk-plugin-lonely",
+				name: "rubyfunk-plugin-lonely",
 				main: "index.ts",
-				punktfunk: { schema: 1, id: "lonely" },
+				rubyfunk: { schema: 1, id: "lonely" },
 			}),
 		);
 		// Each run is a fresh process: a module-level counter would start at zero every time.
@@ -465,8 +465,8 @@ describe("supervision", () => {
 		);
 		const logs: string[] = [];
 		// The child re-execs the runner bundle; here that is the CLI source, which bun runs as is.
-		const entry = process.env.PUNKTFUNK_RUNNER_ENTRY;
-		process.env.PUNKTFUNK_RUNNER_ENTRY = path.join(import.meta.dir, "..", "src", "runner-cli.ts");
+		const entry = process.env.RUBYFUNK_RUNNER_ENTRY;
+		process.env.RUBYFUNK_RUNNER_ENTRY = path.join(import.meta.dir, "..", "src", "runner-cli.ts");
 		try {
 			const fiber = Effect.runFork(
 				runner({
@@ -493,10 +493,10 @@ describe("supervision", () => {
 			}
 			await Effect.runPromise(Fiber.interrupt(fiber));
 		} finally {
-			if (entry === undefined) delete process.env.PUNKTFUNK_RUNNER_ENTRY;
-			else process.env.PUNKTFUNK_RUNNER_ENTRY = entry;
+			if (entry === undefined) delete process.env.RUBYFUNK_RUNNER_ENTRY;
+			else process.env.RUBYFUNK_RUNNER_ENTRY = entry;
 		}
-		const failed = logs.find((l) => l.includes("[punktfunk-plugin-lonely] failed: "));
+		const failed = logs.find((l) => l.includes("[rubyfunk-plugin-lonely] failed: "));
 		expect(failed).toContain("plugin process exited with 3");
 		expect(failed).toContain("lonely run 0 pid");
 		expect(logs.some((l) => l.includes("restarting (attempt 2)"))).toBe(true);
@@ -507,13 +507,13 @@ describe("supervision", () => {
 		const d = mkdirs("grant-restart");
 		const packages = ["one", "two"];
 		for (const id of packages) {
-			const pkg = path.join(d.pluginsDir, "node_modules", `punktfunk-plugin-${id}`);
+			const pkg = path.join(d.pluginsDir, "node_modules", `rubyfunk-plugin-${id}`);
 			write(
 				path.join(pkg, "package.json"),
 				JSON.stringify({
-					name: `punktfunk-plugin-${id}`,
+					name: `rubyfunk-plugin-${id}`,
 					main: "index.js",
-					punktfunk: { schema: 1, id },
+					rubyfunk: { schema: 1, id },
 				}),
 			);
 			write(path.join(pkg, "index.js"), "export default {};");
@@ -521,7 +521,7 @@ describe("supervision", () => {
 		write(
 			path.join(d.pluginsDir, "package.json"),
 			JSON.stringify({
-				dependencies: Object.fromEntries(packages.map((id) => [`punktfunk-plugin-${id}`, "1.0.0"])),
+				dependencies: Object.fromEntries(packages.map((id) => [`rubyfunk-plugin-${id}`, "1.0.0"])),
 			}),
 		);
 		const grants = (one: unknown[] = []) =>
@@ -598,10 +598,10 @@ describe("supervision", () => {
 	test("a plugin package without a manifest does not run while sandboxing is on", async () => {
 		const d = mkdirs("no-manifest");
 		const ran = path.join(d.dir, "ran.txt");
-		const pkg = path.join(d.pluginsDir, "node_modules", "punktfunk-plugin-bare");
+		const pkg = path.join(d.pluginsDir, "node_modules", "rubyfunk-plugin-bare");
 		write(
 			path.join(pkg, "package.json"),
-			JSON.stringify({ name: "punktfunk-plugin-bare", main: "index.js" }),
+			JSON.stringify({ name: "rubyfunk-plugin-bare", main: "index.js" }),
 		);
 		write(
 			path.join(pkg, "index.js"),
@@ -611,10 +611,10 @@ describe("supervision", () => {
 		const fiber = Effect.runFork(
 			runner({ ...d, configDir: d.dir, sandbox: "on", log: (l) => logs.push(l) }),
 		);
-		await waitFor(() => logs.some((l) => l.includes("not starting punktfunk-plugin-bare")));
+		await waitFor(() => logs.some((l) => l.includes("not starting rubyfunk-plugin-bare")));
 		await new Promise((r) => setTimeout(r, 200)); // would have imported by now
 		await Effect.runPromise(Fiber.interrupt(fiber));
-		expect(logs.some((l) => l.includes("starting punktfunk-plugin-bare ("))).toBe(false);
+		expect(logs.some((l) => l.includes("starting rubyfunk-plugin-bare ("))).toBe(false);
 		expect(fs.existsSync(ran)).toBe(false);
 	});
 
@@ -622,13 +622,13 @@ describe("supervision", () => {
 
 	test("a box that builds no sandbox ends the runner before a plugin or a script starts", async () => {
 		const d = mkdirs("no-sandbox");
-		const pkg = path.join(d.pluginsDir, "node_modules", "punktfunk-plugin-demo");
+		const pkg = path.join(d.pluginsDir, "node_modules", "rubyfunk-plugin-demo");
 		write(
 			path.join(pkg, "package.json"),
 			JSON.stringify({
-				name: "punktfunk-plugin-demo",
+				name: "rubyfunk-plugin-demo",
 				main: "index.js",
-				punktfunk: { schema: 1, id: "demo" },
+				rubyfunk: { schema: 1, id: "demo" },
 			}),
 		);
 		write(path.join(pkg, "index.js"), "export default {};");
@@ -657,7 +657,7 @@ describe("supervision", () => {
 		expect(fs.existsSync(ran)).toBe(false);
 		const about = (text: string) => logs.filter((l) => l.includes(text));
 		expect(about("can't be sandboxed here: no user namespaces")).toHaveLength(1);
-		expect(about("stopping instead of running punktfunk-plugin-demo")).toHaveLength(1);
+		expect(about("stopping instead of running rubyfunk-plugin-demo")).toHaveLength(1);
 		expect(about("] starting ")).toEqual([]);
 		// What the host's health check reads, until a start gets past the probe.
 		const refusal = path.join(d.dir, "plugin-state", "runner.refused");
@@ -692,13 +692,13 @@ describe("supervision", () => {
 	test("every supervisor leaves the runner stopped on the refusal status", () => {
 		const repo = path.join(import.meta.dir, "..", "..");
 		const read = (rel: string) => fs.readFileSync(path.join(repo, rel), "utf8");
-		expect(read("scripts/punktfunk-scripting.service")).toContain(
+		expect(read("scripts/rubyfunk-scripting.service")).toContain(
 			`\nRestartPreventExitStatus=${SANDBOX_REFUSED_EXIT}\n`,
 		);
 		// NixOS runs that same unit: the scripting package installs it, and the module's drop-in
 		// leaves the status alone.
 		expect(read("packaging/nix/packages.nix")).toContain(
-			"install -Dm0644 scripts/punktfunk-scripting.service",
+			"install -Dm0644 scripts/rubyfunk-scripting.service",
 		);
 		expect(read("packaging/nix/nixos-module.nix")).not.toContain("RestartPreventExitStatus");
 		expect(read("scripts/windows/scripting-run.cmd")).toContain(
@@ -784,7 +784,7 @@ describe("supervision", () => {
 		const fiber = Effect.runFork(
 			superviseUnit(
 				{
-					name: "@punktfunk/plugin-boxed",
+					name: "@rubyfunk/plugin-boxed",
 					file: path.join(d.pluginsDir, "index.js"),
 					packageDir: d.pluginsDir,
 					manifest: { schema: 1, id: "boxed" },

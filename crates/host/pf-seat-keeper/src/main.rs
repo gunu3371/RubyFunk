@@ -1,4 +1,4 @@
-//! `punktfunk-seat-keeper keep` holds one seat's RDP session open; `trust` records the pin.
+//! `rubyfunk-seat-keeper keep` holds one seat's RDP session open; `trust` records the pin.
 //!
 //! `keep` reads its bootstrap (account, password, pin, host root) from stdin, which only the
 //! supervisor writes, and never takes a secret on argv or from the environment. `trust
@@ -22,12 +22,12 @@ fn main() {
         ["trust", "--replace"] => trust(true),
         ["observe"] => observe(),
         _ => {
-            eprintln!("usage: punktfunk-seat-keeper keep | trust [--replace] | observe");
+            eprintln!("usage: rubyfunk-seat-keeper keep | trust [--replace] | observe");
             std::process::exit(2);
         }
     };
     if let Err(error) = outcome {
-        eprintln!("punktfunk-seat-keeper: {error}");
+        eprintln!("rubyfunk-seat-keeper: {error}");
         std::process::exit(1);
     }
 }
@@ -52,6 +52,6 @@ fn observe() -> Result<(), pf_seats::BackendError> {
 
 #[cfg(not(windows))]
 fn main() {
-    eprintln!("punktfunk-seat-keeper runs on Windows only");
+    eprintln!("rubyfunk-seat-keeper runs on Windows only");
     std::process::exit(2);
 }

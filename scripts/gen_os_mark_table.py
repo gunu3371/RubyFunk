@@ -252,13 +252,13 @@ rows = "\n".join(
     for t, d, w, h in MARKS
 )
 write(
-    "clients/android/app/src/main/kotlin/io/unom/punktfunk/components/OsIcons.kt",
-    f"""package io.unom.punktfunk.components
+    "clients/android/app/src/main/kotlin/io/github/gunu3371/rubyfunk/components/OsIcons.kt",
+    f"""package io.github.gunu3371.rubyfunk.components
 
 {comment(BANNER, "//")}
 
 import androidx.compose.ui.graphics.vector.ImageVector
-import io.unom.punktfunk.kit.discovery.osIconTokens
+import io.github.gunu3371.rubyfunk.kit.discovery.osIconTokens
 
 /**
  * The host card's OS marks, resolved from the host's OS-identity chain (mDNS `os` TXT,

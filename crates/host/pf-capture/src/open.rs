@@ -140,7 +140,7 @@ pub fn open_portal_monitor(
 pub enum Producer {
     /// KWin: rewrites `SPA_META_Cursor` every buffer (`id == 0` hides the pointer), serves
     /// pools of [`KWIN_POOL_MIN`] to [`KWIN_POOL_MAX`], and records unpaced unless
-    /// `PUNKTFUNK_KWIN_PACED` asks for the stream rate.
+    /// `RUBYFUNK_KWIN_PACED` asks for the stream rate.
     Kwin,
     /// gamescope: no cursor metadata, a gated tiled modifier offer, and the only HDR producer.
     Gamescope,
@@ -165,7 +165,7 @@ pub struct DirectOutput {
 #[cfg(target_os = "linux")]
 #[derive(Default)]
 pub struct VirtualOutputOpts {
-    /// `false` forces CPU mmap even when `PUNKTFUNK_ZEROCOPY` is set.
+    /// `false` forces CPU mmap even when `RUBYFUNK_ZEROCOPY` is set.
     pub allow_zerocopy: bool,
     /// Tiled dmabufs convert to planar YUV444.
     pub want_444: bool,
@@ -194,7 +194,7 @@ pub struct VirtualOutputOpts {
     /// `SPA_META_Cursor`. `None` everywhere else.
     pub gamescope_cursor: Option<crate::GamescopeCursorTargets>,
     /// Capture this output directly first. Skipped without zero-copy (it delivers dmabufs
-    /// only) or under `PUNKTFUNK_DIRECT_CAPTURE=0`.
+    /// only) or under `RUBYFUNK_DIRECT_CAPTURE=0`.
     pub direct: Option<DirectOutput>,
 }
 
@@ -230,7 +230,7 @@ pub fn open_virtual_output(
     let knobs = Knobs::from_env();
     let try_direct = opts.allow_zerocopy && knobs.direct_capture;
     let mut refused =
-        anyhow::anyhow!("direct capture off (software encoder or PUNKTFUNK_DIRECT_CAPTURE=0)");
+        anyhow::anyhow!("direct capture off (software encoder or RUBYFUNK_DIRECT_CAPTURE=0)");
     if let Some(direct) = opts.direct.take().filter(|_| try_direct) {
         let name = direct.output_name;
         let policy = (direct.policy)();

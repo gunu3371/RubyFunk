@@ -96,8 +96,8 @@ fn rig() -> Rig {
         temp.path().join("home"),
     );
     std::fs::create_dir_all(&box_dir).unwrap();
-    std::fs::create_dir_all(home.join(".config/punktfunk")).unwrap();
-    std::fs::write(home.join(".config/punktfunk/host-settings.json"), "{}").unwrap();
+    std::fs::create_dir_all(home.join(".config/rubyfunk")).unwrap();
+    std::fs::write(home.join(".config/rubyfunk/host-settings.json"), "{}").unwrap();
     std::fs::write(home.join("notes.txt"), "mine").unwrap();
     std::fs::set_permissions(&home, std::fs::Permissions::from_mode(0o750)).unwrap();
     std::fs::create_dir_all(&state).unwrap();
@@ -293,19 +293,19 @@ fn a_start_through_the_login_helper_reads_its_end() {
 /// path a unit file can't hold verbatim gets none.
 #[test]
 fn the_login_drop_in_runs_the_helper_and_nothing_else() {
-    let helper = Path::new("/usr/libexec/punktfunk/punktfunk-seats");
+    let helper = Path::new("/usr/libexec/rubyfunk/rubyfunk-seats");
     let plain = "[Service]\nExecStart=\n\
-         ExecStart=!/usr/libexec/punktfunk/punktfunk-seats login %i\nRestart=no\n\
+         ExecStart=!/usr/libexec/rubyfunk/rubyfunk-seats login %i\nRestart=no\n\
          SyslogIdentifier=seat-session\n";
     assert_eq!(session::render_login(helper, None).unwrap(), plain);
     assert_eq!(
         session::render_login(helper, Some("system_u:system_r:init_t:s0")).unwrap(),
         format!("{plain}SELinuxContext=system_u:system_r:init_t:s0\n")
     );
-    let nix = "/nix/store/0abc-punktfunk-seats-0.47.0/libexec/punktfunk/punktfunk-seats";
+    let nix = "/nix/store/0abc-rubyfunk-seats-0.47.0/libexec/rubyfunk/rubyfunk-seats";
     assert!(session::render_login(Path::new(nix), None).is_some());
     for bad in [
-        "relative/punktfunk-seats",
+        "relative/rubyfunk-seats",
         "/opt/a b/x",
         "/opt/%i/x",
         "/opt/$HOME/x",
@@ -325,7 +325,7 @@ static REAL_DROPINS: Mutex<()> = Mutex::new(());
 /// A start that wrote the login drop-in takes it away on every way out, a failed `systemctl
 /// start` included, and leaves no password waiting.
 #[test]
-#[ignore = "needs root: writes the row's drop-ins under /run/systemd/system and /run/punktfunk"]
+#[ignore = "needs root: writes the row's drop-ins under /run/systemd/system and /run/rubyfunk"]
 fn a_failed_start_leaves_no_login_drop_in() {
     use std::sync::atomic::{AtomicBool, Ordering};
     let _alone = REAL_DROPINS.lock().unwrap_or_else(|e| e.into_inner());
@@ -361,7 +361,7 @@ fn a_failed_start_leaves_no_login_drop_in() {
 /// PAM refusing in the helper what the gate admitted falls back to today's start, and the
 /// supervisor runs no helper again until it restarts.
 #[test]
-#[ignore = "needs root: writes the row's drop-ins under /run/systemd/system and /run/punktfunk"]
+#[ignore = "needs root: writes the row's drop-ins under /run/systemd/system and /run/rubyfunk"]
 fn a_helper_refusal_falls_back_and_turns_the_helper_off() {
     let _alone = REAL_DROPINS.lock().unwrap_or_else(|e| e.into_inner());
     let rig = rig();
@@ -400,7 +400,7 @@ fn a_helper_refusal_falls_back_and_turns_the_helper_off() {
     assert!(!left);
 }
 
-/// The password check runs as `punktfunk-seats pam-check <account>` once the account still names
+/// The password check runs as `rubyfunk-seats pam-check <account>` once the account still names
 /// the row's uid: the account alone is its argument, and the code it prints reads as the
 /// console's sentence. An account that moved never reaches the check.
 #[test]
@@ -413,14 +413,14 @@ fn the_password_check_names_the_account_and_never_the_password() {
     ] {
         let machine = machine(&rig.home, 1500, "inactive", false);
         let _fake = fake::install(move |program, args| match program {
-            "punktfunk-seats" => (0, code.into()),
+            "rubyfunk-seats" => (0, code.into()),
             _ => machine(program, args),
         });
         let checked = rig.backend.check_password(&rig.seat, &password);
         assert_eq!(checked.err().map(|e| e.message).as_deref(), refused);
         assert_eq!(
             fake::calls(),
-            ["getent passwd jdoe", "punktfunk-seats pam-check jdoe"]
+            ["getent passwd jdoe", "rubyfunk-seats pam-check jdoe"]
         );
     }
     let moved = machine(&rig.home, 2000, "inactive", false);

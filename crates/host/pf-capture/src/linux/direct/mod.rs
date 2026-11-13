@@ -65,7 +65,7 @@ fn spawn(
     let quit = Arc::new(AtomicBool::new(false));
     let (ready_tx, ready_rx) = std::sync::mpsc::channel::<Result<Option<HdrMeta>>>();
     let join = std::thread::Builder::new()
-        .name("punktfunk-wl-capture".into())
+        .name("rubyfunk-wl-capture".into())
         .spawn({
             let (slot, shared, quit) = (slot.clone(), shared.clone(), quit.clone());
             move || {

@@ -6,7 +6,7 @@ use super::*;
 
 fn headless_shim_dir() -> std::path::PathBuf {
     let base = crate::session::runtime_dir();
-    std::path::Path::new(&base).join("punktfunk-gsbin")
+    std::path::Path::new(&base).join("rubyfunk-gsbin")
 }
 
 /// PATH shim: rewrite SteamOS's hardcoded panel args to headless at `PF_W`/`PF_H`/`PF_HZ`.
@@ -83,14 +83,14 @@ pub(super) fn write_headless_shim() -> Result<std::path::PathBuf> {
 pub(super) fn steamos_dropin_path() -> std::path::PathBuf {
     let base = crate::session::runtime_dir();
     std::path::Path::new(&base)
-        .join("systemd/user/gamescope-session.service.d/zz-punktfunk-headless.conf")
+        .join("systemd/user/gamescope-session.service.d/zz-rubyfunk-headless.conf")
 }
 
 /// `$HOME` copy an older host wrote. Nothing else removes it. Swept on sight.
 fn legacy_steamos_dropin_path() -> std::path::PathBuf {
     let home = std::env::var("HOME").unwrap_or_else(|_| "/home/deck".to_string());
     std::path::Path::new(&home)
-        .join(".config/systemd/user/gamescope-session.service.d/zz-punktfunk-headless.conf")
+        .join(".config/systemd/user/gamescope-session.service.d/zz-rubyfunk-headless.conf")
 }
 
 /// SIGKILL for gamescope when the target stops: its SIGTERM leaks the NVIDIA GPU context (see
@@ -159,14 +159,14 @@ pub(super) fn remove_steamos_dropin() -> bool {
 pub(super) fn session_plus_dropin_path() -> std::path::PathBuf {
     let base = crate::session::runtime_dir();
     std::path::Path::new(&base)
-        .join("systemd/user/gamescope-session-plus@.service.d/zz-punktfunk-bind.conf")
+        .join("systemd/user/gamescope-session-plus@.service.d/zz-rubyfunk-bind.conf")
 }
 
 /// `$HOME` copy of the bind drop-in: outlives the tmpfs paths it names. Swept on sight.
 fn legacy_session_plus_dropin_path() -> std::path::PathBuf {
     let home = std::env::var("HOME").unwrap_or_else(|_| "/home/deck".to_string());
     std::path::Path::new(&home)
-        .join(".config/systemd/user/gamescope-session-plus@.service.d/zz-punktfunk-bind.conf")
+        .join(".config/systemd/user/gamescope-session-plus@.service.d/zz-rubyfunk-bind.conf")
 }
 
 /// Idle drop-in replaces Game Mode `ExecStart`. Runtime-dir so a dead host cannot leave Game Mode
@@ -174,7 +174,7 @@ fn legacy_session_plus_dropin_path() -> std::path::PathBuf {
 pub(super) fn idle_dropin_path() -> std::path::PathBuf {
     let base = crate::session::runtime_dir();
     std::path::Path::new(&base)
-        .join("systemd/user/gamescope-session-plus@.service.d/zz-punktfunk-idle.conf")
+        .join("systemd/user/gamescope-session-plus@.service.d/zz-rubyfunk-idle.conf")
 }
 
 /// Idle `ExecStart` must actually execute: a unit that dies on start is the relogin storm.
@@ -351,7 +351,7 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
     }
 
-    /// A `PUNKTFUNK_GAMESCOPE_BIN` with a space stays one word on both launch lines.
+    /// A `RUBYFUNK_GAMESCOPE_BIN` with a space stays one word on both launch lines.
     #[test]
     fn headless_shim_runs_a_binary_whose_path_has_a_space() {
         let (status, _, dir) = run_shim(

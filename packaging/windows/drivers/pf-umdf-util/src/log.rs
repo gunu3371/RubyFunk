@@ -1,4 +1,4 @@
-//! The bring-up file log every punktfunk UMDF driver keeps, in one place.
+//! The bring-up file log every rubyfunk UMDF driver keeps, in one place.
 //!
 //! Four drivers had a byte-identical copy of this, and `pf-mouse` recorded what that costs: the
 //! world-writable-path hardening of security-review 2026-07-28 reached three of them and missed

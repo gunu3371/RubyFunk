@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "id": "punktfunk",
-  "name": "Punktfunk",
+  "id": "rubyfunk",
+  "name": "RubyFunk",
   "version": "0.1.0",
   "author": "unom",
   "license": "MIT OR Apache-2.0",
@@ -13,11 +13,11 @@
     "barWidget": "Panel.qml"
   },
   "barWidget": {
-    "displayName": "Punktfunk",
+    "displayName": "RubyFunk",
     "description": "Start the host, pair a device, and watch the live session.",
     "category": "System",
     "defaultSection": "right",
-    "aliases": ["punktfunk", "streaming"],
+    "aliases": ["rubyfunk", "streaming"],
     "allowMultiple": false
   }
 }

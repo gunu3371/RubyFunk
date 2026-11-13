@@ -9,7 +9,7 @@ use super::shell::{overlay_scale, HINT_KEYBOARD, HINT_WITH_PAD};
 use super::stream::ring_facts;
 use super::*;
 use pf_client_core::gamepad::PadInfo;
-use punktfunk_core::hud::HudCorner;
+use rubyfunk_core::hud::HudCorner;
 
 /// What `Overlay::frame` reads this pass, owned or borrowed from the stream.
 pub(super) struct OverlayFacts<'s> {
@@ -87,7 +87,7 @@ impl Shell {
                 self.audio_mute_seen = mask;
                 self.audio_mute_at = Instant::now();
             }
-            punktfunk_core::client::audio_mute_notice(mask, self.audio_mute_at.elapsed())
+            rubyfunk_core::client::audio_mute_notice(mask, self.audio_mute_at.elapsed())
         });
         OverlayFacts {
             width,
@@ -121,7 +121,7 @@ impl Shell {
             notice: live.and_then(|st| st.session_notice.as_ref().map(|(n, _)| n.as_str())),
             mic_notice: self
                 .mic_muted_at
-                .and_then(|at| punktfunk_core::client::mic_mute_notice(mic_muted, at.elapsed())),
+                .and_then(|at| rubyfunk_core::client::mic_mute_notice(mic_muted, at.elapsed())),
             audio_mute,
             resizing: live.is_some_and(|st| st.resize_overlay.active()),
             pad,

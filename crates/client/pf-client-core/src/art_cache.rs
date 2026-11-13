@@ -33,7 +33,7 @@ static WRITTEN: AtomicU64 = AtomicU64::new(0);
 /// Distinguishes the temp files of concurrent workers within one process.
 static NEXT_TMP: AtomicU64 = AtomicU64::new(0);
 
-/// `$XDG_CACHE_HOME/punktfunk/art` / `%LOCALAPPDATA%\punktfunk\cache\art`.
+/// `$XDG_CACHE_HOME/rubyfunk/art` / `%LOCALAPPDATA%\rubyfunk\cache\art`.
 fn dir() -> Option<PathBuf> {
     crate::library_cache::cache_subdir("art")
 }

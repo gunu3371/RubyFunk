@@ -82,8 +82,8 @@ that source. Plugins from it are never **Verified**.
 <Tab value="Linux">
 
 ```sh
-punktfunk-host plugins add rom-manager
-punktfunk-host plugins enable           # only if the runner is off
+rubyfunk-host plugins add rom-manager
+rubyfunk-host plugins enable           # only if the runner is off
 ```
 
 </Tab>
@@ -92,30 +92,30 @@ punktfunk-host plugins enable           # only if the runner is off
 Run from an elevated PowerShell; the plugins directory is admin-owned.
 
 ```powershell
-punktfunk-host plugins add playnite
-punktfunk-host plugins enable           # only if the runner is off
+rubyfunk-host plugins add playnite
+rubyfunk-host plugins enable           # only if the runner is off
 ```
 
-If `punktfunk-host` isn't found, open a new terminal, or use
-`& "$env:ProgramFiles\punktfunk\punktfunk-host.exe"`.
+If `rubyfunk-host` isn't found, open a new terminal, or use
+`& "$env:ProgramFiles\rubyfunk\rubyfunk-host.exe"`.
 
 </Tab>
 </Tabs>
 
 | Command | What it does |
 |---|---|
-| `punktfunk-host plugins add <name…>` | Install plugins and restart the runner. |
-| `punktfunk-host plugins remove <name…>` | Uninstall plugins, drop their library titles, restart the runner. |
-| `punktfunk-host plugins list` | List installed plugins and their versions. |
-| `punktfunk-host plugins enable` | Enable and start the runner. |
-| `punktfunk-host plugins disable` | Stop and disable the runner. |
-| `punktfunk-host plugins status` | Show whether the runner is installed, enabled and running. |
-| `punktfunk-host plugins grant <plugin> <dir> [--write]` | Let a plugin reach a folder; read-only unless `--write`. |
-| `punktfunk-host plugins access` | List grants, pending requests and denials. |
-| `punktfunk-host plugins revoke <plugin> <dir>` | Take one grant back. |
+| `rubyfunk-host plugins add <name…>` | Install plugins and restart the runner. |
+| `rubyfunk-host plugins remove <name…>` | Uninstall plugins, drop their library titles, restart the runner. |
+| `rubyfunk-host plugins list` | List installed plugins and their versions. |
+| `rubyfunk-host plugins enable` | Enable and start the runner. |
+| `rubyfunk-host plugins disable` | Stop and disable the runner. |
+| `rubyfunk-host plugins status` | Show whether the runner is installed, enabled and running. |
+| `rubyfunk-host plugins grant <plugin> <dir> [--write]` | Let a plugin reach a folder; read-only unless `--write`. |
+| `rubyfunk-host plugins access` | List grants, pending requests and denials. |
+| `rubyfunk-host plugins revoke <plugin> <dir>` | Take one grant back. |
 
-A bare name installs the first-party package from Punktfunk's registry: `playnite` is
-`@punktfunk/plugin-playnite`. Any other name comes from the public npm registry and needs
+A bare name installs the first-party package from RubyFunk's registry: `playnite` is
+`@rubyfunk/plugin-playnite`. Any other name comes from the public npm registry and needs
 `--allow-public-registry`.
 
 ## Where plugins run
@@ -132,7 +132,7 @@ Each plugin also declares the programs the host may start for it. The host build
 line itself, and nothing a running plugin sends can widen that list. Still, a plugin is code on
 your host: install only plugins you trust.
 
-Scripts you put in `~/.config/punktfunk/scripts/` are your own code; they run in the runner itself,
+Scripts you put in `~/.config/rubyfunk/scripts/` are your own code; they run in the runner itself,
 not in a plugin sandbox.
 
 ## Give a plugin a folder
@@ -161,12 +161,12 @@ less, like Steam, land at once.
 ## Update and remove
 
 - **Update:** **Update to &lt;version&gt;** or **Update all** on **Installed** installs the
-  catalog's version and restarts the runner. `punktfunk-host plugins add <name>` installs the
+  catalog's version and restarts the runner. `rubyfunk-host plugins add <name>` installs the
   newest version in the registry instead.
-- **Remove:** **Uninstall**, or `punktfunk-host plugins remove <name>`. Both drop the plugin's
+- **Remove:** **Uninstall**, or `rubyfunk-host plugins remove <name>`. Both drop the plugin's
   titles from the library and restart the runner. Its settings stay in
   `plugin-state/<plugin>/` in the config directory, so a reinstall picks them up.
-- **Stop every plugin:** **Disable runner** on **Installed**, or `punktfunk-host plugins disable`.
+- **Stop every plugin:** **Disable runner** on **Installed**, or `rubyfunk-host plugins disable`.
   The host keeps streaming; you lose plugin game sources and automation.
 
 ## ROM Manager
@@ -187,13 +187,13 @@ The console doesn't install, prepare or remove emulators, or move saves, inside 
 uses an existing Linux account. On an existing Windows account it adds no emulator copy by hand.
 
 ```sh
-punktfunk-host plugins add rom-manager
+rubyfunk-host plugins add rom-manager
 ```
 
 Add folders and servers on the console's **ROM Manager** page, under **Sources**. A server signs
 in with a code you approve in RomM. Without the console, write
-`plugin-state/rom-manager/config.json` in the config directory (`~/.config/punktfunk` or
-`%ProgramData%\punktfunk`):
+`plugin-state/rom-manager/config.json` in the config directory (`~/.config/rubyfunk` or
+`%ProgramData%\rubyfunk`):
 
 ```jsonc
 {
@@ -214,8 +214,8 @@ paths as `D:\\roms`. Options:
 Mirrors your [Playnite](https://playnite.link) library; launching a title hands it back to
 Playnite. It has two parts, both on the Windows host:
 
-1. The plugin, from an elevated PowerShell: `punktfunk-host plugins add playnite`.
-2. The **Punktfunk Sync** extension in Playnite: download `punktfunk-sync.pext` from the
+1. The plugin, from an elevated PowerShell: `rubyfunk-host plugins add playnite`.
+2. The **RubyFunk Sync** extension in Playnite: download `rubyfunk-sync.pext` from the
    [plugin's builds](https://git.unom.io/unom/punktfunk-plugin-playnite/actions), double-click it
    and restart Playnite.
 
@@ -228,7 +228,7 @@ library change. Filters are on that page. Details:
 Hands a physical USB device on your couch machine (a wheel, HOTAS, pedals, an arcade stick) to the
 host while you play, so the game sees the real device. It drives
 [VirtualHere](https://www.virtualhere.com/), a commercial product you buy and install yourself;
-Punktfunk bundles none of it and isn't affiliated with it.
+RubyFunk bundles none of it and isn't affiliated with it.
 
 You need both halves of VirtualHere running first:
 
@@ -238,7 +238,7 @@ You need both halves of VirtualHere running first:
 - **The USB Client on the host**, ideally as a service.
 
 ```sh
-punktfunk-host plugins add virtualhere
+rubyfunk-host plugins add virtualhere
 ```
 
 On the console's **VirtualHere** page, **Devices** lists what the couch shares; pick one to add a
@@ -273,12 +273,12 @@ the game's config instead, or turn Steam Cloud off for that game. Details:
 
 Caps the game at the refresh rate the client streams at, through
 [RivaTuner Statistics Server](https://www.guru3d.com/download/rtss-rivatuner-statistics-server-download/),
-and puts your own limit back when the stream ends. RTSS is a separate download; Punktfunk bundles
+and puts your own limit back when the stream ends. RTSS is a separate download; RubyFunk bundles
 none of it.
 
 1. Install RTSS and turn on **Start with Windows** in its main window. RTSS enforces the cap
    inside the game, so it must be running when the game starts.
-2. Install **RTSS Frame Cap** from **Plugins**, or run `punktfunk-host plugins add rtss`.
+2. Install **RTSS Frame Cap** from **Plugins**, or run `rubyfunk-host plugins add rtss`.
 3. Let the plugin write RTSS's profiles. Once, from an elevated PowerShell:
 
    ```powershell
@@ -303,20 +303,20 @@ The runner is its own package. Install it, then press **Enable runner**:
 
 | Host | Install |
 |---|---|
-| Ubuntu | `sudo apt install punktfunk-scripting` |
-| Fedora | `sudo dnf install punktfunk-scripting` |
-| Arch | `sudo pacman -Syu punktfunk-scripting` |
+| Ubuntu | `sudo apt install rubyfunk-scripting` |
+| Fedora | `sudo dnf install rubyfunk-scripting` |
+| Arch | `sudo pacman -Syu rubyfunk-scripting` |
 | Steam Deck on-device build | Re-run `scripts/steamdeck/install.sh` |
-| NixOS | `services.punktfunk.scripting.enable` (on whenever the host is) |
+| NixOS | `services.rubyfunk.scripting.enable` (on whenever the host is) |
 | Windows | Re-run the host setup |
 
-Installed but still reported missing? The host service can't find the `punktfunk-scripting`
-executable on its `PATH`. Point `PUNKTFUNK_SCRIPTING` at it ([Configuration](/docs/configuration)).
+Installed but still reported missing? The host service can't find the `rubyfunk-scripting`
+executable on its `PATH`. Point `RUBYFUNK_SCRIPTING` at it ([Configuration](/docs/configuration)).
 
 ### The plugin runner keeps failing to start
 
-Read its log: `journalctl --user -u punktfunk-scripting -f` on Linux,
-`%ProgramData%\punktfunk\plugin-state\runner.log` on Windows. The console's **Troubleshooting**
+Read its log: `journalctl --user -u rubyfunk-scripting -f` on Linux,
+`%ProgramData%\rubyfunk\plugin-state\runner.log` on Windows. The console's **Troubleshooting**
 page shows plugin output too, under the `plugin:<name>` sources (`plugin:runner` for the runner).
 A log that ends with `plugins can't be sandboxed here` is the [next entry](#plugins-cant-be-sandboxed-here).
 
@@ -331,11 +331,11 @@ Repair the sandbox, then start the runner. It stays stopped until you do.
 
 | Host | Repair | Start the runner |
 |---|---|---|
-| Linux | Install `bubblewrap` 0.8 or newer, or allow unprivileged user namespaces. | `systemctl --user restart punktfunk-scripting` |
-| Windows | Re-run the host setup. | `Start-ScheduledTask -TaskName PunktfunkScripting`, from an elevated PowerShell |
+| Linux | Install `bubblewrap` 0.8 or newer, or allow unprivileged user namespaces. | `systemctl --user restart rubyfunk-scripting` |
+| Windows | Re-run the host setup. | `Start-ScheduledTask -TaskName RubyFunkScripting`, from an elevated PowerShell |
 
-As a last resort on Linux, `Environment=PUNKTFUNK_PLUGIN_SANDBOX=off` in
-`systemctl --user edit punktfunk-scripting` runs plugins with your whole account's access; the
+As a last resort on Linux, `Environment=RUBYFUNK_PLUGIN_SANDBOX=off` in
+`systemctl --user edit rubyfunk-scripting` runs plugins with your whole account's access; the
 console warns while it is set.
 
 ### A plugin can't read one of its folders
@@ -345,7 +345,7 @@ protected paths outright; its log names each one (`plugin folder request refused
 
 ### Plugin interfaces are unavailable
 
-The console couldn't open its plugin port (TCP 47993 by default). Set `PUNKTFUNK_UI_PLUGIN_PORT` to
+The console couldn't open its plugin port (TCP 47993 by default). Set `RUBYFUNK_UI_PLUGIN_PORT` to
 a free port ([Configuration](/docs/configuration)) and restart the console.
 
 ### Trust this plugin's port once
@@ -355,14 +355,14 @@ Your browser hasn't accepted the host's certificate for the plugin port, or the 
 
 ### No plugin output yet
 
-The runner isn't running. Check with `punktfunk-host plugins status`.
+The runner isn't running. Check with `rubyfunk-host plugins status`.
 
-### `punktfunk-host: command not found`
+### `rubyfunk-host: command not found`
 
 On Windows, open a new terminal or call the full path above. On Linux the packages install it to
-`/usr/bin/punktfunk-host`.
+`/usr/bin/rubyfunk-host`.
 
 ## Writing a plugin
 
-Plugins are TypeScript packages built on `@punktfunk/plugin-kit`. See
+Plugins are TypeScript packages built on `@rubyfunk/plugin-kit`. See
 [Writing plugins](/docs/developers/writing-plugins).

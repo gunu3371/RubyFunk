@@ -1,14 +1,14 @@
 #!/bin/bash
-# punktfunk door helper (root): turns "Reachable without logging in" on or off for one user.
+# rubyfunk door helper (root): turns "Reachable without logging in" on or off for one user.
 #
-#   door-helper on  <user>   the box's host runs as the punktfunk system user from boot
+#   door-helper on  <user>   the box's host runs as the rubyfunk system user from boot
 #   door-helper off <user>   the user's own host serves the box again
 #   door-helper ports        the recorded owner's ports, copied before each door start
 #
-# Started by punktfunk-door-on@<user>.service and punktfunk-door-off@<user>.service, which
-# 49-punktfunk-door.rules lets members of `punktfunk-update` start. The instance name is data, not
+# Started by rubyfunk-door-on@<user>.service and rubyfunk-door-off@<user>.service, which
+# 49-rubyfunk-door.rules lets members of `rubyfunk-update` start. The instance name is data, not
 # a command: the user must be an ordinary account in that group. `ports` is
-# punktfunk-door.service's ExecStartPre.
+# rubyfunk-door.service's ExecStartPre.
 #
 # Both directions are idempotent, and a run that stopped halfway converges on the next. A first
 # `on` that fails before the box's ports move puts the box back, and an `off` that can't hand the
@@ -18,7 +18,7 @@
 # one: `on` from another member takes the door over, and `off` for it switches the door off with
 # the files left in $BOX. A miss proves that only on a box whose accounts are all local; a failed
 # lookup or a directory service refuses. The box's files move once: `on` copies
-# the user's into /var/lib/punktfunk and marks that in $STATE/door-on, so a repeat never overwrites
+# the user's into /var/lib/rubyfunk and marks that in $STATE/door-on, so a repeat never overwrites
 # what the door has changed since; `off` copies the door's back to the user and clears both.
 #
 # Every read and write that touches a user's home runs as that user, so a link the user plants
@@ -26,22 +26,22 @@
 set -eu
 export LC_ALL=C
 
-BOX=/var/lib/punktfunk
+BOX=/var/lib/rubyfunk
 # The seat supervisor's own directory, root's alone. `owner` there is the one account the door is
 # on for, and the one the supervisor adopts as the box owner's row, so the door can't pick another.
 # The door reads it to know whom to switch off for.
-STATE=/var/lib/punktfunk-seats
+STATE=/var/lib/rubyfunk-seats
 RECORD="$STATE/owner"
 MARK="$STATE/door-on"
-SEATS=/usr/libexec/punktfunk/punktfunk-seats
-# The door user's primary group. Never `punktfunk`, which owns the usbip attach nodes and passes
+SEATS=/usr/libexec/rubyfunk/rubyfunk-seats
+# The door user's primary group. Never `rubyfunk`, which owns the usbip attach nodes and passes
 # pf-dm-helper: the door opens no device.
-DOOR_GROUP=punktfunk-door
+DOOR_GROUP=rubyfunk-door
 # What the box's host keeps: identity, id, pairings, profiles, the console's password hash and
 # what seals its sessions, so a signed-in console stays signed in across a switch. `profiles/`
 # holds the avatars. The display policy and the hooks stay the owner's host's: the door passes
 # their every read and write there, and the seat supervisor copies the policy.
-FILES="native-cert.pem native-key.pem uniqueid punktfunk1-paired.json profiles.json web-password
+FILES="native-cert.pem native-key.pem uniqueid rubyfunk1-paired.json profiles.json web-password
 web-session-key web-session-epoch"
 
 die() {
@@ -49,18 +49,18 @@ die() {
     exit 1
 }
 
-as_door() { runuser -u punktfunk -- "$@"; }
+as_door() { runuser -u rubyfunk -- "$@"; }
 
 # The door's account sits in its own group, checked at every door start and every `on`: an account
 # with any other primary group moves, with the files that group owned, the door's directory, which
 # the door changes itself, and the library copy, which is root's. Safe to repeat.
 door_account_group() {
-    getent passwd punktfunk >/dev/null || return 0
+    getent passwd rubyfunk >/dev/null || return 0
     getent group "$DOOR_GROUP" >/dev/null || groupadd --system "$DOOR_GROUP"
-    [ "$(id -gn punktfunk)" = "$DOOR_GROUP" ] || usermod -g "$DOOR_GROUP" punktfunk
+    [ "$(id -gn rubyfunk)" = "$DOOR_GROUP" ] || usermod -g "$DOOR_GROUP" rubyfunk
     # The door's own files only: a file another account left there, such as an updater's result,
     # stays as it is and never stops a switch.
-    as_door find "$BOX" -xdev -user punktfunk ! -group "$DOOR_GROUP" -exec chgrp -h "$DOOR_GROUP" {} + ||
+    as_door find "$BOX" -xdev -user rubyfunk ! -group "$DOOR_GROUP" -exec chgrp -h "$DOOR_GROUP" {} + ||
         echo "door-helper: some files in $BOX keep their group" >&2
     if [ -d "$STATE/library" ]; then
         find "$STATE/library" -xdev ! -group "$DOOR_GROUP" -exec chgrp -h "$DOOR_GROUP" {} +
@@ -87,7 +87,7 @@ case $user in '' | -*) die "'$user' is not a user name the seats accept" ;; esac
 
 # The seats' owner rules, from the supervisor's binary, which needs no running supervisor: a
 # name and uid the seats accept, a person's account and not a seat's, and for `on` a member of
-# punktfunk-update. It prints `<uid> <home>`, or `gone` for an `off` whose account no longer
+# rubyfunk-update. It prints `<uid> <home>`, or `gone` for an `off` whose account no longer
 # exists on a box whose accounts are all local. Any doubt refuses, with the reason on stderr.
 owner_check() { "$SEATS" check-owner "$1" "$2"; }
 
@@ -102,13 +102,13 @@ case $checked in
 gone) gone=1 ;;
 *)
     uid=${checked%% *}
-    OWN="${checked#* }/.config/punktfunk"
+    OWN="${checked#* }/.config/rubyfunk"
     ;;
 esac
 
 # `ports` runs inside the door's start, which `on` waits for while it holds this lock.
 if [ "$verb" != ports ]; then
-    exec 9>/run/punktfunk-door.lock
+    exec 9>/run/rubyfunk-door.lock
     flock 9
 fi
 recorded=$(cat "$RECORD" 2>/dev/null || true)
@@ -157,8 +157,8 @@ give() {
 
 # SteamOS keeps the console's password in web.env, beside its session secret and bind. There the
 # door takes the password and secret lines, and hands the password line back into that file.
-PASSWORD_LINE='^[[:space:]]*PUNKTFUNK_UI_PASSWORD(_HASH)?='
-SECRET_LINE='^[[:space:]]*PUNKTFUNK_UI_SECRET='
+PASSWORD_LINE='^[[:space:]]*RUBYFUNK_UI_PASSWORD(_HASH)?='
+SECRET_LINE='^[[:space:]]*RUBYFUNK_UI_SECRET='
 steamos_password() { as_user test -f "$OWN/web.env" && ! as_user test -f "$OWN/web-password"; }
 
 take_password() {
@@ -181,7 +181,7 @@ give_password() {
 # The box's ports as the owner's host.env moves them, which the door binds in its place, and the
 # console's bind, which the door's console keeps. SteamOS holds that bind in web.env, read last.
 # Taken at each door start: the owner's files stay theirs, and the door never writes a port.
-PORT_LINE='^[[:space:]]*PUNKTFUNK_(MGMT_BIND|NATIVE_PORT|UI_BIND)[[:space:]]*='
+PORT_LINE='^[[:space:]]*RUBYFUNK_(MGMT_BIND|NATIVE_PORT|UI_BIND)[[:space:]]*='
 
 take_ports() {
     # Their files out of reach, as a home that isn't mounted yet: the last copy stays.
@@ -212,7 +212,7 @@ give_avatars() {
 # The mark lives in $STATE, root's alone. One in $BOX, where the door can write, moves there for a
 # recorded owner and is dropped otherwise, before anything reads the mark.
 legacy_mark() {
-    getent passwd punktfunk >/dev/null || return 0
+    getent passwd rubyfunk >/dev/null || return 0
     if [ -n "$recorded" ] && as_door test -f "$BOX/door-on"; then
         : >"$MARK"
     fi
@@ -223,28 +223,28 @@ legacy_mark() {
 # supervisor off unless it was on already. The user's own files were only copied.
 undo_on() {
     echo "door-helper: couldn't switch the door on, putting the box back" >&2
-    if systemctl is-active --quiet punktfunk-seats.service; then
+    if systemctl is-active --quiet rubyfunk-seats.service; then
         "$SEATS" release-owner >/dev/null || true
     fi
-    rm -f "$MARK" "$RECORD" "/run/punktfunk/seats/$user.env"
-    [ "$seats_were_up" = 1 ] || unwire punktfunk-seats.service || true
+    rm -f "$MARK" "$RECORD" "/run/rubyfunk/seats/$user.env"
+    [ "$seats_were_up" = 1 ] || unwire rubyfunk-seats.service || true
 }
 
 door_on() {
     fresh=0
     [ -n "$recorded" ] || fresh=1
     seats_were_up=0
-    if systemctl is-active --quiet punktfunk-seats.service; then seats_were_up=1; fi
+    if systemctl is-active --quiet rubyfunk-seats.service; then seats_were_up=1; fi
     getent group "$DOOR_GROUP" >/dev/null || groupadd --system "$DOOR_GROUP"
-    if ! getent passwd punktfunk >/dev/null; then
+    if ! getent passwd rubyfunk >/dev/null; then
         shell=$(command -v nologin || echo /usr/sbin/nologin)
-        useradd --system --no-user-group --gid "$DOOR_GROUP" --home-dir "$BOX" --shell "$shell" punktfunk
+        useradd --system --no-user-group --gid "$DOOR_GROUP" --home-dir "$BOX" --shell "$shell" rubyfunk
     fi
-    install -d -m 0711 -o punktfunk -g "$DOOR_GROUP" "$BOX"
+    install -d -m 0711 -o rubyfunk -g "$DOOR_GROUP" "$BOX"
     door_account_group
     # The shared games folder's group; the owner's Steam moves games into it at their next login.
-    getent group punktfunk-games >/dev/null || groupadd --system punktfunk-games
-    usermod -aG punktfunk-games "$user"
+    getent group rubyfunk-games >/dev/null || groupadd --system rubyfunk-games
+    usermod -aG rubyfunk-games "$user"
     install -d -m 0711 -o root -g root "$STATE"
     legacy_mark
     # A gone owner's files stay in $BOX; this member's replace them where they have the same file.
@@ -262,17 +262,17 @@ door_on() {
         take_avatars
         : >"$MARK"
     fi
-    wire punktfunk-seats.service
+    wire rubyfunk-seats.service
     # Ready once its socket is bound (Type=notify).
-    systemctl start punktfunk-seats.service
+    systemctl start rubyfunk-seats.service
     "$SEATS" adopt-owner "$user" >/dev/null
-    wire punktfunk-door.service punktfunk-web-door.service
+    wire rubyfunk-door.service rubyfunk-web-door.service
     trap - EXIT
     # The box's ports are the door's from here, so the user's console and host leave them first.
     # The host restarts on the owner row's contract: its own ports, and the box's identity.
-    user_ctl stop punktfunk-web.service || true
-    user_ctl try-restart punktfunk-host.service || true
-    systemctl restart punktfunk-door.service punktfunk-web-door.service
+    user_ctl stop rubyfunk-web.service || true
+    user_ctl try-restart rubyfunk-host.service || true
+    systemctl restart rubyfunk-door.service rubyfunk-web-door.service
     echo "door on for $user"
 }
 
@@ -289,12 +289,12 @@ unwire() { systemctl disable --now "$@" || systemctl stop "$@"; }
 # The door stopped to hand its files home and they didn't arrive: it comes back as it was.
 restore_door() {
     echo "door-helper: couldn't hand the door's files back, starting the door again" >&2
-    systemctl start --no-block punktfunk-door.service punktfunk-web-door.service || true
+    systemctl start --no-block rubyfunk-door.service rubyfunk-web-door.service || true
 }
 
 door_off() {
     trap restore_door EXIT
-    systemctl stop punktfunk-web-door.service punktfunk-door.service || true
+    systemctl stop rubyfunk-web-door.service rubyfunk-door.service || true
     legacy_mark
     if [ "$gone" = 1 ]; then
         echo "door-helper: $user is gone, the door's files stay in $BOX" >&2
@@ -308,18 +308,18 @@ door_off() {
     rm -f "$MARK"
     # From here only forward: each step is tried, and the record stays until all of them held.
     problems=0
-    if systemctl is-active --quiet punktfunk-seats.service; then
+    if systemctl is-active --quiet rubyfunk-seats.service; then
         # Seats the door placed stop with it; their accounts and profiles stay for the next time.
         "$SEATS" stop-all >/dev/null || problems=1
         "$SEATS" release-owner >/dev/null || problems=1
     fi
     # A stopped supervisor leaves the owner's contract behind, and their host and console read it.
-    rm -f "/run/punktfunk/seats/$user.env"
-    unwire punktfunk-web-door.service punktfunk-door.service punktfunk-seats.service || problems=1
-    user_ctl try-restart punktfunk-host.service || true
+    rm -f "/run/rubyfunk/seats/$user.env"
+    unwire rubyfunk-web-door.service rubyfunk-door.service rubyfunk-seats.service || problems=1
+    user_ctl try-restart rubyfunk-host.service || true
     # Their console comes back only if it was theirs to begin with.
-    if user_ctl is-enabled --quiet punktfunk-web.service; then
-        user_ctl start punktfunk-web.service || true
+    if user_ctl is-enabled --quiet rubyfunk-web.service; then
+        user_ctl start rubyfunk-web.service || true
     fi
     [ "$problems" = 0 ] || die "cleanup after switching off $user failed, switch it off again"
     rm -f "$RECORD"

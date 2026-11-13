@@ -1,6 +1,6 @@
 ---
 title: Clients
-description: The Punktfunk apps for Apple devices, Linux, Windows and Android, the browser client, the Samsung TV app, the community webOS app, Moonlight, and the punktfunk command — what each does and which to pick.
+description: The RubyFunk apps for Apple devices, Linux, Windows and Android, the browser client, the Samsung TV app, the community webOS app, Moonlight, and the rubyfunk command — what each does and which to pick.
 ---
 
 Pick the app for the device you stream *to*. Install steps for each are on
@@ -19,11 +19,11 @@ Pick the app for the device you stream *to*. Install steps for each are on
 | A Samsung TV | The [Samsung TV app](/docs/samsung-tv) (preview) |
 | A browser tab, with nothing to install | The [browser client](/docs/browser-client) (preview) |
 | Any other device | [Moonlight](#moonlight-anything-else) |
-| Scripts and home automation | The [`punktfunk` command](#scripting-the-punktfunk-cli) |
+| Scripts and home automation | The [`rubyfunk` command](#scripting-the-rubyfunk-cli) |
 
-Every Punktfunk app finds hosts on your network, [pairs](/docs/pairing) once and reconnects on its
+Every RubyFunk app finds hosts on your network, [pairs](/docs/pairing) once and reconnects on its
 own, browses the host's [game library](/docs/game-library), and has a controller interface for the
-couch. They share [presets and `punktfunk://` links](/docs/presets-and-links), the
+couch. They share [presets and `rubyfunk://` links](/docs/presets-and-links), the
 [in-stream keys](/docs/input#getting-your-input-back) and the settings on
 [Client settings](/docs/client-settings). The Apple, Android, Linux and Windows apps also ask which
 [profile](/docs/profiles#how-players-pick) plays.
@@ -44,7 +44,7 @@ One app for macOS, iOS, iPadOS and tvOS. It adds:
 
 ## Linux desktop client (GTK4)
 
-`punktfunk-client` is a GTK4 app with hardware decode (Vulkan Video or VAAPI), PipeWire audio and
+`rubyfunk-client` is a GTK4 app with hardware decode (Vulkan Video or VAAPI), PipeWire audio and
 SDL3 controllers. It adds:
 
 - **Hosts** and **Library** tabs, at the bottom of a narrow window. The Library has a chip for each
@@ -57,14 +57,14 @@ SDL3 controllers. It adds:
   All**, and a card's menu ends that host's stream.
 - Keys for the window: **Keyboard Shortcuts** in the menu lists them.
 
-For the couch, open **Punktfunk Console**, the gamepad button in the header bar, or run
-`punktfunk-client --browse --fullscreen`. **Controller-optimized UI** opens it when a controller
+For the couch, open **RubyFunk Console**, the gamepad button in the header bar, or run
+`rubyfunk-client --browse --fullscreen`. **Controller-optimized UI** opens it when a controller
 connects.
 
 ## Windows desktop client
 
 A WinUI 3 app for x64 and Arm64 with hardware decode (Vulkan Video or D3D11VA), HDR, WASAPI audio
-and SDL3 controllers. **Punktfunk Console** in the Start menu is the controller interface for a TV or
+and SDL3 controllers. **RubyFunk Console** in the Start menu is the controller interface for a TV or
 HTPC, on x64; the Arm64 build has no console yet. **Controller-optimized UI** opens it when a
 controller connects.
 
@@ -89,7 +89,7 @@ the picture itself, below or across both screens
 
 ## webOS (LG TV) — community
 
-[`pf-webos`](https://github.com/dyptan-io/pf-webos) is a native Punktfunk app for LG TVs, built by
+[`pf-webos`](https://github.com/dyptan-io/pf-webos) is a native RubyFunk app for LG TVs, built by
 the community. It uses the TV's hardware decoder and works with the Magic Remote. It isn't in the LG
 Content Store: [sideload it](/docs/install-client#lg-webos-tv-community).
 
@@ -97,30 +97,30 @@ Content Store: [sideload it](/docs/install-client#lg-webos-tv-community).
 
 Any [Moonlight](https://moonlight-stream.org/) client connects over GameStream once the host turns
 it on: see [Connect with Moonlight](/docs/moonlight). The stream is encrypted and adapts to a lossy
-link; the native speed test and jumbo frames are Punktfunk-app only.
+link; the native speed test and jumbo frames are RubyFunk-app only.
 
-## Scripting: the `punktfunk` CLI
+## Scripting: the `rubyfunk` CLI
 
-`punktfunk` is the client without a window. It ships with every Linux package and the Windows
-installer. Under the Flatpak, run it as `flatpak run --command=punktfunk io.unom.punktfunk`.
+`rubyfunk` is the client without a window. It ships with every Linux package and the Windows
+installer. Under the Flatpak, run it as `flatpak run --command=rubyfunk io.github.gunu3371.rubyfunk`.
 
 ```sh
-punktfunk discover                            # hosts advertising on this network
-punktfunk pair <host>[:port] --pin -          # pair this device; PIN on stdin
-punktfunk hosts list --probe                  # saved hosts, each checked live
-punktfunk library <host-ref> --json           # the host's games
-punktfunk launch <host-ref> --game <id>       # stream, waking the host first
-punktfunk profiles <host-ref>                 # who plays on the host; --pick saves one
-punktfunk launch <host-ref> --as <profile>    # stream as that profile, this time only
-punktfunk end-game <host-ref> --game <id>     # close a game this device launched
-punktfunk open 'punktfunk://connect/<host-ref>'
-punktfunk speed-test <host-ref>               # what the link carries, loss at a rate it holds
-punktfunk network-check <host-ref>            # the speed test plus what the link does, by finding
+rubyfunk discover                            # hosts advertising on this network
+rubyfunk pair <host>[:port] --pin -          # pair this device; PIN on stdin
+rubyfunk hosts list --probe                  # saved hosts, each checked live
+rubyfunk library <host-ref> --json           # the host's games
+rubyfunk launch <host-ref> --game <id>       # stream, waking the host first
+rubyfunk profiles <host-ref>                 # who plays on the host; --pick saves one
+rubyfunk launch <host-ref> --as <profile>    # stream as that profile, this time only
+rubyfunk end-game <host-ref> --game <id>     # close a game this device launched
+rubyfunk open 'rubyfunk://connect/<host-ref>'
+rubyfunk speed-test <host-ref>               # what the link carries, loss at a rate it holds
+rubyfunk network-check <host-ref>            # the speed test plus what the link does, by finding
 ```
 
 A `<host-ref>` is a saved host's id, its name or its address. Also: `hosts add`, `hosts forget`,
 `default-host`, [`wake`](/docs/wake-on-lan#from-the-command-line), `reachable`, `presets list` and
-`reset`. `punktfunk help <command>` lists a command's flags.
+`reset`. `rubyfunk help <command>` lists a command's flags.
 
 - `pair` reads the PIN from stdin with `--pin -`, or asks for it on a terminal. A PIN on the command
   line is refused.
@@ -129,5 +129,5 @@ A `<host-ref>` is a saved host's id, its name or its address. Also: `hosts add`,
 - Exit codes: **0** ok, **2** connect failed, **3** trust rejected (pair again), **4** the renderer
   didn't start, **5** nothing matched, **6** needs a person (pairing or an unknown host).
 
-Older scripts can keep `punktfunk-client --connect <host>:9777`; on Windows, `--discover` and
+Older scripts can keep `rubyfunk-client --connect <host>:9777`; on Windows, `--discover` and
 `--headless --speed-test` too. They don't wake a sleeping host.

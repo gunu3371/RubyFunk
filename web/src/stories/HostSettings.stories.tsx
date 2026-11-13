@@ -23,7 +23,7 @@ const row = (
 	stored: null,
 	source: "default",
 	origin: null,
-	env: `PUNKTFUNK_${r.id.toUpperCase()}`,
+	env: `RUBYFUNK_${r.id.toUpperCase()}`,
 	apply: "next_session",
 	advanced: false,
 	title: r.id,
@@ -33,7 +33,7 @@ const row = (
 });
 
 const settings: HostSettingsState = {
-	env_file: "/home/me/.config/punktfunk/host.env",
+	env_file: "/home/me/.config/rubyfunk/host.env",
 	restart_pending: ["gamestream"],
 	settings: [
 		row({
@@ -71,7 +71,7 @@ const settings: HostSettingsState = {
 			default: true,
 			value: false,
 			source: "env",
-			origin: "PUNKTFUNK_444",
+			origin: "RUBYFUNK_444",
 			stored: true,
 		}),
 		row({
@@ -142,7 +142,7 @@ function Live({ initial }: { initial: HostSettingsState }) {
 					names={state.settings.filter((r) => r.restart_pending).map(labelOf)}
 					action={{
 						id: "host.restart",
-						title: "Restart Punktfunk",
+						title: "Restart RubyFunk",
 						group: "host",
 						danger: true,
 						available: true,

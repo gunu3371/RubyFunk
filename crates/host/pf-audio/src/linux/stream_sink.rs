@@ -23,12 +23,12 @@ use anyhow::Result;
 use std::sync::Mutex;
 
 /// `node.name` prefix for every host-owned stream sink. Full names uniqued
-/// per capturer (`punktfunk-speaker-<pid>-<seq>`) so overlapping capturers
+/// per capturer (`rubyfunk-speaker-<pid>-<seq>`) so overlapping capturers
 /// never alias. The staleness rule matches this prefix.
-pub(super) const SINK_NAME_PREFIX: &str = "punktfunk-speaker";
+pub(super) const SINK_NAME_PREFIX: &str = "rubyfunk-speaker";
 
 /// `node.name` of the shared virtual mic, and the prefix of every isolated one.
-pub(super) const MIC_NAME: &str = "punktfunk-mic";
+pub(super) const MIC_NAME: &str = "rubyfunk-mic";
 
 /// One WirePlumber default the host claims. Keys sit on subject 0 of `default` metadata; values
 /// are `{"name":"<node.name>"}` typed `Spa:String:JSON`.
@@ -64,7 +64,7 @@ pub(super) static SOURCE: DefaultClaim = DefaultClaim {
 enum Restore {
     /// Re-set the saved pre-claim JSON (`{"name":"..."}`).
     Value(String),
-    /// No pre-claim preference, or the saved one was a stale punktfunk claim.
+    /// No pre-claim preference, or the saved one was a stale rubyfunk claim.
     Delete,
 }
 
@@ -95,7 +95,7 @@ impl Ledger {
         }
     }
 
-    /// Remember the elected node the first claim found. A stale punktfunk
+    /// Remember the elected node the first claim found. A stale rubyfunk
     /// name (crash leftover) is not an output; the last real one stands.
     fn note_host(&mut self, effective: Option<&str>, ours: &str) {
         if let Some(name) = effective.and_then(json_name).filter(|n| !n.contains(ours)) {
@@ -373,13 +373,13 @@ mod tests {
         assert_eq!(l.on_release("c"), Some(Release::Restore(Restore::Delete)));
     }
 
-    /// A leftover `punktfunk-speaker-*` name must not become the restore target.
+    /// A leftover `rubyfunk-speaker-*` name must not become the restore target.
     #[test]
     fn stale_own_claim_degrades_to_delete() {
         let mut l = Ledger::new();
         assert!(l.on_claim("a"));
         l.note_previous(
-            Some(r#"{"name":"punktfunk-speaker-4242-0"}"#.into()),
+            Some(r#"{"name":"rubyfunk-speaker-4242-0"}"#.into()),
             OURS,
             None,
         );
@@ -394,7 +394,7 @@ mod tests {
         assert!(l.on_claim("a"));
         let saved = r#"{"name":"alsa_output.usb"}"#.to_string();
         l.note_previous(
-            Some(r#"{"name":"punktfunk-speaker-4242-0"}"#.into()),
+            Some(r#"{"name":"rubyfunk-speaker-4242-0"}"#.into()),
             OURS,
             Some(saved.clone()),
         );
@@ -412,7 +412,7 @@ mod tests {
         assert_eq!(l.on_release("a"), Some(Release::Restore(Restore::Delete)));
     }
 
-    /// The host output is the elected sink's bare name; a stale punktfunk
+    /// The host output is the elected sink's bare name; a stale rubyfunk
     /// election or a missing key keeps the last real one.
     #[test]
     fn host_output_is_the_elected_sink_name() {
@@ -424,7 +424,7 @@ mod tests {
         let mut l = Ledger::new();
         l.note_host(Some(r#"{"name":"alsa_output.hdmi"}"#), OURS);
         assert_eq!(l.host.as_deref(), Some("alsa_output.hdmi"));
-        l.note_host(Some(r#"{"name":"punktfunk-speaker-4242-0"}"#), OURS);
+        l.note_host(Some(r#"{"name":"rubyfunk-speaker-4242-0"}"#), OURS);
         assert_eq!(l.host.as_deref(), Some("alsa_output.hdmi"));
         l.note_host(None, OURS);
         assert_eq!(l.host.as_deref(), Some("alsa_output.hdmi"));

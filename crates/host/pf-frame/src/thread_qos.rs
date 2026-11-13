@@ -39,7 +39,7 @@ pub fn boost_thread_priority(critical: bool) {
     {
         // Best-effort nice of the calling thread. Linux `setpriority(PRIO_PROCESS, 0, …)`
         // is the current task. Do not use SCHED_RR/FIFO by default: realtime can preempt
-        // the compositor and the game's render thread (opt-in: PUNKTFUNK_SCHED_RR).
+        // the compositor and the game's render thread (opt-in: RUBYFUNK_SCHED_RR).
         let nice = if critical { -10 } else { -5 };
         // SAFETY: `setpriority` takes three by-value integers and no pointers, so there is nothing to
         // alias or outlive. `PRIO_PROCESS` with `who == 0` targets the calling task on Linux and

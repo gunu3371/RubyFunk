@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
-// The Punktfunk lens, alive. The two overlapping circles of the brand mark are
+// The RubyFunk lens, alive. The two overlapping circles of the brand mark are
 // recreated from divs and animated as if orbiting on a path whose long axis points
 // INTO the screen, so depth is the dominant motion: each circle surges toward and
 // away from the viewer in antiphase, passing in front of and behind the other.

@@ -500,9 +500,9 @@ fn project_frame(frame: &DecodedVkFrame, guard: NativeReleaseGuard) -> NativeVkF
         keyframe: frame.is_idr,
         poc: frame.poc,
         // Recovery-point SEI for this picture (`RecoveryWatch` at plan time). Separate
-        // types on purpose: pf-vkdecode must not depend on punktfunk-core for a
+        // types on purpose: pf-vkdecode must not depend on rubyfunk-core for a
         // bitstream fact, and the reverse for accepting one.
-        recovery: punktfunk_core::reanchor::LocalRecovery {
+        recovery: rubyfunk_core::reanchor::LocalRecovery {
             sei_here: frame.recovery.sei_here,
             is_recovery_point: frame.recovery.is_recovery_point,
         },
@@ -544,7 +544,7 @@ fn picture_format(codec: &str, stream: crate::video::StreamFormat) -> Result<vk:
 /// Film-grain flag the AV1 construction-time probe asks. Grain is part of the decode
 /// profile and negotiation carries no grain bit, so this is an assumption.
 ///
-/// `false`: punktfunk hosts encode desktop capture (grain off), and grain is an added
+/// `false`: rubyfunk hosts encode desktop capture (grain off), and grain is an added
 /// capability, never a replacement — probing `true` would refuse every grain-less
 /// device. A grain stream still fails at the first AU via `ensure_state` (sequence
 /// header, never softened), same backstop as a level above `maxLevelIdc`.
@@ -596,7 +596,7 @@ pub(crate) struct NativeVulkanDecoder {
     health: DecodeHealth,
     /// Stream damage; host should re-anchor. Drained into the shared `want_keyframe`.
     want_recovery: bool,
-    /// `PUNKTFUNK_AU_FAULT`. Armed here so a faulted AU is byte-identical to a lossy
+    /// `RUBYFUNK_AU_FAULT`. Armed here so a faulted AU is byte-identical to a lossy
     /// network delivery; other backends cannot see a typo'd variable.
     fault: Option<pf_vkdecode::AuFault>,
     /// Intel on i915: the GEM wait that keeps the media engine clocked (`wait_timeline`).
@@ -737,22 +737,22 @@ impl NativeVulkanDecoder {
                  completion — the only signal libavcodec's rungs ever had)"
             );
         }
-        // `PUNKTFUNK_AU_FAULT=<mode>[:<period>]`. Unset is normal; a spec that does
+        // `RUBYFUNK_AU_FAULT=<mode>[:<period>]`. Unset is normal; a spec that does
         // not parse leaves the injector disarmed rather than half-arming.
-        let fault = std::env::var("PUNKTFUNK_AU_FAULT").ok().and_then(|spec| {
+        let fault = std::env::var("RUBYFUNK_AU_FAULT").ok().and_then(|spec| {
             match pf_vkdecode::AuFault::from_spec(&spec) {
                 Some(f) => {
                     tracing::warn!(
                         mode = ?f.mode(),
                         period = f.period(),
-                        "PUNKTFUNK_AU_FAULT: deliberately corrupting decoder input"
+                        "RUBYFUNK_AU_FAULT: deliberately corrupting decoder input"
                     );
                     Some(f)
                 }
                 None => {
                     tracing::warn!(
                         value = %spec,
-                        "PUNKTFUNK_AU_FAULT not understood (want drop|truncate|flip[:period]) \
+                        "RUBYFUNK_AU_FAULT not understood (want drop|truncate|flip[:period]) \
                          — ignored"
                     );
                     None
@@ -822,7 +822,7 @@ impl NativeVulkanDecoder {
         let au = match self.fault.as_mut().map(|f| f.apply(au)) {
             None | Some(pf_vkdecode::FaultAction::Pass) => au,
             Some(pf_vkdecode::FaultAction::Drop) => {
-                tracing::warn!(len = au.len(), "PUNKTFUNK_AU_FAULT: dropping this AU");
+                tracing::warn!(len = au.len(), "RUBYFUNK_AU_FAULT: dropping this AU");
                 // Never fed — same observable as a lost AU. Still settle prior
                 // verdicts so query slots do not sit unread. Do not fold a clean
                 // `note`: this AU never reached the decoder, so it is not evidence
@@ -838,7 +838,7 @@ impl NativeVulkanDecoder {
                 tracing::warn!(
                     len = au.len(),
                     corrupted_len = bytes.len(),
-                    "PUNKTFUNK_AU_FAULT: corrupting this AU"
+                    "RUBYFUNK_AU_FAULT: corrupting this AU"
                 );
                 faulted = bytes;
                 &faulted[..]
@@ -1399,7 +1399,7 @@ mod tests {
         assert_eq!(poc, 5);
         assert_eq!(
             recovery,
-            punktfunk_core::reanchor::LocalRecovery {
+            rubyfunk_core::reanchor::LocalRecovery {
                 sei_here: true,
                 is_recovery_point: true,
             },
@@ -1668,7 +1668,7 @@ mod tests {
             },
             keyframe: true,
             poc: 0,
-            recovery: punktfunk_core::reanchor::LocalRecovery::NONE,
+            recovery: rubyfunk_core::reanchor::LocalRecovery::NONE,
             references_clean: true,
             decode_order: 1,
             copyable: false,

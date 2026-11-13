@@ -7,7 +7,7 @@ use pf_fluent::{Palette, Token};
 use std::sync::Arc;
 use windows_reactor::*;
 
-/// punktfunk's own license (MIT OR Apache-2.0).
+/// rubyfunk's own license (MIT OR Apache-2.0).
 const APP_LICENSE: &str = concat!(
     include_str!("../../../../LICENSE-MIT"),
     "\n\n================================ Apache-2.0 ================================\n\n",
@@ -41,7 +41,7 @@ pub(crate) fn licenses_page(
 
     let app_card = card(
         vstack((
-            text("Punktfunk")
+            text("RubyFunk")
                 .font_size(15.0)
                 .font_weight(FontWeight::SEMI_BOLD),
             text("Licensed under MIT OR Apache-2.0, at your option.")
@@ -89,7 +89,7 @@ pub(crate) fn licenses_page(
 
     page(vec![
         page_header("Third-party licenses", back_btn),
-        section(pal, "PUNKTFUNK"),
+        section(pal, "RUBYFUNK"),
         app_card.into(),
         section(pal, "BUNDLED"),
         natives_card.into(),

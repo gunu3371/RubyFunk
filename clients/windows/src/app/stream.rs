@@ -1,4 +1,4 @@
-//! The stream status page: streams run in the spawned `punktfunk-session` child's own window,
+//! The stream status page: streams run in the spawned `rubyfunk-session` child's own window,
 //! so the shell shows a status card in the app's card language — host header, the child's live
 //! stats window as a chip row + stage lines, the in-window shortcuts, and a Disconnect.
 
@@ -12,10 +12,10 @@ use windows_reactor::*;
 #[derive(Clone, Default, PartialEq)]
 pub(crate) struct HudSample {
     /// `None` before the child's first stats window.
-    pub(crate) stats: Option<punktfunk_core::hud::StatsSnapshot>,
+    pub(crate) stats: Option<rubyfunk_core::hud::StatsSnapshot>,
 }
 
-/// Spawn mode's Stream screen: the stream runs in the punktfunk-session child's own
+/// Spawn mode's Stream screen: the stream runs in the rubyfunk-session child's own
 /// window, so the shell shows a status card in the app's card language — monogram +
 /// host header, the child's live stats window as a chip row + stage lines, the
 /// in-window shortcuts, and a Disconnect that kills the child (its exit event routes
@@ -76,7 +76,7 @@ pub(crate) fn session_page(pal: &Palette, ctx: &Arc<super::AppCtx>, hud: &HudSam
             }
         }
         Some(snap) => {
-            use punktfunk_core::hud::{format, StatsVerbosity};
+            use rubyfunk_core::hud::{format, StatsVerbosity};
             let advanced = ctx.settings.lock().unwrap().advanced_stats;
             let mut lines = format(snap, StatsVerbosity::Detailed, advanced).into_iter();
             if let Some(first) = lines.next() {

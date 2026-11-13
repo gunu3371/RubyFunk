@@ -6,7 +6,7 @@ use super::events::finger_to_frame;
 use super::*;
 use crate::touch::Abs;
 use pf_client_core::session::ScreenDecode;
-use punktfunk_core::quic::v2::msg::{Screen, SCREENS_MAX};
+use rubyfunk_core::quic::v2::msg::{Screen, SCREENS_MAX};
 use sdl3::rect::Rect;
 use sdl3::video::{Display, Window};
 

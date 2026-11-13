@@ -2,7 +2,7 @@
 // from the host's OpenAPI spec. `bun run typecheck` fails when the two stop naming the same
 // fields, or when the kit accepts a value the host does not.
 import { expect, test } from "bun:test";
-import type { api } from "@punktfunk/host/core";
+import type { api } from "@rubyfunk/host/core";
 import type {
 	Artwork,
 	DetectHint,

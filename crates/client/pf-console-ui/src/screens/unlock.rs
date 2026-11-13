@@ -14,7 +14,7 @@ use crate::theme::{Fonts, ERROR, W};
 use crate::widgets::{blurb, field_key, type_text, Entry, ListMsg, MenuList, RowSpec};
 use pf_client_core::menu_nav::{MenuEvent, MenuPulse};
 use pf_client_core::unlock;
-use punktfunk_core::quic::v2::msg::{Zeroizing, UNLOCK_PASSWORD_MAX};
+use rubyfunk_core::quic::v2::msg::{Zeroizing, UNLOCK_PASSWORD_MAX};
 use skia_safe::{Canvas, Rect};
 
 const PASSWORD: usize = 0;

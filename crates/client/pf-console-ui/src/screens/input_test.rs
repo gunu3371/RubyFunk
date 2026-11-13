@@ -15,7 +15,7 @@ use crate::screens::{Ctx, Outbox, ScreenView};
 use crate::theme::{fill, over, shaded, stroke, Fonts, Frame, W};
 use crate::widgets::blurb;
 use pf_client_core::menu_nav::{MenuEvent, MenuPulse};
-use punktfunk_core::config::GamepadPref;
+use rubyfunk_core::config::GamepadPref;
 use skia_safe::utils::parse_path;
 use skia_safe::{
     gradient, BlurStyle, Canvas, Color4f, MaskFilter, PaintCap, PaintJoin, Path, Point, Rect,

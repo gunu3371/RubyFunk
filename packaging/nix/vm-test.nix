@@ -7,27 +7,27 @@
   module,
 }:
 testers.runNixOSTest {
-  name = "punktfunk-module";
+  name = "rubyfunk-module";
 
   nodes.machine = {
     imports = [ module ];
-    services.punktfunk.host = {
+    services.rubyfunk.host = {
       enable = true;
       users = [ "alice" ];
       autoStart = true;
       # A gamescope build of its own, and nothing here needs it.
       gamescopeHdr = false;
     };
-    services.punktfunk.seats.enable = true;
+    services.rubyfunk.seats.enable = true;
     # Lingering starts alice's manager at boot, as on an appliance. Both may switch the door.
     users.users.alice = {
       isNormalUser = true;
       linger = true;
-      extraGroups = [ "punktfunk-update" ];
+      extraGroups = [ "rubyfunk-update" ];
     };
     users.users.bob = {
       isNormalUser = true;
-      extraGroups = [ "punktfunk-update" ];
+      extraGroups = [ "rubyfunk-update" ];
     };
     virtualisation.memorySize = 3072;
   };
@@ -40,18 +40,18 @@ testers.runNixOSTest {
         return machine.succeed(f"systemctl --user -M alice@ show {unit} {args}")
 
     machine.wait_for_unit("multi-user.target")
-    for unit in ("punktfunk-host", "punktfunk-web", "punktfunk-scripting"):
+    for unit in ("rubyfunk-host", "rubyfunk-web", "rubyfunk-scripting"):
         machine.wait_for_unit(f"{unit}.service", "alice")
     # The console serves only once the host has written its token and certificate.
     machine.wait_for_open_port(47990)
     machine.wait_for_open_port(47992)
 
     # KWin identifies the host by its store path; a wrapper there breaks desktop streaming.
-    exec_start = show("punktfunk-host", "ExecStart")
-    assert "-punktfunk-host-" in exec_start and "/run/wrappers" not in exec_start, exec_start
+    exec_start = show("rubyfunk-host", "ExecStart")
+    assert "-rubyfunk-host-" in exec_start and "/run/wrappers" not in exec_start, exec_start
 
     sandbox = show(
-        "punktfunk-scripting",
+        "rubyfunk-scripting",
         "NoNewPrivileges",
         "ProtectSystem",
         "ProtectHome",
@@ -69,24 +69,24 @@ testers.runNixOSTest {
         "ProtectControlGroups=yes",
         "CapabilityBoundingSet=\n",
         "RestartPreventExitStatus=78",
-        "/home/alice/.config/punktfunk/mgmt-token",
+        "/home/alice/.config/rubyfunk/mgmt-token",
     ):
         assert want in sandbox, f"{want!r} missing from:\n{sandbox}"
 
     # The door, as a member starts it. No seat starts here: the VM has no GPU.
-    seats = "${nodes.machine.services.punktfunk.seats.package}/libexec/punktfunk/punktfunk-seats"
-    box = "/var/lib/punktfunk"
-    record = "/var/lib/punktfunk-seats/owner"
+    seats = "${nodes.machine.services.rubyfunk.seats.package}/libexec/rubyfunk/rubyfunk-seats"
+    box = "/var/lib/rubyfunk"
+    record = "/var/lib/rubyfunk-seats/owner"
 
     def switch(user, verb):
-        return f"su - {user} -c 'systemctl start punktfunk-door-{verb}@{user}.service'"
+        return f"su - {user} -c 'systemctl start rubyfunk-door-{verb}@{user}.service'"
 
-    machine.wait_for_unit("punktfunk-seats.service")
+    machine.wait_for_unit("rubyfunk-seats.service")
     machine.succeed(switch("alice", "on"))
-    machine.wait_for_unit("punktfunk-door.service")
+    machine.wait_for_unit("rubyfunk-door.service")
     assert machine.succeed(f"cat {record}").strip() == "alice"
     owner = machine.succeed(f"stat -c %U:%G {box}/native-key.pem").strip()
-    assert owner == "punktfunk:punktfunk-door", owner
+    assert owner == "rubyfunk:rubyfunk-door", owner
     machine.succeed(f"{seats} list | grep -q owner=true")
 
     # A repeat changes nothing, and another member can't take a door that is on.
@@ -95,11 +95,11 @@ testers.runNixOSTest {
     assert machine.succeed(f"cat {record}").strip() == "alice"
 
     # What changed on the door goes home with the switch off.
-    machine.succeed(f"runuser -u punktfunk -- sh -c 'echo 7 > {box}/web-session-epoch'")
+    machine.succeed(f"runuser -u rubyfunk -- sh -c 'echo 7 > {box}/web-session-epoch'")
     machine.succeed(switch("alice", "off"))
     machine.succeed(f"test ! -e {record}")
-    machine.fail("systemctl is-active punktfunk-door.service")
-    epoch = machine.succeed("cat /home/alice/.config/punktfunk/web-session-epoch").strip()
+    machine.fail("systemctl is-active rubyfunk-door.service")
+    epoch = machine.succeed("cat /home/alice/.config/rubyfunk/web-session-epoch").strip()
     assert epoch == "7", epoch
   '';
 }

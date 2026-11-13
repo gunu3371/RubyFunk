@@ -5,7 +5,7 @@
 //! always returns a subset of the advertised bits.
 //!
 //! One ladder for every portal cast: `negotiate_cursor_mode` (Linux) reads the
-//! advertised bits and `PUNKTFUNK_PORTAL_CURSOR_MODE`, then calls [`pick`].
+//! advertised bits and `RUBYFUNK_PORTAL_CURSOR_MODE`, then calls [`pick`].
 //! Pure and platform-neutral so the tests run without a compositor.
 
 /// Portal wire bits. `pf_vdisplay::PortalCursorMode` re-exports this; the host
@@ -24,7 +24,7 @@ impl Mode {
         self as u32
     }
 
-    /// Spelling for logs and `PUNKTFUNK_PORTAL_CURSOR_MODE`.
+    /// Spelling for logs and `RUBYFUNK_PORTAL_CURSOR_MODE`.
     pub const fn name(self) -> &'static str {
         match self {
             Mode::Hidden => "hidden",
@@ -84,7 +84,7 @@ pub fn pick(advertised: u32, want: Mode) -> Choice {
     }
 }
 
-/// Parsed `PUNKTFUNK_PORTAL_CURSOR_MODE`.
+/// Parsed `RUBYFUNK_PORTAL_CURSOR_MODE`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Pin {
     /// Unset or `auto`. The session's own negotiation decides.

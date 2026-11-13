@@ -1,50 +1,34 @@
 # Identifiers
 
-A reverse-DNS identifier is `io.unom.punktfunk`, all lowercase. A second part is a lowercase
-dotted suffix: `io.unom.punktfunk.host`. Linux and Windows compare these case-sensitively, so a
-match that ignores case is no match. A name that follows a platform's own convention keeps that
-convention instead.
+RubyFunk uses `io.github.gunu3371.rubyfunk`, with lowercase dotted suffixes.
+These identifiers belong to the fork. Punktfunk identifiers name separate installs.
 
-## Reverse-DNS identifiers
+| Platform | Identity |
+| --- | --- |
+| Apple | Bundle `io.github.gunu3371.rubyfunk`, widgets `.widgets`, App Group `group.io.github.gunu3371.rubyfunk` |
+| Android | Application id and Kotlin package `io.github.gunu3371.rubyfunk` |
+| Linux | Flatpak, GTK, AppStream and icon `io.github.gunu3371.rubyfunk` |
+| Windows | MSIX `io.github.gunu3371.rubyfunk`, AUMIDs `.client` and `.tray` |
+| GNOME Shell | `rubyfunk-windows@gunu3371.github.io` |
 
-| Platform | Identifiers | Defined in |
-| --- | --- | --- |
-| Apple | Bundle `io.unom.punktfunk`, widgets `io.unom.punktfunk.widgets`, App Group `group.io.unom.punktfunk` | `clients/apple/Punktfunk.xcodeproj` |
-| Android | Application id and package `io.unom.punktfunk` | `clients/android/app/build.gradle.kts` |
-| Linux client | Flatpak, AppStream, GTK and Wayland app id, icon `io.unom.punktfunk`; console window app id `io.unom.punktfunk.console`; launchers `io.unom.punktfunk.desktop` and `io.unom.punktfunk.console.desktop` | `packaging/flatpak/`, `packaging/linux/`, `crates/client/pf-presenter/` |
-| Linux host | KWin grant `io.unom.punktfunk.host.desktop`, launcher `io.unom.punktfunk.starthost.desktop`, tray autostart `io.unom.punktfunk.tray.desktop`, D-Bus `io.unom.punktfunk.shell`, polkit `io.unom.punktfunk.dm-helper` | `packaging/linux/`, `crates/host/` |
-| Windows | MSIX `io.unom.punktfunk`, AUMIDs `io.unom.punktfunk.client` and `io.unom.punktfunk.tray` | `clients/windows/`, `crates/install/` |
+Executables, packages, configuration directories and systemd units use `rubyfunk`.
+Windows services and registry product keys use `RubyFunk`, such as `RubyFunkHost`.
+The URL scheme is `rubyfunk://`; DNS-SD discovery uses `_rubyfunk._udp`.
+C symbols use `rubyfunk_`, Swift modules use `RubyFunk`, and environment variables use `RUBYFUNK_`.
 
-## Platform conventions
+## Install compatibility
 
-| Kind | Form | Example |
-| --- | --- | --- |
-| Packages, binaries, systemd units, sysext images | Lowercase, hyphenated | `punktfunk-host`, `punktfunk-client.raw` |
-| Windows services, tasks, registry keys | CamelCase, no dots | `PunktfunkHost`, `HKLM\SOFTWARE\Punktfunk` |
-| winget | Publisher.Package | `unom.PunktfunkHost` |
-| URL scheme, DNS-SD service | Lowercase | `punktfunk://`, `_punktfunk._udp` |
-| GNOME Shell extension | name@domain | `punktfunk-windows@unom.io` |
+The fork has separate Windows uninstall GUIDs. Installing RubyFunk does not upgrade Punktfunk.
+Apple keychain groups, App Groups, Android data and host configuration paths also change.
+Pair devices again and configure the new install. Keep the old install's data until verified.
 
-## Never rename
+Build the host, capture worker, drivers and clients from the same RubyFunk revision.
+Punktfunk release artifacts and update feeds are not RubyFunk updates. The fork update feed
+points at this repository's release downloads; publishing signed manifests is separate work.
+Wire protocol labels `punktfunk/1` and `punktfunk/2`, pairing proofs and unlock signature
+contexts retain their existing meanings. Rebuild clients and libraries together for C ABI 66.
 
-- **Apple bundle id and App Group.** A new bundle id is a new App Store app, and the keychain
-  identity stays with the old one.
-- **Android application id.** Play ties the listing to it.
-- **Windows Add/Remove Programs GUIDs and the winget `ProductCode`.** Upgrades find the install by
-  them.
-- **Plugin AppContainers, `punktfunk.plugin.<id>`.** The name derives the SID that every folder
-  grant names.
-- **The host sysext image `punktfunk`.** systemd-sysext merges an image only when its
-  `extension-release` name matches the file, and the feed's updater writes that file.
+## Stable within the fork
 
-## Older names still read
-
-Older releases shipped `io.unom.Punktfunk` on Linux and `unom.punktfunk.*` on Windows. The code
-that moves those installs names the old form on purpose:
-
-- The Flatpak remote keeps the old refs, end-of-life with a rebase onto the new id
-  (`.gitea/workflows/flatpak.yml`).
-- Decky, its launch wrapper and the installer drive an old Flatpak until it moves.
-- The host renames the tray's old autostart entry, and the Windows installer deletes the old tray
-  AUMID key.
-- Native packages link the old icon name to the new one for desktop entries users already have.
+Keep bundle IDs, App Groups, Android IDs, Windows uninstall GUIDs and plugin AppContainer
+names stable after release. They determine store identity, upgrade matching and access grants.

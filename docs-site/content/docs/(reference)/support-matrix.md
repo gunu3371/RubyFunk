@@ -20,7 +20,7 @@ driver can still say no. Features that need both ends are listed under
 
 ## Host platforms
 
-Punktfunk hosts on **Linux** and **Windows**. macOS, iOS, tvOS and Android are clients only.
+RubyFunk hosts on **Linux** and **Windows**. macOS, iOS, tvOS and Android are clients only.
 
 ### Display and capture
 
@@ -40,7 +40,7 @@ Each session gets its own display at the client's resolution and refresh rate �
 | Cinnamon (Mint · LMDE) | ❌ ¹¹ | ❌ | ❌ |
 | River, dwl, COSMIC, others | ❌ ¹² | ❌ | ❌ |
 
-1. Punktfunk's own display driver. Needs Windows 11 22H2 (build 22621); the installer refuses
+1. RubyFunk's own display driver. Needs Windows 11 22H2 (build 22621); the installer refuses
    anything older. Each paired client gets its own monitor identity carrying its screen's HDR
    brightness, so Windows keeps per-client display settings and apps tone-map to your screen.
 2. Through Windows Graphics Capture: the pointer is part of the picture, and permission prompts
@@ -91,9 +91,9 @@ Each session gets its own display at the client's resolution and refresh rate �
    separately.
 7. Virtual displays are SDR. Mirroring a real HDR monitor on GNOME 50+ carries HDR, on the
    Moonlight/GameStream plane only — see [HDR](/docs/hdr).
-8. Needs the patched `punktfunk-gamescope` (patch 2 or newer) and a session this host started or
+8. Needs the patched `rubyfunk-gamescope` (patch 2 or newer) and a session this host started or
    manages. Otherwise the host draws the pointer into the video.
-9. Needs the patched `punktfunk-gamescope` and a session this host started or manages; an attached
+9. Needs the patched `rubyfunk-gamescope` and a session this host started or manages; an attached
    session streams SDR. See [HDR on gamescope](/docs/gamescope#hdr-on-gamescope).
 10. Their portals offer no separate cursor, so the pointer is always part of the video.
 11. Mouse and keyboard reach Windows as a USB-style HID device, so games that refuse injected input
@@ -152,7 +152,7 @@ Each session gets its own display at the client's resolution and refresh rate �
 7. [PyroWave](/docs/pyrowave) runs only when the client picks it. Full chroma on any vendor; modes
    around 8K fall back to 4:2:0. 10-bit SDR on Linux, and on Windows 11 24H2 and later. Not in
    Windows ARM64 builds.
-8. Only with `PUNKTFUNK_ENCODER=software`; `auto` never picks it on Linux.
+8. Only with `RUBYFUNK_ENCODER=software`; `auto` never picks it on Linux.
 
 HEVC 4:4:4 means an NVIDIA host, or pick PyroWave. Asking for 4:4:4 is a client setting, off by
 default, on the Linux, Windows and Apple clients; Android has none, and GameStream sessions are
@@ -192,7 +192,7 @@ default, on the Linux, Windows and Apple clients; Android has none, and GameStre
 
 ## Client decode
 
-No Punktfunk host or client contains FFmpeg. Every client decodes with the platform's own
+No RubyFunk host or client contains FFmpeg. Every client decodes with the platform's own
 decoders, with openh264 and rav1d as the software floor on the desktop.
 
 | Client | Decode path | Codecs | 10-bit / HDR | 4:4:4 |
@@ -210,12 +210,12 @@ decoders, with openh264 and rav1d as the software floor on the desktop.
    other two don't exist),
    then software. Windows tries Vulkan Video first on NVIDIA and AMD, D3D11VA first on Intel and
    others. Pin one in the client's decoder setting or with
-   [`PUNKTFUNK_DECODER`](/docs/configuration#client-side-native-clients); a pinned decoder that
+   [`RUBYFUNK_DECODER`](/docs/configuration#client-side-native-clients); a pinned decoder that
    fails still falls through. Mid-session, three decode errors spread over at least a second move
    to the next decoder, and the session log names the one in use. Where the GPU's Vulkan driver
    can't show hardware-decoded video (Snapdragon X), the Windows client draws through Direct3D 11
    instead and decodes with D3D11VA, then software, so HEVC, AV1 and 10-bit are offered there too;
-   [`PUNKTFUNK_PRESENT_BACKEND`](/docs/configuration#client-side-native-clients) forces either.
+   [`RUBYFUNK_PRESENT_BACKEND`](/docs/configuration#client-side-native-clients) forces either.
 2. The software floor covers H.264 (openh264) and AV1 (rav1d), 8-bit only, with no HEVC. AV1 is
    offered only where hardware decodes it, and so is HEVC; 10-bit needs a hardware decoder too. If
    every HEVC decoder fails, the client reconnects on a codec with a software floor. PyroWave is
@@ -244,12 +244,12 @@ decoders, with openh264 and rav1d as the software floor on the desktop.
 
 ## Clients and features
 
-Linux, Windows, the Decky plugin and the `punktfunk` CLI stream through the same session binary.
+Linux, Windows, the Decky plugin and the `rubyfunk` CLI stream through the same session binary.
 Apple is one app across macOS, iOS/iPadOS and tvOS. Android TV is the Android app.
 
 ### Before you connect
 
-| Client | Presets | `punktfunk://` links | Game library | Speed test | Wake-on-LAN | Updates itself |
+| Client | Presets | `rubyfunk://` links | Game library | Speed test | Wake-on-LAN | Updates itself |
 |---|---|---|---|---|---|---|
 | Linux desktop | ✅ | ✅ | ✅ ¹ | ✅ | ✅ | ⚠️ ² |
 | Windows desktop | ✅ | ✅ | ✅ ¹ | ✅ | ✅ | ❌ ³ |
@@ -258,7 +258,7 @@ Apple is one app across macOS, iOS/iPadOS and tvOS. Android TV is the Android ap
 | Apple TV | ✅ ⁴ | ✅ | ✅ ¹ | ✅ | ✅ | ❌ ³ |
 | Android · Android TV | ✅ | ✅ | ✅ ¹ | ✅ | ✅ | ❌ ³ |
 | Decky (Steam Deck) | ⚠️ ⁵ | ❌ | ✅ ⁶ | ❌ | ✅ | ✅ ⁷ |
-| `punktfunk` CLI | ✅ | ✅ ⁸ | ✅ | ✅ | ✅ | ❌ |
+| `rubyfunk` CLI | ✅ | ✅ ⁸ | ✅ | ✅ | ✅ | ❌ |
 | Moonlight | ❌ | ❌ | ✅ ⁹ | ❓ | ❓ | ❓ |
 
 1. On any paired host. See [Game library](/docs/game-library).
@@ -347,7 +347,7 @@ Keyboard chords, and what each host can type, are in [Input](/docs/input).
 9. tvOS gives apps no microphone and no pasteboard.
 10. Text only.
 11. Decided by the host.
-12. Moonlight has its own overlay; [stats](/docs/stats) covers Punktfunk's.
+12. Moonlight has its own overlay; [stats](/docs/stats) covers RubyFunk's.
 
 No client offers file transfer through the clipboard yet. See [Shared clipboard](/docs/clipboard).
 
@@ -371,9 +371,9 @@ Either side can be the reason one of these didn't happen:
 
 | Part | Where it stands |
 |---|---|
-| **Protocol core** — `punktfunk-core`, the C ABI, FEC and crypto | Stable; the wire format and the C ABI are versioned contracts (see [Mixing versions](#mixing-versions)). |
+| **Protocol core** — `rubyfunk-core`, the C ABI, FEC and crypto | Stable; the wire format and the C ABI are versioned contracts (see [Mixing versions](#mixing-versions)). |
 | **Linux host** | The most exercised host. What it can do depends on the desktop — see the tables above. |
-| **Windows host** | An installer with its own display driver. Setup has a publicly trusted signature; the drivers carry Punktfunk's own, which setup trusts on install ([About the signatures](/docs/windows-host#about-the-signatures)). NVENC is well trodden; AMF and QSV see less field use. Runs in the signed-in console session, not session 0. |
+| **Windows host** | An installer with its own display driver. Setup has a publicly trusted signature; the drivers carry RubyFunk's own, which setup trusts on install ([About the signatures](/docs/windows-host#about-the-signatures)). NVENC is well trodden; AMF and QSV see less field use. Runs in the signed-in console session, not session 0. |
 | **GameStream / Moonlight plane** | Works, and is off until you turn on **GameStream**. Pairs over plain HTTP — trusted LAN only ([Security](/docs/security#gamestream--moonlight-compatibility-is-the-weak-crypto-path)). Presets, links, clipboard and microphone aren't on it. |
 | **Linux and Windows desktop clients** | Packaged; one codebase with the Decky plugin and the CLI. Windows ships for x64 and ARM64. |
 | **Apple client** (macOS · iOS · iPadOS · tvOS) | On the App Store for iPhone, iPad and Apple TV; the Mac has a notarized DMG. Betas for all four on TestFlight. No microphone or clipboard on tvOS. |

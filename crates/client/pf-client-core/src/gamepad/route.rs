@@ -6,8 +6,8 @@
 //! asks it to. The table test below pins every route.
 
 use super::select_gesture::{select_chord, SelectChord, SelectGesture};
-use punktfunk_core::client::Sc2Gate;
-use punktfunk_core::input::gamepad as wire;
+use rubyfunk_core::client::Sc2Gate;
+use rubyfunk_core::input::gamepad as wire;
 use std::time::{Duration, Instant};
 
 /// The client's asks that decide where pad input goes. Each `Ctl` has its own caller, so the

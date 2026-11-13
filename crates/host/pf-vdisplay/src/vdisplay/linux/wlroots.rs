@@ -35,7 +35,7 @@ use std::time::{Duration, Instant};
 /// our write and xdpw's read.
 fn chooser_file() -> String {
     let dir = crate::session::runtime_dir();
-    format!("{dir}/punktfunk-xdpw-output")
+    format!("{dir}/rubyfunk-xdpw-output")
 }
 
 /// `Monitor: <NAME>`: xdpw 0.8 parses that prefix strictly.
@@ -71,7 +71,7 @@ pub(crate) const SELECTOR: crate::portal_cast::Selector = crate::portal_cast::Se
     file: chooser_file,
     line: chooser_line,
     ensure_config: ensure_xdpw_config,
-    thread: "punktfunk-wlr-cast",
+    thread: "rubyfunk-wlr-cast",
     portal: "xdpw",
 };
 

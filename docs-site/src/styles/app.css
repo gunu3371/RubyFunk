@@ -4,20 +4,20 @@
 
 /* Pull Fumadocs UI's own classes — and @unom/ui's compiled components — into
    the Tailwind 4 scan so their utilities aren't purged. @unom/ui is the shared
-   design-token system the Punktfunk marketing site also builds on. */
+   design-token system the RubyFunk marketing site also builds on. */
 @source '../../node_modules/fumadocs-ui/dist/**/*.js';
 @source '../../node_modules/@unom/ui/dist/**/*.{js,mjs}';
 @source '../../node_modules/@unom/app-ui/dist/**/*.{js,mjs}';
 
-/* ── Punktfunk brand ────────────────────────────────────────────────────────
-   The brand colour is the violet lens mark. (The marketing site's blue is just
+/* ── RubyFunk brand ────────────────────────────────────────────────────────
+   The brand colour is the ruby lens mark. (The marketing site's blue is just
    a page background, not the brand.) These values feed both @unom/ui's semantic
    token contract (--brand/--primary/--accent/--highlight) and the Fumadocs
    --color-fd-* chrome, so the docs carry the same identity in light and dark. */
 :root {
-  --pf-brand: #6c5bf3; /* deep violet — primary */
-  --pf-brand-light: #a79ff8; /* light violet */
-  --pf-highlight: #d2c9fb; /* lens highlight */
+  --pf-brand: #c41242; /* deep ruby — primary */
+  --pf-brand-light: #ff477b; /* pink */
+  --pf-highlight: #ece8ec; /* lens highlight */
 
   /* @unom/ui token contract. */
   --brand: var(--pf-brand);
@@ -26,8 +26,9 @@
   --highlight: var(--pf-highlight);
   --radius: 0.625rem;
 
-  /* Fumadocs accent → brand violet (light mode). */
+  /* Fumadocs accent → brand ruby (light mode). */
   --color-fd-primary: var(--pf-brand);
+  --color-fd-primary-foreground: #ffffff;
   --color-fd-ring: var(--pf-brand);
 
   /* The /api Scalar reference injects a *global* `body { background-color:
@@ -42,26 +43,28 @@
 }
 
 .dark {
-  /* Lighter violet reads better against the dark surface. */
+  --brand: var(--pf-brand-light);
+  /* Pink reads better against the dark surface. */
   --primary: var(--pf-brand-light);
   --accent: var(--pf-brand-light);
 
   --color-fd-primary: var(--pf-brand-light);
+  --color-fd-primary-foreground: #180d13;
   --color-fd-ring: var(--pf-brand-light);
 
-  /* Tint Fumadocs' dark chrome toward the brand's violet-dark (the app-icon
-     surface #1c1530) instead of the default neutral-dark. */
-  --color-fd-background: #141019;
-  --color-fd-card: #1c1530;
-  --color-fd-popover: #1c1530;
-  --color-fd-secondary: #221a36;
-  --color-fd-muted: #1f1830;
-  --color-fd-accent: #241c3d;
-  --color-fd-border: #2a2148;
+  /* Tint Fumadocs' dark chrome toward the brand's ruby-dark (the app-icon
+     surface #210e18) instead of the default neutral-dark. */
+  --color-fd-background: #180d13;
+  --color-fd-card: #210e18;
+  --color-fd-popover: #210e18;
+  --color-fd-secondary: #2d1722;
+  --color-fd-muted: #29151f;
+  --color-fd-accent: #331a26;
+  --color-fd-border: #512637;
 }
 
 @theme {
-  /* Geist — the Punktfunk brand typeface, same as the marketing site
+  /* Geist — the RubyFunk brand typeface, same as the marketing site
      (the @fontsource-variable/geist face is loaded in __root.tsx). */
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;

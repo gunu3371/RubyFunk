@@ -1,4 +1,4 @@
-//! The ghost-monitor reap: removes the not-present "punktfunk" monitor devnodes that
+//! The ghost-monitor reap: removes the not-present "rubyfunk" monitor devnodes that
 //! `IddCxMonitorDeparture` leaves behind. Each ghost pins a VidPN target against IddCx's
 //! ~16-slot budget; once full, `IOCTL_ADD` answers `ERROR_NOT_FOUND`.
 //!
@@ -35,12 +35,12 @@ struct Reaped {
 /// while its registry keys stay. A present node answers `CR_SUCCESS`, problem state or not.
 const CR_NO_SUCH_DEVNODE: u32 = 0x0D;
 
-/// A ghost is a monitor node whose friendly name names punktfunk, in any case, and whose devnode
+/// A ghost is a monitor node whose friendly name names rubyfunk, in any case, and whose devnode
 /// is gone. Any other answer, an unreadable name included, leaves the node alone: a live
 /// session's monitor is present.
 fn is_ghost(friendly_name: Option<&str>, cm_status: u32) -> bool {
     cm_status == CR_NO_SUCH_DEVNODE
-        && friendly_name.is_some_and(|name| name.to_ascii_lowercase().contains("punktfunk"))
+        && friendly_name.is_some_and(|name| name.to_ascii_lowercase().contains("rubyfunk"))
 }
 
 // The script's form of [`is_ghost`]: presence, not health (`Status -ne 'OK'` would remove a live
@@ -49,7 +49,7 @@ fn is_ghost(friendly_name: Option<&str>, cm_status: u32) -> bool {
 // launch so a miss cannot look like exit 0. Tokens are locale-invariant.
 const REAP_PS: &str = "$ErrorActionPreference='SilentlyContinue'; \
     try { $all = @(Get-PnpDevice -Class Monitor -ErrorAction Stop) } catch { exit 3 }; \
-    $g = @($all | Where-Object { -not $_.Present -and $_.Status -eq 'Unknown' -and $_.FriendlyName -match 'punktfunk' }); \
+    $g = @($all | Where-Object { -not $_.Present -and $_.Status -eq 'Unknown' -and $_.FriendlyName -match 'rubyfunk' }); \
     $pnp = ($env:SystemRoot + '\\System32\\pnputil.exe'); \
     $n = 0; foreach ($d in $g) { $LASTEXITCODE = 1; if (Test-Path $pnp) { & $pnp /remove-device $d.InstanceId *> $null }; if ($LASTEXITCODE -eq 0) { $n++ } }; \
     Write-Output ($g.Count.ToString() + ' ' + $n)";
@@ -269,10 +269,10 @@ mod tests {
     /// A ghost needs both: a node that is gone and a name that is ours. A present node, one in
     /// a problem state, an unknown answer or a stranger's name stays.
     #[test]
-    fn only_an_absent_punktfunk_node_is_a_ghost() {
+    fn only_an_absent_rubyfunk_node_is_a_ghost() {
         const CR_SUCCESS: u32 = 0;
         const CR_INVALID_DEVNODE: u32 = 0x05;
-        let ours = Some("generic monitor (punktfunk)");
+        let ours = Some("generic monitor (rubyfunk)");
         let rows = [
             (ours, CR_NO_SUCH_DEVNODE, true),
             (
@@ -344,7 +344,7 @@ mod tests {
     /// A monitor node is a ghost only when it is absent, PnP reads its status `Unknown` and its
     /// name is ours. Any other node may carry a live session.
     #[test]
-    fn the_script_selects_only_absent_punktfunk_monitors() {
+    fn the_script_selects_only_absent_rubyfunk_monitors() {
         assert!(
             REAP_PS.contains("Get-PnpDevice -Class Monitor"),
             "{REAP_PS}"
@@ -357,7 +357,7 @@ mod tests {
         for clause in [
             "-not $_.Present",
             "$_.Status -eq 'Unknown'",
-            "$_.FriendlyName -match 'punktfunk'",
+            "$_.FriendlyName -match 'rubyfunk'",
         ] {
             assert!(
                 filter.contains(clause),

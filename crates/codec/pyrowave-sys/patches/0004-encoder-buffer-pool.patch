@@ -1,4 +1,4 @@
-Encoder scratch-buffer pool — PUNKTFUNK LOCAL PATCH.
+Encoder scratch-buffer pool — RUBYFUNK LOCAL PATCH.
 
 Not upstream. The encode body (pyrowave_encoder_encode_gpu_synchronous_inner(), shared by the
 plain and the scaled entry points) allocated four Vulkan buffers on EVERY frame (meta + bitstream, each Device-local and CachedHost).
@@ -23,7 +23,7 @@ index 2c535ad..ded4fa8 100644
  	Fence queued_fence;
  	BufferHandle queued_meta;
  	BufferHandle queued_bitstream;
-+	// PUNKTFUNK: the GPU-side twins of queued_meta/queued_bitstream, pooled on the encoder so
++	// RUBYFUNK: the GPU-side twins of queued_meta/queued_bitstream, pooled on the encoder so
 +	// the encode path reuses them across frames instead of allocating four buffers per frame.
 +	BufferHandle queued_meta_gpu;
 +	BufferHandle queued_bitstream_gpu;
@@ -64,7 +64,7 @@ index 2c535ad..ded4fa8 100644
 +	const VkDeviceSize meta_size = encoder->encoder.get_meta_required_size();
 +	const VkDeviceSize bitstream_size = target_bitstream_size + meta_size;
 +
-+	// PUNKTFUNK: pool the four scratch buffers on the encoder and only (re)create one when a
++	// RUBYFUNK: pool the four scratch buffers on the encoder and only (re)create one when a
 +	// larger size is needed. Upstream allocated all four (meta + bitstream, each Device +
 +	// CachedHost) on every call; at streaming rates (240 fps, MB-scale bitstreams) that
 +	// allocator churn dominated the per-frame CPU cost. The sizes are effectively constant per

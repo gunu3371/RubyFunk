@@ -1,4 +1,4 @@
-# Punktfunk writing standards
+# RubyFunk writing standards
 
 House style for **commits**, **changelogs**, and **comments**.
 `scripts/ci/check-writing.sh` fails a PR that breaks the caps below.
@@ -295,7 +295,7 @@ press its power button.` + `Docs ↗`
 |---|---|---|
 | Guide | Sets up a host or streams. Knows no Linux. | One task per page. Numbered steps, happy path first. |
 | Reference | Looks up one setting, flag, port or platform. | Tables. Dense is fine. |
-| Developers | Changes or extends Punktfunk. | Commands that work from a fresh clone. |
+| Developers | Changes or extends RubyFunk. | Commands that work from a fresh clone. |
 
 - Open with one sentence: what the reader gets from this page. Never `This page describes`.
 - Say what to do. Add why only when skipping the step breaks something, in one clause.
@@ -314,7 +314,7 @@ press its power button.` + `Docs ↗`
   -p pf-host-config docs_table_is_current`.
 
 Bad: `The repo is public and signed; this adds it and installs the host together with the
-console. They are named in the line rather than left to apt: punktfunk-host only recommends
+console. They are named in the line rather than left to apt: rubyfunk-host only recommends
 them, so a box with APT::Install-Recommends "0" would end up with a host you cannot pair with.`
 Good: `Add the repo and install the host, the console and the plugin runner:`
 

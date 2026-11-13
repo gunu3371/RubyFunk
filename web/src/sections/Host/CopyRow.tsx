@@ -5,7 +5,7 @@ import { m } from "@/paraglide/messages";
 
 /**
  * One labelled, monospaced value with a copy button: the host address, or the
- * `punktfunk://connect/` link that opens a client straight onto this host and carries its
+ * `rubyfunk://connect/` link that opens a client straight onto this host and carries its
  * certificate fingerprint, so the device verifies what it reached.
  */
 export const CopyRow: FC<{ label: string; value: string }> = ({

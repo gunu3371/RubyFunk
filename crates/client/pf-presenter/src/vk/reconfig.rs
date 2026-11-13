@@ -31,9 +31,9 @@ fn kmsdrm_swapchain_hint(drm_card: Option<&str>) -> String {
     }
     let card = drm_card.unwrap_or("unset");
     format!(
-        " — under SDL_VIDEODRIVER=kmsdrm (PUNKTFUNK_DRM_CARD={card}). Check, in order: the card \
+        " — under SDL_VIDEODRIVER=kmsdrm (RUBYFUNK_DRM_CARD={card}). Check, in order: the card \
          has a CONNECTED connector (`cat /sys/class/drm/card*-*/status`); nothing else holds DRM \
-         master on it (a running compositor does — pin another card with PUNKTFUNK_DRM_CARD=<n>); \
+         master on it (a running compositor does — pin another card with RUBYFUNK_DRM_CARD=<n>); \
          and the driver is Mesa. NVIDIA's proprietary direct-display path is known to fail here \
          even as root with a display Vulkan can enumerate."
     )
@@ -367,7 +367,7 @@ impl Presenter {
     }
 
     /// Host ST.2086 + content-light from the 0xCE plane.
-    pub fn set_hdr_metadata(&mut self, meta: punktfunk_core::quic::HdrMeta) {
+    pub fn set_hdr_metadata(&mut self, meta: rubyfunk_core::quic::HdrMeta) {
         if self.hdr_meta == Some(meta) {
             return;
         }
@@ -391,7 +391,7 @@ impl Presenter {
         }
         // Same generic baseline as the Windows presenter: BT.2020 + D65,
         // 1000-nit mastering, MaxCLL 1000 / MaxFALL 400.
-        let m = self.hdr_meta.unwrap_or(punktfunk_core::quic::HdrMeta {
+        let m = self.hdr_meta.unwrap_or(rubyfunk_core::quic::HdrMeta {
             display_primaries: [[8500, 39850], [6550, 2300], [35400, 14600]],
             white_point: [15635, 16450],
             max_display_mastering_luminance: 10_000_000,

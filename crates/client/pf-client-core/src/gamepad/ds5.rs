@@ -19,7 +19,7 @@ impl Ds5Feedback {
     const AUDIO2: usize = 38 - Self::REPORT_ID_LEN;
     const LED_RGB: usize = 45 - Self::REPORT_ID_LEN;
     /// Mode byte plus 10 parameters: the wire's trigger-effect clamp.
-    const TRIGGER_LEN: usize = punktfunk_core::quic::TRIGGER_EFFECT_MAX;
+    const TRIGGER_LEN: usize = rubyfunk_core::quic::TRIGGER_EFFECT_MAX;
 
     pub(super) fn trigger_packet(which: u8, effect: &[u8]) -> [u8; 47] {
         let mut p = [0u8; 47];
@@ -70,7 +70,7 @@ impl Ds5Feedback {
     /// route; the pad's speaker volume range is `0x3D..=0x64`.
     /// Bits 0/1 stay clear (rumble-emulation / disable-audio-haptics mute the coils).
     /// The select persists across USB-audio restart; a later
-    /// [`HidOutput::AudioCtl`](punktfunk_core::quic::HidOutput::AudioCtl) still overrides. `PUNKTFUNK_PAD_SPEAKER_PATH` / `_VOLUME` override per run.
+    /// [`HidOutput::AudioCtl`](rubyfunk_core::quic::HidOutput::AudioCtl) still overrides. `RUBYFUNK_PAD_SPEAKER_PATH` / `_VOLUME` override per run.
     pub(super) fn speaker_enable_packet(volume: u8, path: u8) -> [u8; 47] {
         let mut p = [0u8; 47];
         // bit5 = ucSpeakerVolume valid, bit7 = audio-control byte valid.
@@ -82,7 +82,7 @@ impl Ds5Feedback {
         p
     }
 
-    /// Fold [`HidOutput::AudioCtl`](punktfunk_core::quic::HidOutput::AudioCtl): `raw` is
+    /// Fold [`HidOutput::AudioCtl`](rubyfunk_core::quic::HidOutput::AudioCtl): `raw` is
     /// report `0x02` bytes 5..=10 → offsets 4..=9.
     /// `flags` bits 1..4 become `p[0]` bits 4..7. Bit 0 is not replayed — bits 0/1 stay
     /// clear so audio haptics stay live ([`audio_haptics_packet`]).

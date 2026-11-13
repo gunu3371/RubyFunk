@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-# Package an already-built punktfunk-gamescope binary as an RPM, for the Gitea RPM registry.
+# Package an already-built rubyfunk-gamescope binary as an RPM, for the Gitea RPM registry.
 #
-# WHY this exists: before it, the only ways to get punktfunk-gamescope were the Bazzite/Atomic
+# WHY this exists: before it, the only ways to get rubyfunk-gamescope were the Bazzite/Atomic
 # sysext, the Arch package, the SteamOS installer, a NixOS option — or building gamescope from
 # source yourself. A traditional Fedora-family box (Nobara, plain Fedora, Nobara-derived HTPCs)
 # had no packaged route at all, which is how a field report ended up on a stock gamescope streaming
 # a session that told every game the display was 60 Hz.
 #
 # Nothing is BUILT here; CI builds once per Fedora major and caches the staged tree
-# (.gitea/workflows/rpm.yml). See punktfunk-gamescope.spec's header for why repacking beats
+# (.gitea/workflows/rpm.yml). See rubyfunk-gamescope.spec's header for why repacking beats
 # rebuilding.
 #
-# `--stage` is the DESTDIR that build-punktfunk-gamescope.sh wrote, not a single binary: that tree
+# `--stage` is the DESTDIR that build-rubyfunk-gamescope.sh wrote, not a single binary: that tree
 # carries the compositor AND the WSI layer built beside it, and a game gets an HDR10 swapchain from
 # that layer or from nowhere. Taking the whole tree rather than a file per artifact is deliberate —
 # it is what stops the next file added to the package needing a new flag in four packaging scripts.
@@ -21,7 +21,7 @@
 #     --stage gs-cache \
 #     [--version 3.16.25] [--release 1] [--outdir dist]
 #
-# Output: <outdir>/punktfunk-gamescope-<version>-<release>.<arch>.rpm
+# Output: <outdir>/rubyfunk-gamescope-<version>-<release>.<arch>.rpm
 set -euo pipefail
 
 STAGE=""
@@ -42,11 +42,11 @@ while [ $# -gt 0 ]; do
 done
 
 [ -n "$STAGE" ] || { echo "ERROR: --stage is required" >&2; exit 2; }
-# The layout build-punktfunk-gamescope.sh writes under its --destdir/--prefix.
-BINARY="$STAGE/usr/bin/punktfunk-gamescope"
-REAPER="$STAGE/usr/lib/punktfunk/gamescope/gamescopereaper"
-LAYER_SO="$STAGE/usr/lib/punktfunk/libVkLayer_PUNKTFUNK_gamescope_wsi.so"
-LAYER_JSON="$STAGE/usr/lib/punktfunk/vulkan/implicit_layer.d/punktfunk_gamescope_wsi.json"
+# The layout build-rubyfunk-gamescope.sh writes under its --destdir/--prefix.
+BINARY="$STAGE/usr/bin/rubyfunk-gamescope"
+REAPER="$STAGE/usr/lib/rubyfunk/gamescope/gamescopereaper"
+LAYER_SO="$STAGE/usr/lib/rubyfunk/libVkLayer_RUBYFUNK_gamescope_wsi.so"
+LAYER_JSON="$STAGE/usr/lib/rubyfunk/vulkan/implicit_layer.d/rubyfunk_gamescope_wsi.json"
 [ -x "$BINARY" ] || { echo "ERROR: $BINARY is not an executable file" >&2; exit 1; }
 # gamescope starts every session's first child through its reaper.
 [ -x "$REAPER" ] || { echo "ERROR: $REAPER missing from the stage — a session would run nothing" >&2; exit 1; }
@@ -68,7 +68,7 @@ RELEASE="$(sed -n 's/^pkgrel=//p' packaging/gamescope/PKGBUILD).${RELEASE}"
 BANNER="$("$BINARY" --version 2>&1 | head -1)"
 case "$BANNER" in
   *'+pfhdr'*) ;;
-  *) echo "ERROR: $BINARY has no +pfhdr marker — it is not a punktfunk gamescope build" >&2
+  *) echo "ERROR: $BINARY has no +pfhdr marker — it is not a rubyfunk gamescope build" >&2
      echo "       banner: $BANNER" >&2
      exit 1 ;;
 esac
@@ -79,23 +79,23 @@ if [ -z "$VERSION" ]; then
   VERSION="${UPSTREAM}.${PFHDR}"
 fi
 
-echo "==> packaging $BINARY as punktfunk-gamescope-${VERSION}-${RELEASE}"
+echo "==> packaging $BINARY as rubyfunk-gamescope-${VERSION}-${RELEASE}"
 echo "    banner: $BANNER"
 
 TOP="$(mktemp -d)"
 trap 'rm -rf "$TOP"' EXIT
 mkdir -p "$TOP"/{SOURCES,SPECS,BUILD,BUILDROOT,RPMS,SRPMS}
-install -m0755 "$BINARY" "$TOP/SOURCES/punktfunk-gamescope"
+install -m0755 "$BINARY" "$TOP/SOURCES/rubyfunk-gamescope"
 install -m0755 "$REAPER" "$TOP/SOURCES/gamescopereaper"
-install -m0755 "$LAYER_SO" "$TOP/SOURCES/libVkLayer_PUNKTFUNK_gamescope_wsi.so"
-install -m0644 "$LAYER_JSON" "$TOP/SOURCES/punktfunk_gamescope_wsi.json"
+install -m0755 "$LAYER_SO" "$TOP/SOURCES/libVkLayer_RUBYFUNK_gamescope_wsi.so"
+install -m0644 "$LAYER_JSON" "$TOP/SOURCES/rubyfunk_gamescope_wsi.json"
 
 mkdir -p "$OUTDIR"
 rpmbuild \
   --define "_topdir $TOP" \
   --define "pf_version $VERSION" \
   --define "pf_release $RELEASE" \
-  -bb packaging/gamescope/punktfunk-gamescope.spec
+  -bb packaging/gamescope/rubyfunk-gamescope.spec
 
 find "$TOP/RPMS" -name '*.rpm' -exec cp -v {} "$OUTDIR/" \;
-echo "==> wrote $(find "$OUTDIR" -name 'punktfunk-gamescope-*.rpm' -newer "$TOP" -print -quit 2>/dev/null || echo "$OUTDIR"/punktfunk-gamescope-*.rpm)"
+echo "==> wrote $(find "$OUTDIR" -name 'rubyfunk-gamescope-*.rpm' -newer "$TOP" -print -quit 2>/dev/null || echo "$OUTDIR"/rubyfunk-gamescope-*.rpm)"

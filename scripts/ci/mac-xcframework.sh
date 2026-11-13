@@ -1,5 +1,5 @@
 #!/bin/sh
-# Build PunktfunkCore.xcframework on the Mac runner once per commit.
+# Build RubyFunkCore.xcframework on the Mac runner once per commit.
 #
 # apple.yml's swift, distribute and screenshots jobs need the same seven-slice bundle for the same
 # commit. The first job builds into the persistent target dir and parks a copy under
@@ -10,13 +10,13 @@
 set -eu
 sha=${GITHUB_SHA:?GITHUB_SHA is unset}
 store="$HOME/ci/xcframework"
-bundle=clients/apple/PunktfunkCore.xcframework
+bundle=clients/apple/RubyFunkCore.xcframework
 mkdir -p "$store"
 find "$store" -mindepth 1 -maxdepth 1 -mtime +2 -exec rm -rf {} +
 
-if [ -d "$store/$sha/PunktfunkCore.xcframework" ]; then
+if [ -d "$store/$sha/RubyFunkCore.xcframework" ]; then
     rm -rf "$bundle"
-    ditto "$store/$sha/PunktfunkCore.xcframework" "$bundle"
+    ditto "$store/$sha/RubyFunkCore.xcframework" "$bundle"
     echo "reused the xcframework built for $sha"
     exit 0
 fi
@@ -32,7 +32,7 @@ BUILD_IOS=1 BUILD_TVOS=1 BUILD_VISIONOS=1 bash scripts/build-xcframework.sh
 # Park it through a temp dir and a rename, so a half-written copy never looks complete.
 tmp="$store/.$sha.$$"
 mkdir -p "$tmp"
-ditto "$bundle" "$tmp/PunktfunkCore.xcframework"
+ditto "$bundle" "$tmp/RubyFunkCore.xcframework"
 rm -rf "$store/$sha"
 mv "$tmp" "$store/$sha"
 echo "parked the xcframework for $sha"

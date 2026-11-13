@@ -185,7 +185,7 @@ pub(crate) mod tests {
 
     use anyhow::anyhow;
     use anyhow::Result;
-    use punktfunk_core::quic::{CODEC_AV1, CODEC_H264, CODEC_HEVC};
+    use rubyfunk_core::quic::{CODEC_AV1, CODEC_H264, CODEC_HEVC};
 
     use super::{demotions, ladder, Note, Os, Step};
     use crate::video::{
@@ -466,7 +466,7 @@ pub(crate) mod tests {
     #[test]
     fn the_decoder_walks_the_order_table() {
         // `Decoder::new` reads the override first: a set one answers for every row.
-        if std::env::var_os("PUNKTFUNK_DECODER").is_some() {
+        if std::env::var_os("RUBYFUNK_DECODER").is_some() {
             return;
         }
         let table = rows();
@@ -519,7 +519,7 @@ pub(crate) mod tests {
     /// passes over every rung on a refused lane, V4L2's dma-bufs with VAAPI's.
     #[test]
     fn a_presenter_refusal_demotes_onto_a_rung_it_can_show() {
-        if std::env::var_os("PUNKTFUNK_DECODER").is_some() {
+        if std::env::var_os("RUBYFUNK_DECODER").is_some() {
             return;
         }
         let (facts, platform) = match Os::HOST {

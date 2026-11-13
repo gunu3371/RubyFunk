@@ -10,11 +10,11 @@
 # buried in a generator.
 #
 # Usage (from windows-host.yml, stable tags only):
-#     & scripts/ci/winget-manifest.ps1 -Version 0.19.2 -InstallerPath C:\t\out\punktfunk-host-setup-0.19.2.exe -OutDir C:\t\out\winget
+#     & scripts/ci/winget-manifest.ps1 -Version 0.19.2 -InstallerPath C:\t\out\rubyfunk-host-setup-0.19.2.exe -OutDir C:\t\out\winget
 #
-# Emits: <OutDir>/unom.PunktfunkHost.yaml
-#        <OutDir>/unom.PunktfunkHost.installer.yaml
-#        <OutDir>/unom.PunktfunkHost.locale.en-US.yaml
+# Emits: <OutDir>/gunu3371.RubyFunkHost.yaml
+#        <OutDir>/gunu3371.RubyFunkHost.installer.yaml
+#        <OutDir>/gunu3371.RubyFunkHost.locale.en-US.yaml
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][string]$Version,
@@ -44,9 +44,9 @@ New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 # Anchored replacements (line-leading key) so a version string inside prose — e.g. the release-notes
 # URL in the locale manifest — is never rewritten by accident.
 $files = @(
-    'unom.PunktfunkHost.yaml',
-    'unom.PunktfunkHost.installer.yaml',
-    'unom.PunktfunkHost.locale.en-US.yaml'
+    'gunu3371.RubyFunkHost.yaml',
+    'gunu3371.RubyFunkHost.installer.yaml',
+    'gunu3371.RubyFunkHost.locale.en-US.yaml'
 )
 foreach ($f in $files) {
     $src = Join-Path $TemplateDir $f
@@ -68,7 +68,7 @@ foreach ($f in $files) {
 
 # Fail loudly if a template ever loses one of the fields we rewrite — a silently un-substituted
 # manifest would publish the PREVIOUS release's hash, which winget would then refuse to install.
-$inst = Get-Content -Path (Join-Path $OutDir 'unom.PunktfunkHost.installer.yaml') -Raw
+$inst = Get-Content -Path (Join-Path $OutDir 'gunu3371.RubyFunkHost.installer.yaml') -Raw
 foreach ($needle in @($Version, $sha, $url)) {
     if ($inst -notmatch [regex]::Escape($needle)) { throw "substitution failed - '$needle' missing from the installer manifest" }
 }

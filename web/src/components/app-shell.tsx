@@ -88,7 +88,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 			<aside className="sticky top-0 hidden h-dvh w-16 shrink-0 flex-col overflow-y-auto border-r bg-card/40 p-2 sm:flex lg:w-60 lg:p-4">
 				<Link
 					to="/"
-					aria-label="Punktfunk"
+					aria-label="RubyFunk"
 					className="mb-7 flex items-center justify-center gap-2 px-2 pt-1 lg:justify-start"
 				>
 					<BrandMark className="size-7 shrink-0 drop-shadow-[0_2px_12px_rgba(196,18,66,0.45)]" />

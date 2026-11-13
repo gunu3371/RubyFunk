@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: punktfunk <packages@unom.io>
+From: rubyfunk <packages@unom.io>
 Date: Sun, 1 Nov 2026 16:00:00 +0100
 Subject: [PATCH 35/35] pipewire: give a planar capture DRM LINEAR's layout on NVIDIA
 
@@ -16,7 +16,7 @@ EXTENDED_USAGE, which is where the storage usage comes from. A driver that
 cannot make that promise does not get the format offered, so the consumer
 negotiates packed RGB. Other vendors keep the plain image.
 
-punktfunk: also stamps the version banner +pfhdr32.
+rubyfunk: also stamps the version banner +pfhdr32.
 ---
  src/meson.build      |   3 ++-
  src/pipewire.cpp     |  13 ++++++++++---

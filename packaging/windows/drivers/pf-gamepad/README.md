@@ -9,7 +9,7 @@
 
 A self-authored **Rust UMDF2 HID minidriver** that presents a virtual Sony **DualSense**
 (VID `054C` / PID `0CE6`) to Windows, so games drive adaptive triggers / lightbar / rumble —
-capabilities ViGEm structurally cannot deliver. It's how the punktfunk Windows host gives a client's
+capabilities ViGEm structurally cannot deliver. It's how the rubyfunk Windows host gives a client's
 DualSense a near-native feel with **no external gamepad dependencies** (no ViGEmBus).
 
 Shipping: the driver is one member of the in-tree driver workspace
@@ -55,7 +55,7 @@ clears bit `0x80` at PE-header offset `+0x5e`, and every driver build reuses it.
 stop `wdk-build` emitting `/INTEGRITYCHECK` at all.
 
 Manual device nodes are for testing only: `devgen` creates a transient SWD node that clears on
-reboot. The shipping install is `punktfunk-host.exe driver install --gamepad`, and the host
+reboot. The shipping install is `rubyfunk-host.exe driver install --gamepad`, and the host
 `SwDeviceCreate`s the device per session, so there is no persistent devnode.
 
 ## The three bugs that made it work (porting a WDK C sample to Rust)
@@ -77,7 +77,7 @@ silently breaks them:
   WUDFHost (so the per-instance statics don't collide), and the driver reads its pad index from the
   device Location (`WdfDeviceAllocAndQueryProperty`) to poll its own `*-boot-<index>` bootstrap
   mailbox (the DATA section itself is unnamed — the sealed pad channel,
-  punktfunk-planning: `gamepad-channel-sealing.md` — and its `pad_index` is validated against this
+  rubyfunk-planning: `gamepad-channel-sealing.md` — and its `pad_index` is validated against this
   index on attach).
 - Port of the WDK `vhidmini2` UMDF2 sample; the PlayStation and Deck descriptors and feature
   blobs come from `pf_driver_proto::{dualsense, dualshock4, deck}`, which the Linux pads serve too.

@@ -1,4 +1,4 @@
-Elevated global-priority encode queue — PUNKTFUNK LOCAL PATCH.
+Elevated global-priority encode queue — RUBYFUNK LOCAL PATCH.
 
 Not upstream. PyroWave's wavelet encode runs on the GPU's compute/shader cores, so a GPU-bound
 game starves it: `pyrowave_encoder_encode_gpu_synchronous` spikes from ~2 ms to ~15 ms under a
@@ -70,7 +70,7 @@ index 1e81032..9bccdde 100644
  		vpGetProfileProperties(profile.profile, &props);
  #endif
  
-+	// PUNKTFUNK PATCH (patches/0005-global-priority-queue.patch, NOT upstream): request a high
++	// RUBYFUNK PATCH (patches/0005-global-priority-queue.patch, NOT upstream): request a high
 +	// global-priority queue so PyroWave's compute-shader encode can PREEMPT a GPU-bound game on
 +	// the shared shader cores. A WDDM process-priority raise does not help (it only orders packet
 +	// submission, not hardware preemption); a global-priority queue is the actual NVIDIA compute-
@@ -125,7 +125,7 @@ index 1e81032..9bccdde 100644
  		else
  		{
 -			VkResult vr = vkCreateDevice(gpu, &device_info, nullptr, &device);
-+			// PUNKTFUNK: try the requested global-priority class, downgrade through the
++			// RUBYFUNK: try the requested global-priority class, downgrade through the
 +			// candidate list when the driver refuses it, then finally create with none.
 +			// Upstream's own ladder below handles only the flag-driven request.
 +			VkResult vr;

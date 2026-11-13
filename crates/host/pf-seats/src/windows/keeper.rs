@@ -1,4 +1,4 @@
-//! What `punktfunk-seat-keeper.exe` takes from the supervisor.
+//! What `rubyfunk-seat-keeper.exe` takes from the supervisor.
 //!
 //! The keeper links IronRDP, whose pinned release-candidate crypto cannot share a lockfile
 //! with the host, so it builds in its own workspace and runs as its own process. It reads the
@@ -14,8 +14,8 @@ use std::time::{Duration, SystemTime};
 pub use super::rdp::store_pin;
 pub use crate::bootstrap::RdpBootstrap;
 
-/// The keeper's file name, beside `punktfunk-host.exe`.
-pub const KEEPER_EXE: &str = "punktfunk-seat-keeper.exe";
+/// The keeper's file name, beside `rubyfunk-host.exe`.
+pub const KEEPER_EXE: &str = "rubyfunk-seat-keeper.exe";
 
 /// The seat listener's loopback port, where a session also gets its pads' audio endpoints.
 pub const SEAT_LISTENER_PORT: u16 = pf_driver_proto::seat_audio::LISTENER_PORT;

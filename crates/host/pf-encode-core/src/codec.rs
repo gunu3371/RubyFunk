@@ -50,20 +50,20 @@ pub struct EncodedFrame {
     pub keyframe: bool,
     /// RFI recovery AU: a clean P against a known-good reference after
     /// [`invalidate_ref_frames`](Encoder::invalidate_ref_frames). The pump tags
-    /// `punktfunk_core::packet::USER_FLAG_RECOVERY_ANCHOR`. After RFI the host
+    /// `rubyfunk_core::packet::USER_FLAG_RECOVERY_ANCHOR`. After RFI the host
     /// suppresses IDR, so without this flag the freeze only lifts on a later IDR.
     pub recovery_anchor: bool,
     /// Boundary of an encoder-driven intra refresh wave: its start AU and its close AU.
-    /// The pump tags `punktfunk_core::packet::USER_FLAG_RECOVERY_POINT`; the client lifts
+    /// The pump tags `rubyfunk_core::packet::USER_FLAG_RECOVERY_POINT`; the client lifts
     /// its freeze on the second mark since a loss, so a wave that starts after the loss
     /// heals in one cycle. Only the Vulkan backend sets it.
     pub recovery_point: bool,
     /// The wave's close AU, set beside `recovery_point`. The pump tags
-    /// `punktfunk_core::packet::USER_FLAG_RECOVERY_CLOSE`: a client that knows the bit lifts
+    /// `rubyfunk_core::packet::USER_FLAG_RECOVERY_CLOSE`: a client that knows the bit lifts
     /// on the first close after a start it saw since its loss.
     pub recovery_close: bool,
     /// Shard-aligned self-delimiting chunks ([`Encoder::set_wire_chunking`]).
-    /// The session stamps `punktfunk_core::packet::USER_FLAG_CHUNK_ALIGNED`.
+    /// The session stamps `rubyfunk_core::packet::USER_FLAG_CHUNK_ALIGNED`.
     /// Only PyroWave sets it.
     pub chunk_aligned: bool,
 }
@@ -121,7 +121,7 @@ pub enum Codec {
     PyroWave,
 }
 
-/// Chroma the encoder emits (`PUNKTFUNK_444` + client `VIDEO_CAP_444` + GPU
+/// Chroma the encoder emits (`RUBYFUNK_444` + client `VIDEO_CAP_444` + GPU
 /// probe). `Yuv420` is the default. `Yuv444` is HEVC-only, native-protocol
 /// only (GameStream stays 4:2:0), and only after `pf_encode::can_encode_444`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
@@ -190,7 +190,7 @@ pub struct EncoderCaps {
     pub intra_refresh: bool,
     /// Constrained GDR heals a lost picture within one wave. The host then tags
     /// wave-boundary AUs with
-    /// `punktfunk_core::packet::USER_FLAG_RECOVERY_POINT`
+    /// `rubyfunk_core::packet::USER_FLAG_RECOVERY_POINT`
     /// so the client can lift its freeze on the second mark. Default `false`
     /// (the IDR path stays until this is set). Meaningless unless
     /// [`intra_refresh`](Self::intra_refresh) is also set.
@@ -294,7 +294,7 @@ pub trait Encoder: Send {
     ///
     /// `false` requests wind-back to sync-retrieve at the next safe point,
     /// usually a rebuild whose first frame is an IDR. Caller polls until it
-    /// reads `false`. `PUNKTFUNK_NVENC_ASYNC=1` refuses the wind-back.
+    /// reads `false`. `RUBYFUNK_NVENC_ASYNC=1` refuses the wind-back.
     fn set_pipelined(&mut self, _on: bool) -> bool {
         false
     }
@@ -479,7 +479,7 @@ pub const SPLIT_DISABLE: u32 = 15;
 /// direct-SDK backends. Precedence:
 /// 0. `client_slices` ≤ 1 → DISABLE. Split-frame encode emits one slice per
 ///    engine, which a client that never asked for multi-slice cannot take.
-/// 1. `PUNKTFUNK_SPLIT_ENCODE` = `0`/`disable` | `1`/`auto` (AUTO_FORCED) |
+/// 1. `RUBYFUNK_SPLIT_ENCODE` = `0`/`disable` | `1`/`auto` (AUTO_FORCED) |
 ///    `2` | `3` — operator override, always wins. `2`/`3` clamp to the GPU's
 ///    engine count ([`clamp_to_engines`]); the driver honours an over-ask
 ///    and silently encodes narrower.
@@ -552,7 +552,7 @@ pub fn max_forced_split_mode(engines: u32) -> u32 {
     }
 }
 
-/// Hold `PUNKTFUNK_SPLIT_ENCODE=2|3` to what the hardware can deliver.
+/// Hold `RUBYFUNK_SPLIT_ENCODE=2|3` to what the hardware can deliver.
 /// Without this the driver honours the knob as a silent narrower encode
 /// (see [`max_forced_split_mode`]).
 // Split-policy cfg — see the constants above.
@@ -568,7 +568,7 @@ pub fn clamp_to_engines(requested: u32, hw_max: u32, engines: u32) -> u32 {
         tracing::warn!(
             requested,
             engines,
-            "PUNKTFUNK_SPLIT_ENCODE asks for a split on a single-NVENC GPU — disabling it"
+            "RUBYFUNK_SPLIT_ENCODE asks for a split on a single-NVENC GPU — disabling it"
         );
         return SPLIT_DISABLE;
     }
@@ -577,7 +577,7 @@ pub fn clamp_to_engines(requested: u32, hw_max: u32, engines: u32) -> u32 {
             requested,
             engines,
             using = hw_max,
-            "PUNKTFUNK_SPLIT_ENCODE asks for more NVENC engines than this GPU has — clamping. \
+            "RUBYFUNK_SPLIT_ENCODE asks for more NVENC engines than this GPU has — clamping. \
              (The driver would ACCEPT the over-ask and silently encode with fewer, so the log \
              would otherwise claim a split width that never happened.)"
         );
@@ -586,7 +586,7 @@ pub fn clamp_to_engines(requested: u32, hw_max: u32, engines: u32) -> u32 {
     requested
 }
 
-/// `PUNKTFUNK_VBV_FRAMES` — HRD/VBV size in frame intervals (default 1.0:
+/// `RUBYFUNK_VBV_FRAMES` — HRD/VBV size in frame intervals (default 1.0:
 /// each frame must fit its rate share, keeping sizes uniform for the pacer).
 /// Direct-NVENC, AMF, VAAPI, and QSV read the same knob. Larger
 /// values let complex frames borrow bits at the cost of size variance.
@@ -611,7 +611,7 @@ pub fn vbv_frames_env() -> f64 {
 pub fn vbv_window_ms(fps: u32) -> (u32, u32) {
     let frames = vbv_frames_env();
     let ms = (frames * 1000.0 / fps.max(1) as f64).round();
-    // `f64 as u32` saturates at the bounds, so an absurd `PUNKTFUNK_VBV_FRAMES` cannot wrap.
+    // `f64 as u32` saturates at the bounds, so an absurd `RUBYFUNK_VBV_FRAMES` cannot wrap.
     let window = (ms as u32).max(1);
     (window, window / 2)
 }

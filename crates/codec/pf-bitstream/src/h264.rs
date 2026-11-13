@@ -225,7 +225,7 @@ impl PlanWarning {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PlanError {
     Parse(String),
-    /// Legal H.264 outside what punktfunk hosts emit. Stream-integrity failure, not a feature gap.
+    /// Legal H.264 outside what rubyfunk hosts emit. Stream-integrity failure, not a feature gap.
     OutsideEnvelope(&'static str),
     NoActiveParamSet {
         pps_id: u8,
@@ -250,7 +250,7 @@ impl std::fmt::Display for PlanError {
         match self {
             PlanError::Parse(msg) => write!(f, "parse error: {msg}"),
             PlanError::OutsideEnvelope(what) => {
-                write!(f, "outside the punktfunk decode envelope: {what}")
+                write!(f, "outside the rubyfunk decode envelope: {what}")
             }
             PlanError::NoActiveParamSet { pps_id } => {
                 write!(f, "slice references PPS {pps_id}, which has not been seen")

@@ -2,15 +2,15 @@
 //!
 //! Drives access units through the in-process loopback at increasing loss rates, for
 //! both FEC schemes, and prints how many frames survive. A pure-software stand-in for
-//! `tc netem` that needs no network and runs anywhere `punktfunk_core` builds. The real harness
+//! `tc netem` that needs no network and runs anywhere `rubyfunk_core` builds. The real harness
 //! adds `tc netem` jitter/reorder on the UDP path.
 #![forbid(unsafe_code)]
 
-use punktfunk_core::config::{Config, FecConfig, FecScheme, Role};
-use punktfunk_core::error::PunktfunkError;
-use punktfunk_core::packet::{FLAG_PIC, FLAG_SOF, USER_FLAG_CHUNK_ALIGNED};
-use punktfunk_core::session::{MediaV2, Session};
-use punktfunk_core::transport::loopback_pair;
+use rubyfunk_core::config::{Config, FecConfig, FecScheme, Role};
+use rubyfunk_core::error::RubyFunkError;
+use rubyfunk_core::packet::{FLAG_PIC, FLAG_SOF, USER_FLAG_CHUNK_ALIGNED};
+use rubyfunk_core::session::{MediaV2, Session};
+use rubyfunk_core::transport::loopback_pair;
 
 /// Unsealed: loss recovery does not depend on the AEAD. Capture times count from 0.
 fn media() -> MediaV2 {
@@ -89,7 +89,7 @@ fn run(
                     completed += 1;
                 }
             }
-            Err(PunktfunkError::NoFrame) => {} // unrecoverable at this loss rate
+            Err(RubyFunkError::NoFrame) => {} // unrecoverable at this loss rate
             Err(e) => panic!("unexpected error: {e}"),
         }
     }
@@ -285,7 +285,7 @@ fn run_partial(
                     let e = delivered.entry(got.frame_index).or_insert(false);
                     *e |= got.complete;
                 }
-                Err(PunktfunkError::NoFrame) => break,
+                Err(RubyFunkError::NoFrame) => break,
                 Err(e) => panic!("unexpected error: {e}"),
             }
         }
@@ -317,7 +317,7 @@ fn partial_section() {
         .and_then(|v| v.parse().ok())
         .unwrap_or(2000);
 
-    println!("\n\npunktfunk PW6 — partial delivery under loss: STREAMED vs WHOLE AU");
+    println!("\n\nrubyfunk PW6 — partial delivery under loss: STREAMED vs WHOLE AU");
     println!("(chunk-aligned AUs, deliver_partial ON, FEC pinned OFF, shard 1408, 200/block)\n");
 
     // ---- Leg 1: the mechanism, deterministically -------------------------------------------
@@ -372,7 +372,7 @@ fn main() {
     let frame_len = 100_000; // ~98 shards across 2 FEC blocks
     let periods = [0u32, 32, 16, 8, 6, 4, 3, 2];
 
-    println!("punktfunk loss-harness — 25% FEC, {frames} frames of {frame_len} bytes");
+    println!("rubyfunk loss-harness — 25% FEC, {frames} frames of {frame_len} bytes");
     println!("(GF8 = GameStream-sized blocks, GF16 = native, strm = streamed-AU wire)\n");
     println!(
         "{:>10}  {:>9}  {:>14}  {:>14}  {:>14}",

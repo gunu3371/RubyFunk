@@ -87,7 +87,7 @@ describe("promise facade", () => {
 describe("effect surface", () => {
 	test("request + schema get + typed errors + event stream", async () => {
 		const server = mockHost();
-		const live = pf.PunktfunkHostLive({ url: `http://127.0.0.1:${server.port}`, token: TOKEN });
+		const live = pf.RubyFunkHostLive({ url: `http://127.0.0.1:${server.port}`, token: TOKEN });
 		try {
 			const program = Effect.gen(function* () {
 				const status = yield* pf.get("/status", S.Struct({ ok: S.Boolean }));

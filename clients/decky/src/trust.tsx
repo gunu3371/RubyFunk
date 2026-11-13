@@ -22,11 +22,11 @@ import { PairModal } from "./pair";
 function trustErrorBody(error: string | undefined, name: string): string {
   switch (error) {
     case "refused":
-      return `${name} is already saved under a different identity. Forget it in the Punktfunk app before trusting it again.`;
+      return `${name} is already saved under a different identity. Forget it in the RubyFunk app before trusting it again.`;
     case "client-outdated":
-      return "Update the Punktfunk client to use request access";
+      return "Update the RubyFunk client to use request access";
     case "client-unavailable":
-      return "Couldn’t reach the Punktfunk client — is it still installed?";
+      return "Couldn’t reach the RubyFunk client — is it still installed?";
     default:
       return `Couldn’t save ${name}`;
   }
@@ -88,7 +88,7 @@ export const TrustSheet: FC<{
       }
       // Step 2: the request, pinned to that fingerprint. It parks until somebody answers.
       toaster.toast({
-        title: "Punktfunk",
+        title: "RubyFunk",
         body: `Approve this Deck in ${h.name}’s console`,
         duration: 10_000,
       });
@@ -102,7 +102,7 @@ export const TrustSheet: FC<{
         setBusy(false);
         return;
       }
-      toaster.toast({ title: "Punktfunk", body: `Paired with ${h.name}` });
+      toaster.toast({ title: "RubyFunk", body: `Paired with ${h.name}` });
       changed();
       closeModal?.();
     } catch (e) {

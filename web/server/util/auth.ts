@@ -16,10 +16,10 @@
  * file is unwritable would be the wrong trade for a LAN console.
  */
 const configDir = (): string =>
-	process.env.PUNKTFUNK_CONFIG_DIR ?? join(homedir(), ".config", "punktfunk");
+	process.env.RUBYFUNK_CONFIG_DIR ?? join(homedir(), ".config", "rubyfunk");
 
 const EPOCH_FILE = (): string =>
-	process.env.PUNKTFUNK_UI_EPOCH_FILE ?? join(configDir(), "web-session-epoch");
+	process.env.RUBYFUNK_UI_EPOCH_FILE ?? join(configDir(), "web-session-epoch");
 
 let epochCache: number | null = null;
 
@@ -50,7 +50,7 @@ export function revokeAllSessions(): void {
 }
 
 // Shared auth helpers for the Nitro server (the deployed Bun server). Single-user,
-// shared-password gate: the user logs in against PUNKTFUNK_UI_PASSWORD_HASH, which sets a SEALED
+// shared-password gate: the user logs in against RUBYFUNK_UI_PASSWORD_HASH, which sets a SEALED
 // (h3 useSession — AES-GCM) cookie; every request is gated by server/middleware/auth.ts.
 // The management hop lives in util/mgmt.ts, the path rules in util/paths.ts.
 import {
@@ -105,13 +105,13 @@ export function peerAddress(event: H3Event): string {
  * Unquoted on the way out: the password file writes the value single-quoted so the `$` fields
  * survive a shell-sourced env file (SteamOS `. web.env`), and not every launcher strips them. */
 export function uiPasswordHash(): string {
-	const raw = process.env.PUNKTFUNK_UI_PASSWORD_HASH?.trim() ?? "";
+	const raw = process.env.RUBYFUNK_UI_PASSWORD_HASH?.trim() ?? "";
 	return raw.replace(/^(['"])([\s\S]*)\1$/, "$2");
 }
 
 /** The LEGACY clear-text password, accepted for one release. Empty once the file is migrated. */
 export function uiPassword(): string {
-	return process.env.PUNKTFUNK_UI_PASSWORD ?? "";
+	return process.env.RUBYFUNK_UI_PASSWORD ?? "";
 }
 
 /** Whether a password is configured at all. Either key answers; neither ⇒ auth is MISCONFIGURED
@@ -124,7 +124,7 @@ export function authConfigured(): boolean {
  * Check a typed password against what is configured. Constant-time on both branches — the
  * clear-text compare byte-wise, `Bun.password.verify` by construction.
  *
- * The legacy clear text WINS while it is set: an operator who puts a `PUNKTFUNK_UI_PASSWORD=` line
+ * The legacy clear text WINS while it is set: an operator who puts a `RUBYFUNK_UI_PASSWORD=` line
  * back is resetting the password, and that is the whole reset path. A match then migrates the file
  * to a hash, which is the last moment that clear text is readable — so a generated password has to
  * be read off disk before the first login, not after it.
@@ -149,7 +149,7 @@ async function hashMatches(password: string, hash: string): Promise<boolean> {
 		if (!warnedHash) {
 			warnedHash = true;
 			console.warn(
-				"[punktfunk-web] PUNKTFUNK_UI_PASSWORD_HASH is not a hash this server can verify — no password is accepted until it is reset",
+				"[rubyfunk-web] RUBYFUNK_UI_PASSWORD_HASH is not a hash this server can verify — no password is accepted until it is reset",
 			);
 		}
 		return false;
@@ -170,17 +170,17 @@ declare const Bun: {
  * SteamOS names `web.env` here; everyone else takes the default. */
 function passwordFile(): string {
 	return (
-		process.env.PUNKTFUNK_UI_PASSWORD_FILE ??
+		process.env.RUBYFUNK_UI_PASSWORD_FILE ??
 		join(
-			process.env.PUNKTFUNK_CONFIG_DIR ??
-				join(homedir(), ".config", "punktfunk"),
+			process.env.RUBYFUNK_CONFIG_DIR ??
+				join(homedir(), ".config", "rubyfunk"),
 			"web-password",
 		)
 	);
 }
 
 /** Matches either password key, so the rewrite drops both and re-adds one. */
-const PASSWORD_LINE = /^\s*PUNKTFUNK_UI_PASSWORD(_HASH)?\s*=/;
+const PASSWORD_LINE = /^\s*RUBYFUNK_UI_PASSWORD(_HASH)?\s*=/;
 let migrated = false;
 
 /**
@@ -208,7 +208,7 @@ async function migratePasswordFile(
 			hash = await Bun.password.hash(plain, { algorithm: "argon2id" });
 		} catch (e) {
 			console.warn(
-				`[punktfunk-web] couldn't hash the console password — it stays in clear in ${passwordFile()}: ${e}`,
+				`[rubyfunk-web] couldn't hash the console password — it stays in clear in ${passwordFile()}: ${e}`,
 			);
 			return;
 		}
@@ -218,7 +218,7 @@ async function migratePasswordFile(
 	// The login route stamps the session AFTER this, so whoever just typed the password stays in.
 	if (!same) revokeAllSessions();
 	console.warn(
-		`[punktfunk-web] console password stored as a salted hash in ${file} — PUNKTFUNK_UI_PASSWORD is deprecated; reset it by writing a new one back to that file and restarting`,
+		`[rubyfunk-web] console password stored as a salted hash in ${file} — RUBYFUNK_UI_PASSWORD is deprecated; reset it by writing a new one back to that file and restarting`,
 	);
 }
 
@@ -241,7 +241,7 @@ function rewritePasswordFile(file: string, hash: string): boolean {
 	const kept = body.split("\n").filter((l) => !PASSWORD_LINE.test(l));
 	while (kept.length > 0 && kept[kept.length - 1]?.trim() === "") kept.pop();
 	// Single-quoted: the hash carries `$` fields, and this file is sourced by a shell on SteamOS.
-	const next = `${[...kept, `PUNKTFUNK_UI_PASSWORD_HASH='${hash}'`].join("\n")}\n`;
+	const next = `${[...kept, `RUBYFUNK_UI_PASSWORD_HASH='${hash}'`].join("\n")}\n`;
 	const tmp = `${file}.tmp`;
 	try {
 		writeFileSync(tmp, next, { mode: 0o600 });
@@ -254,7 +254,7 @@ function rewritePasswordFile(file: string, hash: string): boolean {
 			// nothing landed
 		}
 		console.warn(
-			`[punktfunk-web] couldn't rewrite ${file} — the console password stays in clear: ${e}`,
+			`[rubyfunk-web] couldn't rewrite ${file} — the console password stays in clear: ${e}`,
 		);
 		return false;
 	}
@@ -281,7 +281,7 @@ function sessionKey(token: string): string | null {
 	if (!key && token) {
 		// Hashed with its own label: the raw admin token is never the seal key.
 		key = createHash("sha256")
-			.update(`punktfunk-session-v1:token:${token}`)
+			.update(`rubyfunk-session-v1:token:${token}`)
 			.digest("hex");
 		try {
 			mkdirSync(dirname(file), { recursive: true });
@@ -296,7 +296,7 @@ function sessionKey(token: string): string | null {
 
 /**
  * The cookie-sealing key for h3 `useSession` (must be ≥ 32 chars). Precedence:
- *   1. PUNKTFUNK_UI_SECRET — explicit operator override.
+ *   1. RUBYFUNK_UI_SECRET — explicit operator override.
  *   2. The key file ([`sessionKey`]), high-entropy from the management token every packaged
  *      deployment has.
  *   3. Only as a last resort (dev/local with no token) derive from the password.
@@ -310,7 +310,7 @@ function sessionKey(token: string): string | null {
  * longer gives two boxes the same seal key.
  */
 export function sessionConfig(): SessionConfig {
-	const explicit = process.env.PUNKTFUNK_UI_SECRET;
+	const explicit = process.env.RUBYFUNK_UI_SECRET;
 	const secret =
 		explicit && explicit.length >= 32
 			? explicit
@@ -318,7 +318,7 @@ export function sessionConfig(): SessionConfig {
 				// Last resort (no token configured — dev/local only). A real deployment always has a
 				// token and never reaches here.
 				createHash("sha256")
-					.update(`punktfunk-session-v1:${uiPasswordHash() || uiPassword()}`)
+					.update(`rubyfunk-session-v1:${uiPasswordHash() || uiPassword()}`)
 					.digest("hex"));
 	return {
 		name: SESSION_NAME,
@@ -335,18 +335,18 @@ export function sessionConfig(): SessionConfig {
 			// h3 defaults Secure to true, which browsers DROP over plain http:// (so login
 			// silently fails on a LAN HTTP server). Only mark Secure when actually behind TLS.
 			//
-			// Derived from whether TLS is CONFIGURED, not from `PUNKTFUNK_UI_SECURE` alone
+			// Derived from whether TLS is CONFIGURED, not from `RUBYFUNK_UI_SECURE` alone
 			// (2026-08-05 review L-20). The entry point already refuses the inverse mistake —
-			// `PUNKTFUNK_UI_SECURE` without TLS exits rather than serving a console whose cookie
+			// `RUBYFUNK_UI_SECURE` without TLS exits rather than serving a console whose cookie
 			// the browser will never store — but nothing caught this direction: TLS configured and
 			// the flag forgotten shipped a session cookie without `Secure`, which a browser will
 			// then also send over a plain-http downgrade. The env var still forces it on for a
 			// deploy terminating TLS in front of us (a reverse proxy), where this process sees no
 			// cert of its own.
 			secure:
-				(!!process.env.PUNKTFUNK_UI_TLS_CERT &&
-					!!process.env.PUNKTFUNK_UI_TLS_KEY) ||
-				/^(1|true)$/i.test(process.env.PUNKTFUNK_UI_SECURE ?? ""),
+				(!!process.env.RUBYFUNK_UI_TLS_CERT &&
+					!!process.env.RUBYFUNK_UI_TLS_KEY) ||
+				/^(1|true)$/i.test(process.env.RUBYFUNK_UI_SECURE ?? ""),
 		},
 	};
 }

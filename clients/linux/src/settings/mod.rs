@@ -34,7 +34,7 @@ pub enum Scope {
 }
 
 /// Startup device probes for the pickers, filled by the app shell in the background: GPUs via
-/// `punktfunk-session --list-adapters`, audio endpoints via the PipeWire registry. An empty
+/// `rubyfunk-session --list-adapters`, audio endpoints via the PipeWire registry. An empty
 /// list hides its picker.
 #[derive(Default)]
 pub struct DeviceProbes {
@@ -45,13 +45,13 @@ pub struct DeviceProbes {
 
 /// The monitor `window` is on as a stream request, in real pixels: what a Native stream asks
 /// for. 1920×1080 at 60 Hz where GDK names no monitor, as the session assumes.
-fn native_mode(window: &gtk::Widget) -> punktfunk_core::Mode {
+fn native_mode(window: &gtk::Widget) -> rubyfunk_core::Mode {
     let monitor = window
         .native()
         .and_then(|n| n.surface())
         .and_then(|s| window.display().monitor_at_surface(&s));
     let Some(m) = monitor else {
-        return punktfunk_core::Mode {
+        return rubyfunk_core::Mode {
             width: 1920,
             height: 1080,
             refresh_hz: 60,
@@ -59,7 +59,7 @@ fn native_mode(window: &gtk::Widget) -> punktfunk_core::Mode {
     };
     let g = m.geometry();
     let px = |logical: i32| (f64::from(logical.max(0)) * m.scale()).round() as u32;
-    punktfunk_core::Mode {
+    rubyfunk_core::Mode {
         width: px(g.width()),
         height: px(g.height()),
         refresh_hz: ((m.refresh_rate().max(0) + 500) / 1000) as u32,

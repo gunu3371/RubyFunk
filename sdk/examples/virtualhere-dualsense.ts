@@ -3,7 +3,7 @@
 // game sees native gyro, touchpad, adaptive triggers and USB rumble instead of an emulated pad.
 //
 // Topology (USB-over-IP): the DualSense is plugged into the *couch* device, which runs the
-// VirtualHere **Server** and shares it. The punktfunk **host** — where this script and the game
+// VirtualHere **Server** and shares it. The rubyfunk **host** — where this script and the game
 // run — runs the VirtualHere **Client** and mounts it. This script drives that client's `-t` IPC:
 // `USE` the pad when a client connects, `STOP USING` it when they leave, so the couch keeps its
 // own controller whenever you're not streaming.
@@ -16,14 +16,14 @@
 //   VH_DEVICE=DualSense     bun examples/virtualhere-dualsense.ts   # …or match by name substring
 //
 // To run this *outside* the repo (the normal case), drop it in its own dir, `bun add
-// @punktfunk/host`, and change the import below from `../src/index.js` to `@punktfunk/host`; then
+// @rubyfunk/host`, and change the import below from `../src/index.js` to `@rubyfunk/host`; then
 // keep it alive as a systemd user unit (its SIGTERM release hands the pad back on `systemctl
 // stop`). Full walkthrough: docs → Events & hooks → "full controller passthrough (VirtualHere)".
 //
 // Env: VH_DEVICE      required — a VirtualHere address (`server.port`) or a device-name substring.
 //      VH_CLIENT      client binary. Default `vhclientx86_64` (Linux); Windows `vhui64.exe`,
 //                     macOS `vhclientosx`, ARM Linux `vhclientarm64`.
-//      VH_ONLY_CLIENT optional — only bind for this punktfunk client label (multi-couch setups).
+//      VH_ONLY_CLIENT optional — only bind for this rubyfunk client label (multi-couch setups).
 import { execFile } from "node:child_process";
 import { connect } from "../src/index.js";
 

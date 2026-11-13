@@ -6,6 +6,6 @@
 # The host carries none: a capability makes /proc/<pid>/exe unreadable to KWin, which then
 # cannot match the .desktop file and refuses every session. The worker is the one binary that
 # nothing has to identify.
-punktfunk-host           -
-punktfunk-encode-worker  cap_sys_nice=ep
-punktfunk-gamescope      cap_sys_nice=eip  arch steamdeck source
+rubyfunk-host           -
+rubyfunk-encode-worker  cap_sys_nice=ep
+rubyfunk-gamescope      cap_sys_nice=eip  arch steamdeck source

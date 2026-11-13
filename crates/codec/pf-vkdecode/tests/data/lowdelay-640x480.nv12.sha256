@@ -3,9 +3,9 @@
 # Y plane 640*480 bytes, then interleaved UV 640*240 bytes = 460800 bytes/frame.
 #
 # THE STREAM IS OURS, not a conformance vector, and that is the point of it.
-# `punktfunk-host spike` on .21 (NVENC, RTX 5070 Ti, driver 610.57.04), 2026-08-07:
+# `rubyfunk-host spike` on .21 (NVENC, RTX 5070 Ti, driver 610.57.04), 2026-08-07:
 #
-#   punktfunk-host spike --source synthetic --codec h264 --width 640 --height 480 \
+#   rubyfunk-host spike --source synthetic --codec h264 --width 640 --height 480 \
 #     --fps 60 --seconds 2 --bitrate 1 --no-loopback --out lowdelay-640x480.h264
 #
 # It is LOW-DELAY IPPP: one IDR, no B pictures, `max_num_reorder_frames = 0`, so a

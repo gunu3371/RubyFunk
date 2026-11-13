@@ -1126,7 +1126,7 @@ mod tests {
 
     #[test]
     fn a_sequence_that_disables_scaling_lists_submits_no_quantization_matrix_at_all() {
-        // The shape every punktfunk HEVC stream is in. libavcodec's
+        // The shape every rubyfunk HEVC stream is in. libavcodec's
         // `dxva2_hevc_end_frame` passes the buffer only when
         // `dwCodingParamToolFlags & 1`; handing a driver a matrix it was told to
         // ignore is a bet on the driver ignoring it.

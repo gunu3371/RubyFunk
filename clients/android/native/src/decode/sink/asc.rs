@@ -16,7 +16,7 @@ use ndk::hardware_buffer::HardwareBuffer;
 use ndk::media::image_reader::{AcquireResult, Image, ImageFormat, ImageReader};
 use ndk::media::media_codec::MediaCodec;
 use ndk::native_window::NativeWindow;
-use punktfunk_core::quic::ColorInfo;
+use rubyfunk_core::quic::ColorInfo;
 use std::collections::VecDeque;
 use std::os::fd::{AsFd, OwnedFd};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -166,7 +166,7 @@ pub(crate) struct AscSink {
     /// only the few values `layer_dataspace` admits, so the negotiated one stands.
     refine: bool,
     /// The session's HDR10 volume, sent with every transaction. `None` on SDR.
-    hdr_meta: Option<punktfunk_core::quic::HdrMeta>,
+    hdr_meta: Option<rubyfunk_core::quic::HdrMeta>,
     /// Layer frame-rate vote (source Hz), applied once.
     frame_rate: f32,
     src_w: i32,
@@ -256,13 +256,13 @@ impl AscSink {
                 return None;
             }
         };
-        let pacing = sysprop(c"debug.punktfunk.asc_pacing").is_none_or(|v| v != "0");
-        let hold = sysprop(c"debug.punktfunk.asc_hold_chain").as_deref() == Some("1");
-        let hold_band_ns = sysprop(c"debug.punktfunk.asc_hold_band_us")
+        let pacing = sysprop(c"debug.rubyfunk.asc_pacing").is_none_or(|v| v != "0");
+        let hold = sysprop(c"debug.rubyfunk.asc_hold_chain").as_deref() == Some("1");
+        let hold_band_ns = sysprop(c"debug.rubyfunk.asc_hold_band_us")
             .and_then(|v| v.parse::<i64>().ok())
             .map(|us| us.clamp(0, 50_000) * 1000);
         #[cfg(debug_assertions)]
-        let jitter_us = sysprop(c"debug.punktfunk.asc_jitter_us")
+        let jitter_us = sysprop(c"debug.rubyfunk.asc_jitter_us")
             .and_then(|v| v.parse::<u64>().ok())
             .unwrap_or(0)
             .min(50_000);
@@ -499,7 +499,7 @@ impl AscSink {
         true
     }
 
-    /// `debug.punktfunk.asc_jitter_us`: a uniform 0..N µs stall before the apply, so the collision
+    /// `debug.rubyfunk.asc_jitter_us`: a uniform 0..N µs stall before the apply, so the collision
     /// this scheduler exists for reproduces on a quiet link. Returns the time after the stall.
     /// Debug builds only.
     #[cfg(debug_assertions)]
@@ -679,7 +679,7 @@ impl AscSink {
     }
 
     /// The HDR10 volume sent with every subsequent transaction.
-    pub(crate) fn set_hdr_meta(&mut self, meta: Option<punktfunk_core::quic::HdrMeta>) {
+    pub(crate) fn set_hdr_meta(&mut self, meta: Option<rubyfunk_core::quic::HdrMeta>) {
         self.hdr_meta = meta;
     }
 

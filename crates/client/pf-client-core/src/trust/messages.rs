@@ -6,7 +6,7 @@
 /// A host knows things no client can — which monitor it was told to capture, and
 /// that it no longer has one by that name. Only a host that had nothing specific
 /// to say leaves the text empty, and then the generic line is the better one.
-pub fn reject_message(reason: punktfunk_core::reject::RejectReason, said: Option<&str>) -> String {
+pub fn reject_message(reason: rubyfunk_core::reject::RejectReason, said: Option<&str>) -> String {
     match said {
         Some(s) if !s.trim().is_empty() => s.to_string(),
         _ => connect_reject_message(reason),
@@ -15,8 +15,8 @@ pub fn reject_message(reason: punktfunk_core::reject::RejectReason, said: Option
 
 /// User-facing sentence for a typed host rejection, shared by every desktop/console
 /// surface so "declined" never renders as "timed out". The caller words other errors.
-pub fn connect_reject_message(reason: punktfunk_core::reject::RejectReason) -> String {
-    use punktfunk_core::reject::RejectReason as R;
+pub fn connect_reject_message(reason: rubyfunk_core::reject::RejectReason) -> String {
+    use rubyfunk_core::reject::RejectReason as R;
     match reason {
         R::Denied => "The host declined this device's request.".into(),
         R::ApprovalTimeout => {
@@ -75,8 +75,8 @@ pub fn connect_reject_message(reason: punktfunk_core::reject::RejectReason) -> S
 
 /// User-facing sentence for a failed [`pair_with_host`](super::pair_with_host). Crypto is a
 /// wrong PIN; do not report a dead path or a disarmed host as one.
-pub fn pair_error_message(err: &punktfunk_core::PunktfunkError) -> String {
-    use punktfunk_core::PunktfunkError as E;
+pub fn pair_error_message(err: &rubyfunk_core::RubyFunkError) -> String {
+    use rubyfunk_core::RubyFunkError as E;
     match err {
         E::Crypto => "Wrong PIN — check the PIN on the host's Pairing page and try again.".into(),
         E::Rejected(reason, said) => reject_message(*reason, Some(said)),
@@ -95,9 +95,9 @@ pub fn pair_error_message(err: &punktfunk_core::PunktfunkError) -> String {
 
 /// One sentence for a failed access request. A request has no PIN, so a crypto failure is
 /// the host not matching its advert.
-pub fn access_error_message(err: &punktfunk_core::PunktfunkError) -> String {
+pub fn access_error_message(err: &rubyfunk_core::RubyFunkError) -> String {
     match err {
-        punktfunk_core::PunktfunkError::Crypto => {
+        rubyfunk_core::RubyFunkError::Crypto => {
             "The host didn't present the identity it advertised. Pair with its PIN instead.".into()
         }
         other => pair_error_message(other),
@@ -110,7 +110,7 @@ mod tests {
 
     #[test]
     fn the_hosts_own_words_outrank_our_generic_line() {
-        use punktfunk_core::reject::RejectReason as R;
+        use rubyfunk_core::reject::RejectReason as R;
         let said = "The host is set to capture a monitor called \"HDMI-A-3\", which isn't \
                     connected to it.";
         assert_eq!(reject_message(R::SetupFailed, Some(said)), said);

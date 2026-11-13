@@ -21,7 +21,7 @@ Three fields make that safe, and the loader is why:
 Everything else is passed through untouched, `functions` above all: it names the layer's entry
 points, and a manifest with the wrong ones is a layer that silently never loads.
 
-Used by build-punktfunk-gamescope.sh (FHS packaging) and packaging/nix/gamescope.nix (the Nix store),
+Used by build-rubyfunk-gamescope.sh (FHS packaging) and packaging/nix/gamescope.nix (the Nix store),
 which is the point of it being a file rather than a heredoc — the two must not drift.
 
 Usage: rewrite-wsi-layer-manifest.py <src.json> <dst.json> <installed-library-path>
@@ -30,9 +30,9 @@ Usage: rewrite-wsi-layer-manifest.py <src.json> <dst.json> <installed-library-pa
 import json
 import sys
 
-LAYER_NAME = "VK_LAYER_PUNKTFUNK_gamescope_wsi"
-ENABLE_VAR = "PUNKTFUNK_GAMESCOPE_WSI"
-DISABLE_VAR = "PUNKTFUNK_GAMESCOPE_WSI_DISABLE"
+LAYER_NAME = "VK_LAYER_RUBYFUNK_gamescope_wsi"
+ENABLE_VAR = "RUBYFUNK_GAMESCOPE_WSI"
+DISABLE_VAR = "RUBYFUNK_GAMESCOPE_WSI_DISABLE"
 
 
 def main(argv):

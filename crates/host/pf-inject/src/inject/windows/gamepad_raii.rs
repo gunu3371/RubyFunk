@@ -56,7 +56,7 @@ static BOOT_SEQ: AtomicU32 = AtomicU32::new(1);
 /// Opt-in fallback when there is no `SwDeviceCreate` instance id (`devgen`/`devcon`).
 /// Trusts the mailbox `driver_pid` — the path [`PadChannel::pump`] otherwise refuses.
 /// Per-boot, logged loudly. Normal pads and the resident mouse never need it.
-pub(super) const TRUST_MAILBOX_ENV: &str = "PUNKTFUNK_PAD_CHANNEL_TRUST_MAILBOX";
+pub(super) const TRUST_MAILBOX_ENV: &str = "RUBYFUNK_PAD_CHANNEL_TRUST_MAILBOX";
 
 /// Mailbox names this process created and still holds. [`crate::pad_pool`] skips an index
 /// only when another process serves it; our own pad inside its unplug grace is not that.
@@ -192,7 +192,7 @@ impl PadChannel {
                 driver_proto,
                 host_proto = GAMEPAD_PROTO_VERSION,
                 "gamepad driver/host protocol mismatch on the bootstrap mailbox — update the \
-                 drivers: punktfunk-host.exe driver install --gamepad"
+                 drivers: rubyfunk-host.exe driver install --gamepad"
             );
         }
 
@@ -268,7 +268,7 @@ impl PadChannel {
                         error = %error,
                         "the pad's devnode has not answered a channel proof — the host will NOT \
                          hand the DATA section to a pid it cannot verify, so this pad stays \
-                         unattached (an old driver? reinstall: punktfunk-host.exe driver install \
+                         unattached (an old driver? reinstall: rubyfunk-host.exe driver install \
                          --gamepad)"
                     );
                 } else {

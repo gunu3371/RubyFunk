@@ -5,10 +5,10 @@
 # coded size IS the display size — the same reason the H.264 sibling picked 640x480.)
 #
 # THE STREAM IS OURS, not a conformance vector, and that is the point of it.
-# `punktfunk-host spike` on .21 (NVENC, RTX 5070 Ti, driver 610.57.04,
-# punktfunk-host 0.25.0-0.00011708), 2026-08-07:
+# `rubyfunk-host spike` on .21 (NVENC, RTX 5070 Ti, driver 610.57.04,
+# rubyfunk-host 0.25.0-0.00011708), 2026-08-07:
 #
-#   punktfunk-host spike --source synthetic --codec h265 --width 640 --height 480 \
+#   rubyfunk-host spike --source synthetic --codec h265 --width 640 --height 480 \
 #     --fps 60 --seconds 2 --bitrate 1 --no-loopback --out lowdelay-640x480.h265
 #
 # Main profile, 4:2:0, 8-bit, level 3.1. LOW-DELAY IPPP: one IDR then 119 trailing P

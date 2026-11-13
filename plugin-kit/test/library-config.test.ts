@@ -189,8 +189,8 @@ describe("__config wire contract", () => {
 		) => Promise<A>,
 	): Promise<A> => {
 		const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pf-kit-cfg-"));
-		const prev = process.env.PUNKTFUNK_CONFIG_DIR;
-		process.env.PUNKTFUNK_CONFIG_DIR = dir;
+		const prev = process.env.RUBYFUNK_CONFIG_DIR;
+		process.env.RUBYFUNK_CONFIG_DIR = dir;
 		try {
 			const service = await Effect.runPromise(
 				makeConfigService({ schema: ScannerConfig }).pipe(
@@ -206,8 +206,8 @@ describe("__config wire contract", () => {
 				service.path,
 			);
 		} finally {
-			if (prev === undefined) delete process.env.PUNKTFUNK_CONFIG_DIR;
-			else process.env.PUNKTFUNK_CONFIG_DIR = prev;
+			if (prev === undefined) delete process.env.RUBYFUNK_CONFIG_DIR;
+			else process.env.RUBYFUNK_CONFIG_DIR = prev;
 			fs.rmSync(dir, { recursive: true, force: true });
 		}
 	};

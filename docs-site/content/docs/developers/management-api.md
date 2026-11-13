@@ -1,9 +1,9 @@
 ---
 title: Management API
-description: Drive a Punktfunk host over its HTTPS management API — credentials, a first call, the event stream, the TypeScript SDK and the OpenAPI spec.
+description: Drive a RubyFunk host over its HTTPS management API — credentials, a first call, the event stream, the TypeScript SDK and the OpenAPI spec.
 ---
 
-Every host serves a REST API that the web console, `punktfunk-host ctl`, the tray and plugins all
+Every host serves a REST API that the web console, `rubyfunk-host ctl`, the tray and plugins all
 use. This page gets you a first authenticated call and shows where the full reference lives.
 
 ## Where it listens
@@ -12,13 +12,13 @@ use. This page gets you a first authenticated call and shows where the full refe
 
 - The listener binds all interfaces. Admin calls are accepted from loopback only; from the LAN,
   only a paired device gets in (see [Credentials](#credentials)).
-- Move it with `--mgmt-bind <IP:PORT>` or `PUNKTFUNK_MGMT_BIND` in `host.env`
+- Move it with `--mgmt-bind <IP:PORT>` or `RUBYFUNK_MGMT_BIND` in `host.env`
   ([Host CLI](/docs/host-cli)). `127.0.0.1:47990` makes it loopback-only.
 - On every start the host writes the URL it bound to `<config>/mgmt-endpoint`, as
-  `PUNKTFUNK_MGMT_URL=https://127.0.0.1:<port>`. Read that instead of assuming 47990.
+  `RUBYFUNK_MGMT_URL=https://127.0.0.1:<port>`. Read that instead of assuming 47990.
 
-`<config>` is `~/.config/punktfunk` on Linux and `%ProgramData%\punktfunk` on Windows
-(`PUNKTFUNK_CONFIG_DIR` overrides it).
+`<config>` is `~/.config/rubyfunk` on Linux and `%ProgramData%\rubyfunk` on Windows
+(`RUBYFUNK_CONFIG_DIR` overrides it).
 
 ## Credentials
 
@@ -32,10 +32,10 @@ Send a bearer token as `Authorization: Bearer <token>`. Which token decides what
 | Tray token | `<config>/tray-token`, minted fresh at every start; every local account but a seat's may read it | loopback | `GET /local/summary` and nothing else |
 | Paired device | a paired client certificate over mTLS, or a browser's device-key token | anywhere | `GET` host, status, compositors, actions and library; the profile list and pictures, and waking a profile's seat; log upload; invoking an action it holds the grant for |
 
-The token files hold one `KEY=<hex>` line (`PUNKTFUNK_MGMT_TOKEN=…`, `PUNKTFUNK_TRAY_TOKEN=…`),
+The token files hold one `KEY=<hex>` line (`RUBYFUNK_MGMT_TOKEN=…`, `RUBYFUNK_TRAY_TOKEN=…`),
 so a shell or a systemd `EnvironmentFile` can source them. Send only the value after `=`. The
 admin file is owner-only: your user on Linux, Administrators on Windows. To pin a token of your
-own, see `PUNKTFUNK_MGMT_TOKEN` in [Configuration](/docs/configuration).
+own, see `RUBYFUNK_MGMT_TOKEN` in [Configuration](/docs/configuration).
 
 `GET /api/v1/health`, the spec and the reference UI need no credential. Errors come back as
 `{"error": "<message>"}` with the HTTP status.
@@ -45,21 +45,21 @@ own, see `PUNKTFUNK_MGMT_TOKEN` in [Configuration](/docs/configuration).
 On the host, as the user that runs it:
 
 ```sh
-. ~/.config/punktfunk/mgmt-endpoint   # sets PUNKTFUNK_MGMT_URL
-. ~/.config/punktfunk/mgmt-token      # sets PUNKTFUNK_MGMT_TOKEN
-curl -k -H "Authorization: Bearer $PUNKTFUNK_MGMT_TOKEN" "$PUNKTFUNK_MGMT_URL/api/v1/status"
+. ~/.config/rubyfunk/mgmt-endpoint   # sets RUBYFUNK_MGMT_URL
+. ~/.config/rubyfunk/mgmt-token      # sets RUBYFUNK_MGMT_TOKEN
+curl -k -H "Authorization: Bearer $RUBYFUNK_MGMT_TOKEN" "$RUBYFUNK_MGMT_URL/api/v1/status"
 ```
 
 On Windows, from an elevated PowerShell:
 
 ```powershell
-$t = (Get-Content "$env:ProgramData\punktfunk\mgmt-token") -replace '^PUNKTFUNK_MGMT_TOKEN=', ''
+$t = (Get-Content "$env:ProgramData\rubyfunk\mgmt-token") -replace '^RUBYFUNK_MGMT_TOKEN=', ''
 curl.exe -k -H "Authorization: Bearer $t" https://127.0.0.1:47990/api/v1/status
 ```
 
 `-k` is needed because the certificate is self-signed and names no host. The SDK pins it instead.
 
-For shell scripts, [`punktfunk-host ctl`](/docs/host-cli#ctl) wraps the common calls and handles
+For shell scripts, [`rubyfunk-host ctl`](/docs/host-cli#ctl) wraps the common calls and handles
 the token and certificate for you.
 
 ## Events
@@ -70,17 +70,17 @@ catalogue, the frame format, resume with `Last-Event-ID`, and the `?kinds=` filt
 
 ## TypeScript SDK
 
-`@punktfunk/host` is a typed client for every endpoint plus the event stream, with reconnect and
+`@rubyfunk/host` is a typed client for every endpoint plus the event stream, with reconnect and
 resume. It lives in [`sdk/`](https://git.unom.io/unom/punktfunk/src/branch/main/sdk) and is
 published to the unom npm registry:
 
 ```sh
-echo '@punktfunk:registry=https://git.unom.io/api/packages/unom/npm/' >> .npmrc
-bun add @punktfunk/host effect     # or: npm i @punktfunk/host effect
+echo '@rubyfunk:registry=https://git.unom.io/api/packages/unom/npm/' >> .npmrc
+bun add @rubyfunk/host effect     # or: npm i @rubyfunk/host effect
 ```
 
 ```ts
-import { connect } from "@punktfunk/host";
+import { connect } from "@rubyfunk/host";
 
 const pf = await connect();
 const host = await pf.api.getHostInfo();
@@ -97,12 +97,12 @@ pf.events.on("pairing.pending", async (e) => {
 
 | Setting | Order |
 |---|---|
-| URL | `{ url }`, `PUNKTFUNK_MGMT_URL`, `<config>/mgmt-endpoint`, `https://127.0.0.1:47990` |
-| Token | `{ token }`, `PUNKTFUNK_MGMT_TOKEN`, `PUNKTFUNK_PLUGIN_TOKEN`, `<config>/plugin-token` |
-| Certificate pin | `{ ca }`, `PUNKTFUNK_MGMT_CA` (a path), `<config>/native-cert.pem`, `<config>/cert.pem` |
+| URL | `{ url }`, `RUBYFUNK_MGMT_URL`, `<config>/mgmt-endpoint`, `https://127.0.0.1:47990` |
+| Token | `{ token }`, `RUBYFUNK_MGMT_TOKEN`, `RUBYFUNK_PLUGIN_TOKEN`, `<config>/plugin-token` |
+| Certificate pin | `{ ca }`, `RUBYFUNK_MGMT_CA` (a path), `<config>/native-cert.pem`, `<config>/cert.pem` |
 
 It never reads `mgmt-token` on its own. A script that needs admin routes, such as the pairing
-approval above, sets `PUNKTFUNK_MGMT_TOKEN` or passes `{ token }`.
+approval above, sets `RUBYFUNK_MGMT_TOKEN` or passes `{ token }`.
 
 `pf.events.on()` takes an event kind, a `domain.*` prefix or `*`, plus `dropped` (you missed
 events; re-read state over REST) and `unknown` (a kind newer than the SDK). It starts at the live
@@ -112,9 +112,9 @@ Three entry points:
 
 | Import | For |
 |---|---|
-| `@punktfunk/host` | Promise API: `connect()`, `pf.api.*`, `pf.events.on()`, `pf.request()` for an untyped call |
-| `@punktfunk/host/effect` | The same as Effect services, `Stream` events and typed errors |
-| `@punktfunk/host/core` | The Effect surface without Node, for a browser; `deviceKey()` signs in with a paired key |
+| `@rubyfunk/host` | Promise API: `connect()`, `pf.api.*`, `pf.events.on()`, `pf.request()` for an untyped call |
+| `@rubyfunk/host/effect` | The same as Effect services, `Stream` events and typed errors |
+| `@rubyfunk/host/core` | The Effect surface without Node, for a browser; `deviceKey()` signs in with a paired key |
 
 Runnable examples, from a one-screen event tail to a USB passthrough script:
 [`sdk/examples`](https://git.unom.io/unom/punktfunk/src/branch/main/sdk/examples). Run one from
@@ -127,27 +127,27 @@ own systemd unit or scheduled task.
 - [`/api`](/api) on this site: the interactive reference, built from
   [`api/openapi.json`](https://git.unom.io/unom/punktfunk/src/branch/main/api/openapi.json).
 - On a running host: `/api/docs` (the same reference) and `/api/v1/openapi.json` (the spec).
-- `punktfunk-host openapi` prints the spec of that binary.
+- `rubyfunk-host openapi` prints the spec of that binary.
 
 ## Changing the API
 
-Handlers live in `crates/host/punktfunk-host/src/mgmt/`. Annotate a new handler with
-`#[utoipa::path]` and add it to `api_router_parts` in `crates/host/punktfunk-host/src/mgmt.rs`.
+Handlers live in `crates/host/rubyfunk-host/src/mgmt/`. Annotate a new handler with
+`#[utoipa::path]` and add it to `api_router_parts` in `crates/host/rubyfunk-host/src/mgmt.rs`.
 
 1. Classify the route for the plugin and paired-device lanes: add a row to `EXPECTED` in
    `every_route_is_classified_for_the_plugin_and_cert_lanes` (`mgmt/tests/routes.rs`), and to
-   `plugin_may_access` in `mgmt/auth.rs` or `paired_may_access` in `punktfunk-core`'s
+   `plugin_may_access` in `mgmt/auth.rs` or `paired_may_access` in `rubyfunk-core`'s
    `mgmt_routes.rs` if that lane may call it. The browser client's page server relays by the
    second. An unclassified route fails the test.
 2. Regenerate the spec and every copy of it:
 
    ```sh
-   cargo run -p punktfunk-host -- openapi > api/openapi.json
+   cargo run -p rubyfunk-host -- openapi > api/openapi.json
    cp api/openapi.json docs-site/public/openapi.json
    (cd sdk && bun install && bun run gen)
-   cargo test -p punktfunk-host mgmt::
+   cargo test -p rubyfunk-host mgmt::
    ```
 
 3. Commit all three generated files. CI fails when `api/openapi.json` differs from what the binary
-   serves, when the docs-site copy differs, or when `sdk/src/gen/punktfunk.ts` is stale. The web
+   serves, when the docs-site copy differs, or when `sdk/src/gen/rubyfunk.ts` is stale. The web
    console regenerates its client on `bun run dev` and `bun run build`.

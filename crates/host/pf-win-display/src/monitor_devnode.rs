@@ -1,7 +1,7 @@
 //! PnP monitor-devnode disable. Two selectors, both on by default:
 //! [`disable_connected_inactive`] (standby sinks; `pf_vdisplay::policy::standby_sink_neutralise`)
 //! and [`disable_for_deactivated`] (the displays the isolate switched off; the
-//! `pnp_disable_monitors` policy axis). `PUNKTFUNK_STANDBY_SINK_KEEP` vetoes both.
+//! `pnp_disable_monitors` policy axis). `RUBYFUNK_STANDBY_SINK_KEEP` vetoes both.
 //!
 //! An `Exclusive` isolate removes physical monitors from the CCD topology, but their PnP nodes
 //! stay live, so a standby sink that wakes the link still drives PnP arrival/removal, CCD
@@ -510,7 +510,7 @@ mod tests {
         assert!(decode_journal(b"not json").is_empty());
     }
 
-    /// LIVE (elevated console session, `PUNKTFUNK_CONFIG_DIR` pointing at a journal a previous
+    /// LIVE (elevated console session, `RUBYFUNK_CONFIG_DIR` pointing at a journal a previous
     /// run left behind): the replay re-enables every leased devnode and empties the journal —
     /// the WP11 restart gate. A box with no leftover passes trivially.
     #[test]

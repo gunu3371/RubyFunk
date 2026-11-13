@@ -16,10 +16,10 @@ default and removes some of it; how much depends on the device. To stop talking 
 
 ## "Listen to this device" and app monitoring (Windows hosts)
 
-Windows or an app plays the Punktfunk microphone out of the host's speakers, and the stream sends
+Windows or an app plays the RubyFunk microphone out of the host's speakers, and the stream sends
 it back.
 
-- Windows: **Sound settings** → **More sound settings** → **Recording**, double-click the Punktfunk
+- Windows: **Sound settings** → **More sound settings** → **Recording**, double-click the RubyFunk
   microphone (usually **Steam Streaming Microphone**), and on the **Listen** tab untick **Listen to
   this device**.
 - Apps: turn off microphone monitoring, such as Discord's **Mic Test** or OBS's **Monitor audio**
@@ -39,7 +39,7 @@ its playback. Set **Host → Voice chat** to **On the host**:
 
 ## Virtual mixers (VoiceMeeter and friends)
 
-A VoiceMeeter strip that hears the Punktfunk microphone and feeds the streamed output makes a loop.
+A VoiceMeeter strip that hears the RubyFunk microphone and feeds the streamed output makes a loop.
 Take the microphone off every strip that reaches that output.
 
 ## What the host log shows

@@ -5,8 +5,8 @@
 //! No SDL type, so the table tests below run on the Mac and pin every row.
 
 use super::ds5::Ds5Feedback;
-use punktfunk_core::config::GamepadPref;
-use punktfunk_core::quic::HidOutput;
+use rubyfunk_core::config::GamepadPref;
+use rubyfunk_core::quic::HidOutput;
 
 /// `audio_caps` bit0: the pad renders the host's haptics audio through its coils.
 const CAP_HAPTICS: u8 = 0x01;

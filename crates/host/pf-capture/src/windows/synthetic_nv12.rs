@@ -121,7 +121,7 @@ impl Capturer for SyntheticNv12Capturer {
     }
 }
 
-/// Same render adapter the encoder picks (`PUNKTFUNK_RENDER_ADAPTER` / preference /
+/// Same render adapter the encoder picks (`RUBYFUNK_RENDER_ADAPTER` / preference /
 /// max-VRAM LUID), else adapter 0.
 fn resolve_render_adapter() -> Result<IDXGIAdapter1> {
     if let Some(a) = pf_frame::dxgi::adapter_by_luid(pf_gpu::resolve_render_adapter_luid()) {

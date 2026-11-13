@@ -122,7 +122,7 @@ describe("verifyHandoff", () => {
 
 	/**
 	 * ⭐ The cross-language vector. This exact ticket came out of
-	 * `punktfunk-host ctl console-url` on Omarchy (2026-08-28) under the token below, and was
+	 * `rubyfunk-host ctl console-url` on Omarchy (2026-08-28) under the token below, and was
 	 * independently confirmed with python's `hmac`. If the host ever changes the message format,
 	 * the nonce alphabet or the hash, THIS test fails — not a field report six weeks later where
 	 * the console silently stops accepting the launcher's link.

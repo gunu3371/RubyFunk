@@ -1,7 +1,7 @@
 //! Which Windows input APIs can see this gamepad?
 //!
 //! WHY THIS EXISTS. The Xbox-pad-on-Windows programme
-//! (`punktfunk-planning/design/xbox-pad-windows-handoff.md`) is a five-row matrix — classic
+//! (`rubyfunk-planning/design/xbox-pad-windows-handoff.md`) is a five-row matrix — classic
 //! XInput, WGI `Gamepad`, WGI `RawGameController`, GameInput, and the HID/DirectInput/Steam
 //! family — and **nothing in this tree measured any of it**. Every reading in that document came
 //! from ad-hoc off-tree tools, which is why several of them could not be reproduced or A/B'd
@@ -701,7 +701,7 @@ mod imp {
             let lower = p.to_ascii_lowercase();
             if lower.contains("vid_045e")
                 || lower.contains("vid_054c")
-                || lower.contains("punktfunk")
+                || lower.contains("rubyfunk")
             {
                 println!("  {p}");
             }

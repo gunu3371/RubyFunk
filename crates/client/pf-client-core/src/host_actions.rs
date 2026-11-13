@@ -135,7 +135,7 @@ pub const TTL: std::time::Duration = std::time::Duration::from_secs(300);
 /// it can shut the machine down. One cache so the console, GTK, and Windows tiles agree.
 #[cfg(desktop)]
 static ACTIONS: crate::library::FpCache<ActionInfo> =
-    crate::library::FpCache::new(TTL, "punktfunk-hostactions");
+    crate::library::FpCache::new(TTL, "rubyfunk-hostactions");
 
 /// Offerable rows last stored for this fingerprint. Empty until [`refresh`] answers, and for no-route / no-grant hosts.
 #[cfg(desktop)]

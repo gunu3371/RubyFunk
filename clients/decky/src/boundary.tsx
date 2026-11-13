@@ -20,7 +20,7 @@ export class PluginErrorBoundary extends Component<
   componentDidCatch(error: Error, info: ErrorInfo) {
     // Surface it for diagnosis, but never rethrow — containment is the whole point.
     // eslint-disable-next-line no-console
-    console.error("[punktfunk] contained UI render error:", error, info?.componentStack);
+    console.error("[rubyfunk] contained UI render error:", error, info?.componentStack);
   }
 
   render() {
@@ -29,10 +29,10 @@ export class PluginErrorBoundary extends Component<
     return (
       <div style={{ padding: "1em", lineHeight: 1.45 }}>
         <div style={{ fontWeight: "bold", marginBottom: "0.4em" }}>
-          Punktfunk couldn’t draw this view
+          RubyFunk couldn’t draw this view
         </div>
         <div style={{ opacity: 0.8, marginBottom: "0.6em" }}>
-          The plugin hit a display error — your Steam Deck is fine. Reload Punktfunk from
+          The plugin hit a display error — your Steam Deck is fine. Reload RubyFunk from
           Decky&apos;s plugin list, or update the plugin.
         </div>
         <div

@@ -12,7 +12,7 @@
 //!
 //! The numbers are the generic Linux ioctl encoding, the same on x86_64 and arm64; the
 //! asserts pin each struct to the size its request encodes. `/dev/uinput` needs the udev rule
-//! and the `input` group (`scripts/60-punktfunk.rules`).
+//! and the `input` group (`scripts/60-rubyfunk.rules`).
 
 use crate::uapi::{self, Pod};
 use anyhow::{anyhow, bail, Context, Result};
@@ -266,7 +266,7 @@ impl UinputDevice {
         let fd = uapi::open_nonblock("/dev/uinput").map_err(|e| {
             anyhow!(
                 "open /dev/uinput: {e} (install the udev rule granting the 'input' group access \
-                 — see scripts/60-punktfunk.rules — and add the user to the 'input' group)"
+                 — see scripts/60-rubyfunk.rules — and add the user to the 'input' group)"
             )
         })?;
         Ok(UinputDevice {
@@ -489,7 +489,7 @@ impl Drop for UinputDevice {
 }
 
 /// A `/dev/uinput` fd the seat supervisor replays a seat's own uinput requests onto (the
-/// `punktfunk-seats` uinput proxy). Only uinput's by-value and fixed-size requests pass, so
+/// `rubyfunk-seats` uinput proxy). Only uinput's by-value and fixed-size requests pass, so
 /// nothing a seat sends reaches the kernel as a pointer; anything else is `EINVAL`. Drop
 /// destroys the device, though systemd's fd store may still hold the fd.
 pub struct ReplayUinput(File);

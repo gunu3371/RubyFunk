@@ -3,7 +3,7 @@
 
 use anyhow::{anyhow, bail, Context as _, Result};
 use pf_client_core::video::ColorDesc;
-use punktfunk_core::video_fit::Placement;
+use rubyfunk_core::video_fit::Placement;
 use windows::core::{s, PCSTR};
 use windows::Win32::d3d11::{
     ID3D11Buffer, ID3D11Device5, ID3D11DeviceContext4, ID3D11PixelShader, ID3D11RasterizerState,

@@ -1,4 +1,4 @@
-# pf-mouse - punktfunk virtual HID mouse (absolute pointer) UMDF2 HID minidriver.
+# pf-mouse - rubyfunk virtual HID mouse (absolute pointer) UMDF2 HID minidriver.
 # A member of the in-tree drivers workspace (shares the vendored wdk-sys/wdk-build with the bindgen pin
 # + the crt-static .cargo/config), built from source per release like the gamepad drivers.
 [package]
@@ -7,7 +7,7 @@ edition.workspace = true
 version.workspace = true
 license.workspace = true
 publish = false
-description = "punktfunk virtual HID mouse (absolute pointer) UMDF2 HID minidriver"
+description = "rubyfunk virtual HID mouse (absolute pointer) UMDF2 HID minidriver"
 
 [package.metadata.wdk.driver-model]
 driver-type = "UMDF"

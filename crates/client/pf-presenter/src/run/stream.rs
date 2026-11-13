@@ -136,7 +136,7 @@ pub(super) fn apply_match_window(
     let (pw, ph) = window.size_in_pixels();
     // × the render scale (even + codec-clamped) so match-window supersamples like the
     // fixed-mode path; 1.0 leaves the window's native pixels.
-    let (w, h) = punktfunk_core::render_scale::apply(pw, ph, render_scale, max_dim);
+    let (w, h) = rubyfunk_core::render_scale::apply(pw, ph, render_scale, max_dim);
     params.mode.width = w;
     params.mode.height = h;
     tracing::info!(
@@ -187,7 +187,7 @@ pub(super) fn resize_tick(
     // × the render scale so a resize under Match-window targets the same supersampled
     // space the live mode is in. resize_decision re-normalizes idempotently.
     let (pw, ph) = window.size_in_pixels();
-    let pixel_size = punktfunk_core::render_scale::apply(pw, ph, render_scale, max_dim);
+    let pixel_size = rubyfunk_core::render_scale::apply(pw, ph, render_scale, max_dim);
     match resize_decision(
         Instant::now(),
         &mut st.resize_pending,
@@ -330,7 +330,7 @@ pub(super) fn ring_facts(
     stats: StatsVerbosity,
     mic_muted: bool,
     ring_opener: Option<u8>,
-    pad_type: punktfunk_core::config::GamepadPref,
+    pad_type: rubyfunk_core::config::GamepadPref,
 ) -> RingFacts {
     let c = st.connector.as_ref().expect("filtered on connector");
     let m = c.mode();
@@ -344,7 +344,7 @@ pub(super) fn ring_facts(
             .as_name()
             .into(),
         invert_scroll: c.invert_scroll(),
-        host_accepts_touch: c.host_caps2() & punktfunk_core::quic::HOST_CAP2_TOUCH != 0,
+        host_accepts_touch: c.host_caps2() & rubyfunk_core::quic::HOST_CAP2_TOUCH != 0,
         stats_tier: stats.label().into(),
         // The mic control answers `toggle` with `None` when no uplink runs; a session
         // with a mic is one whose settings asked for it.
@@ -353,7 +353,7 @@ pub(super) fn ring_facts(
         pad_mouse_target: target,
         pad_mouse: c.pad_mouse_mode(target),
         audio_mute: c.audio_mute(),
-        pointer_granted: c.access_grants() & punktfunk_core::quic::GRANT_POINTER != 0,
+        pointer_granted: c.access_grants() & rubyfunk_core::quic::GRANT_POINTER != 0,
         pad_type,
         mode: (m.width, m.height, m.refresh_hz),
         native_mode: st.native_mode,
@@ -546,7 +546,7 @@ impl Shell {
         stream: &mut Option<StreamState>,
         msg: String,
         trust_rejected: bool,
-        refused: Option<punktfunk_core::reject::RejectReason>,
+        refused: Option<rubyfunk_core::reject::RejectReason>,
     ) -> ControlFlow<Outcome> {
         if !self.browse {
             return ControlFlow::Break(Outcome::ConnectFailed {
@@ -557,7 +557,7 @@ impl Shell {
         }
         tracing::warn!(%msg, "connect failed — back to the console");
         if let Some(o) = self.overlay.as_mut() {
-            use punktfunk_core::reject::RejectReason;
+            use rubyfunk_core::reject::RejectReason;
             match refused {
                 Some(RejectReason::ProfileUnknown) => o.profile_gone(),
                 Some(RejectReason::ProfileLocked) => o.profile_locked(),
@@ -632,7 +632,7 @@ impl Shell {
         // contact would vanish with no error, so the session runs the trackpad
         // model and the notice says so.
         let touch_mode = if self.opts.touch_mode == TouchMode::Touch
-            && c.host_caps2() & punktfunk_core::quic::HOST_CAP2_TOUCH == 0
+            && c.host_caps2() & rubyfunk_core::quic::HOST_CAP2_TOUCH == 0
         {
             st.session_notice = Some((
                 "This host does not accept touch — using the trackpad model".into(),
@@ -886,7 +886,7 @@ impl Shell {
                 }
                 RingCommand::ToggleStreamMute => {
                     if let Some(c) = stream.as_ref().and_then(|st| st.connector.as_ref()) {
-                        let on = c.audio_mute() & punktfunk_core::client::AUDIO_MUTE_LOCAL != 0;
+                        let on = c.audio_mute() & rubyfunk_core::client::AUDIO_MUTE_LOCAL != 0;
                         c.set_audio_muted(!on);
                     }
                 }
@@ -926,7 +926,7 @@ impl Shell {
                 let (addr, mgmt, fp) = (st.params.host.clone(), c.mgmt_port(), st.fp_hex.clone());
                 let port = st.params.port;
                 std::thread::Builder::new()
-                    .name("punktfunk-endgame".into())
+                    .name("rubyfunk-endgame".into())
                     .spawn(move || {
                         let answer = match pf_client_core::trust::load_or_create_identity() {
                             Ok(id) => pf_client_core::library::end_game(
@@ -960,7 +960,7 @@ impl Shell {
                 if let Some(c) = st
                     .connector
                     .as_ref()
-                    .filter(|c| c.access_grants() & punktfunk_core::quic::GRANT_POINTER != 0)
+                    .filter(|c| c.access_grants() & rubyfunk_core::quic::GRANT_POINTER != 0)
                 {
                     c.set_invert_scroll(!c.invert_scroll());
                 }
@@ -969,7 +969,7 @@ impl Shell {
                 let accepts_touch = st
                     .connector
                     .as_ref()
-                    .is_some_and(|c| c.host_caps2() & punktfunk_core::quic::HOST_CAP2_TOUCH != 0);
+                    .is_some_and(|c| c.host_caps2() & rubyfunk_core::quic::HOST_CAP2_TOUCH != 0);
                 if let Some(cap) = &mut st.capture {
                     let next = match (cap.touch_mode(), accepts_touch) {
                         (TouchMode::Trackpad, _) => TouchMode::Pointer,
@@ -986,7 +986,7 @@ impl Shell {
                 refresh_hz,
             } => {
                 if let Some(c) = &st.connector {
-                    if let Err(e) = c.request_mode(punktfunk_core::config::Mode {
+                    if let Err(e) = c.request_mode(rubyfunk_core::config::Mode {
                         width,
                         height,
                         refresh_hz,

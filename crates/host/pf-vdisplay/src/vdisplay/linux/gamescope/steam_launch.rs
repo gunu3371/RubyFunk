@@ -207,14 +207,14 @@ fn desktop_steam_pid() -> Option<u32> {
         return None; // our own dedicated spawn's Steam
     }
     let cgroup = std::fs::read_to_string(format!("/proc/{pid}/cgroup")).unwrap_or_default();
-    if cgroup_is_punktfunk_owned(&cgroup) {
+    if cgroup_is_rubyfunk_owned(&cgroup) {
         return None; // the host service's tree or the managed session unit
     }
     Some(pid)
 }
 
-fn cgroup_is_punktfunk_owned(cgroup: &str) -> bool {
-    cgroup.contains("punktfunk-host.service") || cgroup.contains(&format!("{SESSION_UNIT}.service"))
+fn cgroup_is_rubyfunk_owned(cgroup: &str) -> bool {
+    cgroup.contains("rubyfunk-host.service") || cgroup.contains(&format!("{SESSION_UNIT}.service"))
 }
 
 /// First token, not a `steam://` URI: a bare `steam -gamepadui` needs the instance free more, not less.
@@ -467,10 +467,10 @@ mod tests {
         ));
         assert!(!cgroup_names_unit(game_mode, SESSION_UNIT));
         let ours = "0::/user.slice/user-1000.slice/user@1000.service/app.slice/\
-                    punktfunk-gamescope.service/sub\n";
+                    rubyfunk-gamescope.service/sub\n";
         assert!(cgroup_names_unit(ours, SESSION_UNIT));
         // A prefix of another unit's name is not that unit.
-        assert!(!cgroup_names_unit(ours, "punktfunk"));
+        assert!(!cgroup_names_unit(ours, "rubyfunk"));
     }
 
     #[test]
@@ -655,21 +655,21 @@ mod tests {
     #[test]
     fn desktop_steam_cgroup_ownership() {
         // A desktop-launched Steam (the instance-conflict case, as observed on a GNOME host).
-        assert!(!cgroup_is_punktfunk_owned(
+        assert!(!cgroup_is_rubyfunk_owned(
             "0::/user.slice/user-1000.slice/user@1000.service/app.slice/app-gnome-steam-48605.scope"
         ));
         // KDE spawns app scopes too; still foreign.
-        assert!(!cgroup_is_punktfunk_owned(
+        assert!(!cgroup_is_rubyfunk_owned(
             "0::/user.slice/user-1000.slice/user@1000.service/app.slice/app-steam@0f3a.service"
         ));
         // Our own dedicated spawn tree (Steam nested under the host service).
-        assert!(cgroup_is_punktfunk_owned(
-            "0::/user.slice/user-1000.slice/user@1000.service/app.slice/punktfunk-host.service"
+        assert!(cgroup_is_rubyfunk_owned(
+            "0::/user.slice/user-1000.slice/user@1000.service/app.slice/rubyfunk-host.service"
         ));
         // The host-managed gamescope session unit (SESSION_UNIT).
-        assert!(cgroup_is_punktfunk_owned(
-            "0::/user.slice/user-1000.slice/user@1000.service/app.slice/punktfunk-gamescope.service"
+        assert!(cgroup_is_rubyfunk_owned(
+            "0::/user.slice/user-1000.slice/user@1000.service/app.slice/rubyfunk-gamescope.service"
         ));
-        assert!(!cgroup_is_punktfunk_owned(""));
+        assert!(!cgroup_is_rubyfunk_owned(""));
     }
 }

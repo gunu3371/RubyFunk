@@ -220,7 +220,7 @@ mod tests {
             ..CaptureLease::new(2, 48_000, CaptureRoute::default())
         };
         let slot: AudioCapSlot = Default::default();
-        lease(Some("punktfunk-session-1")).park(&slot);
+        lease(Some("rubyfunk-session-1")).park(&slot);
         assert!(
             slot.lock().unwrap().is_none(),
             "an isolated capturer was parked"

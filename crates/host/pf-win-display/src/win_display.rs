@@ -49,7 +49,7 @@ use windows::Win32::Graphics::Gdi::{
     DM_PELSHEIGHT, DM_PELSWIDTH, ENUM_CURRENT_SETTINGS, ENUM_DISPLAY_SETTINGS_MODE,
 };
 
-use punktfunk_core::Mode;
+use rubyfunk_core::Mode;
 
 use crate::ccd_info;
 
@@ -977,7 +977,7 @@ pub fn target_inventory_checked() -> Result<Vec<TargetInventory>, CcdError> {
         let ours = is_our_virtual_display(&monitor_device_path);
         if ours {
             external_physical = false;
-            tech = "punktfunk-virtual";
+            tech = "rubyfunk-virtual";
         }
         let is_active = active.contains(&key);
         // Inactive paths have INVALID modeInfoIdx — stay zeroed, do not index 0xffffffff.
@@ -1140,7 +1140,7 @@ pub mod isolate_journal {
     mod tests {
         use super::*;
 
-        /// `PUNKTFUNK_CONFIG_DIR` and `LAST` are process-global — cases must not interleave.
+        /// `RUBYFUNK_CONFIG_DIR` and `LAST` are process-global — cases must not interleave.
         static ENV: Mutex<()> = Mutex::new(());
 
         fn with_temp_dir(name: &str, f: impl FnOnce(&std::path::Path)) {
@@ -1149,13 +1149,13 @@ pub mod isolate_journal {
             let _ = std::fs::remove_dir_all(&dir);
             std::fs::create_dir_all(&dir).expect("scratch dir");
             // SAFETY: `_g` holds ENV, which serializes every test that
-            // reads or writes `PUNKTFUNK_CONFIG_DIR` in this binary.
-            unsafe { std::env::set_var("PUNKTFUNK_CONFIG_DIR", &dir) };
+            // reads or writes `RUBYFUNK_CONFIG_DIR` in this binary.
+            unsafe { std::env::set_var("RUBYFUNK_CONFIG_DIR", &dir) };
             clear(); // reset LAST and any leftover marker
             f(&dir);
             clear();
             // SAFETY: still under `_g` — same serialization as the set above.
-            unsafe { std::env::remove_var("PUNKTFUNK_CONFIG_DIR") };
+            unsafe { std::env::remove_var("RUBYFUNK_CONFIG_DIR") };
             let _ = std::fs::remove_dir_all(&dir);
         }
 
@@ -1979,7 +1979,7 @@ mod live_tests {
             .collect();
         assert!(
             !ours.is_empty(),
-            "no punktfunk virtual display among the {} live target(s) — bring one up before \
+            "no rubyfunk virtual display among the {} live target(s) — bring one up before \
              running this, or the check below proves nothing",
             inv.len()
         );
@@ -2008,7 +2008,7 @@ mod live_tests {
         tracing::info!("live CCD query: {n} active display path(s)");
     }
 
-    /// LIVE (console session, `PUNKTFUNK_CONFIG_DIR` at a journal a killed host left behind):
+    /// LIVE (console session, `RUBYFUNK_CONFIG_DIR` at a journal a killed host left behind):
     /// the isolate journal's startup leg relights the desktop — afterwards an external physical
     /// panel is active and the marker is gone. The S4/WP11 kill-recovery gate; a box with no
     /// leftover passes on the panel check alone.

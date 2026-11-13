@@ -584,7 +584,7 @@ impl Overlay for SkiaOverlay {
         let mut row = 0;
         if let Some(muted) = want.mic_notice {
             let at = (ctx.width, row, left);
-            let text = punktfunk_core::client::mic_mute_label(muted);
+            let text = rubyfunk_core::client::mic_mute_label(muted);
             corner_pill(canvas, font, text, muted, at, scale);
             row += 1;
         }

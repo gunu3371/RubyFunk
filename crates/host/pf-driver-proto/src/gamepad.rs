@@ -151,7 +151,7 @@ impl ChannelProof {
     pub fn check(&self, expect_pad_index: u32) -> Result<u32, &'static str> {
         if self.magic != PROOF_MAGIC {
             return Err(
-                "the devnode's answer is not a punktfunk channel proof (bad magic) — \
+                "the devnode's answer is not a rubyfunk channel proof (bad magic) — \
                         some other driver is bound to this device",
             );
         }

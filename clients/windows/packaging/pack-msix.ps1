@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Assemble, pack and sign the punktfunk Windows client as a signed MSIX.
+  Assemble, pack and sign the rubyfunk Windows client as a signed MSIX.
 
 .DESCRIPTION
   Builds a packaging layout from a release `cargo build` output (exes + the SDL3 auto-staged DLL
@@ -48,7 +48,7 @@ param(
     # with no BOM, and read by anything other than pwsh 7 a literal would silently mojibake into a
     # publisher that no longer matches the signer, which surfaces only as an Add-AppxPackage refusal
     # on a user's machine. Verified against the real signer after signing below.
-    [string]$Publisher = "CN=unom - Enrico B$([char]0xFC)hler, O=unom - Enrico B$([char]0xFC)hler, L=Rottweil, S=Baden-W$([char]0xFC)rttemberg, C=DE",
+    [string]$Publisher = "CN=gunu3371",
     [string]$PfxBase64 = $env:MSIX_CERT_PFX_B64,                        # optional: base64 of a code-signing .pfx
     [string]$PfxPassword = $env:MSIX_CERT_PASSWORD,
     # Azure Artifact Signing. All three select it, ahead of any .pfx. Credentials arrive through the
@@ -104,10 +104,10 @@ $layout = Join-Path $OutDir 'layout'
 if (Test-Path $layout) { Remove-Item -Recurse -Force $layout }
 New-Item -ItemType Directory -Force -Path (Join-Path $layout 'Assets') | Out-Null
 
-# binaries + SDL3.dll, which the sdl3 crate stages. punktfunk-session.exe is the Vulkan
+# binaries + SDL3.dll, which the sdl3 crate stages. rubyfunk-session.exe is the Vulkan
 # session client the shell spawns for every stream (sibling resolution — see clients/windows/
 # src/spawn.rs); Skia links statically and vulkan-1.dll is a GPU-driver component.
-$required = @('punktfunk-client.exe', 'punktfunk-session.exe', 'punktfunk-console.exe', 'punktfunk.exe', 'SDL3.dll')
+$required = @('rubyfunk-client.exe', 'rubyfunk-session.exe', 'rubyfunk-console.exe', 'rubyfunk.exe', 'SDL3.dll')
 foreach ($f in $required) {
     $src = Join-Path $TargetDir $f
     if (-not (Test-Path $src)) { throw "missing build artifact '$f' in $TargetDir (did 'cargo build --release' run?)" }
@@ -136,7 +136,7 @@ Write-Host "VC++ runtime from $crt : $(($crtDlls | ForEach-Object Name) -join ',
 # For the same reason the notices come from clients/windows/ and NOT from the repo root: the root
 # file is workspace-wide, so it attributes crates this package never links. The client-scoped file
 # (same generator, `--packages
-# punktfunk-client-windows,punktfunk-client-session,punktfunk-cli`) is the one that describes what
+# rubyfunk-client-windows,rubyfunk-client-session,rubyfunk-cli`) is the one that describes what
 # is actually inside this .msix — and it is the same file the app's Licenses page shows.
 $licDir = Join-Path $layout 'licenses'
 New-Item -ItemType Directory -Force -Path $licDir | Out-Null
@@ -166,7 +166,7 @@ $manifest = (Get-Content -Raw $manifestTemplate).Replace('{VERSION}', $Version).
 # The ARM64 session is built without the console (no Skia for the target): no tile for it.
 if ($Arch -eq 'arm64') {
     $manifest = [regex]::Replace($manifest, '(?s)\s*<!-- console:begin -->.*?<!-- console:end -->', '')
-    if ($manifest -match 'PunktfunkConsole') { throw 'the console entry survived the arm64 strip' }
+    if ($manifest -match 'RubyFunkConsole') { throw 'the console entry survived the arm64 strip' }
 }
 Set-Content -Path (Join-Path $layout 'AppxManifest.xml') -Value $manifest -Encoding UTF8
 
@@ -193,15 +193,15 @@ Get-ChildItem $layout -Recurse -File | ForEach-Object { "  $($_.FullName.Substri
 
 # --- pack ---
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
-$msix = Join-Path $OutDir "punktfunk-client-windows_${Version}_${Arch}.msix"
+$msix = Join-Path $OutDir "rubyfunk-client-windows_${Version}_${Arch}.msix"
 & $makeappx pack /o /d $layout /p $msix
 if ($LASTEXITCODE -ne 0) { throw "makeappx pack failed ($LASTEXITCODE)" }
 
 # --- sign (signing.ps1: Azure, then MSIX_CERT_PFX_B64, then ephemeral) ---
 # The .pfx modes export the .cer users import once (Trusted People); a stable .pfx keeps that import
 # good across upgrades. Azure emits none, so MSIX_CER_PATH stays unset.
-$cerPath = Join-Path $OutDir "punktfunk-client-windows_${Version}_${Arch}.cer"
-$signing = Resolve-SigningMode -OutDir $OutDir -Publisher $Publisher -FriendlyName 'punktfunk MSIX (self-signed)' `
+$cerPath = Join-Path $OutDir "rubyfunk-client-windows_${Version}_${Arch}.cer"
+$signing = Resolve-SigningMode -OutDir $OutDir -Publisher $Publisher -FriendlyName 'rubyfunk MSIX (self-signed)' `
     -PfxBase64 $PfxBase64 -PfxPassword $PfxPassword -AzureEndpoint $AzureEndpoint -AzureAccount $AzureAccount `
     -AzureProfile $AzureProfile -AzureDlib $AzureDlib -RequireSignedCert $RequireSignedCert -CerPath $cerPath
 Sign-File $signing $msix -Package

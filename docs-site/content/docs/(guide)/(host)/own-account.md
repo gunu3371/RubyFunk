@@ -13,7 +13,7 @@ saves, and only their password or a device they signed in opens it.
    and pick **Own desktop**, then **Existing account**.
 3. Type the account's **User name** and **Their password**, then press **Add profile**.
 
-Punktfunk checks the password once against the machine's login and keeps none. The profile then
+RubyFunk checks the password once against the machine's login and keeps none. The profile then
 plays in a background session beside whatever is on the monitor, with the box's games.
 
 Any ordinary user of this machine can be one, a directory account such as `jdoe@corp.example.com`
@@ -69,7 +69,7 @@ The profile's card under **Profiles** lists each device signed in to it, as **Si
 - **The password opens the wallet.** When the typed password starts the desktop, KWallet opens
   with it on a machine whose own login opens KWallet. A desktop that a face or finger match
   started keeps the wallet locked until they type its password in the stream.
-- **Nothing is set up in the account.** Punktfunk makes no user or group and doesn't prepare their
+- **Nothing is set up in the account.** RubyFunk makes no user or group and doesn't prepare their
   home; the apps the profile runs write there what they always write. **Remove** ends only the
   profile's own session. The account and its files stay.
 - **The console manages nothing inside.** No plugin runs there, and the console adds no plugin,
@@ -81,7 +81,7 @@ The profile's card under **Profiles** lists each device signed in to it, as **Si
 
 ## Troubleshooting
 
-### The app says `This profile needs its account password. Update Punktfunk on this device.`
+### The app says `This profile needs its account password. Update RubyFunk on this device.`
 
 That app can't ask for a password. Update it, or connect from the Apple, Android phone, Linux or
 Windows app.

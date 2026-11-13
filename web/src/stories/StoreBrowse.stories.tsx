@@ -16,7 +16,7 @@ const entry = (
 	extra: Partial<CatalogEntry> = {},
 ): CatalogEntry => ({
 	id,
-	pkg: `@punktfunk/plugin-${id}`,
+	pkg: `@rubyfunk/plugin-${id}`,
 	title,
 	description: `${title}, from the fixture catalog.`,
 	icon: "gamepad-2",

@@ -6,8 +6,8 @@
       "port": 47990,
       "proto": "tcp",
       "what": "management REST API (HTTPS + token; read-only status/library off loopback)",
-      "env": "PUNKTFUNK_MGMT_BIND",
-      "conflict": "Sunshine / Apollo / Vibeshine serve their web UI on 47990 too — the one port still shared with them once GameStream compat is off. Move it via PUNKTFUNK_MGMT_BIND; clients relearn it from discovery."
+      "env": "RUBYFUNK_MGMT_BIND",
+      "conflict": "Sunshine / Apollo / Vibeshine serve their web UI on 47990 too — the one port still shared with them once GameStream compat is off. Move it via RUBYFUNK_MGMT_BIND; clients relearn it from discovery."
     },
     "web": {
       "port": 47992,
@@ -19,13 +19,13 @@
       "port": 9777,
       "proto": "udp",
       "what": "QUIC: control, video and audio",
-      "env": "PUNKTFUNK_NATIVE_PORT"
+      "env": "RUBYFUNK_NATIVE_PORT"
     },
     "browser": {
       "port": 9778,
       "proto": "udp",
       "what": "browser streaming (preview, off until switched on)",
-      "env": "PUNKTFUNK_WEBTRANSPORT_PORT"
+      "env": "RUBYFUNK_WEBTRANSPORT_PORT"
     },
     "mdns": {
       "port": 5353,
@@ -35,16 +35,16 @@
     "gamestream": {
       "tcp": [47984, 47989, 48010],
       "udp": [47998, 47999, 48000],
-      "what": "GameStream/Moonlight-compat planes (opt-in, PUNKTFUNK_GAMESTREAM=1)",
-      "conflict": "Sunshine / Apollo / Vibeshine bind these same fixed ports and advertise the same mDNS name — run only one GameStream host at a time, or keep punktfunk native-only."
+      "what": "GameStream/Moonlight-compat planes (opt-in, RUBYFUNK_GAMESTREAM=1)",
+      "conflict": "Sunshine / Apollo / Vibeshine bind these same fixed ports and advertise the same mDNS name — run only one GameStream host at a time, or keep rubyfunk native-only."
     }
   },
 
   "firewall": {
     "$comment": "Service/profile names the Linux packages install for firewalld and ufw — the packages never open a port themselves.",
-    "native": "punktfunk-native",
-    "gamestream": "punktfunk-gamestream",
-    "web": "punktfunk-web"
+    "native": "rubyfunk-native",
+    "gamestream": "rubyfunk-gamestream",
+    "web": "rubyfunk-web"
   },
 
   "installer": {
@@ -64,7 +64,7 @@
 
   "conflicts": {
     "hosts": ["Sunshine", "Apollo", "Vibeshine"],
-    "detect": "punktfunk-host detect-conflicts",
+    "detect": "rubyfunk-host detect-conflicts",
     "detectExit": "1 only when a conflicting host runs or will start on its own; dormant leftovers print but exit 0",
     "docs": "/docs/switching-from-sunshine"
   },
@@ -80,10 +80,10 @@
       "repo": "https://git.unom.io/api/packages/unom/debian",
       "install": [
         "sudo install -d -m 0755 /etc/apt/keyrings",
-        "curl -fsSL https://git.unom.io/api/packages/unom/debian/repository.key | sudo tee /etc/apt/keyrings/punktfunk.asc >/dev/null",
-        "echo \"deb [signed-by=/etc/apt/keyrings/punktfunk.asc] https://git.unom.io/api/packages/unom/debian stable main\" | sudo tee /etc/apt/sources.list.d/punktfunk.list",
+        "curl -fsSL https://git.unom.io/api/packages/unom/debian/repository.key | sudo tee /etc/apt/keyrings/rubyfunk.asc >/dev/null",
+        "echo \"deb [signed-by=/etc/apt/keyrings/rubyfunk.asc] https://git.unom.io/api/packages/unom/debian stable main\" | sudo tee /etc/apt/sources.list.d/rubyfunk.list",
         "sudo apt update",
-        "sudo apt install punktfunk-host punktfunk-web punktfunk-scripting"
+        "sudo apt install rubyfunk-host rubyfunk-web rubyfunk-scripting"
       ]
     },
     {
@@ -97,8 +97,8 @@
       "install": [
         "curl -fsS https://git.unom.io/api/packages/unom/arch/repository.key | sudo pacman-key --add -",
         "sudo pacman-key --lsign-key E0CA04465C99C936E0B0C6510A317015A34DDD69",
-        "grep -q '^\\[punktfunk\\]' /etc/pacman.conf || printf '\\n[punktfunk]\\nServer = https://git.unom.io/api/packages/unom/arch/$repo/$arch\\n' | sudo tee -a /etc/pacman.conf >/dev/null",
-        "sudo pacman -Syu punktfunk-host punktfunk-web punktfunk-scripting"
+        "grep -q '^\\[rubyfunk\\]' /etc/pacman.conf || printf '\\n[rubyfunk]\\nServer = https://git.unom.io/api/packages/unom/arch/$repo/$arch\\n' | sudo tee -a /etc/pacman.conf >/dev/null",
+        "sudo pacman -Syu rubyfunk-host rubyfunk-web rubyfunk-scripting"
       ]
     },
     {
@@ -113,10 +113,10 @@
       "install": [
         "curl -fsS https://git.unom.io/api/packages/unom/arch/repository.key | sudo pacman-key --add -",
         "sudo pacman-key --lsign-key E0CA04465C99C936E0B0C6510A317015A34DDD69",
-        "grep -q '^\\[punktfunk\\]' /etc/pacman.conf || printf '\\n[punktfunk]\\nServer = https://git.unom.io/api/packages/unom/arch/$repo/$arch\\n' | sudo tee -a /etc/pacman.conf >/dev/null",
+        "grep -q '^\\[rubyfunk\\]' /etc/pacman.conf || printf '\\n[rubyfunk]\\nServer = https://git.unom.io/api/packages/unom/arch/$repo/$arch\\n' | sudo tee -a /etc/pacman.conf >/dev/null",
         "sudo pacman -Sy",
-        "sudo pacman -S punktfunk-host punktfunk-web punktfunk-scripting punktfunk-client",
-        "punktfunk-omarchy setup"
+        "sudo pacman -S rubyfunk-host rubyfunk-web rubyfunk-scripting rubyfunk-client",
+        "rubyfunk-omarchy setup"
       ]
     },
     {
@@ -128,9 +128,9 @@
       "floor": "Fedora 43 or newer",
       "repo": "https://git.unom.io/api/packages/unom/rpm/fedora-44",
       "install": [
-        "sudo tee /etc/yum.repos.d/punktfunk.repo >/dev/null <<'REPO'",
-        "[punktfunk]",
-        "name=punktfunk",
+        "sudo tee /etc/yum.repos.d/rubyfunk.repo >/dev/null <<'REPO'",
+        "[rubyfunk]",
+        "name=rubyfunk",
         "# fedora-44 on Fedora 44; bazzite on Fedora 43 (a plain Fedora 43 build of the same package)",
         "baseurl=https://git.unom.io/api/packages/unom/rpm/fedora-44",
         "enabled=1",
@@ -139,7 +139,7 @@
         "gpgkey=https://git.unom.io/api/packages/unom/rpm/repository.key",
         "       https://git.unom.io/api/packages/unom/generic/punktfunk-keys/1/RPM-GPG-KEY-punktfunk",
         "REPO",
-        "sudo dnf install punktfunk punktfunk-web punktfunk-scripting"
+        "sudo dnf install rubyfunk rubyfunk-web rubyfunk-scripting"
       ]
     },
     {
@@ -151,7 +151,7 @@
       "floor": "Current Bazzite; Fedora Atomic 43 or newer",
       "install": [
         "curl -fsSLO https://git.unom.io/unom/punktfunk/raw/branch/main/packaging/bazzite/punktfunk-sysext.sh",
-        "sudo bash punktfunk-sysext.sh install"
+        "sudo bash rubyfunk-sysext.sh install"
       ]
     },
     {
@@ -162,8 +162,8 @@
       "docs": "/docs/nixos",
       "floor": "NixOS with flakes",
       "install": [
-        "# flake input: inputs.punktfunk.url = \"git+https://git.unom.io/unom/punktfunk?ref=nix-stable\";",
-        "# then: imports = [ punktfunk.nixosModules.default ]; services.punktfunk.host.enable = true;"
+        "# flake input: inputs.rubyfunk.url = \"git+https://git.unom.io/unom/punktfunk?ref=nix-stable\";",
+        "# then: imports = [ rubyfunk.nixosModules.default ]; services.rubyfunk.host.enable = true;"
       ]
     },
     {
@@ -174,8 +174,8 @@
       "docs": "/docs/steamos-host",
       "floor": "SteamOS 3",
       "install": [
-        "git clone --branch stable https://git.unom.io/unom/punktfunk ~/punktfunk",
-        "bash ~/punktfunk/scripts/steamdeck/install.sh"
+        "git clone --branch stable https://git.unom.io/unom/punktfunk ~/rubyfunk",
+        "bash ~/rubyfunk/scripts/steamdeck/install.sh"
       ]
     },
     {
@@ -187,8 +187,8 @@
       "floor": "Windows 11 22H2 (build 22621) or newer, x64",
       "url": "https://git.unom.io/api/packages/unom/generic/punktfunk-host-windows/latest/punktfunk-host-setup.exe",
       "install": [
-        "winget source add -n punktfunk https://winget.punktfunk.unom.io -t Microsoft.Rest",
-        "winget install unom.PunktfunkHost"
+        "winget source add -n rubyfunk https://winget.punktfunk.unom.io -t Microsoft.Rest",
+        "winget install gunu3371.RubyFunkHost"
       ]
     },
     {
@@ -221,7 +221,7 @@
       "urlArm64": "https://git.unom.io/api/packages/unom/generic/punktfunk-client-windows/latest/punktfunk-client-setup_arm64.exe",
       "install": [
         "curl.exe -LO https://git.unom.io/api/packages/unom/generic/punktfunk-client-windows/latest/punktfunk-client-setup_x64.exe",
-        ".\\punktfunk-client-setup_x64.exe"
+        ".\\rubyfunk-client-setup_x64.exe"
       ]
     },
     {

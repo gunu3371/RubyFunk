@@ -1,4 +1,4 @@
-import type { PAGE_SEGMENT } from "@punktfunk/plugin-kit/wire";
+import type { PAGE_SEGMENT } from "@rubyfunk/plugin-kit/wire";
 import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { toast } from "@unom/ui/toast";

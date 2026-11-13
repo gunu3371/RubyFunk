@@ -526,7 +526,7 @@ fn detail(t: Target) -> Option<&'static str> {
     match t {
         Target::Pad(_) | Target::Others => None,
         Target::NoPads => Some(
-            "Punktfunk only forwards devices the system classifies as a gamepad or joystick — \
+            "RubyFunk only forwards devices the system classifies as a gamepad or joystick — \
              a pad behind an adapter or hub may enumerate with the adapter's identity, or not \
              at all.",
         ),
@@ -566,7 +566,7 @@ mod tests {
     use super::*;
     use pf_client_core::menu_nav::MenuDir;
     use pf_client_core::trust::Settings;
-    use punktfunk_core::config::GamepadPref;
+    use rubyfunk_core::config::GamepadPref;
 
     fn pad(name: &str, rumble: bool) -> PadInfo {
         PadInfo {

@@ -307,10 +307,7 @@ mod tests {
     use std::time::Instant;
 
     fn name(tag: &str) -> String {
-        format!(
-            r"\\.\pipe\punktfunk-seats-test-{tag}-{}",
-            std::process::id()
-        )
+        format!(r"\\.\pipe\rubyfunk-seats-test-{tag}-{}", std::process::id())
     }
 
     /// A list over the pipe answers with the empty ledger; a second server on the same name

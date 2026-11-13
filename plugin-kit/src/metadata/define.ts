@@ -2,7 +2,7 @@
 // `design/metadata-sources.md` D10). A source is its matching and fetching. The kit reads the
 // library, picks the entries worth a lookup, caches verdicts, backs off when told to, pushes the
 // result, and serves the console's Choose dialog under `/__metadata/`.
-import type { PluginDef } from "@punktfunk/host";
+import type { PluginDef } from "@rubyfunk/host";
 import {
 	Cause,
 	Data,

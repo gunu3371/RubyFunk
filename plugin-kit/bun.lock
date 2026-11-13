@@ -3,17 +3,17 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@punktfunk/plugin-kit",
+      "name": "@rubyfunk/plugin-kit",
       "devDependencies": {
         "@biomejs/biome": "^2.5.15",
-        "@punktfunk/host": "file:../sdk",
+        "@rubyfunk/host": "file:../sdk",
         "@types/bun": "^1.4.2",
         "@types/react": "^19.3.0",
         "effect": "4.0.1",
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "@punktfunk/host": "^0.4.0",
+        "@rubyfunk/host": "^0.4.0",
         "effect": "^4.0.1",
         "react": "^19.2.0",
       },
@@ -52,7 +52,7 @@
 
     "@exodus/schemasafe": ["@exodus/schemasafe@1.3.0", "", {}, "sha512-5Aap/GaRupgNx/feGBwLLTVv8OQFfv3pq2lPRzPg9R+IOBnDgghTGW7l7EuVXOvg5cc/xSAlRW8rBrjIC3Nvqw=="],
 
-    "@punktfunk/host": ["@punktfunk/host@file:../sdk", { "devDependencies": { "@effect/openapi-generator": "4.0.1", "@effect/platform-node": "4.0.1", "@types/bun": "^1.4.2", "bun2nix": "2.1.2", "effect": "^4.0.1", "typescript": "^7.0.2" }, "optionalDependencies": { "undici": "^8.12.2" }, "peerDependencies": { "effect": "^4.0.1" }, "hasInstallScript": true, "bin": { "punktfunk-scripting": "./dist/runner-cli.js" } }],
+    "@rubyfunk/host": ["@rubyfunk/host@file:../sdk", { "devDependencies": { "@effect/openapi-generator": "4.0.1", "@effect/platform-node": "4.0.1", "@types/bun": "^1.4.2", "bun2nix": "2.1.2", "effect": "^4.0.1", "typescript": "^7.0.2" }, "optionalDependencies": { "undici": "^8.12.2" }, "peerDependencies": { "effect": "^4.0.1" }, "hasInstallScript": true, "bin": { "rubyfunk-scripting": "./dist/runner-cli.js" } }],
 
     "@redis/bloom": ["@redis/bloom@6.3.0", "", { "peerDependencies": { "@redis/client": "^6.3.0" } }, "sha512-NQ5poYpZr0jv6zazN1cy6JY5kIipKFZ3R9GTL4kOUTX3a9YAfY29U8bsE4lWhVQEM+G4V0BXVC57mubIdDijeA=="],
 

@@ -80,7 +80,7 @@ pub(super) fn link_prompt(name: &str, addr: &str, launch: Option<&str>) -> Strin
     }
     s.push_str(
         "\n\nIt names the host by its label or address, which anything that can open \
-         a link could guess. Shortcuts made in Punktfunk name the host's id and \
+         a link could guess. Shortcuts made in RubyFunk name the host's id and \
          connect without asking.",
     );
     s
@@ -199,7 +199,7 @@ mod tests {
         assert_eq!(addrs(&acc), [("b", "10.0.0.2")]);
     }
 
-    const VALID: &str = "punktfunk://connect/Desk";
+    const VALID: &str = "rubyfunk://connect/Desk";
 
     #[test]
     fn a_link_dials_from_an_idle_screen_and_holds_on_a_session() {
@@ -236,10 +236,10 @@ mod tests {
 
     #[test]
     fn a_bad_link_is_refused_on_an_idle_screen() {
-        let msg = deeplink::parse("punktfunk://pair").unwrap_err().message();
+        let msg = deeplink::parse("rubyfunk://pair").unwrap_err().message();
         assert_eq!(
             msg,
-            "Pairing can't be done from a link \u{2014} pair the host in Punktfunk first."
+            "Pairing can't be done from a link \u{2014} pair the host in RubyFunk first."
         );
         for s in [
             Screen::Hosts,
@@ -248,14 +248,14 @@ mod tests {
             Screen::Pair,
         ] {
             assert_eq!(
-                gate_link("punktfunk://pair", &s, false),
+                gate_link("rubyfunk://pair", &s, false),
                 LinkGate::Refuse(msg.clone())
             );
         }
         let msg = deeplink::parse("https://example.com")
             .unwrap_err()
             .message();
-        assert_eq!(msg, "That isn't a Punktfunk link.");
+        assert_eq!(msg, "That isn't a RubyFunk link.");
         assert_eq!(
             gate_link("https://example.com", &Screen::Hosts, false),
             LinkGate::Refuse(msg)
@@ -264,7 +264,7 @@ mod tests {
 
     #[test]
     fn a_bad_link_during_a_connect_leaves_the_screen() {
-        let msg = deeplink::parse("punktfunk://pair").unwrap_err().message();
+        let msg = deeplink::parse("rubyfunk://pair").unwrap_err().message();
         for s in [
             Screen::Stream,
             Screen::Connecting,
@@ -272,12 +272,12 @@ mod tests {
             Screen::RequestAccess,
         ] {
             assert_eq!(
-                gate_link("punktfunk://pair", &s, false),
+                gate_link("rubyfunk://pair", &s, false),
                 LinkGate::Hold(msg.clone())
             );
         }
         assert_eq!(
-            gate_link("punktfunk://pair", &Screen::Hosts, true),
+            gate_link("rubyfunk://pair", &Screen::Hosts, true),
             LinkGate::Hold(msg)
         );
     }
@@ -288,13 +288,13 @@ mod tests {
             link_prompt("Desk", "192.168.1.5", None),
             "A link asks to connect to Desk (192.168.1.5).\n\nIt names the host by its label \
              or address, which anything that can open a link could guess. Shortcuts made in \
-             Punktfunk name the host's id and connect without asking."
+             RubyFunk name the host's id and connect without asking."
         );
         assert_eq!(
             link_prompt("Desk", "192.168.1.5", Some("steam:570")),
             "A link asks to connect to Desk (192.168.1.5).\n\nIt also asks the host to launch \
              \u{201c}steam:570\u{201d}.\n\nIt names the host by its label or address, which \
-             anything that can open a link could guess. Shortcuts made in Punktfunk name the \
+             anything that can open a link could guess. Shortcuts made in RubyFunk name the \
              host's id and connect without asking."
         );
     }

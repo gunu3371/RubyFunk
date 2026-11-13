@@ -61,7 +61,7 @@ pub unsafe fn install_gpu_pref_hook() {
 /// Make the process per-monitor DPI aware unless it already is. Below that the OS virtualizes
 /// window and cursor coordinates while host geometry is CCD physical pixels, so `SetCursorPos`
 /// and the cursor blend miss on a scaled display. The host exe declares v2 in its manifest
-/// (punktfunk-host/build.rs); this covers every other process using DXGI.
+/// (rubyfunk-host/build.rs); this covers every other process using DXGI.
 fn set_dpi_awareness() {
     use windows::Win32::UI::HiDpi::{
         GetAwarenessFromDpiAwarenessContext, GetThreadDpiAwarenessContext,

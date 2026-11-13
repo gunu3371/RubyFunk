@@ -13,7 +13,7 @@ Recorded 2026-11-07 on Apple M4, macOS 27.2. Windows AMD equipment is not connec
 | Windows encoder/session Clippy | `--tests --target x86_64-pc-windows-msvc -- -D warnings` passes |
 | Windows encoder/session cross-check | `cargo check -p pf-encode-session --tests --target x86_64-pc-windows-msvc` passes |
 | Windows host cross-check | Blocked by missing Windows C headers/runtime (`zstd-sys`: `string.h`) |
-| macOS host common code | `cargo check -p punktfunk-host --no-default-features` passes; host test binary builds, 15 control tests pass |
+| macOS host common code | `cargo check -p rubyfunk-host --no-default-features` passes; host test binary builds, 15 control tests pass |
 | Apple native static library/XCFramework | arm64 release build succeeds; unsigned local XCFramework |
 | Apple Swift library and test executable | Build succeeds |
 | Shared Rust vectors on the M4 Metal kernel | 6 vectors pass, bit-exact Y/U/V after restoration |
@@ -53,8 +53,8 @@ installations under `/tmp`; it did not change the system PATH or Xcode selection
 
 ```sh
 cargo test -p pf-packed444
-cargo test -p punktfunk-core --features quic --lib -- --test-threads=1
-cargo test -p punktfunk-ffi --features quic
+cargo test -p rubyfunk-core --features quic --lib -- --test-threads=1
+cargo test -p rubyfunk-ffi --features quic
 cargo test -p pf-capture -p pf-driver-proto --lib
 cargo check -p pf-encode-session --target x86_64-pc-windows-msvc
 cargo test -p gen-headers
@@ -74,7 +74,7 @@ cargo test -p pf-encode-session packed444_rgb_pass -- --ignored --nocapture
 ```
 
 It requires planar NV12/P010 render targets and fails if no D3D11 device is available. Build the
-host and `punktfunk-capture-worker`, then the separate `packaging/windows/drivers` workspace
+host and `rubyfunk-capture-worker`, then the separate `packaging/windows/drivers` workspace
 with an x64 Windows machine, Visual Studio C++ build tools, Windows SDK/WDK, LLVM/libclang
 and the AMD driver/AMF runtime. The existing `scripts/windows/README.md` describes the build
 environment. Install matching protocol-10 components together.

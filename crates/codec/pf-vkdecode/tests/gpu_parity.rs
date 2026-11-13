@@ -617,7 +617,7 @@ fn low_delay_host_h264_every_frame_hashes_bit_identical_to_libavcodec() {
     fixture_parity_run(&parity::H264_LOWDELAY);
 }
 
-/// AU boundaries of a `PUNKTFUNK_DUMP_VIDEO` capture: `.idx` sidecar when present
+/// AU boundaries of a `RUBYFUNK_DUMP_VIDEO` capture: `.idx` sidecar when present
 /// (`offset len flags complete` per line), H.265 splitter otherwise. Skip
 /// `complete == 0` — the client is only ever fed complete AUs.
 fn field_aus(stream: &[u8], idx_path: &std::path::Path) -> Vec<std::ops::Range<usize>> {
@@ -643,7 +643,7 @@ fn field_aus(stream: &[u8], idx_path: &std::path::Path) -> Vec<std::ops::Range<u
 }
 
 /// The AV1 twin of the H.265 field hasher below: decode a capture that carries its `.idx`
-/// sidecar (a `PUNKTFUNK_DUMP_VIDEO` dump, or a wave smoke's `write_capture`) and write one
+/// sidecar (a `RUBYFUNK_DUMP_VIDEO` dump, or a wave smoke's `write_capture`) and write one
 /// SHA-256 per shown frame to `<stream>.pfhash`. A unit that fails prints, counts and writes
 /// `-`, so a one-frame-per-unit capture keeps line N on unit N.
 ///
@@ -744,7 +744,7 @@ fn field_av1_stream_writes_frame_hashes() {
     );
 }
 
-/// Decode a `PUNKTFUNK_DUMP_VIDEO` H.265 capture and write one SHA-256 per
+/// Decode a `RUBYFUNK_DUMP_VIDEO` H.265 capture and write one SHA-256 per
 /// display-order frame to `<stream>.pfhash`. `scripts/vkdecode-field-parity.sh`
 /// diffs that against ffmpeg and names the first divergent frame.
 ///
@@ -759,7 +759,7 @@ fn field_av1_stream_writes_frame_hashes() {
 #[ignore = "field triage: set PF_VKD_FIELD_STREAM=/path/capture.h265 (needs a Vulkan Video H.265 decode device; RADV additionally RADV_PERFTEST=video_decode)"]
 fn field_h265_stream_writes_frame_hashes_for_ffmpeg_diff() {
     let stream_path = std::env::var("PF_VKD_FIELD_STREAM").expect(
-        "PF_VKD_FIELD_STREAM must point at a PUNKTFUNK_DUMP_VIDEO .h265 capture \
+        "PF_VKD_FIELD_STREAM must point at a RUBYFUNK_DUMP_VIDEO .h265 capture \
          (see this test's docs)",
     );
     let stream = std::fs::read(&stream_path).expect("read the capture");

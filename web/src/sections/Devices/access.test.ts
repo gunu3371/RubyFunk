@@ -16,12 +16,12 @@ import {
 	normalizeLegacyFull,
 } from "./access";
 
-// Written by punktfunk-core's grant_vectors_are_checked_in; Kotlin replays the same file.
+// Written by rubyfunk-core's grant_vectors_are_checked_in; Kotlin replays the same file.
 const vectors = JSON.parse(
 	readFileSync(
 		join(
 			import.meta.dir,
-			"../../../../crates/core/punktfunk-core/testdata/grant-vectors.json",
+			"../../../../crates/core/rubyfunk-core/testdata/grant-vectors.json",
 		),
 		"utf8",
 	),

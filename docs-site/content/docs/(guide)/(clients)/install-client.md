@@ -1,9 +1,9 @@
 ---
 title: Install a Client
-description: Install, update and remove the Punktfunk app on the device you stream to — Linux, Steam Deck, Windows, macOS, iPhone, iPad, Apple TV or Android.
+description: Install, update and remove the RubyFunk app on the device you stream to — Linux, Steam Deck, Windows, macOS, iPhone, iPad, Apple TV or Android.
 ---
 
-Install the Punktfunk app on the device you stream *to*, then [pair](/docs/pairing) it with your
+Install the RubyFunk app on the device you stream *to*, then [pair](/docs/pairing) it with your
 host once. To pick between the apps, see [Clients](/docs/clients).
 
 These links are the **stable** channel. For builds of `main`, see [Release Channels](/docs/channels).
@@ -28,25 +28,25 @@ Works on any distro with Flatpak:
 
 ```sh
 flatpak install --user https://flatpak.unom.io/io.unom.punktfunk.flatpakref
-flatpak run io.unom.punktfunk
+flatpak run io.github.gunu3371.rubyfunk
 ```
 
 Update with `flatpak update`, **without `sudo`**: `sudo` only updates system installs and skips this
 one.
 
-To use your package manager instead, add the Punktfunk repo from your distro's guide, then:
+To use your package manager instead, add the RubyFunk repo from your distro's guide, then:
 
 | Distro | Install |
 |--------|---------|
-| Ubuntu 26.04 or newer | `sudo apt install punktfunk-client` ([packaging/debian](https://git.unom.io/unom/punktfunk/src/branch/main/packaging/debian/README.md)) |
-| Fedora 43 or newer | `sudo dnf install punktfunk-client` ([Fedora](/docs/fedora)) |
-| Arch | `sudo pacman -Syu punktfunk-client` ([Arch Linux](/docs/arch)) |
-| Bazzite, Fedora Atomic | Use the Flatpak. Layering with `rpm-ostree install punktfunk-client` slows every OS update ([Bazzite](/docs/bazzite)). |
+| Ubuntu 26.04 or newer | `sudo apt install rubyfunk-client` ([packaging/debian](https://git.unom.io/unom/punktfunk/src/branch/main/packaging/debian/README.md)) |
+| Fedora 43 or newer | `sudo dnf install rubyfunk-client` ([Fedora](/docs/fedora)) |
+| Arch | `sudo pacman -Syu rubyfunk-client` ([Arch Linux](/docs/arch)) |
+| Bazzite, Fedora Atomic | Use the Flatpak. Layering with `rpm-ostree install rubyfunk-client` slows every OS update ([Bazzite](/docs/bazzite)). |
 
 On Ubuntu 24.04, Debian and older distros the client package can't install: use the Flatpak.
 
-Open **Punktfunk** from your app menu, or **Punktfunk Console** for the controller interface. Every
-package, the Flatpak included, also installs the [`punktfunk` command](/docs/clients#scripting-the-punktfunk-cli)
+Open **RubyFunk** from your app menu, or **RubyFunk Console** for the controller interface. Every
+package, the Flatpak included, also installs the [`rubyfunk` command](/docs/clients#scripting-the-rubyfunk-cli)
 for scripts.
 
 ## Steam Deck
@@ -68,40 +68,40 @@ flatpak install --user https://flatpak.unom.io/io.unom.punktfunk.flatpakref
 
    On an Arm device, use `_arm64` in place of `_x64`. The file is also on every
    [release](https://git.unom.io/unom/punktfunk/releases).
-2. Run it. No admin prompt: it installs to `%LOCALAPPDATA%\Programs\Punktfunk`, registers
-   `punktfunk://` links, puts `punktfunk` on your PATH and fetches the Windows App Runtime if it's
+2. Run it. No admin prompt: it installs to `%LOCALAPPDATA%\Programs\RubyFunk`, registers
+   `rubyfunk://` links, puts `rubyfunk` on your PATH and fetches the Windows App Runtime if it's
    missing.
-3. Open **Punktfunk** from the Start menu, or **Punktfunk Console** for the controller interface
+3. Open **RubyFunk** from the Start menu, or **RubyFunk Console** for the controller interface
    (x64 only: the Arm64 build has no console yet).
 
 **Steam overlay and Big Picture.** In Steam, **Add a Non-Steam Game** and browse to
-`%LOCALAPPDATA%\Programs\Punktfunk\punktfunk-client.exe` (or `punktfunk-console.exe`).
+`%LOCALAPPDATA%\Programs\RubyFunk\rubyfunk-client.exe` (or `rubyfunk-console.exe`).
 
 **Portable zip and MSIX.** The same build ships as
-`…/latest/punktfunk-client-windows_x64-portable.zip` (unzip and run `punktfunk-client.exe`; no
-links, no PATH entry) and `…/latest/punktfunk-client-windows_x64.msix`
-(`Add-AppxPackage .\punktfunk-client-windows_x64.msix`). Both need the
+`…/latest/rubyfunk-client-windows_x64-portable.zip` (unzip and run `rubyfunk-client.exe`; no
+links, no PATH entry) and `…/latest/rubyfunk-client-windows_x64.msix`
+(`Add-AppxPackage .\rubyfunk-client-windows_x64.msix`). Both need the
 [Windows App Runtime 2.x](https://learn.microsoft.com/windows/apps/windows-app-sdk/downloads). The
 MSIX can't be added to Steam.
 
 ## macOS
 
-1. Download `Punktfunk-<version>.dmg` from the [releases page](https://git.unom.io/unom/punktfunk/releases).
-2. Open it and drag **Punktfunk** to **Applications**.
+1. Download `RubyFunk-<version>.dmg` from the [releases page](https://git.unom.io/unom/punktfunk/releases).
+2. Open it and drag **RubyFunk** to **Applications**.
 
 The Mac app is also in the [TestFlight beta](https://testflight.apple.com/join/Qr7uSemk).
 
 ## iOS, iPadOS, Apple TV
 
-**[Get Punktfunk on the App Store](https://apps.apple.com/app/id6779991756)**. One app covers
+**[Get RubyFunk on the App Store](https://apps.apple.com/app/id6779991756)**. One app covers
 iPhone, iPad and Apple TV.
 
 For beta builds, install Apple's [TestFlight](https://apps.apple.com/app/testflight/id899247664)
-app, then [join the Punktfunk beta](https://testflight.apple.com/join/Qr7uSemk).
+app, then [join the RubyFunk beta](https://testflight.apple.com/join/Qr7uSemk).
 
 ## Android
 
-**[Get Punktfunk on Google Play](https://play.google.com/store/apps/details?id=io.unom.punktfunk)**.
+**[Get RubyFunk on Google Play](https://play.google.com/store/apps/details?id=io.unom.punktfunk)**.
 The same app runs on phones, tablets and Android TV.
 
 To skip Play, install the signed APK:
@@ -116,7 +116,7 @@ use `canary` in place of `latest` in the APK link.
 ## LG webOS TV (community)
 
 [`pf-webos`](https://github.com/dyptan-io/pf-webos) is built by
-[dyptan-io](https://github.com/dyptan-io), not the Punktfunk team. Report its bugs on
+[dyptan-io](https://github.com/dyptan-io), not the RubyFunk team. Report its bugs on
 [its repo](https://github.com/dyptan-io/pf-webos/issues).
 
 1. Turn on Developer Mode on the TV and install the [Homebrew Channel](https://www.webosbrew.org/)
@@ -124,7 +124,7 @@ use `canary` in place of `latest` in the APK link.
 2. Download the latest `.ipk` from the
    [pf-webos releases](https://github.com/dyptan-io/pf-webos/releases/latest).
 3. Install it with `ares-install`, or copy it to the TV and install it from the Homebrew Channel.
-4. Open **Punktfunk** from the TV's launcher.
+4. Open **RubyFunk** from the TV's launcher.
 
 ## Keeping a client up to date
 
@@ -133,10 +133,10 @@ A client and a host don't need the same version. To update the host, see [Updati
 | Client | Update |
 |---|---|
 | Flatpak | `flatpak update`, without `sudo` |
-| apt, dnf, pacman | Your normal system upgrade, or [`punktfunk-client --apply-update`](#the-linux-client-can-update-itself) |
+| apt, dnf, pacman | Your normal system upgrade, or [`rubyfunk-client --apply-update`](#the-linux-client-can-update-itself) |
 | Fedora Atomic, layered | See below |
 | Windows installer | Run the newer installer. Hosts and pairing are kept. |
-| Windows MSIX or portable | Add the newer `.msix`, or unzip the newer build over the old one. An MSIX named `unom.Punktfunk` is the older package and doesn't upgrade: remove it as below first. |
+| Windows MSIX or portable | Add the newer `.msix`, or unzip the newer build over the old one. An MSIX named `gunu3371.RubyFunk` is the older package and doesn't upgrade: remove it as below first. |
 | macOS `.dmg` | Drag the newer app over the old one |
 | iPhone, iPad, Apple TV | App Store, or TestFlight for the beta |
 | Android | Google Play. For the APK, install the newer one over it. |
@@ -148,29 +148,29 @@ the base image is unchanged. Run this, then reboot:
 
 ```sh
 sudo rpm-ostree refresh-md --force
-sudo rpm-ostree update --uninstall punktfunk-client --install punktfunk-client
+sudo rpm-ostree update --uninstall rubyfunk-client --install rubyfunk-client
 ```
 
 **Moving from the MSIX to the installer.** Remove the MSIX first, then run the installer. The MSIX
 takes its saved hosts and pairing with it, so pair again once:
 
 ```powershell
-Get-AppxPackage *unom.punktfunk | Remove-AppxPackage
+Get-AppxPackage *io.github.gunu3371.rubyfunk | Remove-AppxPackage
 ```
 
 ### The Linux client can update itself
 
 ```sh
-punktfunk-client --check-update    # installed vs available on this box's channel
-punktfunk-client --apply-update    # install it
+rubyfunk-client --check-update    # installed vs available on this box's channel
+rubyfunk-client --apply-update    # install it
 ```
 
 `--check-update` exits **0** when up to date, **10** when an update is available, and **1** when it
 couldn't tell. Add `--json` for machine-readable output. `--apply-update` needs you in the
-`punktfunk-update` group (no re-login needed):
+`rubyfunk-update` group (no re-login needed):
 
 ```sh
-sudo usermod -aG punktfunk-update $USER
+sudo usermod -aG rubyfunk-update $USER
 ```
 
 A Flatpak client updates with `flatpak update` instead.

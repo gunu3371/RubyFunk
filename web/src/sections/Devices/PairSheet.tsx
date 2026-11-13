@@ -118,7 +118,7 @@ export function useNativePairing(
 export type NativePairing = ReturnType<typeof useNativePairing>;
 
 /**
- * Pair a device: show a one-time PIN for a Punktfunk app, or — with GameStream on — enter the PIN
+ * Pair a device: show a one-time PIN for a RubyFunk app, or — with GameStream on — enter the PIN
  * a Moonlight client shows, as the sheet's second step.
  */
 export const PairSheet: FC<{

@@ -282,7 +282,7 @@ impl ClipboardBackend {
             let conn = conn.clone();
             let stop = stop.clone();
             std::thread::Builder::new()
-                .name("punktfunk-clipboard".into())
+                .name("rubyfunk-clipboard".into())
                 .spawn(move || dispatch_loop(conn, queue, state, stop))
                 .context("spawn clipboard dispatch thread")?
         };
@@ -432,7 +432,7 @@ fn dispatch_loop(
 /// Ignored live tests. Needs `wl-clipboard` and a `data-control` compositor.
 ///
 /// ```text
-/// WAYLAND_DISPLAY=wayland-1 cargo test -p punktfunk-host --bin punktfunk-host \
+/// WAYLAND_DISPLAY=wayland-1 cargo test -p rubyfunk-host --bin rubyfunk-host \
 ///     -- --ignored --nocapture clipboard::wayland::live
 /// ```
 ///
@@ -558,7 +558,7 @@ mod live {
                 );
                 match responder {
                     PasteResponder::Fd(fd) => {
-                        super::super::fulfill_paste(fd, b"served-by-punktfunk").expect("fulfill");
+                        super::super::fulfill_paste(fd, b"served-by-rubyfunk").expect("fulfill");
                     }
                     PasteResponder::Channel(_) => panic!("data-control paste must carry an fd"),
                 }
@@ -567,6 +567,6 @@ mod live {
         }
 
         let out = child.wait_with_output().expect("wl-paste output");
-        assert_eq!(out.stdout, b"served-by-punktfunk");
+        assert_eq!(out.stdout, b"served-by-rubyfunk");
     }
 }

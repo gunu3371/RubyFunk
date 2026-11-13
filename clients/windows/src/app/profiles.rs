@@ -13,7 +13,7 @@ use pf_client_core::library::HostApi;
 use pf_client_core::orchestrate::HostTarget;
 use pf_client_core::profiles::{self, Decision, ListedProfile, ProfilePick, SeatGate};
 use pf_fluent::Palette;
-use punktfunk_core::quic::v2::msg::ProfileUnlock;
+use rubyfunk_core::quic::v2::msg::ProfileUnlock;
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};

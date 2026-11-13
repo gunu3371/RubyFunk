@@ -11,12 +11,12 @@ runs one. Install the host first: [Bazzite](/docs/bazzite) or [SteamOS (Host)](/
 - Each client gets Gaming Mode at its own resolution and refresh rate (managed and bare spawn,
   [below](#how-the-host-gets-a-gamescope)).
 - On Bazzite and SteamOS it follows **Switch to Desktop** and back mid-stream, with no reconnect.
-  Elsewhere, turn on **Follow mode switches** in the console (`PUNKTFUNK_SESSION_WATCH=1`). The
+  Elsewhere, turn on **Follow mode switches** in the console (`RUBYFUNK_SESSION_WATCH=1`). The
   desktop streams at 60 Hz until its KWin reaches 6.6 ([KDE](/docs/kde#known-limits)); SteamOS
   3.8 ships 6.4. Gaming Mode keeps your client's refresh rate.
 - Controllers, including a virtual Steam Deck pad when you are in the
-  [`punktfunk` group](#the-punktfunk-group).
-- With [`punktfunk-gamescope`](#hdr-on-gamescope): HDR, the real resolution and refresh rate in
+  [`rubyfunk` group](#the-rubyfunk-group).
+- With [`rubyfunk-gamescope`](#hdr-on-gamescope): HDR, the real resolution and refresh rate in
   Steam, the performance overlay, and your keyboard layout.
 
 ## host.env
@@ -30,7 +30,7 @@ The [Bazzite](/docs/bazzite) and [SteamOS](/docs/steamos-host) guides enable the
 any other distro with a gamescope session:
 
 ```sh
-systemctl --user enable --now punktfunk-host
+systemctl --user enable --now rubyfunk-host
 ```
 
 Then open [the web console](/docs/web-console) to pair a client.
@@ -44,12 +44,12 @@ Gaming Mode with nobody at it, see
 ## How the host gets a gamescope
 
 The host picks one of three modes per session and logs it:
-`journalctl --user -u punktfunk-host | grep 'gamescope sub-mode'`.
+`journalctl --user -u rubyfunk-host | grep 'gamescope sub-mode'`.
 
 | Mode | When | What happens |
 |---|---|---|
-| **Managed** | Default on a box with a gamescope session (Bazzite, SteamOS, Nobara). Force it with `PUNKTFUNK_GAMESCOPE_MANAGED=1`. | The host takes Gaming Mode over and relaunches it headless at the client's resolution and refresh. A Steam running on the desktop is shut down to free it. Your screens drop out; the box gets its session back after you disconnect. |
-| **Attach** | A gamescope already runs on a box without a gamescope session, or `host.env` sets `PUNKTFUNK_GAMESCOPE_ATTACH=1`. | The host streams the running gamescope and never stops it. A box with a monitor serves a mirror of it at the monitor's resolution, not a display of the client's own; only a headless box on its own autologin session restarts at the client's resolution. |
+| **Managed** | Default on a box with a gamescope session (Bazzite, SteamOS, Nobara). Force it with `RUBYFUNK_GAMESCOPE_MANAGED=1`. | The host takes Gaming Mode over and relaunches it headless at the client's resolution and refresh. A Steam running on the desktop is shut down to free it. Your screens drop out; the box gets its session back after you disconnect. |
+| **Attach** | A gamescope already runs on a box without a gamescope session, or `host.env` sets `RUBYFUNK_GAMESCOPE_ATTACH=1`. | The host streams the running gamescope and never stops it. A box with a monitor serves a mirror of it at the monitor's resolution, not a display of the client's own; only a headless box on its own autologin session restarts at the client's resolution. |
 | **Bare spawn** | No gamescope session and none running, or a [dedicated game session](/docs/virtual-displays#dedicated-game-sessions). | The host starts its own headless gamescope at the client's mode, running the launched game. Nothing on the box is touched. |
 
 ### Nobara and other autologin display managers
@@ -61,28 +61,28 @@ while you stream. It needs no privilege, and a reboot clears it.
 
 If nothing lights the box's screen 25 seconds after the host hands it back, the host stops that
 session so the display manager logs in again, then restarts the display manager through its
-packaged helper (`pf-dm-helper`, polkit action `io.unom.punktfunk.dm-helper`). The helper serves
-members of the [`punktfunk` group](#the-punktfunk-group) only. If both fail, the host runs
-`PUNKTFUNK_RECOVER_SESSION_CMD` when you set one.
+packaged helper (`pf-dm-helper`, polkit action `io.github.gunu3371.rubyfunk.dm-helper`). The helper serves
+members of the [`rubyfunk` group](#the-rubyfunk-group) only. If both fail, the host runs
+`RUBYFUNK_RECOVER_SESSION_CMD` when you set one.
 
-### The `punktfunk` group
+### The `rubyfunk` group
 
-Join the `punktfunk` group on any box you stream Gaming Mode from, then log out and back in:
+Join the `rubyfunk` group on any box you stream Gaming Mode from, then log out and back in:
 
 ```sh
-sudo usermod -aG punktfunk "$USER"
+sudo usermod -aG rubyfunk "$USER"
 ```
 
 Without it the virtual Steam Deck pad arrives as an Xbox 360 controller, and the host can't restart
 a display manager that fails to come back. The package creates the group empty: it can attach
 emulated USB devices, so join it only on a machine you trust. The guided installer joins you by
-default; `--no-punktfunk-group` opts out.
+default; `--no-rubyfunk-group` opts out.
 
 ## Stream the screen the box is already driving
 
 To stream Gaming Mode exactly as the TV shows it, pick that screen under **Displays** →
-**Stream this monitor** in the console, or set `PUNKTFUNK_CAPTURE_MONITOR=HDMI-A-1` (names from
-`punktfunk-host list-monitors`). Nothing is stopped or relaunched and no mode is imposed. A headless
+**Stream this monitor** in the console, or set `RUBYFUNK_CAPTURE_MONITOR=HDMI-A-1` (names from
+`rubyfunk-host list-monitors`). Nothing is stopped or relaunched and no mode is imposed. A headless
 gamescope has no screen to list. See
 [Stream a real monitor instead](/docs/virtual-displays#stream-a-real-monitor-instead).
 
@@ -93,28 +93,28 @@ Attach streams that screen, so it stays on.
 ## HDR on gamescope
 
 A stock gamescope captures 8-bit SDR: it tone-maps HDR games down, correctly, before the host sees
-them. A 10-bit HDR stream needs `punktfunk-gamescope`, gamescope plus Punktfunk's capture
+them. A 10-bit HDR stream needs `rubyfunk-gamescope`, gamescope plus RubyFunk's capture
 patches. The host packages install it under its own name; your Gaming Mode keeps the system
 gamescope.
 
 | System | How to get it |
 |---|---|
-| Bazzite, Fedora Atomic | In the Punktfunk sysext: `punktfunk-sysext update`. |
-| Fedora, Nobara, other RPM systems | Installed with the host. On an older install: `sudo dnf install punktfunk-gamescope`. |
-| Debian 13, Ubuntu 26.04 | Installed with the host. On an older install: `sudo apt install punktfunk-gamescope`. |
+| Bazzite, Fedora Atomic | In the RubyFunk sysext: `rubyfunk-sysext update`. |
+| Fedora, Nobara, other RPM systems | Installed with the host. On an older install: `sudo dnf install rubyfunk-gamescope`. |
+| Debian 13, Ubuntu 26.04 | Installed with the host. On an older install: `sudo apt install rubyfunk-gamescope`. |
 | Ubuntu 24.04 | Not available: its wayland is too old. Build from source or upgrade. |
 | Arch | Installed with the host. |
 | SteamOS | Built by the Steam Deck installer (`scripts/steamdeck/install.sh`, `update.sh`). |
-| NixOS | `services.punktfunk.host.gamescopeHdr` (on by default). |
-| Anything else | `bash packaging/gamescope/build-punktfunk-gamescope.sh` in the source tree. |
+| NixOS | `services.rubyfunk.host.gamescopeHdr` (on by default). |
+| Anything else | `bash packaging/gamescope/build-rubyfunk-gamescope.sh` in the source tree. |
 
 **Restart the host after installing it:** the host checks the gamescope binary once, at startup.
-The log then says `using the punktfunk build (10-bit HDR capture available)` instead of
+The log then says `using the rubyfunk build (10-bit HDR capture available)` instead of
 `gamescope has no +pfhdr marker`.
 
 HDR is on by default once the build is present; **Game Mode HDR** in the console
-(`PUNKTFUNK_GAMESCOPE_HDR=0`) forces SDR. `PUNKTFUNK_GAMESCOPE_BIN` picks one binary; unset, the
-host prefers `punktfunk-gamescope` over `gamescope`.
+(`RUBYFUNK_GAMESCOPE_HDR=0`) forces SDR. `RUBYFUNK_GAMESCOPE_BIN` picks one binary; unset, the
+host prefers `rubyfunk-gamescope` over `gamescope`.
 
 The build only reaches sessions the host starts: managed and bare spawn. An attached session runs
 the distro's gamescope, so it streams SDR and the host draws the pointer. The rest of the HDR
@@ -126,12 +126,12 @@ chain, and what to check when a stream comes out SDR, is on [HDR](/docs/hdr#linu
   overlay (Quick Access Menu) needs **3.16.23**. The host logs the version it found.
 - **On a stock gamescope, Steam shows one refresh rate and no resolutions** — 60 Hz if the launch
   lost its flag — and games that pace to the display hold there, though the stream runs at the
-  client's rate. `punktfunk-gamescope` reports the real mode;
-  `PUNKTFUNK_GAMESCOPE_REFRESH_RATES=60,90,120` adds rates to Steam's menu.
-- **The performance overlay** (mangoapp) reaches the stream only with `punktfunk-gamescope`.
+  client's rate. `rubyfunk-gamescope` reports the real mode;
+  `RUBYFUNK_GAMESCOPE_REFRESH_RATES=60,90,120` adds rates to Steam's menu.
+- **The performance overlay** (mangoapp) reaches the stream only with `rubyfunk-gamescope`.
 - **The keyboard types US layout** on a stock gamescope, whatever the box uses.
 - **The pointer costs a full-frame pass** on a stock gamescope, because the host draws it.
-  `punktfunk-gamescope` paints it itself.
+  `rubyfunk-gamescope` paints it itself.
 - **Touch is a single-finger pointer**: taps and drags work, pinch doesn't. The trackpad and pointer
   [touch modes](/docs/input#touch-modes) are unaffected.
 - **Desktop [mouse mode](/docs/input#mouse-modes) is unavailable**; the mouse stays captured.
@@ -149,17 +149,17 @@ A file in `/etc/gamescope-session-plus/sessions.d/` overrides `GAMESCOPE_BIN` or
 
 ### The box's screen stays dark after a stream
 
-The hand-back failed. Join the [`punktfunk` group](#the-punktfunk-group), or set
-`PUNKTFUNK_RECOVER_SESSION_CMD`. To get the screen back now:
+The hand-back failed. Join the [`rubyfunk` group](#the-rubyfunk-group), or set
+`RUBYFUNK_RECOVER_SESSION_CMD`. To get the screen back now:
 `sudo systemctl restart display-manager.service`.
 
 ### The stream is black on connect, or stuck at the box's resolution
 
 The session streamed the box's own screen at its own mode. Check
-`journalctl --user -u punktfunk-host | grep 'gamescope sub-mode'`.
+`journalctl --user -u rubyfunk-host | grep 'gamescope sub-mode'`.
 
 1. Under **Displays**, click **Stream this monitor** on the streamed screen again to clear it.
-2. If `~/.config/punktfunk/host.env` sets `PUNKTFUNK_GAMESCOPE_ATTACH`, a copied template put it
-   there: delete that line, and any `PUNKTFUNK_GAMESCOPE_NODE` line, then
-   `systemctl --user restart punktfunk-host`.
+2. If `~/.config/rubyfunk/host.env` sets `RUBYFUNK_GAMESCOPE_ATTACH`, a copied template put it
+   there: delete that line, and any `RUBYFUNK_GAMESCOPE_NODE` line, then
+   `systemctl --user restart rubyfunk-host`.
 3. If the log says `managed takeover unavailable`, the reason is on the same line.

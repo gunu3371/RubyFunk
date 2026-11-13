@@ -5,10 +5,10 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
-use punktfunk_core::config::{Config, FecScheme, Role};
-use punktfunk_core::fec::coder_for;
-use punktfunk_core::packet::{Reassembler, ReassemblerLimits};
-use punktfunk_core::stats::StatsCounters;
+use rubyfunk_core::config::{Config, FecScheme, Role};
+use rubyfunk_core::fec::coder_for;
+use rubyfunk_core::packet::{Reassembler, ReassemblerLimits};
+use rubyfunk_core::stats::StatsCounters;
 
 fuzz_target!(|data: &[u8]| {
     let Some((&arm, mut rest)) = data.split_first() else {

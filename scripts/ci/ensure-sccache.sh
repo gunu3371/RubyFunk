@@ -32,7 +32,7 @@ disable_sccache_wrappers() {
     shim_dir="${RUNNER_TEMP:-$(mktemp -d)}/sccache-passthrough"
     mkdir -p "$shim_dir"
     # bash, not sh: dash drops environment names it cannot parse, and cargo's
-    # `CARGO_BIN_EXE_punktfunk-setup` has a hyphen, so `env!` in that test fails.
+    # `CARGO_BIN_EXE_rubyfunk-setup` has a hyphen, so `env!` in that test fails.
     printf '%s\n' \
         '#!/bin/bash' \
         'case "$1" in' \

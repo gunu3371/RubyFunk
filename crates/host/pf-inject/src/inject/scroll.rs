@@ -23,11 +23,11 @@
 
 use std::time::{Duration, Instant};
 
-use punktfunk_core::input::scroll::{
+use rubyfunk_core::input::scroll::{
     ScrollEvent, ScrollPhase, ScrollSource, ScrollUnits, SCROLL_AXIS_UNITS_PER_DETENT,
     SCROLL_DIP_PER_DETENT, SCROLL_SCALE,
 };
-use punktfunk_core::input::{InputEvent, InputKind, PRECISE_PX_PER_DETENT, SCROLL_FLAG_PRECISE};
+use rubyfunk_core::input::{InputEvent, InputKind, PRECISE_PX_PER_DETENT, SCROLL_FLAG_PRECISE};
 
 /// How long a lifted finger's stop waits for the client's momentum. The Mac
 /// starts momentum a frame after the lift; the rest is network jitter. Momentum
@@ -575,7 +575,7 @@ impl ScrollMapper {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use punktfunk_core::input::InputKind;
+    use rubyfunk_core::input::InputKind;
 
     fn ev(source: ScrollSource, phase: ScrollPhase, axis: u32, delta: f64) -> InputEvent {
         ScrollEvent {
@@ -1344,7 +1344,7 @@ mod tests {
 
     #[test]
     fn axis_units_count_ten_a_click_where_the_host_counts_clicks() {
-        use punktfunk_core::input::scroll::SCROLL_FLAG_AXIS_UNITS;
+        use rubyfunk_core::input::scroll::SCROLL_FLAG_AXIS_UNITS;
         // A Wayland touchpad's 10 units are one click to Qt: a whole detent on
         // Windows and KWin, untouched where the host passes the distance on.
         let e = ev(ScrollSource::Finger, ScrollPhase::Update, 0, 10.0);

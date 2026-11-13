@@ -34,7 +34,7 @@ org.freedesktop.impl.portal.ScreenCast=wlr
 
 Nothing is required: the host finds sway on every connect.
 
-Don't set `PUNKTFUNK_COMPOSITOR`: a pin turns off detection and session following. Every other
+Don't set `RUBYFUNK_COMPOSITOR`: a pin turns off detection and session following. Every other
 option is in [Configuration](/docs/configuration).
 
 The host writes its own chooser into `~/.config/xdg-desktop-portal-wlr/config` and restarts xdpw
@@ -45,8 +45,8 @@ when that changes. When the host stops, it puts your previous chooser back.
 From inside your sway session:
 
 ```sh
-systemctl --user enable --now punktfunk-host
-journalctl --user -u punktfunk-host -f    # watch it start and print its fingerprint
+systemctl --user enable --now rubyfunk-host
+journalctl --user -u rubyfunk-host -f    # watch it start and print its fingerprint
 ```
 
 Open [the web console](/docs/web-console) to pair a [client](/docs/clients). To serve Moonlight

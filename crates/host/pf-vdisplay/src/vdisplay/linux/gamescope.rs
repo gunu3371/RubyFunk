@@ -61,7 +61,7 @@ use {argv::*, bind::*, discovery::*, dropins::*, spawn::*, steam_launch::*, take
 /// Attach: capture + inject an already-running gamescope; no lifecycle ownership.
 /// Spawn: bare headless gamescope running [`VirtualDisplay::set_launch_command`].
 ///
-/// Operator env (`PUNKTFUNK_GAMESCOPE_{MANAGED,ATTACH,NODE,SESSION}`) feeds
+/// Operator env (`RUBYFUNK_GAMESCOPE_{MANAGED,ATTACH,NODE,SESSION}`) feeds
 /// `routing::operator_gamescope` once; it is never republished here.
 #[derive(Default)]
 pub struct GamescopeDisplay {
@@ -69,7 +69,7 @@ pub struct GamescopeDisplay {
     /// per-device topology (`design/web-console-overhaul.md` §6.1) can be resolved here.
     client_fp: Option<[u8; 32]>,
 
-    /// Bare-spawn command. Not the process-global `PUNKTFUNK_GAMESCOPE_APP`.
+    /// Bare-spawn command. Not the process-global `RUBYFUNK_GAMESCOPE_APP`.
     cmd: Option<String>,
     /// Set before `create`. Gamescope cannot enable HDR live, so this is part of the reuse key.
     hdr: bool,
@@ -106,7 +106,7 @@ impl SessionState {
     }
 }
 
-const SESSION_UNIT: &str = "punktfunk-gamescope";
+const SESSION_UNIT: &str = "rubyfunk-gamescope";
 const SESSION_PLUS_BIN: &str = "/usr/share/gamescope-session-plus/gamescope-session-plus";
 
 /// Game Mode's crash counters: a line per run that ends inside 60 s. [`SESSION_PLUS_BIN`]
@@ -291,7 +291,7 @@ impl GamescopeDisplay {
         // Diagnostic only: warns on known-deadlock-prone versions.
         check_gamescope_version();
         // Resolve once before the gate and hand the same answer to [`spawn`]. Gating on `self.cmd`
-        // alone while spawn fell back to `PUNKTFUNK_GAMESCOPE_APP` would pass `--steam` with no
+        // alone while spawn fell back to `RUBYFUNK_GAMESCOPE_APP` would pass `--steam` with no
         // instance free.
         let app = resolved_spawn_app(self.cmd.as_deref());
         let steam = app.as_deref().is_some_and(is_steam_launch);
@@ -393,7 +393,7 @@ fn create_attach(node: &str, mode: Mode, hdr: bool) -> Result<VirtualOutput> {
         ensure_box_gamescope_mode(mode, hdr)?
     } else {
         node.parse()
-            .context("PUNKTFUNK_GAMESCOPE_NODE must be a node id or 'auto'")?
+            .context("RUBYFUNK_GAMESCOPE_NODE must be a node id or 'auto'")?
     };
     Ok(attach_output(node_id, mode, auto))
 }
@@ -1057,14 +1057,14 @@ fn point_injector_at_eis(scope: Scope<'_>) {
 }
 
 /// Explicit-off kill switch for [`sync_session_keyboard_layout`].
-const LAYOUT_SYNC_ENV: &str = "PUNKTFUNK_SESSION_LAYOUT";
+const LAYOUT_SYNC_ENV: &str = "RUBYFUNK_SESSION_LAYOUT";
 /// `setxkbmap` talks to a local X server; anything slower than this is a server that is not
 /// answering, and the connecting client is waiting on us.
 const LAYOUT_SYNC_BUDGET: std::time::Duration = std::time::Duration::from_secs(5);
 
 /// Attach path: autologin Xwayland is born `us`; `spawn::xkb_env` never reaches it.
 /// Xwayland only — Wayland-native clients take the compositor keymap (`+pfhdr8`). Off via
-/// `PUNKTFUNK_SESSION_LAYOUT`.
+/// `RUBYFUNK_SESSION_LAYOUT`.
 fn sync_session_keyboard_layout() {
     if pf_host_config::env_on(LAYOUT_SYNC_ENV) == Some(false) {
         return;
@@ -1152,7 +1152,7 @@ pub(crate) fn stream_existing_output(
 fn launch_session(client: &str, unit_name: &str, mode: Mode, hdr: bool) -> Result<u32> {
     if !std::path::Path::new(SESSION_PLUS_BIN).exists() {
         anyhow::bail!(
-            "PUNKTFUNK_GAMESCOPE_SESSION is set but {SESSION_PLUS_BIN} is missing — the host-managed \
+            "RUBYFUNK_GAMESCOPE_SESSION is set but {SESSION_PLUS_BIN} is missing — the host-managed \
              session needs gamescope-session-plus (a Bazzite / SteamOS-like host)"
         );
     }
@@ -1171,12 +1171,12 @@ fn launch_session(client: &str, unit_name: &str, mode: Mode, hdr: bool) -> Resul
     if wsi == WsiPlan::DistroDisabled {
         tracing::warn!(
             "gamescope: this box's VkLayer_FROG_gamescope_wsi was built for a different gamescope \
-             than the one we run, and no punktfunk layer is installed to use instead — disabling \
+             than the one we run, and no rubyfunk layer is installed to use instead — disabling \
              it for this session (DISABLE_GAMESCOPE_WSI=1, which the session script cannot clobber \
              the way it clobbers ENABLE_GAMESCOPE_WSI). Left enabled it rejects the client's \
              swapchain_feedback and every Vulkan client dies; Steam's own UI is not one, so what \
              you see is a game that runs with sound and input on a black screen, with no other \
-             symptom. Upgrading the punktfunk-gamescope package fixes this properly — it ships a \
+             symptom. Upgrading the rubyfunk-gamescope package fixes this properly — it ships a \
              layer built from the same tree as the compositor."
         );
         // `hdr_args` never consults the layer plan — say so when we advertise HDR with no game HDR.
@@ -1442,7 +1442,7 @@ mod tests {
     #[test]
     fn the_managed_session_unit_argv_keeps_its_shape() {
         let args = session_unit_args(
-            "punktfunk-gamescope",
+            "rubyfunk-gamescope",
             "steam",
             Mode {
                 width: 2560,
@@ -1463,7 +1463,7 @@ mod tests {
             [
                 "--user",
                 "--collect",
-                "--unit=punktfunk-gamescope",
+                "--unit=rubyfunk-gamescope",
                 "--property=BindReadOnlyPaths=/w:/usr/bin/gamescope",
                 "--setenv=XKB_DEFAULT_LAYOUT=de",
                 "--property=UnsetEnvironment=DISPLAY WAYLAND_DISPLAY",

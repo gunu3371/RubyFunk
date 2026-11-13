@@ -80,7 +80,7 @@ pub fn start(session: u32) {
 
 /// Take the fence off every physical controller that carries one. For the service's stop and
 /// the uninstaller: a tag never outlives the device's next start, but a pad that stays up
-/// through a punktfunk removal would otherwise keep hiding from a later console session. The
+/// through a rubyfunk removal would otherwise keep hiding from a later console session. The
 /// fence's own skips hold here too: a redirected pad's tag and our devices' are not the fence's.
 pub fn clear() {
     for (id, _) in candidates() {
@@ -164,7 +164,7 @@ fn fence_devnode(id: &str, path: &str, session: u32) -> Result<bool> {
     }
 }
 
-/// The host's own virtual devices: `SWD\PUNKTFUNK\…` and `SWD\VID_…\PF_…`, tagged at creation.
+/// The host's own virtual devices: `SWD\RUBYFUNK\…` and `SWD\VID_…\PF_…`, tagged at creation.
 fn is_ours(instance_id: &str) -> bool {
     instance_id.to_ascii_uppercase().starts_with("SWD\\")
 }
@@ -414,7 +414,7 @@ mod tests {
         assert!(!is_game_usage(1, 6), "keyboard");
         assert!(!is_game_usage(1, 2), "mouse");
         assert!(!is_game_usage(0x0C, 1), "consumer control");
-        assert!(is_ours("SWD\\PUNKTFUNK\\PF_MOUSE_0"));
+        assert!(is_ours("SWD\\RUBYFUNK\\PF_MOUSE_0"));
         assert!(is_ours("swd\\VID_045E&PID_02FD\\PF_XBOX_ONES_0"));
         assert!(!is_ours("USB\\VID_054C&PID_0CE6&MI_03\\8&185D5297&4&0003"));
         assert!(is_ts_hub("ROOT\\RDPBUS\\0000"));

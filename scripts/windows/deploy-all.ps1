@@ -7,7 +7,7 @@
     powershell -ExecutionPolicy Bypass -File scripts\windows\deploy-all.ps1 -EnableScriptingTask
 
   All three modules are ALWAYS deployed - a host binary whose runner bundle is stale (or missing)
-  fails `punktfunk-host plugins add` outright, since the CLI forwards package ops to the runner it
+  fails `rubyfunk-host plugins add` outright, since the CLI forwards package ops to the runner it
   finds next to the exe.
 
   Run from an elevated PowerShell. deploy-host.ps1 throws (and rolls itself back) on a failed

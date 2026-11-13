@@ -9,13 +9,13 @@
   (probe builds only, packaging/windows/drivers/pf-vdisplay/src/encode/drive.rs). The G3 claim is
   that this costs one IDR and never a compose hitch, so the run measures three things:
 
-    * COMPOSE - `capture.dropped_total` + `capture.published_total` from `punktfunk-host ctl
+    * COMPOSE - `capture.dropped_total` + `capture.published_total` from `rubyfunk-host ctl
       --json status`, polled twice a second. Every drain-worker pass through the block window
       bumps one of them (the pool has no free slot, so the frame is counted and dropped), so their
       combined rate IS the drain worker's cadence. A hitch shows as an interval below refresh.
     * LADDER - the rungs the host ran, from `capture.last_episode.stages[]` (the coordinator's own
       per-rung ms) and from the host.log timestamps of the lines each actuator writes.
-    * AU STREAM - the host's access-unit dump (PUNKTFUNK_IDD_DIAG, set as a per-service
+    * AU STREAM - the host's access-unit dump (RUBYFUNK_IDD_DIAG, set as a per-service
       environment value so a service restart picks it up without a reboot): per-AU `qpc_pts`
       deltas and keyframe count, i.e. how many IDRs the recovery really cost.
 
@@ -46,9 +46,9 @@ param(
     [switch]$SkipBuild,
     [switch]$SkipDeploy,
     [string]$Repo = 'C:\Users\Public\pf-phase0',
-    [string]$Client = 'C:\Users\Public\punktfunk-native\target\release\punktfunk-session.exe',
-    [string]$HostExe = 'C:\Program Files\punktfunk\punktfunk-host.exe',
-    [string]$Service = 'PunktfunkHost',
+    [string]$Client = 'C:\Users\Public\rubyfunk-native\target\release\rubyfunk-session.exe',
+    [string]$HostExe = 'C:\Program Files\rubyfunk\rubyfunk-host.exe',
+    [string]$Service = 'RubyFunkHost',
     [string]$OutDir = 'C:\Users\Public'
 )
 $ErrorActionPreference = 'Stop'
@@ -58,7 +58,7 @@ $runLog = Join-Path $OutDir "stall-$Tag.log"
 $pollLog = Join-Path $OutDir "stall-$Tag-poll.jsonl"
 $clientLog = Join-Path $OutDir "stall-$Tag-client.out"
 $dumpDir = Join-Path $OutDir "stall-$Tag-au"
-$hostLog = Join-Path $env:ProgramData 'punktfunk\logs\host.log'
+$hostLog = Join-Path $env:ProgramData 'rubyfunk\logs\host.log'
 $machineEnv = 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
 $svcEnv = "HKLM:\SYSTEM\CurrentControlSet\Services\$Service"
 
@@ -136,7 +136,7 @@ if (-not $SkipDeploy) {
 # --- 3. AU dump + knob --------------------------------------------------------------------------
 # Per-service Environment (REG_MULTI_SZ): the SCM applies it at service start, so unlike `setx /M`
 # this reaches the host without a reboot.
-Set-ItemProperty -Path $svcEnv -Name 'Environment' -Type MultiString -Value @("PUNKTFUNK_IDD_DIAG=$dumpDir")
+Set-ItemProperty -Path $svcEnv -Name 'Environment' -Type MultiString -Value @("RUBYFUNK_IDD_DIAG=$dumpDir")
 Restart-Service $Service -Force
 Start-Sleep -Seconds 3
 Set-BlockKnob $BlockAfter
@@ -145,7 +145,7 @@ $hostMark = (Get-Item $hostLog -ErrorAction SilentlyContinue).Length
 if (-not $hostMark) { $hostMark = 0 }
 
 # --- 4. loopback client -------------------------------------------------------------------------
-$cert = Join-Path $env:ProgramData 'punktfunk\cert.pem'
+$cert = Join-Path $env:ProgramData 'rubyfunk\cert.pem'
 $fp = (Get-FileHash -Algorithm SHA256 $cert).Hash.ToLower()
 Say "starting the loopback client (fp $fp)"
 $proc = Start-Process -FilePath $Client -PassThru -WindowStyle Minimized `
@@ -245,7 +245,7 @@ if ($final) { Say ("final class={0} state={1} detached={2} published={3}" -f $fi
 Say '--- access units (qpc_pts deltas, keyframes) ---'
 $dump = Get-ChildItem $dumpDir -Filter 'pfvd-au-*.bin' -ErrorAction SilentlyContinue |
     Sort-Object Length -Descending | Select-Object -First 1
-if (-not $dump) { Say '  no AU dump (PUNKTFUNK_IDD_DIAG did not reach the service)' }
+if (-not $dump) { Say '  no AU dump (RUBYFUNK_IDD_DIAG did not reach the service)' }
 else {
     # Framing: [u32 len][u64 pts_ns][u8 keyframe][len bytes]. Seek past the payload - the file is
     # the whole encoded stream.

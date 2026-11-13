@@ -12,8 +12,8 @@
 //! edges own DOWN/UP frames, range-leave is a final frame without `INRANGE`.
 
 use anyhow::{Context, Result};
-use punktfunk_core::input::{InputEvent, InputKind};
-use punktfunk_core::quic::{
+use rubyfunk_core::input::{InputEvent, InputKind};
+use rubyfunk_core::quic::{
     PenSample, PenTool, PenTransition, PEN_ANGLE_UNKNOWN, PEN_BARREL1, PEN_TILT_UNKNOWN,
 };
 use std::sync::atomic::{AtomicBool, Ordering};

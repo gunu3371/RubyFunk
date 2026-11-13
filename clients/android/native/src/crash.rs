@@ -94,7 +94,7 @@ fn signal_line(signal: &[u8]) -> String {
     )
 }
 
-/// `  #00 pc 000000000001a2b4  /data/app/…/libpunktfunk_android.so (fn+12) (BuildId: …)`.
+/// `  #00 pc 000000000001a2b4  /data/app/…/librubyfunk_android.so (fn+12) (BuildId: …)`.
 fn frame_line(index: usize, frame: &[u8]) -> String {
     let mut line = format!(
         "  #{index:02} pc {:016x}  {}",
@@ -206,7 +206,7 @@ mod tests {
     }
 
     fn tombstone() -> Vec<u8> {
-        let lib = b"/data/app/io.unom.punktfunk/lib/arm64/libpunktfunk_android.so";
+        let lib = b"/data/app/io.github.gunu3371.rubyfunk/lib/arm64/librubyfunk_android.so";
         let ours = [
             int_field(1, 0x1a2b4),
             msg_field(4, b"decode"),
@@ -254,7 +254,7 @@ mod tests {
                 "Abort message: 'boom'",
                 "backtrace of tid 42 (pf-decode):",
                 "  #00 pc 000000000001a2b4  \
-                 /data/app/io.unom.punktfunk/lib/arm64/libpunktfunk_android.so (decode+12) \
+                 /data/app/io.github.gunu3371.rubyfunk/lib/arm64/librubyfunk_android.so (decode+12) \
                  (BuildId: 9f3c)",
                 "  #01 pc 00000000000005f0  /apex/libc.so",
             ]

@@ -3,7 +3,7 @@
 //! Leaf crate so `pf-media`, `pf-vdisplay`, and the orchestrator share these
 //! without depending on `gamestream`. Std + `tracing` only.
 //!
-//! [`config_dir`] is XDG / `%ProgramData%`, overridable with `PUNKTFUNK_CONFIG_DIR`.
+//! [`config_dir`] is XDG / `%ProgramData%`, overridable with `RUBYFUNK_CONFIG_DIR`.
 //! [`seat_home`] is where a profile's Steam from Own Steam stays until it is erased.
 //! [`create_private_dir`] / [`write_secret_file`] apply 0700 / 0600 on Unix and a
 //! SYSTEM/Administrators DACL on Windows. [`replace_file`] / [`replace_secret_file`] /
@@ -21,20 +21,20 @@ pub mod seat;
 #[cfg(not(windows))]
 pub mod tray_autostart;
 
-/// `<runtime>/punktfunk-gamescope-ei` (per-user 0700), or `/tmp/…` when there is
+/// `<runtime>/rubyfunk-gamescope-ei` (per-user 0700), or `/tmp/…` when there is
 /// none. `runtime` is the live session's (`pf_host_config::session::runtime_dir`):
 /// `pf-vdisplay` writes the file and `pf-inject` reads it, so both name the same one.
 #[cfg(target_os = "linux")]
 pub fn gamescope_ei_socket_file(runtime: Option<&str>) -> PathBuf {
-    gamescope_ei_relay(runtime, "punktfunk-gamescope-ei")
+    gamescope_ei_relay(runtime, "rubyfunk-gamescope-ei")
 }
 
-/// `<runtime>/punktfunk-gamescope-{id}-ei`. Isolated bare-spawn
+/// `<runtime>/rubyfunk-gamescope-{id}-ei`. Isolated bare-spawn
 /// sessions (`design/gamescope-multiuser.md`) must not overwrite each
 /// other's relay; `id` is `pf-vdisplay`'s `SessionIsolation`.
 #[cfg(target_os = "linux")]
 pub fn gamescope_ei_socket_file_for(runtime: Option<&str>, id: &str) -> PathBuf {
-    gamescope_ei_relay(runtime, &format!("punktfunk-gamescope-{id}-ei"))
+    gamescope_ei_relay(runtime, &format!("rubyfunk-gamescope-{id}-ei"))
 }
 
 #[cfg(target_os = "linux")]
@@ -45,13 +45,13 @@ fn gamescope_ei_relay(runtime: Option<&str>, name: &str) -> PathBuf {
     }
 }
 
-/// `$XDG_DATA_HOME/punktfunk/seats` — the Steam homes Own Steam profiles kept. Path only.
+/// `$XDG_DATA_HOME/rubyfunk/seats` — the Steam homes Own Steam profiles kept. Path only.
 #[cfg(target_os = "linux")]
 pub fn seats_dir() -> PathBuf {
     data_dir().join("seats")
 }
 
-/// `$XDG_DATA_HOME/punktfunk/seats/<id>` — the Steam home a profile kept from playing as Own
+/// `$XDG_DATA_HOME/rubyfunk/seats/<id>` — the Steam home a profile kept from playing as Own
 /// Steam, which removing the profile with `erase` deletes. `id` is the profile id. Path only.
 #[cfg(target_os = "linux")]
 pub fn seat_home(id: &str) -> PathBuf {
@@ -65,7 +65,7 @@ pub fn seat_record(id: &str) -> PathBuf {
     seats_dir().join(format!("{id}.json"))
 }
 
-/// `$XDG_DATA_HOME/punktfunk`, else `~/.local/share/punktfunk`. Separate from
+/// `$XDG_DATA_HOME/rubyfunk`, else `~/.local/share/rubyfunk`. Separate from
 /// [`config_dir`]: it holds installs (a seat's Steam, managed emulators), and the plugin
 /// runner shares nothing under the config dir.
 /// Whether this process's binary is no longer the file at its path: a package update swaps the
@@ -100,14 +100,14 @@ fn replaced_on_disk(path: &std::path::Path, running: &std::fs::Metadata) -> bool
 
 #[cfg(not(target_os = "windows"))]
 pub fn data_dir() -> PathBuf {
-    xdg_home("XDG_DATA_HOME", ".local/share").join("punktfunk")
+    xdg_home("XDG_DATA_HOME", ".local/share").join("rubyfunk")
 }
 
-/// `$XDG_STATE_HOME/punktfunk`, else `~/.local/state/punktfunk`: what must outlive a crash and
+/// `$XDG_STATE_HOME/rubyfunk`, else `~/.local/state/rubyfunk`: what must outlive a crash and
 /// a reboot, such as the audio defaults a session claimed.
 #[cfg(not(target_os = "windows"))]
 pub fn state_dir() -> PathBuf {
-    xdg_home("XDG_STATE_HOME", ".local/state").join("punktfunk")
+    xdg_home("XDG_STATE_HOME", ".local/state").join("rubyfunk")
 }
 
 /// `$var` when it holds an absolute path, else `$HOME/<fallback>`, else `.`. The XDG
@@ -134,9 +134,9 @@ fn xdg_home_from(
 ///
 /// Windows uses `%ProgramData%` so the SYSTEM service and the interactive
 /// user share one dir that survives logout. Elsewhere `$XDG_CONFIG_HOME`, ignored
-/// when empty or relative. `PUNKTFUNK_CONFIG_DIR` overrides.
+/// when empty or relative. `RUBYFUNK_CONFIG_DIR` overrides.
 pub fn config_dir() -> PathBuf {
-    if let Some(dir) = std::env::var_os("PUNKTFUNK_CONFIG_DIR").filter(|s| !s.is_empty()) {
+    if let Some(dir) = std::env::var_os("RUBYFUNK_CONFIG_DIR").filter(|s| !s.is_empty()) {
         return PathBuf::from(dir);
     }
     #[cfg(target_os = "windows")]
@@ -146,12 +146,12 @@ pub fn config_dir() -> PathBuf {
         .unwrap_or_else(|| PathBuf::from("."));
     #[cfg(not(target_os = "windows"))]
     let base = xdg_home("XDG_CONFIG_HOME", ".config");
-    base.join("punktfunk")
+    base.join("rubyfunk")
 }
 
-/// `punktfunk-host serve` writes `PUNKTFUNK_MGMT_URL=https://127.0.0.1:<port>`
+/// `rubyfunk-host serve` writes `RUBYFUNK_MGMT_URL=https://127.0.0.1:<port>`
 /// on start. The tray cannot read `host.env` on Windows (SYSTEM/Administrators
-/// DACL); this file is Users-readable so a `PUNKTFUNK_MGMT_BIND` move still
+/// DACL); this file is Users-readable so a `RUBYFUNK_MGMT_BIND` move still
 /// reaches loopback consumers. `None` if absent or unparsable.
 pub fn published_mgmt_port() -> Option<u16> {
     published_mgmt_port_in(&config_dir())
@@ -746,17 +746,17 @@ mod tests {
         use super::replaced_on_disk;
         let dir = std::env::temp_dir().join(format!("pf-exe-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
-        let path = dir.join("punktfunk-host");
+        let path = dir.join("rubyfunk-host");
         std::fs::write(&path, b"old").unwrap();
         let running = std::fs::metadata(&path).unwrap();
         assert!(!replaced_on_disk(&path, &running));
 
-        let staged = dir.join("punktfunk-host.new");
+        let staged = dir.join("rubyfunk-host.new");
         std::fs::write(&staged, b"new").unwrap();
         std::fs::rename(&staged, &path).unwrap();
         assert!(replaced_on_disk(&path, &running));
         assert!(replaced_on_disk(
-            &dir.join("punktfunk-host (deleted)"),
+            &dir.join("rubyfunk-host (deleted)"),
             &running
         ));
         std::fs::remove_dir_all(&dir).unwrap();
@@ -769,12 +769,12 @@ mod tests {
         use super::profile_moved;
         let dir = std::env::temp_dir().join(format!("pf-nix-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
-        let running = std::path::Path::new("/nix/store/aaa-punktfunk/bin/punktfunk-host");
+        let running = std::path::Path::new("/nix/store/aaa-rubyfunk/bin/rubyfunk-host");
         assert!(!profile_moved(running, &dir), "no profile entry");
         std::fs::write(dir.join("new"), b"").unwrap();
-        std::os::unix::fs::symlink(dir.join("new"), dir.join("punktfunk-host")).unwrap();
+        std::os::unix::fs::symlink(dir.join("new"), dir.join("rubyfunk-host")).unwrap();
         assert!(profile_moved(running, &dir));
-        let elsewhere = std::path::Path::new("/usr/bin/punktfunk-host");
+        let elsewhere = std::path::Path::new("/usr/bin/rubyfunk-host");
         assert!(!profile_moved(elsewhere, &dir), "only a store path");
         std::fs::remove_dir_all(&dir).unwrap();
     }
@@ -783,18 +783,18 @@ mod tests {
 
     #[test]
     fn env_file_reads_host_env_as_the_service_does() {
-        let text = "# PUNKTFUNK_MGMT_BIND=commented\n  PUNKTFUNK_MGMT_BIND = \"0.0.0.0:48123\" \n\
+        let text = "# RUBYFUNK_MGMT_BIND=commented\n  RUBYFUNK_MGMT_BIND = \"0.0.0.0:48123\" \n\
                     no equals\n=orphan\nRUST_LOG=info\nRUST_LOG=debug\n";
         assert_eq!(
             env_file::parse(text).collect::<Vec<_>>(),
             [
-                ("PUNKTFUNK_MGMT_BIND", "0.0.0.0:48123"),
+                ("RUBYFUNK_MGMT_BIND", "0.0.0.0:48123"),
                 ("RUST_LOG", "info"),
                 ("RUST_LOG", "debug"),
             ]
         );
         assert_eq!(env_file::get(text, "RUST_LOG"), Some("debug"));
-        assert_eq!(env_file::get(text, "PUNKTFUNK_UI_BIND"), None);
+        assert_eq!(env_file::get(text, "RUBYFUNK_UI_BIND"), None);
     }
 
     #[cfg(target_os = "linux")]
@@ -814,7 +814,7 @@ mod tests {
         assert_eq!(per.parent(), global.parent());
         assert_eq!(
             per.file_name().unwrap().to_str().unwrap(),
-            "punktfunk-gamescope-cafe0123-ei"
+            "rubyfunk-gamescope-cafe0123-ei"
         );
     }
 
@@ -823,7 +823,7 @@ mod tests {
     fn a_seat_home_is_the_data_dir_plus_the_seat_id() {
         let seat = seat_home("cafe0123");
         assert!(
-            seat.ends_with("punktfunk/seats/cafe0123"),
+            seat.ends_with("rubyfunk/seats/cafe0123"),
             "{}",
             seat.display()
         );
@@ -853,7 +853,7 @@ mod tests {
     #[test]
     fn an_empty_or_relative_xdg_value_falls_back_to_home() {
         let home = || Some("/home/u".into());
-        for bad in ["", "punktfunk-rel"] {
+        for bad in ["", "rubyfunk-rel"] {
             assert_eq!(
                 xdg_home_from(Some(bad.into()), home(), ".config"),
                 PathBuf::from("/home/u/.config"),
@@ -884,7 +884,7 @@ mod tests {
 
         std::fs::write(
             dir.join("mgmt-endpoint"),
-            "PUNKTFUNK_MGMT_URL=https://127.0.0.1:47995\n",
+            "RUBYFUNK_MGMT_URL=https://127.0.0.1:47995\n",
         )
         .unwrap();
         assert_eq!(published_mgmt_port_in(&dir), Some(47995));
@@ -896,7 +896,7 @@ mod tests {
             "blank reads as unset, not port 0"
         );
 
-        std::fs::write(dir.join("mgmt-endpoint"), "PUNKTFUNK_MGMT_URL=\n").unwrap();
+        std::fs::write(dir.join("mgmt-endpoint"), "RUBYFUNK_MGMT_URL=\n").unwrap();
         assert_eq!(published_mgmt_port_in(&dir), None);
 
         let _ = std::fs::remove_dir_all(&dir);
@@ -934,7 +934,7 @@ mod tests {
         assert_eq!(mode(&dir), 0o700, "a secrets dir is owner-only");
 
         let shared = dir.join("tray-token");
-        replace_users_readable_file(&shared, b"PUNKTFUNK_TRAY_TOKEN=abc\n").unwrap();
+        replace_users_readable_file(&shared, b"RUBYFUNK_TRAY_TOKEN=abc\n").unwrap();
         assert_eq!(
             mode(&shared),
             0o600,
@@ -943,7 +943,7 @@ mod tests {
         assert_eq!(
             env_file::get(
                 &std::fs::read_to_string(&shared).unwrap(),
-                "PUNKTFUNK_TRAY_TOKEN"
+                "RUBYFUNK_TRAY_TOKEN"
             ),
             Some("abc")
         );
@@ -995,7 +995,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn the_door_s_box_directory_is_the_one_private_dir_others_may_walk() {
-        let box_dir = PathBuf::from("/var/lib/punktfunk");
+        let box_dir = PathBuf::from("/var/lib/rubyfunk");
         assert_eq!(private_dir_mode(true, &box_dir, &box_dir), 0o711);
         assert_eq!(private_dir_mode(false, &box_dir, &box_dir), 0o700);
         assert_eq!(

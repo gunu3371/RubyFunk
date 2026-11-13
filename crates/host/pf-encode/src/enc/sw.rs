@@ -247,7 +247,7 @@ impl Encoder for OpenH264Encoder {
 }
 
 /// Rare automatic IDRs (recovery is `request_keyframe` / RFI). `gop`
-/// (`PUNKTFUNK_OH264_GOP`) overrides (0 = encoder-auto).
+/// (`RUBYFUNK_OH264_GOP`) overrides (0 = encoder-auto).
 fn intra_period_frames(fps: u32, gop: Option<u32>) -> u32 {
     gop.unwrap_or_else(|| fps.max(1).saturating_mul(600)) // ~10 min between automatic IDRs
 }

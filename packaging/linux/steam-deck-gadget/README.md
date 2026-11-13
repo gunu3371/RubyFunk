@@ -12,7 +12,7 @@ binds the kernel `hid-steam` driver, but **Steam Input will not manage it**: Ste
 controller to USB **interface 2**, and a UHID device has no USB interface number (`Interface: -1` in
 Steam's `controller.txt`), so Steam enumerates it but never promotes it. A single-interface DualSense
 is accepted at `-1` (no ambiguity), but the multi-interface Deck specifically needs interface 2. See
-punktfunk-planning: `steam-controller-deck-support.md` §11.
+rubyfunk-planning: `steam-controller-deck-support.md` §11.
 
 A real multi-interface USB device with the controller on interface 2 requires a **USB gadget**.
 SteamOS ships every piece (`CONFIG_USB_DUMMY_HCD=m`, `CONFIG_USB_RAW_GADGET=m`,
@@ -61,12 +61,12 @@ Steam Input, which exposes its own X-Box 360 pad — exactly a real Deck's behav
 ## Host backend (shipped — default on for SteamOS)
 
 The C PoC's transport is ported to a Rust host gamepad backend:
-`crates/host/punktfunk-host/src/inject/linux/steam_gadget.rs` (`SteamDeckGadget`), driven by the same
+`crates/host/rubyfunk-host/src/inject/linux/steam_gadget.rs` (`SteamDeckGadget`), driven by the same
 `steam_proto` serializer as the UHID `SteamDeckPad`. The Steam-Deck manager
 (`inject/linux/steam_controller.rs`) selects per-pad between **UHID** (universal) and the **USB
 gadget**: the gadget is the **default on SteamOS hosts** (`gadget_preferred()` → `ID=steamos`;
 best-effort `modprobe dummy_hcd raw_gadget`, graceful fallback to UHID if `/dev/raw-gadget` is
-unusable), and off elsewhere where UHID stays the default. `PUNKTFUNK_STEAM_GADGET=1`/`0` forces it.
+unusable), and off elsewhere where UHID stays the default. `RUBYFUNK_STEAM_GADGET=1`/`0` forces it.
 A Deck-as-host with a *physical* Deck never uses it — `resolve_gamepad`'s conflict gate degrades
 `SteamDeck` → DualSense first.
 
@@ -99,4 +99,4 @@ hid-steam — so the input transport is proven end-to-end.
 - **Glass confirmation of the XInput mapping** — Steam Input only maps the gadget's raw input onto its
   X-Box pad while a game using Steam Input is focused; confirm a button reaches a real game, then
   default the gadget on for SteamOS hosts (it's strictly better than the non-promoted UHID path).
-- A `punktfunk-host` build for SteamOS to exercise the integrated path end-to-end with a live client.
+- A `rubyfunk-host` build for SteamOS to exercise the integrated path end-to-end with a live client.

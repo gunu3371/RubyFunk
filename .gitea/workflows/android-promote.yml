@@ -60,7 +60,7 @@ jobs:
     # Same image as android.yml purely for python3 + openssl (play-upload.py's only deps); it is
     # already warm on the runner. Nothing here builds.
     container:
-      image: 192.168.1.58:5010/punktfunk-android-ci:latest
+      image: 192.168.1.58:5010/rubyfunk-android-ci:latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -76,7 +76,7 @@ jobs:
           USER_FRACTION: ${{ inputs.user_fraction }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
-          set -- --package io.unom.punktfunk \
+          set -- --package io.github.gunu3371.rubyfunk \
                  --promote "$VERSION_CODE" \
                  --track "$TO_TRACK" --status "$STATUS"
           # Explicit `if`, not `[ ] && …`: under `sh -e` a false AND-OR list that ends up LAST in

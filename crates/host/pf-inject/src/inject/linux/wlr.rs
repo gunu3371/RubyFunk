@@ -16,7 +16,7 @@ use crate::head_pick::{self, HeadFacts, StreamTarget};
 use crate::plan::{Abs, Op, Plan};
 use crate::scroll::{AxisSource, ScrollBackend, ScrollMapper, ScrollOp};
 use anyhow::{bail, Context, Result};
-use punktfunk_core::input::InputKind;
+use rubyfunk_core::input::InputKind;
 use std::io::Write;
 use std::os::fd::{AsFd, FromRawFd};
 use wayland_client::backend::WaylandError;
@@ -807,14 +807,14 @@ fn text_keymap(chars: &[char]) -> String {
     }
     format!(
         "xkb_keymap {{\n\
-             xkb_keycodes \"punktfunk-text\" {{\n\
+             xkb_keycodes \"rubyfunk-text\" {{\n\
                  minimum = 8;\n\
                  maximum = {};\n\
          {keycodes}\
              }};\n\
-             xkb_types \"punktfunk-text\" {{ include \"complete\" }};\n\
-             xkb_compatibility \"punktfunk-text\" {{ include \"complete\" }};\n\
-             xkb_symbols \"punktfunk-text\" {{\n{symbols}    }};\n\
+             xkb_types \"rubyfunk-text\" {{ include \"complete\" }};\n\
+             xkb_compatibility \"rubyfunk-text\" {{ include \"complete\" }};\n\
+             xkb_symbols \"rubyfunk-text\" {{\n{symbols}    }};\n\
          }};\n",
         chars.len() + 9,
     )
@@ -822,7 +822,7 @@ fn text_keymap(chars: &[char]) -> String {
 
 /// Anonymous file of `s` plus a trailing NUL; the compositor's keymap mmap needs the NUL.
 fn memfd_with(s: &str) -> Result<std::fs::File> {
-    let name = b"punktfunk-keymap\0";
+    let name = b"rubyfunk-keymap\0";
     // SAFETY: `name` is a byte-string literal with an explicit trailing NUL, so `name.as_ptr()` is a
     // valid NUL-terminated C string; `memfd_create` only reads that name (copying it) and creates an
     // anonymous file, returning a fresh fd (or -1). `MFD_CLOEXEC` is a valid flag. The 'static literal

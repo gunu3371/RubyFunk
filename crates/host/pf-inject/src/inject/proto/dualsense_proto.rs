@@ -10,8 +10,8 @@
 //! Tests pin sizes, field offsets, paddle bits, and valid-flag gating.
 
 use crate::sensor_clock::SensorClock;
-use punktfunk_core::input::{gamepad as gs, GamepadFrame};
-use punktfunk_core::quic::{HidOutput, RichInput};
+use rubyfunk_core::input::{gamepad as gs, GamepadFrame};
+use rubyfunk_core::quic::{HidOutput, RichInput};
 use std::time::Instant;
 
 // GET_REPORT during init (`0x05` calibration, `0x09` pairing, `0x20` firmware). Without these
@@ -76,7 +76,7 @@ pub mod btn2 {
 /// PADDLE3/4 (R5/L5) → Fn right/left. Lands on kernel `BTN_TRIGGER_HAPPY1..4` / SDL function
 /// buttons instead of the fold/drop policy used on a plain DualSense.
 pub fn edge_paddle_bits(buttons: u32) -> u8 {
-    use punktfunk_core::input::gamepad as gs;
+    use rubyfunk_core::input::gamepad as gs;
     let mut b = 0;
     if buttons & gs::BTN_PADDLE1 != 0 {
         b |= btn2::EDGE_BACK_RIGHT; // R4
@@ -166,7 +166,7 @@ impl DsState {
         lt: u8,
         rt: u8,
     ) -> DsState {
-        use punktfunk_core::input::gamepad as gs;
+        use rubyfunk_core::input::gamepad as gs;
         let to_u8 = |v: i16| (((v as i32) + 32768) >> 8) as u8;
         let on = |bit: u32| buttons & bit != 0;
         // Invert in i16, then quantise. `255 - to_u8(v)` is wrong: 0..=255 has no midpoint, so
@@ -1119,7 +1119,7 @@ mod tests {
     /// Wire touchpad-click / guide / mute land in `buttons[2]`.
     #[test]
     fn from_gamepad_maps_touchpad_click() {
-        use punktfunk_core::input::gamepad as gs;
+        use rubyfunk_core::input::gamepad as gs;
         let s = DsState::from_gamepad(gs::BTN_TOUCHPAD | gs::BTN_GUIDE, 0, 0, 0, 0, 0, 0);
         assert_eq!(s.buttons[2], btn2::PS | btn2::TOUCHPAD);
         let s = DsState::from_gamepad(gs::BTN_MISC1, 0, 0, 0, 0, 0, 0);
@@ -1132,7 +1132,7 @@ mod tests {
     /// (`DS_EDGE_BUTTONS_*` / `SDL_GAMEPAD_BUTTON_PS5_*`). Serialized at report byte 10.
     #[test]
     fn edge_paddles_map_to_native_bits() {
-        use punktfunk_core::input::gamepad as gs;
+        use rubyfunk_core::input::gamepad as gs;
         assert_eq!(edge_paddle_bits(0), 0);
         assert_eq!(edge_paddle_bits(gs::BTN_PADDLE1), btn2::EDGE_BACK_RIGHT);
         assert_eq!(edge_paddle_bits(gs::BTN_PADDLE2), btn2::EDGE_BACK_LEFT);

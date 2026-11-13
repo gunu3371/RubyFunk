@@ -17,16 +17,16 @@ use super::dualshock4_proto::{
 use crate::uhid_abi::{UhidDevice, UhidEvent};
 use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
-use punktfunk_core::quic::{HidOutput, RichInput};
+use rubyfunk_core::quic::{HidOutput, RichInput};
 
 /// The `CREATE2` identity of pad `index`: what this host opens, and what the seat broker
 /// builds for a seat.
 pub(crate) fn identity(index: u8) -> crate::uhid_abi::Identity {
     crate::uhid_abi::Identity {
         bus: crate::uhid_abi::BUS_USB,
-        name: format!("Punktfunk DualShock 4 {index}"),
-        phys: format!("punktfunk/dualshock4/{index}"),
-        uniq: format!("punktfunk-ds4-{index}"),
+        name: format!("RubyFunk DualShock 4 {index}"),
+        phys: format!("rubyfunk/dualshock4/{index}"),
+        uniq: format!("rubyfunk-ds4-{index}"),
         rdesc: DS4_RDESC,
         vendor: DS4_VENDOR as u32,
         product: DS4_PRODUCT as u32,
@@ -87,7 +87,7 @@ impl DualShock4Pad {
 /// the lightbar on every OUTPUT (including rumble-only); `Led` is compared to the last
 /// forwarded value and re-armed on create/unplug.
 pub struct Ds4LinuxProto {
-    /// Steam back-grip fold. DS4 has no paddle HID slot; `PUNKTFUNK_STEAM_REMAP=paddles=…`, default drop.
+    /// Steam back-grip fold. DS4 has no paddle HID slot; `RUBYFUNK_STEAM_REMAP=paddles=…`, default drop.
     remap: crate::steam_remap::RemapConfig,
 }
 
@@ -119,7 +119,7 @@ impl PadProto for Ds4LinuxProto {
         Ok(p)
     }
 
-    fn merge_frame(&self, prev: &DsState, f: &punktfunk_core::input::GamepadFrame) -> DsState {
+    fn merge_frame(&self, prev: &DsState, f: &rubyfunk_core::input::GamepadFrame) -> DsState {
         let buttons = crate::steam_remap::fold_paddles(f.buttons, self.remap.paddles);
         DsState::merge_frame(prev, f, buttons)
     }
@@ -151,7 +151,7 @@ impl PadProto for Ds4LinuxProto {
     }
 }
 
-/// `PUNKTFUNK_GAMEPAD=ps4`. [`UhidManager`] heartbeats report `0x01` through input silence;
+/// `RUBYFUNK_GAMEPAD=ps4`. [`UhidManager`] heartbeats report `0x01` through input silence;
 /// `hid-playstation`/SDL treat a multi-second gap as unplug.
 pub type DualShock4Manager = UhidManager<Ds4LinuxProto>;
 

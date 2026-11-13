@@ -9,7 +9,7 @@
 //! raises [`ConsoleCmd`]s; worker threads here run everything that blocks — mDNS
 //! discovery, reachability probes, the SPAKE2 pairing ceremony, wake-on-LAN loops,
 //! library fetches, known-hosts persistence — and write results into the shared
-//! models. `PUNKTFUNK_FAKE_LIBRARY=<file.json>` feeds canned entries with no host
+//! models. `RUBYFUNK_FAKE_LIBRARY=<file.json>` feeds canned entries with no host
 //! (portrait paths starting with `/` load from disk), the GPU-only dev path.
 
 // Windows counts `Instant` from boot, so `now - 60 s` panics in a console started at log-in.
@@ -150,8 +150,8 @@ impl Launcher {
         &self,
         action: OverlayAction,
         gamepad: &pf_client_core::gamepad::GamepadService,
-        native: punktfunk_core::config::Mode,
-        hdr: Option<punktfunk_core::quic::HdrMeta>,
+        native: rubyfunk_core::config::Mode,
+        hdr: Option<rubyfunk_core::quic::HdrMeta>,
         force_software: Arc<AtomicBool>,
         vulkan: Option<pf_client_core::video::VulkanDecodeDevice>,
     ) -> ActionOutcome {
@@ -280,7 +280,7 @@ pub fn run(target: Option<&str>) -> u8 {
         }
     };
 
-    let fake = std::env::var_os("PUNKTFUNK_FAKE_LIBRARY").is_some();
+    let fake = std::env::var_os("RUBYFUNK_FAKE_LIBRARY").is_some();
     let known = trust::KnownHosts::load();
     let Entry {
         entry,
@@ -326,8 +326,8 @@ pub fn run(target: Option<&str>) -> u8 {
 
     let opts = pf_presenter::SessionOpts {
         window_title: window_label.map_or_else(
-            || "Punktfunk".to_string(),
-            |label| format!("Punktfunk · {label}"),
+            || "RubyFunk".to_string(),
+            |label| format!("RubyFunk · {label}"),
         ),
         fullscreen: fullscreen_mode(),
         window_pos: window_pos(),
@@ -350,8 +350,8 @@ pub fn run(target: Option<&str>) -> u8 {
         // its stdout, so it keeps persisting the size itself.
         on_window_size: crate::session_main::on_window_size(true),
         render_scale: settings_at_start.render_scale,
-        render_scale_max_dim: punktfunk_core::render_scale::max_dimension(&settings_at_start.codec),
-        video_fit: punktfunk_core::video_fit::VideoFit::from_name(&settings_at_start.video_fit),
+        render_scale_max_dim: rubyfunk_core::render_scale::max_dimension(&settings_at_start.codec),
+        video_fit: rubyfunk_core::video_fit::VideoFit::from_name(&settings_at_start.video_fit),
         // The desktop shell opened this console because a controller connected.
         until_no_pads: arg_flag("--until-no-controller"),
     };
@@ -482,7 +482,7 @@ impl Service {
         let stop = Arc::new(AtomicBool::new(false));
         let stop_w = stop.clone();
         let thread = std::thread::Builder::new()
-            .name("punktfunk-console".into())
+            .name("rubyfunk-console".into())
             .spawn(move || {
                 ServiceState {
                     console,
@@ -856,7 +856,7 @@ impl ServiceState {
         // this host's to badge.
         let epoch = shared.fetch_epoch();
         std::thread::Builder::new()
-            .name("punktfunk-running".into())
+            .name("rubyfunk-running".into())
             .spawn(move || {
                 let port = stream_port(&fp_hex);
                 let status = library::fetch_status(&addr, mgmt, port, &identity, pin);
@@ -874,7 +874,7 @@ impl ServiceState {
         let identity = self.identity.clone();
         let pin = trust::parse_hex32(&fp_hex);
         std::thread::Builder::new()
-            .name("punktfunk-profiles".into())
+            .name("rubyfunk-profiles".into())
             .spawn(move || {
                 let port = stream_port(&fp_hex);
                 let answer = match profiles::fetch_enumerate(&addr, mgmt, port, &identity, pin) {
@@ -896,7 +896,7 @@ impl ServiceState {
         let identity = self.identity.clone();
         let pin = trust::parse_hex32(&fp_hex);
         std::thread::Builder::new()
-            .name("punktfunk-avatar".into())
+            .name("rubyfunk-avatar".into())
             .spawn(move || {
                 let port = stream_port(&fp_hex);
                 let api = library::HostApi::new(&addr, mgmt, port, &identity, pin);
@@ -912,7 +912,7 @@ impl ServiceState {
         let identity = self.identity.clone();
         let pin = trust::parse_hex32(&fp_hex);
         std::thread::Builder::new()
-            .name("punktfunk-wake-seat".into())
+            .name("rubyfunk-wake-seat".into())
             .spawn(move || {
                 let port = stream_port(&fp_hex);
                 if let Err(e) = profiles::wake(&addr, mgmt, port, &identity, pin, &id) {
@@ -929,11 +929,11 @@ impl ServiceState {
         let identity = self.identity.clone();
         let console = self.console.clone();
         std::thread::Builder::new()
-            .name("punktfunk-sendlogs".into())
+            .name("rubyfunk-sendlogs".into())
             .spawn(move || {
                 console.set_notice(
                     pf_client_core::logring::send_bundle(
-                        "punktfunk-session",
+                        "rubyfunk-session",
                         &host_name,
                         &addr,
                         (mgmt, stream_port(&fp_hex)),
@@ -953,7 +953,7 @@ impl ServiceState {
         let identity = self.identity.clone();
         let console = self.console.clone();
         std::thread::Builder::new()
-            .name("punktfunk-speedtest".into())
+            .name("rubyfunk-speedtest".into())
             .spawn(move || {
                 console.advance_speed(&key, SpeedPhase::Measuring);
                 let fp = (!fp_hex.is_empty()).then_some(fp_hex.as_str());
@@ -1018,7 +1018,7 @@ impl ServiceState {
         let identity = self.identity.clone();
         let console = self.console.clone();
         std::thread::Builder::new()
-            .name("punktfunk-hostaction".into())
+            .name("rubyfunk-hostaction".into())
             .spawn(move || {
                 let port = stream_port(&fp_hex);
                 console.set_notice(
@@ -1049,7 +1049,7 @@ impl ServiceState {
         // As in `refresh_running`: the player may be on another host's shelf by the answer.
         let epoch = shared.fetch_epoch();
         std::thread::Builder::new()
-            .name("punktfunk-endgame".into())
+            .name("rubyfunk-endgame".into())
             .spawn(move || {
                 let port = stream_port(&fp_hex);
                 let outcome = library::end_game(&addr, mgmt, port, &identity, pin, &app_id);
@@ -1078,7 +1078,7 @@ impl ServiceState {
         let console = self.console.clone();
         let epoch = shared.fetch_epoch();
         std::thread::Builder::new()
-            .name("punktfunk-install".into())
+            .name("rubyfunk-install".into())
             .spawn(move || {
                 let port = stream_port(&fp_hex);
                 let outcome =
@@ -1107,8 +1107,8 @@ impl ServiceState {
         addr: String,
         port: u16,
         req: RequestKey,
-        wording: fn(&punktfunk_core::PunktfunkError) -> String,
-        ask: impl FnOnce(&str, u16, &(String, String)) -> Result<[u8; 32], punktfunk_core::PunktfunkError>
+        wording: fn(&rubyfunk_core::RubyFunkError) -> String,
+        ask: impl FnOnce(&str, u16, &(String, String)) -> Result<[u8; 32], rubyfunk_core::RubyFunkError>
             + Send
             + 'static,
     ) {
@@ -1133,7 +1133,7 @@ impl ServiceState {
         let generation = self.pair_gen.fetch_add(1, Ordering::SeqCst) + 1;
         let pair_gen = self.pair_gen.clone();
         std::thread::Builder::new()
-            .name("punktfunk-pair".into())
+            .name("rubyfunk-pair".into())
             .spawn(move || {
                 let current = || pair_gen.load(Ordering::SeqCst) == generation;
                 match ask(&addr, port, &identity) {
@@ -1351,7 +1351,7 @@ impl ServiceState {
         let probed = self.probed.clone();
         let inflight = self.probe_inflight.clone();
         std::thread::Builder::new()
-            .name("punktfunk-probe".into())
+            .name("rubyfunk-probe".into())
             .spawn(move || {
                 let results = trust::probe_known(&hosts, Duration::from_millis(900));
                 let mut map = probed.lock().unwrap();
@@ -1602,7 +1602,7 @@ fn spawn_wake(
     cancel: Arc<AtomicBool>,
 ) {
     std::thread::Builder::new()
-        .name("punktfunk-wake".into())
+        .name("rubyfunk-wake".into())
         .spawn(move || {
             orchestrate::wake_by_probe(&row.addr, row.port, &row.fp_hex, &macs, |tick| {
                 // A cancelled thread stops; a tick already in flight lands on no card, as the
@@ -1686,13 +1686,13 @@ fn spawn_fetch(
     shared.begin_fetch();
     let pin = trust::parse_hex32(&fp_hex);
     std::thread::Builder::new()
-        .name("punktfunk-library".into())
+        .name("rubyfunk-library".into())
         .spawn(move || {
             // This worker retries for up to 90 s and cannot be cancelled, so the player can
             // be two hosts further on by the time it answers. Every write below asks first
             // whether this fetch still owns the model.
             let mine = || shared.fetch_epoch() == req.epoch;
-            if let Ok(path) = std::env::var("PUNKTFUNK_FAKE_LIBRARY") {
+            if let Ok(path) = std::env::var("RUBYFUNK_FAKE_LIBRARY") {
                 load_fake(&shared, &req, &path);
                 return;
             }

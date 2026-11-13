@@ -180,7 +180,7 @@ pub fn probe_device(luid: Option<LUID>, flags: D3D11_CREATE_DEVICE_FLAG) -> Opti
     device
 }
 
-/// `PUNKTFUNK_GPU_PRIORITY_CLASS` policy.
+/// `RUBYFUNK_GPU_PRIORITY_CLASS` policy.
 enum PrioMode {
     /// Skip the D3DKMT call; this is not class 0 (IDLE).
     Off,
@@ -188,17 +188,14 @@ enum PrioMode {
     Static(i32),
 }
 
-/// Resolve `PUNKTFUNK_GPU_PRIORITY_CLASS` (`off|normal|high|realtime`).
+/// Resolve `RUBYFUNK_GPU_PRIORITY_CLASS` (`off|normal|high|realtime`).
 ///
 /// D3DKMT_SCHEDULINGPRIORITYCLASS: IDLE 0, BELOW_NORMAL 1, NORMAL 2, ABOVE_NORMAL 3,
 /// HIGH 4, REALTIME 5. Default is REALTIME so capture/convert/encode preempts a
 /// saturating game. Trap: REALTIME + NVIDIA + HAGS + near-full VRAM hangs NVENC —
 /// set `high` then. Costing local game fps under load is by design.
 fn configured_gpu_priority_mode() -> PrioMode {
-    match std::env::var("PUNKTFUNK_GPU_PRIORITY_CLASS")
-        .ok()
-        .as_deref()
-    {
+    match std::env::var("RUBYFUNK_GPU_PRIORITY_CLASS").ok().as_deref() {
         Some("off") => PrioMode::Off,
         Some("normal") => PrioMode::Static(2),
         Some("high") => PrioMode::Static(4),

@@ -153,9 +153,9 @@ impl PadKind {
     }
 }
 
-/// The marker on a seat's pad: `punktfunk-seat:<account>/<rest>`, what the udev fence reads.
+/// The marker on a seat's pad: `rubyfunk-seat:<account>/<rest>`, what the udev fence reads.
 pub fn seat_phys(account: &str, rest: &str) -> String {
-    format!("punktfunk-seat:{account}/{rest}")
+    format!("rubyfunk-seat:{account}/{rest}")
 }
 
 const MAGIC: [u8; 4] = *b"PFPD";
@@ -425,7 +425,7 @@ impl Status {
 /// One request, one answer: `(status, port, relay)`.
 fn ask(request: &[u8], pass: Option<BorrowedFd<'_>>) -> Result<(Status, u16, Option<OwnedFd>)> {
     let stream = UnixStream::connect(SOCKET).with_context(|| {
-        format!("connect to the seat pad broker at {SOCKET} (is punktfunk-seats running?)")
+        format!("connect to the seat pad broker at {SOCKET} (is rubyfunk-seats running?)")
     })?;
     let _ = stream.set_read_timeout(Some(TIMEOUT));
     let _ = stream.set_write_timeout(Some(TIMEOUT));
@@ -492,7 +492,7 @@ enum Brokered {
 }
 
 /// Build `kind` as the supervisor, stamped as `account`'s pad `index`. The udev fence reads
-/// the stamp (`packaging/linux/65-punktfunk-seats.rules`).
+/// the stamp (`packaging/linux/65-rubyfunk-seats.rules`).
 pub fn build(kind: PadKind, index: u8, account: &str) -> Result<BrokeredPad> {
     let dev = if let Some(identity) = kind.uinput() {
         Brokered::Uinput(build_pad(
@@ -503,8 +503,8 @@ pub fn build(kind: PadKind, index: u8, account: &str) -> Result<BrokeredPad> {
         let mut id = kind
             .uhid(index)
             .ok_or_else(|| anyhow!("no table for the {} pad", kind.label()))?;
-        // The backend's own `punktfunk/<tag>/<index>`, under the seat's name.
-        let own = id.phys.trim_start_matches("punktfunk/").to_owned();
+        // The backend's own `rubyfunk/<tag>/<index>`, under the seat's name.
+        let own = id.phys.trim_start_matches("rubyfunk/").to_owned();
         id.phys = seat_phys(account, &own);
         Brokered::Uhid(UhidDevice::open(&id.as_create2())?)
     };
@@ -893,10 +893,10 @@ mod tests {
             );
         }
         let ds = PadKind::DualSense.uhid(2).unwrap();
-        assert_eq!(ds.phys, "punktfunk/dualsense/2");
+        assert_eq!(ds.phys, "rubyfunk/dualsense/2");
         assert_eq!(
-            seat_phys("pf-seat-1", ds.phys.trim_start_matches("punktfunk/")),
-            "punktfunk-seat:pf-seat-1/dualsense/2"
+            seat_phys("pf-seat-1", ds.phys.trim_start_matches("rubyfunk/")),
+            "rubyfunk-seat:pf-seat-1/dualsense/2"
         );
     }
 

@@ -2,7 +2,7 @@
 #
 # Two very different image families now:
 #
-#   BUILDER images (punktfunk-rust-ci{,-noble,-arm64cross}, punktfunk-fedora{,44,45}-rpm)
+#   BUILDER images (rubyfunk-rust-ci{,-noble,-arm64cross}, rubyfunk-fedora{,44,45}-rpm)
 #     live on the LAN registry (home-ci-core — unom/infra runners/ci-core/) and are
 #     CONTENT-KEYED: the tag is a hash of what they are built from (the ci/ tree, +
 #     rust-toolchain.toml for the cross image), and a build only happens when that key
@@ -16,7 +16,7 @@
 #     not by the host:port the client used — so an image pushed to :5011 is the same
 #     image every consumer pulls from :5010.
 #
-#   APP images (punktfunk-web, punktfunk-docs) are deployables: they keep going to the
+#   APP images (rubyfunk-web, rubyfunk-docs) are deployables: they keep going to the
 #     Gitea registry (git.unom.io) with :latest + :sha-<8> (+ :vX.Y.Z on tags), because
 #     unom-1 deploys pull from there and releases pin them.
 #
@@ -55,7 +55,7 @@
 # the newer build forever. Revisit inline digest pins if the push credential ever leaves
 # the maintainer trust set.
 #
-# Bootstrap note: consuming workflows pull <LAN>/punktfunk-rust-ci:latest, so the LAN
+# Bootstrap note: consuming workflows pull <LAN>/rubyfunk-rust-ci:latest, so the LAN
 # registry must hold a seeded :latest once (done 2026-07-29 from the last Gitea-registry
 # images); after that, this workflow keeps :latest current whenever ci/ changes.
 name: docker
@@ -99,50 +99,50 @@ jobs:
     strategy:
       matrix:
         include:
-          - image: punktfunk-rust-ci
+          - image: rubyfunk-rust-ci
             dockerfile: ci/rust-ci.Dockerfile
           # Ubuntu 24.04 LTS host builder: same purpose as rust-ci but lowers the host .deb's glibc
           # floor to 2.39 and lowers the glibc floor, so the package installs on 24.04 LTS
           # (rust-ci's 26.04 build is uninstallable there). Consumed by deb.yml's build-publish-host job.
-          - image: punktfunk-rust-ci-noble
+          - image: rubyfunk-rust-ci-noble
             dockerfile: ci/rust-ci-noble.Dockerfile
           # Debian 13 gamescope builder. The gamescope .deb used to be built in the noble image
           # and NEVER once succeeded there — noble's wayland is 1.22.0 and the vendored wlroots
           # 0.19.3 floors it at 1.23.1, so two releases shipped without the package. trixie is the
           # oldest apt distro the tree configures on. Consumed by deb.yml's build-publish-gamescope.
-          - image: punktfunk-gamescope-trixie
+          - image: rubyfunk-gamescope-trixie
             dockerfile: ci/gamescope-trixie.Dockerfile
-          - image: punktfunk-fedora-rpm
+          - image: rubyfunk-fedora-rpm
             dockerfile: ci/fedora-rpm.Dockerfile
           # Fedora 44 builder (Fedora KDE spin): same Dockerfile, newer base.
-          - image: punktfunk-fedora44-rpm
+          - image: rubyfunk-fedora44-rpm
             dockerfile: ci/fedora-rpm.Dockerfile
             buildargs: --build-arg FEDORA_VERSION=44
             keysuffix: -f44
           # Fedora 45 builder (Bazzite 45, Fedora 45): same Dockerfile, newer base.
-          - image: punktfunk-fedora45-rpm
+          - image: rubyfunk-fedora45-rpm
             dockerfile: ci/fedora-rpm.Dockerfile
             buildargs: --build-arg FEDORA_VERSION=45
             keysuffix: -f45
           # Android builder (JDK + SDK/NDK + cargo-ndk + sccache) — android.yml and
           # android-screenshots.yml run in it; ~3 GB of per-run Google downloads became
           # image layers.
-          - image: punktfunk-android-ci
+          - image: rubyfunk-android-ci
             dockerfile: ci/android-ci.Dockerfile
           # Arch builder (base-devel + both makepkg legs' deps + bun + sccache) —
           # arch.yml runs in it; ~1 GB of per-run pacman traffic became image layers.
-          - image: punktfunk-arch-ci
+          - image: rubyfunk-arch-ci
             dockerfile: ci/arch-ci.Dockerfile
           # Flatpak builder (flatpak + flatpak-builder + ostree + the GNOME 50 runtime/SDK
           # and the rust-stable/llvm20 extensions) — flatpak.yml runs in it. ~5 min of
           # per-run dnf plus a 168 s restore of a 1.5 GB runtime cache became image layers;
           # the ci/ tree is also where the runtime pins now live, so a GNOME bump in the
           # manifest means bumping this Dockerfile's ARGs in the same commit.
-          - image: punktfunk-flatpak-ci
+          - image: rubyfunk-flatpak-ci
             dockerfile: ci/flatpak-ci.Dockerfile
           # The same builder for flatpak.yml's aarch64 leg, built natively on the arm64 runner:
           # flatpak-builder runs its sandbox in the target arch.
-          - image: punktfunk-flatpak-ci-arm64
+          - image: rubyfunk-flatpak-ci-arm64
             dockerfile: ci/flatpak-ci.Dockerfile
             runner: linux-arm64
     steps:
@@ -233,7 +233,7 @@ jobs:
         if: always()
         run: docker logout "$CI_REGISTRY_PUSH" || true
 
-  # The aarch64 CROSS builder — a SEPARATE job because it is `FROM punktfunk-rust-ci:latest`
+  # The aarch64 CROSS builder — a SEPARATE job because it is `FROM rubyfunk-rust-ci:latest`
   # (the LAN copy) and so must not race the matrix entry that publishes that base. Consumed
   # by the arm64 client legs in ci.yml/deb.yml. Its key also folds in rust-toolchain.toml:
   # the Dockerfile installs the aarch64 target against the toolchain the workspace pins.
@@ -242,7 +242,7 @@ jobs:
     needs: builders
     timeout-minutes: 60
     env:
-      IMAGE: punktfunk-rust-ci-arm64cross
+      IMAGE: rubyfunk-rust-ci-arm64cross
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -318,10 +318,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - image: punktfunk-web
+          - image: rubyfunk-web
             dockerfile: web/Dockerfile
             context: .
-          - image: punktfunk-docs
+          - image: rubyfunk-docs
             dockerfile: docs-site/Dockerfile
             context: docs-site
     steps:
@@ -373,7 +373,7 @@ jobs:
           port: ${{ secrets.DEPLOY_PORT }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           source: "compose.production.yml"
-          target: "~/punktfunk-docs"
+          target: "~/rubyfunk-docs"
           overwrite: true
 
       - name: Pull and start docs
@@ -397,6 +397,6 @@ jobs:
             # 2026-08-15 finding 14.
             trap 'docker logout git.unom.io || true' EXIT
             printf '%s' "$REGISTRY_TOKEN" | docker login git.unom.io -u enricobuehler --password-stdin
-            cd ~/punktfunk-docs
+            cd ~/rubyfunk-docs
             docker compose -f compose.production.yml pull docs
             docker compose -f compose.production.yml up -d --no-build docs

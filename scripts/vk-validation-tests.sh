@@ -38,7 +38,7 @@ run -p pf-zerocopy --lib "$@"
 run -p pf-encode --lib --features vulkan-encode,pyrowave "$@"
 run -p pf-vkdecode --test gpu_smoke --test gpu_parity "$@"
 # The route a device with no plane views takes, on one that has both.
-PUNKTFUNK_VKDECODE_ARRANGEMENT=sampler run -p pf-vkdecode --test gpu_smoke --test gpu_parity "$@"
+RUBYFUNK_VKDECODE_ARRANGEMENT=sampler run -p pf-vkdecode --test gpu_smoke --test gpu_parity "$@"
 run -p pf-presenter --lib csc "$@"
 
 errors=$(grep -c 'Validation Error' "$log")

@@ -57,10 +57,10 @@ sdk: org.gnome.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
   - org.freedesktop.Sdk.Extension.llvm20
-command: punktfunk-client
+command: rubyfunk-client
 YML
   # A manifest this script cannot read (the fail-open case).
-  printf 'app-id: io.unom.punktfunk\n' > "$tmp/unparseable.yml"
+  printf 'app-id: io.github.gunu3371.rubyfunk\n' > "$tmp/unparseable.yml"
 
   # Stub `flatpak`: $INSTALLED is the newline-separated set of refs it admits to having.
   mkdir -p "$tmp/bin"

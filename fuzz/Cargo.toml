@@ -1,5 +1,5 @@
 [package]
-name = "punktfunk-fuzz"
+name = "rubyfunk-fuzz"
 version = "0.0.0"
 edition = "2024"
 publish = false
@@ -15,7 +15,7 @@ cargo-fuzz = true
 libfuzzer-sys = "0.4"
 anyhow = "1"
 # `quic` for the audio decoders, which sit behind it with libopus.
-punktfunk-core = { path = "../crates/core/punktfunk-core", features = ["quic"] }
+rubyfunk-core = { path = "../crates/core/rubyfunk-core", features = ["quic"] }
 # `test-vectors` for the access-unit splitters the crate's own tests feed the planners with.
 pf-bitstream = { path = "../crates/codec/pf-bitstream", features = ["test-vectors"] }
 # The host's control codec is included by path (`control_wire`); this is its one dependency.

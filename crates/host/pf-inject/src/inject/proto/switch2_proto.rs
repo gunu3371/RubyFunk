@@ -9,8 +9,8 @@
 //! in DualSense units; the report carries the pad's raw axes, which SDL reads as `(x, z, -y)`.
 
 use pf_driver_proto::switch::{pack12, STICK_CENTER, STICK_RANGE};
-use punktfunk_core::input::{gamepad as gs, GamepadFrame};
-use punktfunk_core::quic::RichInput;
+use rubyfunk_core::input::{gamepad as gs, GamepadFrame};
+use rubyfunk_core::quic::RichInput;
 
 pub const VENDOR: u16 = 0x057E;
 /// Input report id SDL's init selects ("set report format 5").

@@ -17,8 +17,8 @@ pub const AUDIO_FORMAT_LOSSLESS_96: &str = "lossless96";
 /// Values are shared verbatim with Apple `AudioFormatChoice` and Android `AUDIO_FORMAT_*`.
 /// A preset round-trips through all four clients (`presets.rs`); a spelling mismatch is
 /// stored as-is and silently falls back to the global default. Change in lockstep with
-/// `clients/apple/Sources/PunktfunkShared/EffectiveSettings.swift` and
-/// `clients/android/app/src/main/kotlin/io/unom/punktfunk/Settings.kt`.
+/// `clients/apple/Sources/RubyFunkShared/EffectiveSettings.swift` and
+/// `clients/android/app/src/main/kotlin/io/github/gunu3371/rubyfunk/Settings.kt`.
 ///
 /// 48/96 kHz only: jitter buffers are `ms × samples-per-ms` with an integer per-ms, so
 /// 44 100 Hz truncates to 44 (a silent 2.3 % error). See `design/hi-res-audio.md`.
@@ -33,7 +33,7 @@ pub const AUDIO_FORMATS: &[(&str, &str)] = &[
 /// not 48 000/16 — any non-zero pair is the lossless plane. Unknown strings return `None`
 /// (do not fail the connect).
 pub fn audio_format_wire(setting: &str) -> Option<(u32, u8)> {
-    use punktfunk_core::audio::pcm::BITS_24;
+    use rubyfunk_core::audio::pcm::BITS_24;
     match setting {
         AUDIO_FORMAT_LOSSLESS_48 => Some((48_000, BITS_24)),
         AUDIO_FORMAT_LOSSLESS_96 => Some((96_000, BITS_24)),

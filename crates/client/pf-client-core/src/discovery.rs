@@ -1,4 +1,4 @@
-//! mDNS browse of `_punktfunk._udp` (TXT `fp`/`pair`/`id`; host crate
+//! mDNS browse of `_rubyfunk._udp` (TXT `fp`/`pair`/`id`; host crate
 //! `discovery.rs`). A worker streams [`DiscoveryEvent`]; it exits when the
 //! receiver is dropped, polled so an empty LAN still stops.
 
@@ -9,10 +9,10 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-/// DNS-SD type hosts advertise. See host crate `punktfunk_host::hostsys::discovery`.
-const SERVICE_TYPE: &str = "_punktfunk._udp.local.";
+/// DNS-SD type hosts advertise. See host crate `rubyfunk_host::hostsys::discovery`.
+const SERVICE_TYPE: &str = "_rubyfunk._udp.local.";
 
-pub use punktfunk_core::discovery::DiscoveredHost;
+pub use rubyfunk_core::discovery::DiscoveredHost;
 
 /// Is this advert that saved host? Two known fingerprints settle it ([`same_pin`]) — the
 /// address there would treat whoever inherits a sleeping host's DHCP lease AS that host, and
@@ -114,7 +114,7 @@ pub fn try_browse() -> Option<(async_channel::Receiver<DiscoveryEvent>, Rescan)>
     let requested = flag.clone();
     let worker = daemon.clone();
     let spawned = std::thread::Builder::new()
-        .name("punktfunk-mdns".into())
+        .name("rubyfunk-mdns".into())
         .spawn(move || {
             // What the last SearchStarted named: the one line in a bug report that says
             // whether the browse has any interface at all.
@@ -154,7 +154,7 @@ pub fn try_browse() -> Option<(async_channel::Receiver<DiscoveryEvent>, Rescan)>
                         let props = info.get_properties();
                         let v4: Vec<std::net::Ipv4Addr> =
                             info.get_addresses_v4().into_iter().collect();
-                        let Some(host) = punktfunk_core::discovery::advert_from_txt(
+                        let Some(host) = rubyfunk_core::discovery::advert_from_txt(
                             info.get_fullname(),
                             info.get_port(),
                             &v4,
@@ -266,7 +266,7 @@ mod tests {
             fp_hex: "bb".into(),
             ..Default::default()
         };
-        let other_os = host("id-2", "desk-linux._punktfunk._udp.local.", "192.168.1.9");
+        let other_os = host("id-2", "desk-linux._rubyfunk._udp.local.", "192.168.1.9");
         assert!(
             !same_host(&saved, &other_os),
             "a different pin is a different host"
@@ -312,7 +312,7 @@ mod tests {
                 addr: advert["addr"].as_str().unwrap().into(),
                 port: advert["port"].as_u64().unwrap() as u16,
                 fp_hex: advert["fp"].as_str().unwrap().into(),
-                ..host("id", "desk._punktfunk._udp.local.", "")
+                ..host("id", "desk._rubyfunk._udp.local.", "")
             };
             assert_eq!(
                 same_host(&saved, &advert),
@@ -332,9 +332,9 @@ mod tests {
             rescan: Rescan(Arc::default()),
             polls: 0,
         };
-        let mut fp_less = host("id-1", "desk._punktfunk._udp.local.", "192.168.1.9");
+        let mut fp_less = host("id-1", "desk._rubyfunk._udp.local.", "192.168.1.9");
         fp_less.fp_hex = String::new();
-        let mut moved = host("id-2", "desk._punktfunk._udp.local.", "192.168.1.20");
+        let mut moved = host("id-2", "desk._rubyfunk._udp.local.", "192.168.1.20");
         moved.fp_hex = "bb".into();
 
         tx.try_send(DiscoveryEvent::Resolved(fp_less.clone()))
@@ -365,18 +365,18 @@ mod tests {
         let mut adverts = Adverts::new();
         fold(
             &mut adverts,
-            DiscoveryEvent::Resolved(host("id-1", "desk._punktfunk._udp.local.", "192.168.1.9")),
+            DiscoveryEvent::Resolved(host("id-1", "desk._rubyfunk._udp.local.", "192.168.1.9")),
         );
         fold(
             &mut adverts,
-            DiscoveryEvent::Resolved(host("id-1", "desk._punktfunk._udp.local.", "192.168.1.20")),
+            DiscoveryEvent::Resolved(host("id-1", "desk._rubyfunk._udp.local.", "192.168.1.20")),
         );
         // The same host under a second instance name (an mDNS conflict suffix) that sorts first.
         fold(
             &mut adverts,
             DiscoveryEvent::Resolved(host(
                 "id-1",
-                "desk (2)._punktfunk._udp.local.",
+                "desk (2)._rubyfunk._udp.local.",
                 "192.168.1.30",
             )),
         );
@@ -390,16 +390,16 @@ mod tests {
         let mut adverts = Adverts::new();
         fold(
             &mut adverts,
-            DiscoveryEvent::Resolved(host("id-1", "desk._punktfunk._udp.local.", "192.168.1.9")),
+            DiscoveryEvent::Resolved(host("id-1", "desk._rubyfunk._udp.local.", "192.168.1.9")),
         );
         fold(
             &mut adverts,
-            DiscoveryEvent::Resolved(host("id-2", "tv._punktfunk._udp.local.", "192.168.1.10")),
+            DiscoveryEvent::Resolved(host("id-2", "tv._rubyfunk._udp.local.", "192.168.1.10")),
         );
         fold(
             &mut adverts,
             DiscoveryEvent::Removed {
-                fullname: "desk._punktfunk._udp.local.".into(),
+                fullname: "desk._rubyfunk._udp.local.".into(),
             },
         );
         let out = sorted(adverts);
@@ -411,11 +411,11 @@ mod tests {
     /// or a launch would target a nonexistent reference.
     #[test]
     fn advertised_id_is_empty_without_the_txt() {
-        let named = host("id-1", "desk._punktfunk._udp.local.", "10.0.0.1");
+        let named = host("id-1", "desk._rubyfunk._udp.local.", "10.0.0.1");
         assert_eq!(named.advertised_id(), "id-1");
         let anonymous = host(
-            "desk._punktfunk._udp.local.",
-            "desk._punktfunk._udp.local.",
+            "desk._rubyfunk._udp.local.",
+            "desk._rubyfunk._udp.local.",
             "10.0.0.1",
         );
         assert_eq!(anonymous.advertised_id(), "");

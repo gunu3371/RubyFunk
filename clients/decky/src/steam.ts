@@ -1,25 +1,25 @@
-// Launch Punktfunk as Steam games so gamescope focuses + fullscreens them.
+// Launch RubyFunk as Steam games so gamescope focuses + fullscreens them.
 //
 // THE LAUNCH MECHANISM (verified against MoonDeck): gamescope only gives focus/fullscreen to
 // the window tree Steam launched via `reaper` (it detects the "current app" by AppID — see
 // gamescope#484). So we cannot launch the flatpak from the plugin backend; we register non-Steam
-// shortcuts whose exe is `/bin/sh` running our wrapper script (bin/punktfunkrun.sh), and start
+// shortcuts whose exe is `/bin/sh` running our wrapper script (bin/rubyfunkrun.sh), and start
 // them with RunGame. The wrapper then execs the flatpak client as a reaper descendant.
 //
-// TWO shortcuts, both named "Punktfunk" (so they share ONE Steam Input controller-config key —
+// TWO shortcuts, both named "RubyFunk" (so they share ONE Steam Input controller-config key —
 // see applyControllerConfig):
 //   • STREAM  — hidden, stateful: the per-session launcher. Its launch options carry the host
 //     reference and the card's preset (PF_REF/PF_PRESET/PF_REQUEST_ACCESS), rewritten per
 //     launch, so one shortcut serves every host. Hidden — an implementation detail.
 //   • GAMEPAD UI — visible, stateless: fixed launch options = bare `--browse` (PF_BROWSE, no
 //     host) → the client's console home (host picker + pairing + settings, gamepad-navigable).
-//     This is the library-visible "Punktfunk" app the user opens directly.
+//     This is the library-visible "RubyFunk" app the user opens directly.
 //
 // Both get the shipped artwork and the native-touch controller config.
 //
 // A stream started from a Steam game's own page runs under a THIRD kind: a hidden PER-GAME
 // shortcut named after the game and wearing the game's own art and icon, so the overlay, the
-// "now playing" surfaces and the friends list show the game rather than "Punktfunk". Minted on
+// "now playing" surfaces and the friends list show the game rather than "RubyFunk". Minted on
 // the first Stream tap for that game and reused after; see ensureGameShortcut.
 
 import { applyControllerConfig, gameArt, runnerInfo, saveIcon, shortcutArt } from "./backend";
@@ -167,7 +167,7 @@ const STORE_GRACE_MS = 2_000;
  *  mints a duplicate library entry. And a bare null-overview check gets it wrong on EVERY
  *  boot: the plugin mounts while Steam is still starting up, before appStore has registered
  *  its overviews, so the remembered (perfectly live) appId looks up as null and each boot
- *  added another visible "Punktfunk" — the field-reported duplicate pile. Absent is therefore
+ *  added another visible "RubyFunk" — the field-reported duplicate pile. Absent is therefore
  *  only believed once the store is demonstrably hydrated; if that can't be established within
  *  budget the answer is true, because a false "alive" merely no-ops Set-calls until the next
  *  ask (and the recreate button re-asks when the store IS ready) while a false "dead"
@@ -211,7 +211,7 @@ function setShortcutHidden(appId: number, hidden: boolean): void {
 // on those installs — the bump makes them re-apply once on the first build that has the files.
 const ART_VERSION = 3;
 function artKey(appId: number): string {
-  return `punktfunk:shortcutArt:${appId}`;
+  return `rubyfunk:shortcutArt:${appId}`;
 }
 
 /**
@@ -237,7 +237,7 @@ async function artOnce(
     if (!isRetry) {
       setTimeout(() => void artOnce(marker, version, apply, true), 2500);
     }
-    console.warn("punktfunk: shortcut artwork not applied", e);
+    console.warn("rubyfunk: shortcut artwork not applied", e);
   }
 }
 
@@ -277,9 +277,9 @@ function applyArtwork(appId: number): Promise<void> {
 
 // The shortcut name is user-visible (Steam overlay + library) — brand-case it. BOTH shortcuts
 // share it so Steam keys them to the SAME controller config (configset key = lowercase name).
-const SHORTCUT_NAME = "Punktfunk";
+const SHORTCUT_NAME = "RubyFunk";
 
-/** Find an existing "Punktfunk" shortcut to ADOPT instead of minting a new library entry — the
+/** Find an existing "RubyFunk" shortcut to ADOPT instead of minting a new library entry — the
  *  healing path for a lost/wiped appId, and for the duplicate piles the boot race left behind
  *  in the field: rebind one of the existing entries to the role rather than adding an N+1th.
  *  (The caller rewrites exe/dir/opts/visibility anyway, so any of them serves.) Only overviews
@@ -306,7 +306,7 @@ function findAdoptableShortcut(excludeAppId: number | null): number | null {
   return null;
 }
 
-/** Remove every "Punktfunk" shortcut beyond the two remembered role ids — the cleanup for
+/** Remove every "RubyFunk" shortcut beyond the two remembered role ids — the cleanup for
  *  piles already minted by the boot race. Deliberately reachable ONLY from the user-pressed
  *  recreate button, never from mount: automatic library deletion at boot is a bigger hazard
  *  than the mess it would tidy. Returns how many entries were removed. */
@@ -335,7 +335,7 @@ function removeDuplicateShortcuts(): number {
       removed++;
     }
   } catch (e) {
-    console.warn("punktfunk: duplicate-shortcut sweep incomplete", e);
+    console.warn("rubyfunk: duplicate-shortcut sweep incomplete", e);
   }
   return removed;
 }
@@ -357,13 +357,13 @@ function gameIdFromAppId(appId: number): string {
 // library (an appId is stable for the life of the shortcut). The STREAM key is the historical
 // one, so existing single-shortcut installs migrate into the (now hidden) stream role, and the
 // visible gamepad-UI shortcut is created alongside.
-const STORAGE_KEY_STREAM = "punktfunk:shortcutAppId";
-const STORAGE_KEY_UI = "punktfunk:uiAppId";
+const STORAGE_KEY_STREAM = "rubyfunk:shortcutAppId";
+const STORAGE_KEY_UI = "rubyfunk:uiAppId";
 // The shortcut the most recent launch ran under — the one Force-stop must end. It may be the
 // generic stream shortcut or a per-game one; without this the panel could only stop the former.
-const STORAGE_KEY_LAST_LAUNCH = "punktfunk:lastLaunchAppId";
+const STORAGE_KEY_LAST_LAUNCH = "rubyfunk:lastLaunchAppId";
 /** `{ref, gameId, title}` of the last game-page stream: what the panel's End game ends. */
-const STORAGE_KEY_LAST_GAME = "punktfunk:lastGameStream";
+const STORAGE_KEY_LAST_GAME = "rubyfunk:lastGameStream";
 
 export type GameStreamRef = { ref: string; gameId: string; title: string };
 
@@ -388,8 +388,8 @@ function setLastGameStream(v: GameStreamRef | null): void {
     /* ignore */
   }
 }
-// `punktfunk:gameShortcut:<steam appid>` → the per-game shortcut's appId.
-const GAME_KEY_PREFIX = "punktfunk:gameShortcut:";
+// `rubyfunk:gameShortcut:<steam appid>` → the per-game shortcut's appId.
+const GAME_KEY_PREFIX = "rubyfunk:gameShortcut:";
 
 function remember(key: string, appId: number) {
   try {
@@ -414,8 +414,8 @@ function recall(key: string): number | null {
 // one entry covers both fixed roles, and each per-game name needs its own. Gated in localStorage
 // so Steam's config dir is not rewritten on every launch; bump CONFIG_VERSION after the shipped
 // .vdf changes.
-const CONFIG_KEY = "punktfunk:controllerConfig";
-const GAME_CONFIG_PREFIX = "punktfunk:controllerConfig:";
+const CONFIG_KEY = "rubyfunk:controllerConfig";
+const GAME_CONFIG_PREFIX = "rubyfunk:controllerConfig:";
 const CONFIG_VERSION = 1;
 
 /** Point shortcut `name` at the touch layout unless `marker` already records CONFIG_VERSION. */
@@ -430,10 +430,10 @@ async function configOnce(marker: string, name: string): Promise<void> {
     if (r?.ok && (r.applied ?? []).some((a) => a.startsWith("configset:"))) {
       localStorage.setItem(marker, `${CONFIG_VERSION}`);
     } else {
-      console.warn("punktfunk: controller config not fully applied", r);
+      console.warn("rubyfunk: controller config not fully applied", r);
     }
   } catch (e) {
-    console.warn("punktfunk: controller config not applied", e);
+    console.warn("rubyfunk: controller config not applied", e);
   }
 }
 
@@ -533,7 +533,7 @@ const STREAM_ROLE: ShortcutRole = {
 };
 
 /**
- * The GAMEPAD-UI shortcut (visible, stateless): the library-facing "Punktfunk" entry that opens
+ * The GAMEPAD-UI shortcut (visible, stateless): the library-facing "RubyFunk" entry that opens
  * the client's console home. PF_BROWSE → the wrapper runs the session's `--browse --fullscreen`;
  * %command% expands to the shortcut exe (/bin/sh) with the wrapper behind it as an arg.
  * PF_CLIENT_BIN only for a resolved NATIVE client, else the wrapper's flatpak default stands.
@@ -558,18 +558,18 @@ export async function ensureGamepadUiShortcut(): Promise<number | null> {
   try {
     return (await ensureShortcut(UI_ROLE)).appId;
   } catch (e) {
-    console.warn("punktfunk: gamepad-UI shortcut not ensured", e);
+    console.warn("rubyfunk: gamepad-UI shortcut not ensured", e);
     return null;
   }
 }
 
 /**
- * Force the visible "Punktfunk" library entry back into existence — the recovery button for
+ * Force the visible "RubyFunk" library entry back into existence — the recovery button for
  * "my shortcut disappeared". Drops any remembered appId that no longer maps to a live shortcut
  * (so it can't shadow a fresh AddShortcut), then re-ensures. Safe to press anytime: a shortcut
  * that still exists is left in place (no duplicate); a missing one is recreated. Covers the case
  * self-heal-on-mount can't — deleting the shortcut WITHOUT reinstalling (no mount → no ensure).
- * Also sweeps surplus "Punktfunk" entries (the piles the boot race minted before the store-
+ * Also sweeps surplus "RubyFunk" entries (the piles the boot race minted before the store-
  * readiness gate existed) — the button is where that cleanup lives, never mount. Returns the
  * (new or existing) visible appId (null on failure) plus how many duplicates were removed.
  */
@@ -720,7 +720,7 @@ async function applyGameIcon(
   return !!path;
 }
 function gameArtKey(shortcutAppId: number): string {
-  return `punktfunk:gameArt:${shortcutAppId}`;
+  return `rubyfunk:gameArt:${shortcutAppId}`;
 }
 
 /** Dress a per-game shortcut in the game's own grid/hero/logo/header and icon, once per version. */
@@ -777,7 +777,7 @@ export function removeGameShortcuts(): number {
       localStorage.removeItem(gameArtKey(shortcut));
       running.delete(shortcut); // ours only — a generic stream that is up keeps its state
     } catch (e) {
-      console.warn("punktfunk: game shortcut not removed", e);
+      console.warn("rubyfunk: game shortcut not removed", e);
     }
   }
   // The per-game layouts are keyed by game name, so no appid can find them.
@@ -830,7 +830,7 @@ function mirrorLastPlayed(steamAppId: number, shortcutAppId: number): void {
     }
     to.rt_last_time_locally_played = played;
   } catch (e) {
-    console.warn("punktfunk: last-played not mirrored", e);
+    console.warn("rubyfunk: last-played not mirrored", e);
   }
 }
 
@@ -868,7 +868,7 @@ export function watchRunningStreams(): () => void {
     });
     return () => reg.unregister();
   } catch (e) {
-    console.warn("punktfunk: app lifetime feed unavailable", e);
+    console.warn("rubyfunk: app lifetime feed unavailable", e);
     return () => {};
   }
 }
@@ -945,7 +945,7 @@ function safeClientBin(bin: string | undefined): bin is string {
  *
  * No Wake-on-LAN here any more. The plugin used to fire a magic packet itself and then stretch
  * the connect budget to 75 s to cover the host's resume, which was a workaround for the era
- * before the CLI existed. `punktfunk launch` now runs the real wake-and-wait loop (packet at
+ * before the CLI existed. `rubyfunk launch` now runs the real wake-and-wait loop (packet at
  * t=0, re-sent every 6 s, presence polled every second) and only dials once the host answers —
  * strictly better, and it deletes a backend method, a frontend call and a shell branch.
  */
@@ -958,7 +958,7 @@ export async function launchStream(ref: string, opts: LaunchOpts = {}): Promise<
 
 /**
  * Stream a Steam title from its own page: the same launch as `launchStream` with the game
- * named, but under the hidden per-game shortcut so Steam shows the game running, not Punktfunk.
+ * named, but under the hidden per-game shortcut so Steam shows the game running, not RubyFunk.
  * `title` and `iconHash` come from Steam's overview of the game and only dress the shortcut.
  */
 export async function launchGameStream(
@@ -1003,7 +1003,7 @@ function launchOptions(ref: string, runner: string, clientBin: string, opts: Lau
   // existing Deck install produces byte-identical launch options to before.
   if (clientBin) {
     // The one launch-option value that comes from the backend rather than a store id, and so
-    // the one that could carry a space: a path like `/home/deck/my apps/punktfunk-client` would
+    // the one that could carry a space: a path like `/home/deck/my apps/rubyfunk-client` would
     // split Steam's tokenizer and land its tail in front of %command% as a bogus env token.
     if (!isSafeLaunchId(clientBin)) {
       throw new Error(`client path can't ride Steam's launch options: ${clientBin}`);

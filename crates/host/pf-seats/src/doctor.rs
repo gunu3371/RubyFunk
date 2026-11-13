@@ -91,7 +91,7 @@ pub(crate) fn report_rows(facts: BoxFacts) -> Vec<Diagnostic> {
     if !facts.local_system {
         rows.push(Diagnostic::error(
             "identity",
-            "punktfunk's service isn't running as Local System. Reinstall punktfunk.",
+            "rubyfunk's service isn't running as Local System. Reinstall rubyfunk.",
         ));
     }
     rows.push(if facts.seats_on {
@@ -122,7 +122,7 @@ pub(crate) fn report_rows(facts: BoxFacts) -> Vec<Diagnostic> {
         rows.push(Diagnostic::error(
             "host_executable",
             format!(
-                "A punktfunk file is missing ({}). Reinstall punktfunk.",
+                "A rubyfunk file is missing ({}). Reinstall rubyfunk.",
                 missing.display()
             ),
         ));
@@ -131,8 +131,8 @@ pub(crate) fn report_rows(facts: BoxFacts) -> Vec<Diagnostic> {
     if facts.inbox_driver_newer == Some(true) {
         rows.push(Diagnostic::error(
             "seat_display_rank",
-            "Windows' own Remote Desktop display driver is newer than punktfunk's, so seats \
-             start without a picture. Update punktfunk.",
+            "Windows' own Remote Desktop display driver is newer than rubyfunk's, so seats \
+             start without a picture. Update rubyfunk.",
         ));
     }
     rows.push(pin_row(facts.pin));
@@ -199,7 +199,7 @@ fn driver_row(driver: &DriverState) -> Diagnostic {
         }
         DriverState::Outdated => Diagnostic::warning(
             "seat_display_driver",
-            "The seat display driver is older than this punktfunk. Seats update it when they next start.",
+            "The seat display driver is older than this rubyfunk. Seats update it when they next start.",
         ),
         DriverState::Missing => Diagnostic::error(
             "seat_display_driver",
@@ -208,7 +208,7 @@ fn driver_row(driver: &DriverState) -> Diagnostic {
         ),
         DriverState::Unstaged => Diagnostic::error(
             "seat_display_driver",
-            "The seat display driver isn't on this PC. Reinstall punktfunk.",
+            "The seat display driver isn't on this PC. Reinstall rubyfunk.",
         ),
     }
 }
@@ -307,17 +307,15 @@ fn account_row(seat: &Seat, inspection: &AccountInspection, group: &str) -> Diag
             )
         } else {
             format!(
-                "Its Windows account {account} is missing or isn't punktfunk's. Remove the profile and add it again."
+                "Its Windows account {account} is missing or isn't rubyfunk's. Remove the profile and add it again."
             )
         })
     } else if !inspection.credential_blob {
         Some(if adopted {
-            format!(
-                "punktfunk has lost {account}'s password. Enter it again on the profile's card."
-            )
+            format!("rubyfunk has lost {account}'s password. Enter it again on the profile's card.")
         } else {
             format!(
-                "punktfunk has lost the password of its Windows account {account}. Remove the profile and add it again."
+                "rubyfunk has lost the password of its Windows account {account}. Remove the profile and add it again."
             )
         })
     } else if inspection.administrator {
@@ -589,7 +587,7 @@ mod tests {
             pick(&rows, "identity"),
             (
                 Error,
-                "punktfunk's service isn't running as Local System. Reinstall punktfunk.".into()
+                "rubyfunk's service isn't running as Local System. Reinstall rubyfunk.".into()
             )
         );
         let rows = report_rows(healthy());
@@ -712,7 +710,7 @@ mod tests {
             pick(&rows, "host_executable"),
             (
                 Error,
-                "A punktfunk file is missing (pf-keeper.exe). Reinstall punktfunk.".into()
+                "A rubyfunk file is missing (pf-keeper.exe). Reinstall rubyfunk.".into()
             )
         );
     }
@@ -736,7 +734,7 @@ mod tests {
             row(DriverState::Outdated),
             (
                 Warning,
-                "The seat display driver is older than this punktfunk. Seats update it when they next start."
+                "The seat display driver is older than this rubyfunk. Seats update it when they next start."
                     .into()
             )
         );
@@ -753,7 +751,7 @@ mod tests {
             row(DriverState::Unstaged),
             (
                 Error,
-                "The seat display driver isn't on this PC. Reinstall punktfunk.".into()
+                "The seat display driver isn't on this PC. Reinstall rubyfunk.".into()
             )
         );
     }
@@ -780,8 +778,8 @@ mod tests {
             pick(&rows, "seat_display_rank"),
             (
                 Error,
-                "Windows' own Remote Desktop display driver is newer than punktfunk's, so seats \
-                 start without a picture. Update punktfunk."
+                "Windows' own Remote Desktop display driver is newer than rubyfunk's, so seats \
+                 start without a picture. Update rubyfunk."
                     .into()
             )
         );
@@ -908,7 +906,7 @@ mod tests {
     fn healthy_seat() -> SeatFacts {
         SeatFacts {
             account: Ok(inspection()),
-            group: "punktfunk-seats",
+            group: "rubyfunk-seats",
             box_steam: true,
             seat_steam: true,
             status: state(RuntimeState::Running, None),
@@ -987,7 +985,7 @@ mod tests {
         };
         let missing = (
             Error,
-            "Its Windows account pfs-one is missing or isn't punktfunk's. Remove the profile and add it again."
+            "Its Windows account pfs-one is missing or isn't rubyfunk's. Remove the profile and add it again."
                 .to_string(),
         );
         let lost = (
@@ -1014,7 +1012,7 @@ mod tests {
             }),
             (
                 Error,
-                "punktfunk has lost the password of its Windows account pfs-one. Remove the profile and add it again."
+                "rubyfunk has lost the password of its Windows account pfs-one. Remove the profile and add it again."
                     .into()
             )
         );
@@ -1048,7 +1046,7 @@ mod tests {
         }
         let left = (
             Warning,
-            "Its Windows account pfs-one left the punktfunk-seats group. It's put back when the seat next starts."
+            "Its Windows account pfs-one left the rubyfunk-seats group. It's put back when the seat next starts."
                 .to_string(),
         );
         assert_eq!(
@@ -1114,7 +1112,7 @@ mod tests {
             }),
             (
                 Error,
-                "punktfunk has lost Bärbel Ott's password. Enter it again on the profile's card."
+                "rubyfunk has lost Bärbel Ott's password. Enter it again on the profile's card."
                     .into()
             )
         );
@@ -1149,7 +1147,7 @@ mod tests {
             }),
             (
                 Warning,
-                "Its Windows account Bärbel Ott left the punktfunk-seats group. It's put back when the seat next starts."
+                "Its Windows account Bärbel Ott left the rubyfunk-seats group. It's put back when the seat next starts."
                     .into()
             )
         );

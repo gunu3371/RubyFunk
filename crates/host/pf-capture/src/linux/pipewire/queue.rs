@@ -62,7 +62,7 @@ impl Pending {
     }
 }
 
-/// How one taken frame's render went, for the `PUNKTFUNK_PERF` line.
+/// How one taken frame's render went, for the `RUBYFUNK_PERF` line.
 pub(in crate::linux) struct Taken {
     pub(in crate::linux) frame: CapturedFrame,
     /// Arrival to take: the render, then the consumer's own delay.

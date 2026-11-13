@@ -1,7 +1,7 @@
 # Windows host build/deploy scripts
 
 Helper scripts for the Windows host box (the RTX `.173` lab box, repo at
-`C:\Users\Public\punktfunk-native`). Run them from the repo root in an **elevated** PowerShell.
+`C:\Users\Public\rubyfunk-native`). Run them from the repo root in an **elevated** PowerShell.
 
 ## One-time: persist the build environment
 
@@ -16,7 +16,7 @@ points are runtime-loaded from the driver's `nvEncodeAPI64.dll`):
 | --- | --- | --- |
 | `LIBCLANG_PATH` | `C:\Program Files\LLVM\bin` | bindgen (`libclang.dll`) |
 
-No `FFMPEG_DIR`: nothing in punktfunk links libavcodec. The VS C++ toolchain is loaded
+No `FFMPEG_DIR`: nothing in rubyfunk links libavcodec. The VS C++ toolchain is loaded
 per-build via `vcvars64.bat` (auto-discovered with `vswhere`).
 
 ## Rebuild + redeploy the host service
@@ -25,8 +25,8 @@ per-build via `vcvars64.bat` (auto-discovered with `vswhere`).
 powershell -ExecutionPolicy Bypass -File scripts\windows\deploy-host.ps1
 ```
 
-Stops `PunktfunkHost`, backs up the current binary (`punktfunk-host.exe.bak`), builds
-`--release -p punktfunk-host --features nvenc` from the current source, then restarts the
+Stops `RubyFunkHost`, backs up the current binary (`rubyfunk-host.exe.bak`), builds
+`--release -p rubyfunk-host --features nvenc` from the current source, then restarts the
 service on the new binary — **with automatic rollback** if the build fails or the new binary
 won't start. The service is down only for the build duration.
 
@@ -34,17 +34,17 @@ won't start. The service is down only for the build duration.
 
 On an **installed** host (the `setup.exe`) the console is set up automatically — no manual steps.
 The installer bundles the built (self-contained, no-`node_modules`) `.output` server + a portable
-bun; the **`PunktfunkHost` service supervises the console as its own child** (`bun
+bun; the **`RubyFunkHost` service supervises the console as its own child** (`bun
 {app}\web\.output\server\index.mjs` on `:47992`, session 0, restarted on any exit, stdout in
-`%ProgramData%\punktfunk\logs\web.log`), starting it as soon as the host has written its mgmt token
-+ identity cert. `punktfunk-host.exe web setup` provisions the rest: it opens inbound TCP 47992 and
-writes the login password to `%ProgramData%\punktfunk\web-password` (ACL'd to Administrators +
+`%ProgramData%\rubyfunk\logs\web.log`), starting it as soon as the host has written its mgmt token
++ identity cert. `rubyfunk-host.exe web setup` provisions the rest: it opens inbound TCP 47992 and
+writes the login password to `%ProgramData%\rubyfunk\web-password` (ACL'd to Administrators +
 SYSTEM). The mgmt bearer token it proxies with is the host's own
-`%ProgramData%\punktfunk\mgmt-token`. Browse `https://<host-ip>:47992` and log in with the password
+`%ProgramData%\rubyfunk\mgmt-token`. Browse `https://<host-ip>:47992` and log in with the password
 the installer shows on its final page. The console replaces that clear line with a salted argon2id
 hash on the first sign-in, so a forgotten password is **reset, not read**: put a
-`PUNKTFUNK_UI_PASSWORD=<your-password>` line back in `web-password` (elevated — the file is ACL'd)
-and restart the service (`punktfunk-host service restart`). The next sign-in re-hashes it and logs
+`RUBYFUNK_UI_PASSWORD=<your-password>` line back in `web-password` (elevated — the file is ACL'd)
+and restart the service (`rubyfunk-host service restart`). The next sign-in re-hashes it and logs
 every other session out.
 
 ### Rebuild + restart the console (dev box)
@@ -70,16 +70,16 @@ powershell -ExecutionPolicy Bypass -File scripts\windows\build-scripting.ps1 -En
 gated on the same `attempt=` check CI and the `.deb` builder use), then lays it out as
 `<exe-dir>\scripting\runner-cli.js` + `scripting-run.cmd` with the bun runtime at `<exe-dir>\bun\bun.exe`.
 
-**That layout is load-bearing.** `punktfunk-host plugins add/remove/list` forwards package ops to the
-runner, and on Windows it resolves the runner *relative to the running exe* (`crates\punktfunk-host\src\plugin_host\plugins.rs`).
+**That layout is load-bearing.** `rubyfunk-host plugins add/remove/list` forwards package ops to the
+runner, and on Windows it resolves the runner *relative to the running exe* (`crates\rubyfunk-host\src\plugin_host\plugins.rs`).
 Since `deploy-host.ps1` runs the service out of `target\release`, a bundle sitting only in the
 installed `{app}` leaves the freshly built exe reporting *"the plugin runner isn't installed"*. The
-script deploys next to **every** host exe it finds - the built one and whatever the `PunktfunkHost`
+script deploys next to **every** host exe it finds - the built one and whatever the `RubyFunkHost`
 service actually runs.
 
-The `PunktfunkScripting` task is registered **disabled** (opt-in) by the installer, so the script
+The `RubyFunkScripting` task is registered **disabled** (opt-in) by the installer, so the script
 stages the bundle but does not silently enable it. Pass `-EnableTask` on a box you are validating
-plugins on (equivalent to `punktfunk-host plugins enable`).
+plugins on (equivalent to `rubyfunk-host plugins enable`).
 
 ## Rebuild + redeploy everything
 

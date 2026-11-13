@@ -25,7 +25,7 @@ pub enum Platform {
     /// The same page and the same rows as [`Platform::Web`], but held by a remote, so it takes
     /// the TV glyph legend — and Samsung requires Back at the root to exit, so it can quit.
     Tizen,
-    /// The PS5 homebrew title (`punktfunk/client-ps5`): DualSense only, no touch, no window,
+    /// The PS5 homebrew title (`rubyfunk/client-ps5`): DualSense only, no touch, no window,
     /// the console's one 4K output. PlayStation glyphs, PyroWave decodes, and the title quits.
     Ps5,
 }

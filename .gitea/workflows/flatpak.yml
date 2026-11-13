@@ -1,4 +1,4 @@
-# Build the native punktfunk Linux CLIENT as a single-file Flatpak bundle and publish it to
+# Build the native rubyfunk Linux CLIENT as a single-file Flatpak bundle and publish it to
 # Gitea's GENERIC package registry, so the Steam Deck (and any flatpak distro) installs it
 # the SteamOS-native, update-survivable way: `flatpak install --user <downloaded>.flatpak`.
 # (The HOST stays an RPM/deb — it needs unsandboxed /dev/uinput + zero-copy NVENC; only the
@@ -53,9 +53,9 @@ on:
       - 'crates/codec/pyrowave-sys/**'
       - 'crates/core/**'
       - 'packaging/flatpak/**'
-      - 'packaging/linux/io.unom.punktfunk.desktop'
-      - 'packaging/linux/io.unom.punktfunk.console.desktop'
-      - 'packaging/linux/icons/hicolor/scalable/apps/io.unom.punktfunk.svg'
+      - 'packaging/linux/io.github.gunu3371.rubyfunk.desktop'
+      - 'packaging/linux/io.github.gunu3371.rubyfunk.console.desktop'
+      - 'packaging/linux/icons/hicolor/scalable/apps/io.github.gunu3371.rubyfunk.svg'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - 'scripts/ci/pf-version.sh'
@@ -70,12 +70,11 @@ on:
 env:
   REGISTRY: git.unom.io
   OWNER: unom
-  APP_ID: io.unom.punktfunk
+  APP_ID: io.github.gunu3371.rubyfunk
   # The CamelCase id the client shipped under. Its refs stay published, end-of-life with a rebase
   # onto APP_ID, so `flatpak update` moves an old install instead of failing on a missing ref.
-  LEGACY_APP_ID: io.unom.Punktfunk
-  MANIFEST: packaging/flatpak/io.unom.punktfunk.yml
-  PACKAGE: punktfunk-client-flatpak     # generic-registry package name
+  MANIFEST: packaging/flatpak/io.github.gunu3371.rubyfunk.yml
+  PACKAGE: rubyfunk-client-flatpak     # generic-registry package name
   REPO_URL: https://flatpak.unom.io   # shared unom OSTree repo (reusable across unom apps)
   DEPLOY_DIR: unom-flatpak             # ~/<dir> on unom-1 (compose + ./site tree)
 
@@ -91,11 +90,11 @@ jobs:
         include:
           - arch: x86_64
             runner: ubuntu-24.04
-            image: 192.168.1.58:5010/punktfunk-flatpak-ci:latest
+            image: 192.168.1.58:5010/rubyfunk-flatpak-ci:latest
             suffix: ''
           - arch: aarch64
             runner: linux-arm64
-            image: 192.168.1.58:5010/punktfunk-flatpak-ci-arm64:latest
+            image: 192.168.1.58:5010/rubyfunk-flatpak-ci-arm64:latest
             suffix: '-aarch64'
     runs-on: ${{ matrix.runner }}
     # The aarch64 leg must never hold back the x86_64 canary while it is unproven on hardware.
@@ -172,7 +171,7 @@ jobs:
           # would hide the drift and cost the time this image exists to save. Fail loudly instead.
           for t in flatpak flatpak-builder ostree git python3 gpg rsync ssh curl jq node; do
             command -v "$t" >/dev/null \
-              || { echo "::error::$t is missing from punktfunk-flatpak-ci — docker.yml must republish :latest"; exit 1; }
+              || { echo "::error::$t is missing from rubyfunk-flatpak-ci — docker.yml must republish :latest"; exit 1; }
           done
           python3 -c 'import aiohttp, tomlkit' \
             || { echo "::error::flatpak-cargo-generator.py's deps (aiohttp/tomlkit) missing from the image"; exit 1; }
@@ -188,8 +187,8 @@ jobs:
           # ROOT CAUSE (confirmed 2026-07-11 by watching a live run on home-runner-1): this is
           # NOT a deterministic nsswitch/DNS-config bug. gitea-runner-fleet on home-runner-1 is
           # a SHARED, resource-capped fleet (3 replicas, --cpus 5 --memory 7g each, on a 16c/24G
-          # box) serving punktfunk AND several other orgs' repos (chatwoot, website, cms, data,
-          # infra, tempblade, played...). A push to punktfunk's main fans out ~8 workflows at
+          # box) serving rubyfunk AND several other orgs' repos (chatwoot, website, cms, data,
+          # infra, tempblade, played...). A push to rubyfunk's main fans out ~8 workflows at
           # once, and this runner box's Docker embedded DNS resolver (127.0.0.11) genuinely
           # drops UDP lookups under that concurrent load — exactly what retry.sh's own header
           # comment already documented. Reproduced: manually dispatching this job when the box
@@ -237,10 +236,10 @@ jobs:
             *)      ALIAS=canary ;;
           esac
           echo "VERSION=$PF_VERSION" >> "$GITHUB_ENV"
-          echo "BUNDLE=punktfunk-client-${PF_VERSION}${{ matrix.suffix }}.flatpak" >> "$GITHUB_ENV"
+          echo "BUNDLE=rubyfunk-client-${PF_VERSION}${{ matrix.suffix }}.flatpak" >> "$GITHUB_ENV"
           echo "FLATPAK_BRANCH=$PF_CHANNEL" >> "$GITHUB_ENV"
           echo "ALIAS=$ALIAS" >> "$GITHUB_ENV"
-          # The manifest's cargo step reads this into PUNKTFUNK_BUILD_VERSION (the repo dir is
+          # The manifest's cargo step reads this into RUBYFUNK_BUILD_VERSION (the repo dir is
           # the module source), so the binaries report the package version, canary suffix and all.
           printf '%s\n' "$PF_VERSION" > packaging/flatpak/VERSION
           echo "flatpak version $PF_VERSION -> branch '$PF_CHANNEL' alias '$ALIAS'"
@@ -248,10 +247,10 @@ jobs:
       - name: Generate offline cargo sources
         # flatpak builds with no network; vendor every crate from Cargo.lock into
         # cargo-sources.json next to the manifest (referenced by the manifest's
-        # punktfunk-client module).
+        # rubyfunk-client module).
         #
         # Prune the microsoft/windows-rs git crates first: they belong to
-        # punktfunk-client-windows, which the flatpak never builds, and leaving them in makes
+        # rubyfunk-client-windows, which the flatpak never builds, and leaving them in makes
         # flatpak-builder full-clone that multi-GB repo at build time → "No space left on
         # device" (see packaging/flatpak/prune-windows-lock.py). The committed Cargo.lock is
         # untouched; cargo --offline only needs sources for the crates it compiles.
@@ -267,7 +266,7 @@ jobs:
             "https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/$GEN_REF/cargo/flatpak-cargo-generator.py"
           echo "$GEN_SHA  /tmp/flatpak-cargo-generator.py" | sha256sum -c - \
             || { echo "::error::flatpak-cargo-generator.py sha256 mismatch at $GEN_REF"; exit 1; }
-          # The manifest prune runs inside the sandbox (io.unom.punktfunk.yml); its self-test
+          # The manifest prune runs inside the sandbox (io.github.gunu3371.rubyfunk.yml); its self-test
           # here fails the job before flatpak-builder spends its minutes.
           python3 packaging/flatpak/prune-windows-toml.py --self-test
           python3 packaging/flatpak/prune-windows-lock.py Cargo.lock /tmp/Cargo.flatpak.lock
@@ -288,7 +287,7 @@ jobs:
           # summary would drop a channel.
           if bash scripts/ci/retry.sh 5 curl -fsS -o /dev/null "$REPO_URL/repo/summary"; then
             for ref in $(bash scripts/ci/retry.sh 5 ostree --repo="$PWD/repo" remote refs unom); do
-              case "$ref" in unom:app/$APP_ID/* | unom:app/$LEGACY_APP_ID/*) ;; *) continue ;; esac
+              case "$ref" in unom:app/$APP_ID/*) ;; *) continue ;; esac
               ref=${ref#unom:}
               if ! bash scripts/ci/retry.sh 5 ostree --repo="$PWD/repo" pull --mirror --depth=0 unom "$ref"; then
                 # This leg rebuilds its own ref, so a tip it can't fetch costs only the delta.
@@ -355,7 +354,7 @@ jobs:
             echo "deps satisfied by the baked image — not touching Flathub"
             flatpak list --user --columns=ref
           else
-            echo "::warning::$MANIFEST declares deps punktfunk-flatpak-ci does not have — pulling from Flathub (~1.5 GB). Bump GNOME_VERSION/FREEDESKTOP_VERSION in ci/flatpak-ci.Dockerfile so this stays off the hot path."
+            echo "::warning::$MANIFEST declares deps rubyfunk-flatpak-ci does not have — pulling from Flathub (~1.5 GB). Bump GNOME_VERSION/FREEDESKTOP_VERSION in ci/flatpak-ci.Dockerfile so this stays off the hot path."
             bash scripts/ci/retry.sh 10 flatpak-builder --user --force-clean --disable-rofiles-fuse \
               --install-deps-from=flathub --install-deps-only \
               "$PWD/build-dir" "$MANIFEST"
@@ -399,7 +398,7 @@ jobs:
           # here is commit-pinned (see the manifest), so "don't update" is a semantic no-op.
           # Anything genuinely missing still downloads, so a cold state dir self-heals.
           #
-          # --default-branch=$FLATPAK_BRANCH pins the ref to app/io.unom.punktfunk/<arch>/<branch>
+          # --default-branch=$FLATPAK_BRANCH pins the ref to app/io.github.gunu3371.rubyfunk/<arch>/<branch>
           # (canary or stable) so the matching hosted .flatpakref resolves deterministically
           # (manifest sets no branch).
           flatpak-builder --user --force-clean --disable-rofiles-fuse \
@@ -430,7 +429,7 @@ jobs:
           # 2) Channel alias (stable release -> latest/, canary main build -> canary/) for the
           #    Decky fallback + scripts. The generic registry rejects re-uploading an existing
           #    version/file (409), so delete the prior alias file first (ignore 404 on run #1).
-          AFILE="punktfunk-client${{ matrix.suffix }}.flatpak"
+          AFILE="rubyfunk-client${{ matrix.suffix }}.flatpak"
           curl -fsS -o /dev/null --user "enricobuehler:$TOKEN" -X DELETE \
             "$BASE/$ALIAS/$AFILE" || true
           curl -fsS --user "enricobuehler:$TOKEN" --upload-file "$BUNDLE" \
@@ -476,17 +475,13 @@ jobs:
             for ref in $REFS; do
               case "$ref" in
                 "unom:app/$APP_ID/${{ matrix.arch }}/$FLATPAK_BRANCH") continue ;;
-                unom:app/$APP_ID/* | unom:app/$LEGACY_APP_ID/*) ;;
+                unom:app/$APP_ID/*) ;;
                 *) continue ;;
               esac
               bash scripts/ci/retry.sh 5 ostree --repo="$PWD/repo" pull --mirror --depth=0 \
                 unom "${ref#unom:}"
             done
           fi
-          # After the re-pull, which would reset a ref to the remote's commit. A legacy ref rebases
-          # onto the new id only where that arch and branch has published.
-          bash scripts/ci/flatpak-legacy-refs.sh "$PWD/repo" unom "$APP_ID" "$LEGACY_APP_ID" \
-            "$KEYID" "$GNUPGHOME"
           flatpak build-update-repo --generate-static-deltas \
             --gpg-sign="$KEYID" --gpg-homedir="$GNUPGHOME" "$PWD/repo"
           # The regenerated summary advertises exactly these refs — must include EVERY channel that
@@ -515,7 +510,6 @@ jobs:
             if ls -d "$PWD/repo/refs/heads/app/$APP_ID"/*/"$1" >/dev/null 2>&1; then
               echo "$APP_ID"
             else
-              echo "$LEGACY_APP_ID"
             fi
           }
           write_ref() {  # <filename> <branch> <title>
@@ -531,15 +525,13 @@ jobs:
           RuntimeRepo=https://dl.flathub.org/repo/flathub.flatpakrepo
           EOF
           }
-          write_ref "${APP_ID}.flatpakref"        stable "Punktfunk"
-          write_ref "${APP_ID}.canary.flatpakref" canary "Punktfunk (Canary)"
+          write_ref "${APP_ID}.flatpakref"        stable "RubyFunk"
+          write_ref "${APP_ID}.canary.flatpakref" canary "RubyFunk (Canary)"
           # The CamelCase file names old links and docs use.
-          write_ref "${LEGACY_APP_ID}.flatpakref"        stable "Punktfunk"
-          write_ref "${LEGACY_APP_ID}.Canary.flatpakref" canary "Punktfunk (Canary)"
           cat > site/index.html <<EOF
           <!doctype html><meta charset=utf-8><title>unom flatpak repo</title>
           <h1>unom Flatpak repository</h1>
-          <p>Install the Punktfunk Linux client (auto-adds Flathub for the GNOME runtime, then tracks updates).</p>
+          <p>Install the RubyFunk Linux client (auto-adds Flathub for the GNOME runtime, then tracks updates).</p>
           <p><b>Stable</b> (recommended — only moves on releases):</p>
           <pre>flatpak install --user $REPO_URL/${APP_ID}.flatpakref
           flatpak run $(channel_id stable)</pre>
@@ -578,7 +570,7 @@ jobs:
           bash scripts/ci/retry.sh 5 rsync -az --delay-updates --rsync-path="flock -w 900 $LOCK rsync" \
             --info=stats1 -e "$SSH" repo/ "$DEST:$DEPLOY_DIR/site/repo/"
           bash scripts/ci/retry.sh 5 rsync -az -e "$SSH" site/unom.flatpakrepo "site/${APP_ID}.flatpakref" "site/${APP_ID}.canary.flatpakref" \
-            "site/${LEGACY_APP_ID}.flatpakref" "site/${LEGACY_APP_ID}.Canary.flatpakref" site/index.html "$DEST:$DEPLOY_DIR/site/"
+            site/index.html "$DEST:$DEPLOY_DIR/site/"
           bash scripts/ci/retry.sh 5 rsync -az -e "$SSH" packaging/flatpak/server/compose.production.yml packaging/flatpak/server/Caddyfile "$DEST:$DEPLOY_DIR/"
           bash scripts/ci/retry.sh 5 $SSH "$DEST" "cd ~/$DEPLOY_DIR && docker compose -f compose.production.yml up -d"
           echo "deployed → $REPO_URL/${APP_ID}.flatpakref"

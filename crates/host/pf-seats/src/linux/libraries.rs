@@ -41,7 +41,7 @@ pub(super) const PRIVATE: [&str; 4] = ["compatdata", "shadercache", "downloading
 const STAGING: [&str; 2] = ["downloading", "temp"];
 
 /// Root-only: each seat's idmapped mounts wait here for its unit to bind them.
-const STAGE_ROOT: &str = "/run/punktfunk/libraries";
+const STAGE_ROOT: &str = "/run/rubyfunk/libraries";
 
 /// Filesystems that take an idmapped mount. A library elsewhere (exFAT, NTFS, FUSE) is skipped.
 const IDMAP_FS: [&str; 4] = ["btrfs", "ext4", "xfs", "f2fs"];
@@ -50,7 +50,7 @@ const IDMAP_FS: [&str; 4] = ["btrfs", "ext4", "xfs", "f2fs"];
 const DEFAULTS: &str = "seat-defaults.json";
 
 const LIST: &str = "libraryfolders.vdf";
-const LIST_TEMP: &str = "libraryfolders.vdf.punktfunk";
+const LIST_TEMP: &str = "libraryfolders.vdf.rubyfunk";
 const MAX_LIST_BYTES: u64 = 8 * 1024 * 1024;
 
 /// One of the owner's libraries a seat sees.
@@ -646,7 +646,7 @@ fn prepare(
     Ok(())
 }
 
-/// `<library>/.punktfunk-seats/<seat id>` with its `steamapps` mount point, made as the owner:
+/// `<library>/.rubyfunk-seats/<seat id>` with its `steamapps` mount point, made as the owner:
 /// the seat's folder for the library, on the library's own drive, where Steam reads the free
 /// space an install needs. `None` where the owner can't write beside `steamapps`; the seat's
 /// folder then stays under `seats/<id>`, and Steam reads the seat's free space.
@@ -1224,7 +1224,7 @@ mod tests {
             ..shares(false, Vec::new())
         };
         let text = unit_lines(Path::new("/b"), &id(), &shown);
-        let stage = "/run/punktfunk/libraries/0123456789abcdef0123456789abcdef/11bb";
+        let stage = "/run/rubyfunk/libraries/0123456789abcdef0123456789abcdef/11bb";
         assert_eq!(
             text,
             format!(
@@ -1257,7 +1257,7 @@ mod tests {
             Some(&shares(false, Vec::new())),
         );
         let seat = "/b/seats/0123456789abcdef0123456789abcdef";
-        let stage = "/run/punktfunk/libraries/0123456789abcdef0123456789abcdef/00aa";
+        let stage = "/run/rubyfunk/libraries/0123456789abcdef0123456789abcdef/00aa";
         let owner = "/run/media/bazzite/QEMU HARDDISK/steamapps";
         let mut expected = format!(
             "[Service]\n\
@@ -1279,7 +1279,7 @@ mod tests {
         expected.push_str(&format!(
             "BindReadOnlyPaths=-{stage}/libraryfolders.vdf:\
              {seat}/libraries/00aa/steamapps/libraryfolders.vdf\n\
-             BindPaths=-/dev/punktfunk/uinput-pf-seat-1:/dev/uinput\n"
+             BindPaths=-/dev/rubyfunk/uinput-pf-seat-1:/dev/uinput\n"
         ));
         assert_eq!(text, expected);
     }
@@ -1329,9 +1329,9 @@ mod tests {
         let without = shares(true, Vec::new());
         let mut with = without.clone();
         let anchor =
-            "/run/media/bazzite/QEMU HARDDISK/.punktfunk-seats/0123456789abcdef0123456789abcdef";
+            "/run/media/bazzite/QEMU HARDDISK/.rubyfunk-seats/0123456789abcdef0123456789abcdef";
         with.libraries[0].anchor = Some(PathBuf::from(anchor));
-        let stage = "/run/punktfunk/libraries/0123456789abcdef0123456789abcdef/00aa.root";
+        let stage = "/run/rubyfunk/libraries/0123456789abcdef0123456789abcdef/00aa.root";
         let expected = format!(
             "ExecStartPre=-+/usr/bin/nsenter -t 1 -m -- /usr/bin/mount --bind \
              -o \"nosuid,nodev,X-mount.idmap=u:1000:987:1 g:1000:956:1\" \"{anchor}\" {stage}\n\

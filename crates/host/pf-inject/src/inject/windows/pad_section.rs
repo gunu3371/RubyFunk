@@ -70,7 +70,7 @@ impl Shm {
         }
         Err(anyhow!(
             "bootstrap mailbox {name} already exists and stayed alive across retries — another \
-             punktfunk-host instance is serving this pad index, or a local service is squatting the \
+             rubyfunk-host instance is serving this pad index, or a local service is squatting the \
              name (gamepad DoS attempt?)"
         )
         .context(PadCreateFault::IndexOwnedElsewhere))

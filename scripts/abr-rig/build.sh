@@ -7,6 +7,6 @@ export CARGO_TARGET_DIR=/target
 export CARGO_HOME=${CARGO_HOME:-/cargohome}
 
 cd /w
-cargo build --release -p punktfunk-host --bin punktfunk-host
-cargo build --release -p punktfunk-probe --bin punktfunk-probe
-ls -l /target/release/punktfunk-host /target/release/punktfunk-probe
+cargo build --release -p rubyfunk-host --bin rubyfunk-host
+cargo build --release -p rubyfunk-probe --bin rubyfunk-probe
+ls -l /target/release/rubyfunk-host /target/release/rubyfunk-probe

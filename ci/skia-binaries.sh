@@ -7,7 +7,7 @@
 # previous image; with the archives present it only checks their digests.
 #
 # Bump the pins with skia-safe in crates/client/pf-console-ui/Cargo.toml. Same archives and sums as
-# packaging/flatpak/io.unom.punktfunk.yml.
+# packaging/flatpak/io.github.gunu3371.rubyfunk.yml.
 #
 # Usage: sh ci/skia-binaries.sh <target-triple>...
 set -e
@@ -31,7 +31,7 @@ for triple in "$@"; do
     x86_64-unknown-linux-gnu) sha=1620241c6f2247b6df21c6d201d5668693d2cf214f73dff06d66f40aa40f52b5 ;;
     aarch64-unknown-linux-gnu) sha=cae319203264a497291c34b66831e0af724acecaaa407e2f45b6635daeca6f64 ;;
     # rust-skia's wasm archive uses emscripten exceptions, which Rust's wasm std cannot link.
-    # This one is built with -fwasm-exceptions by punktfunk/client-web's build.sh.
+    # This one is built with -fwasm-exceptions by rubyfunk/client-web's build.sh.
     wasm32-unknown-emscripten)
       sha=e7d8c13c829b041089ec35afecec611556ab9c79b68ce2ecf41a2a2611ec5832
       features=ganesh-gl-jpegd-jpege-pdf-textlayout

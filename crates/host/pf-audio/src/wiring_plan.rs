@@ -8,8 +8,8 @@
 //! the mic is assigned first (a cable can never be a loopback), except that game audio
 //! outranks the optional mic: the Steam Streaming Microphone render side is also the
 //! only silent client-only sink, so the mic may take it only while the loopback still
-//! gets a preferred pick ([`Wiring::mic_withheld`]). `PUNKTFUNK_MIC_DEVICE` still wins.
-//! `PUNKTFUNK_LOOPBACK_DEVICE` pins the loopback above every tier and the automatic mic
+//! gets a preferred pick ([`Wiring::mic_withheld`]). `RUBYFUNK_MIC_DEVICE` still wins.
+//! `RUBYFUNK_LOOPBACK_DEVICE` pins the loopback above every tier and the automatic mic
 //! yields it; a pin the mic override took, or one matching nothing, falls back to the ladder.
 //!
 //! Default loopback prefers a silent working sink (Streaming Microphone, not Speakers);
@@ -174,7 +174,7 @@ pub fn virtual_capture(lname: &str) -> bool {
         || lname.contains("steam streaming")
         || lname.contains("voicemeeter")
         || lname.contains("virtual")
-        || lname.contains("punktfunk")
+        || lname.contains("rubyfunk")
 }
 
 /// First real capture endpoint (skip `avoid_id` and every [`virtual_capture`]).
@@ -223,8 +223,8 @@ pub fn plan(
     )
 }
 
-/// Assign endpoints. `mic_want` (`PUNKTFUNK_MIC_DEVICE`) and `loopback_want`
-/// (`PUNKTFUNK_LOOPBACK_DEVICE`) are lowercased name substrings that beat their
+/// Assign endpoints. `mic_want` (`RUBYFUNK_MIC_DEVICE`) and `loopback_want`
+/// (`RUBYFUNK_LOOPBACK_DEVICE`) are lowercased name substrings that beat their
 /// ladders. `host_audio` prefers real hardware; default prefers the silent sink.
 ///
 /// A silent sink must earn preference: if [`MixFormat::narrowing`] fires it
@@ -287,7 +287,7 @@ pub fn plan_with_formats(
     };
     // Game audio outranks the optional mic: Streaming Microphone render is also
     // the only silent client-only sink. Keep it only while loopback still gets a
-    // preferred pick without it. Override is exempt (`PUNKTFUNK_MIC_DEVICE`).
+    // preferred pick without it. Override is exempt (`RUBYFUNK_MIC_DEVICE`).
     let mut mic_withheld = false;
     let mic_render = match mic_render {
         Some((name, id)) if mic_want.is_none() && silent_sink(&name.to_lowercase()) => {
@@ -1006,7 +1006,7 @@ mod tests {
     #[test]
     fn recording_hygiene_picks_the_real_microphone() {
         let captures = [
-            ep("Microphone (2- Punktfunk)"),
+            ep("Microphone (2- RubyFunk)"),
             ep("CABLE Output (VB-Audio Virtual Cable)"),
             ep("Microphone (Steam Streaming Microphone)"),
             ep("VoiceMeeter Output (VB-Audio VoiceMeeter VAIO)"),

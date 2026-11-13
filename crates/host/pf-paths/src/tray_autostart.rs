@@ -1,4 +1,4 @@
-//! The status tray's per-user autostart entry, `~/.config/autostart/io.unom.punktfunk.tray.desktop`.
+//! The status tray's per-user autostart entry, `~/.config/autostart/io.github.gunu3371.rubyfunk.tray.desktop`.
 //!
 //! The host writes it from the `tray_autostart` setting. The tray's "Start at log-in" item and
 //! the desktop's own startup settings change it too. An entry is off when it is missing, or
@@ -7,18 +7,18 @@
 use std::path::{Path, PathBuf};
 
 /// The file name. A same-named file in the system autostart folder would be shadowed by this one.
-pub const ENTRY_FILE: &str = "io.unom.punktfunk.tray.desktop";
+pub const ENTRY_FILE: &str = "io.github.gunu3371.rubyfunk.tray.desktop";
 
 /// The CamelCase name older hosts wrote. [`entry_path`] adopts it, so the user's on/off choice
 /// carries over and no second tray starts.
-const LEGACY_FILE: &str = "io.unom.Punktfunk.Tray.desktop";
+const LEGACY_FILE: &str = "io.github.gunu3371.rubyfunk.Tray.desktop";
 
 /// The tray beside `exe`, by absolute path: a session need not have `~/.local/bin` on `PATH`.
 /// A Nix store path changes with every build, so there the profile's `PATH` finds the bare name.
 pub fn tray_command(exe: &Path) -> String {
-    let tray = exe.with_file_name("punktfunk-tray");
+    let tray = exe.with_file_name("rubyfunk-tray");
     if tray.starts_with("/nix/store") {
-        return "punktfunk-tray".into();
+        return "rubyfunk-tray".into();
     }
     tray.to_string_lossy().into_owned()
 }
@@ -33,11 +33,11 @@ fn entry(command: &str) -> String {
     format!(
         "[Desktop Entry]
 Type=Application
-Name=Punktfunk tray
-Comment=Shows the Punktfunk host's status next to the clock
+Name=RubyFunk tray
+Comment=Shows the RubyFunk host's status next to the clock
 Exec={exec} --autostart
 TryExec={command}
-Icon=punktfunk-tray
+Icon=rubyfunk-tray
 X-KDE-autostart-after=panel
 X-GNOME-Autostart-enabled=true
 Categories=Network;Utility;
@@ -129,21 +129,21 @@ mod tests {
 
     #[test]
     fn the_written_entry_is_on() {
-        let text = entry(&tray_command(Path::new("/usr/bin/punktfunk-host")));
+        let text = entry(&tray_command(Path::new("/usr/bin/rubyfunk-host")));
         assert!(is_enabled(&text));
-        assert!(text.contains("\nExec=/usr/bin/punktfunk-tray --autostart\n"));
-        assert!(text.contains("\nTryExec=/usr/bin/punktfunk-tray\n"));
+        assert!(text.contains("\nExec=/usr/bin/rubyfunk-tray --autostart\n"));
+        assert!(text.contains("\nTryExec=/usr/bin/rubyfunk-tray\n"));
     }
 
     /// SteamOS runs from `~/.local/bin`, which an autostart session may not have on `PATH`.
     #[test]
     fn the_tray_is_named_by_path_except_in_the_nix_store() {
-        let home = Path::new("/home/deck/.local/bin/punktfunk-host");
-        assert_eq!(tray_command(home), "/home/deck/.local/bin/punktfunk-tray");
-        let nix = Path::new("/nix/store/abc-punktfunk/bin/.punktfunk-host-wrapped");
-        assert_eq!(tray_command(nix), "punktfunk-tray");
-        let spaced = entry("/opt/my apps/punktfunk-tray");
-        assert!(spaced.contains("\nExec=\"/opt/my apps/punktfunk-tray\" --autostart\n"));
+        let home = Path::new("/home/deck/.local/bin/rubyfunk-host");
+        assert_eq!(tray_command(home), "/home/deck/.local/bin/rubyfunk-tray");
+        let nix = Path::new("/nix/store/abc-rubyfunk/bin/.rubyfunk-host-wrapped");
+        assert_eq!(tray_command(nix), "rubyfunk-tray");
+        let spaced = entry("/opt/my apps/rubyfunk-tray");
+        assert!(spaced.contains("\nExec=\"/opt/my apps/rubyfunk-tray\" --autostart\n"));
     }
 
     #[test]

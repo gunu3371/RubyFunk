@@ -10,16 +10,16 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license = "MIT OR Apache-2.0"
-description = "punktfunk host Windows display-topology helpers: CCD/GDI mode-set + path activation, HDR advanced colour, PnP monitor devnodes, and the display-change event watch."
+description = "rubyfunk host Windows display-topology helpers: CCD/GDI mode-set + path activation, HDR advanced colour, PnP monitor devnodes, and the display-change event watch."
 publish = false
 
 [target.'cfg(target_os = "windows")'.dependencies]
 # `Mode` (the negotiated display mode) is the core wire type; `pf-paths` for the pnp-disabled-monitors
 # state file.
-# Just `punktfunk_core::Mode` (win_display.rs), which lives in the ungated `config` module — the
+# Just `rubyfunk_core::Mode` (win_display.rs), which lives in the ungated `config` module — the
 # `quic` feature this used to request dragged quinn/tokio/rcgen/hmac/spake2/opus/rustls into a leaf
 # crate's declared closure for one type.
-punktfunk-core = { path = "../../core/punktfunk-core", default-features = false }
+rubyfunk-core = { path = "../../core/rubyfunk-core", default-features = false }
 pf-paths = { path = "../pf-paths" }
 # The WUDFHost open + image-path proof report through `anyhow` like their callers.
 anyhow = "1"

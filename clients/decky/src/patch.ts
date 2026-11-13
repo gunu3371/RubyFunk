@@ -92,13 +92,13 @@ export function createRenderPatcher(handler: RenderHandler, label: string): Rend
         const define = Object.defineProperty;
         const self = this;
         (Object as any).defineProperty = function (o: any, k: PropertyKey, d: PropertyDescriptor) {
-          if (o === self && k === "render" && d && typeof d.value === "function" && !(d.value as any).__punktfunk) {
+          if (o === self && k === "render" && d && typeof d.value === "function" && !(d.value as any).__rubyfunk) {
             const inner = d.value;
             const reactive = function (this: unknown) {
               return guarded(inner.call(this), this, []);
             };
             Object.setPrototypeOf(reactive, inner); // MobX finds its reaction on the render itself
-            (reactive as any).__punktfunk = true;
+            (reactive as any).__rubyfunk = true;
             d = { ...d, value: reactive };
           }
           return define.call(Object, o, k, d);
@@ -110,7 +110,7 @@ export function createRenderPatcher(handler: RenderHandler, label: string): Rend
         }
       }
     }
-    (Wrapped as any).__punktfunk = true;
+    (Wrapped as any).__rubyfunk = true;
     try {
       Object.defineProperty(Wrapped, "name", { value: orig.name });
     } catch {
@@ -138,7 +138,7 @@ export function createRenderPatcher(handler: RenderHandler, label: string): Rend
           return guarded(callOriginal(orig, this, args, describe({ type: orig })), undefined, args);
         };
         Object.assign(fn, orig);
-        (fn as any).__punktfunk = true;
+        (fn as any).__rubyfunk = true;
         wrapped = fn;
       }
     } else if (typeof orig === "object") {
@@ -146,7 +146,7 @@ export function createRenderPatcher(handler: RenderHandler, label: string): Rend
         const render = orig.render;
         wrapped = {
           ...orig,
-          __punktfunk: true,
+          __rubyfunk: true,
           render: function (this: unknown, ...args: any[]) {
             return guarded(callOriginal(render, this, args, describe({ type: orig })), undefined, args);
           },
@@ -154,7 +154,7 @@ export function createRenderPatcher(handler: RenderHandler, label: string): Rend
       } else if (orig.type) {
         const inner = { type: orig.type };
         patch(inner);
-        wrapped = { ...orig, __punktfunk: true, type: inner.type };
+        wrapped = { ...orig, __rubyfunk: true, type: inner.type };
       }
     }
     wrappedTypes.set(orig, wrapped);

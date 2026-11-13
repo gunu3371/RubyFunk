@@ -21,7 +21,7 @@
 //! map memoizes, so that retry never advances. [`PadSlotPool::claim`] therefore
 //! skips an index whose mailbox another process serves.
 
-use punktfunk_core::input::MAX_PADS;
+use rubyfunk_core::input::MAX_PADS;
 use std::sync::Mutex;
 
 /// Stable pad identity for one session.

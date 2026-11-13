@@ -2,7 +2,7 @@
 # Detached-GPG-sign the built dist/*.rpm so the Gitea RPM registry can be served with gpgcheck=1.
 #
 # ACTIVE: RPM_GPG_PRIVATE_KEY is set as an ORG-level secret on `unom` (packages@unom.io,
-# AF245C506F4E4763 — the public half is committed at packaging/rpm/RPM-GPG-KEY-punktfunk and served
+# AF245C506F4E4763 — the public half is committed at packaging/rpm/RPM-GPG-KEY-rubyfunk and served
 # from the registry). Every published RPM carries its EdDSA header signature; the repo file in
 # README.md tells users gpgcheck=1, which only works because of that.
 #
@@ -19,10 +19,10 @@
 # Usage (in rpm.yml, after build-rpm.sh): RPM_GPG_PRIVATE_KEY=... bash packaging/rpm/sign-rpms.sh
 #
 # Takes the RPMs to sign as arguments, defaulting to `dist/*.rpm`. The argument form exists because
-# punktfunk-gamescope is built LATER in the job than the host RPMs — it is a ~10-minute C++ build
+# rubyfunk-gamescope is built LATER in the job than the host RPMs — it is a ~10-minute C++ build
 # behind its own cache — so it misses the main signing pass entirely and needs a second one just
 # for itself. It shipped unsigned into a `gpgcheck=1` repo that way, which made
-# `dnf install punktfunk-gamescope` fail with "The package is not signed" for every Fedora/Nobara
+# `dnf install rubyfunk-gamescope` fail with "The package is not signed" for every Fedora/Nobara
 # user: the package was in the channel and still uninstallable.
 set -euo pipefail
 

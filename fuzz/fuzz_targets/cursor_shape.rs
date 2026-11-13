@@ -5,8 +5,8 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
-use punktfunk_core::quic::v2::msg::V2Message;
-use punktfunk_core::quic::CursorShape;
+use rubyfunk_core::quic::v2::msg::V2Message;
+use rubyfunk_core::quic::CursorShape;
 
 fuzz_target!(|data: &[u8]| {
     let Ok(shape) = CursorShape::from_body(data) else {

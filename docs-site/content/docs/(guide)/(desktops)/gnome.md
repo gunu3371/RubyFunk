@@ -19,7 +19,7 @@ It needs GNOME 48 or newer on a **Wayland** session.
 
 Nothing is required: the host finds Mutter on every connect.
 
-Don't set `PUNKTFUNK_COMPOSITOR`, `WAYLAND_DISPLAY` or `XDG_CURRENT_DESKTOP`. A pinned compositor
+Don't set `RUBYFUNK_COMPOSITOR`, `WAYLAND_DISPLAY` or `XDG_CURRENT_DESKTOP`. A pinned compositor
 turns off detection and session following, and stale session values point the host at dead
 sockets. Every other option is in [Configuration](/docs/configuration).
 
@@ -36,8 +36,8 @@ gsettings set org.gnome.desktop.session idle-delay 0
 Then, from inside your GNOME session:
 
 ```sh
-systemctl --user enable --now punktfunk-host
-journalctl --user -u punktfunk-host -f    # watch it start and print its fingerprint
+systemctl --user enable --now rubyfunk-host
+journalctl --user -u rubyfunk-host -f    # watch it start and print its fingerprint
 ```
 
 Add the drop-in from
@@ -61,7 +61,7 @@ AutomaticLogin = your-user
 Turn off the lock screen as above, enable the host, and let it run without a login:
 
 ```sh
-systemctl --user enable --now punktfunk-host
+systemctl --user enable --now rubyfunk-host
 sudo loginctl enable-linger "$USER"
 ```
 

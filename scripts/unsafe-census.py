@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Punktfunk unsafe census.
+RubyFunk unsafe census.
 
 Reproducible, compiler-free census of `unsafe` in every crate a shipped binary links.
 Classifies by WHAT THE UNSAFE DOES (operations), not by block count.
@@ -35,10 +35,10 @@ from cargo_graph import closure  # noqa: E402
 # on (no dev-dependencies), plus the cdylibs Windows loads into other processes and the crates
 # that build in their own workspaces. `cargo metadata` resolves a target it cannot build for,
 # so the Apple and Android closures need no installed toolchain.
-SHIPPED = ["punktfunk-host", "punktfunk-encode-worker", "punktfunk-capture-worker",
-           "punktfunk-seats", "punktfunk-tray", "pf-seat-audio",
-           "punktfunk-cli", "punktfunk-client-linux", "punktfunk-client-windows",
-           "punktfunk-client-android", "punktfunk-client-apple", "punktfunk-ffi"]
+SHIPPED = ["rubyfunk-host", "rubyfunk-encode-worker", "rubyfunk-capture-worker",
+           "rubyfunk-seats", "rubyfunk-tray", "pf-seat-audio",
+           "rubyfunk-cli", "rubyfunk-client-linux", "rubyfunk-client-windows",
+           "rubyfunk-client-android", "rubyfunk-client-apple", "rubyfunk-ffi"]
 TRIPLES = ["x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc", "aarch64-apple-darwin",
            "aarch64-apple-ios", "aarch64-linux-android"]
 EXTRA_ROOTS = ["packaging/windows/drivers", "packaging/windows/pf-vkhdr-layer",

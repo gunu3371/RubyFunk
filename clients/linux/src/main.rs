@@ -1,8 +1,8 @@
-//! `punktfunk-client` — the native Linux punktfunk/1 desktop shell (relm4/libadwaita).
+//! `rubyfunk-client` — the native Linux punktfunk/1 desktop shell (relm4/libadwaita).
 //!
 //! Hosts, pairing/trust, settings, and the desktop library page; every stream (and the
-//! console game library) runs in the spawned `punktfunk-session` Vulkan binary — the
-//! shell never touches video (punktfunk-planning `linux-client-rearchitecture.md`).
+//! console game library) runs in the spawned `rubyfunk-session` Vulkan binary — the
+//! shell never touches video (rubyfunk-planning `linux-client-rearchitecture.md`).
 // `deny`, not `forbid`: clearing Steam's SDL device filter and the spawn test's config-dir write
 // mutate the process env, and the password prompt reads its entry through GTK's C API. Each
 // carries a named `#[allow(unsafe_code)]` with the proof at the site.
@@ -39,7 +39,7 @@ mod widgets;
 
 #[cfg(target_os = "linux")]
 fn main() -> gtk::glib::ExitCode {
-    punktfunk_core::tls::install_default_provider();
+    rubyfunk_core::tls::install_default_provider();
     app::run()
 }
 
@@ -47,6 +47,6 @@ fn main() -> gtk::glib::ExitCode {
 /// (the Mac client lives in clients/apple).
 #[cfg(not(target_os = "linux"))]
 fn main() {
-    eprintln!("punktfunk-client is Linux-only — the macOS client lives in clients/apple");
+    eprintln!("rubyfunk-client is Linux-only — the macOS client lives in clients/apple");
     std::process::exit(2);
 }

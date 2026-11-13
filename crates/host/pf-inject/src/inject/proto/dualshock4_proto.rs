@@ -161,7 +161,7 @@ mod tests {
     /// L2 analog is byte 8, not DualSense's 5. Offsets otherwise match kernel DS4 USB.
     #[test]
     fn serialize_offsets() {
-        use punktfunk_core::input::gamepad as gs;
+        use rubyfunk_core::input::gamepad as gs;
         let mut st = DsState::from_gamepad(
             gs::BTN_A | gs::BTN_DPAD_UP | gs::BTN_LB,
             16384, // lx right of centre

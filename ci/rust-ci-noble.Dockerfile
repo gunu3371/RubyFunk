@@ -1,4 +1,4 @@
-# LTS builder for the punktfunk HOST .deb — Ubuntu 24.04 (noble), the current Ubuntu LTS.
+# LTS builder for the rubyfunk HOST .deb — Ubuntu 24.04 (noble), the current Ubuntu LTS.
 #
 # WHY THIS EXISTS (see packaging/debian/README.md → "Ubuntu 24.04 LTS"):
 # The default builder (ci/rust-ci.Dockerfile) is Ubuntu 26.04, so the host .deb it produces bakes
@@ -13,7 +13,7 @@
 # tests that DO link a cuda stub — this host-only build needs no NVIDIA driver package. NVENC/EGL
 # come from whatever driver the target runs, out of band.
 #
-# Rebuilt+pushed by .gitea/workflows/docker.yml (matrix: punktfunk-rust-ci-noble); consumed by the
+# Rebuilt+pushed by .gitea/workflows/docker.yml (matrix: rubyfunk-rust-ci-noble); consumed by the
 # `build-publish-host` job in .gitea/workflows/deb.yml. Bootstrap: like rust-ci, the first deb.yml
 # run after this image is added uses the image from a PRIOR docker.yml push — seed it once manually
 # (docker build -f ci/rust-ci-noble.Dockerfile -t … ci && docker push) before the host job can run.

@@ -28,8 +28,8 @@ use crate::overlay::OverlayFrame;
 use crate::vk::{BusyOn, FrameInput, PresentPref, Presented, PresentedSample};
 use anyhow::{anyhow, bail, Context as _, Result};
 use pf_client_core::video::{ColorDesc, D3d11Frame, SlotFormat, VulkanDecodeDevice};
-use punktfunk_core::quic::HdrMeta;
-use punktfunk_core::video_fit::{self, VideoFit};
+use rubyfunk_core::quic::HdrMeta;
+use rubyfunk_core::video_fit::{self, VideoFit};
 use windows::core::Interface;
 use windows::Win32::d3d11::{
     D3D11CreateDevice, ID3D11Device5, ID3D11DeviceContext4, ID3D11Fence, ID3D11Multithread,

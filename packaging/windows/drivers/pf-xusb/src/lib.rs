@@ -1,4 +1,4 @@
-//! punktfunk virtual Xbox 360 XUSB companion — a UMDF2 driver presenting the XUSB device
+//! rubyfunk virtual Xbox 360 XUSB companion — a UMDF2 driver presenting the XUSB device
 //! interface, so classic XInput reads the pad with no kernel bus driver.
 //!
 //! xinput1_4.dll enumerates `GUID_DEVINTERFACE_XUSB`, opens the Nth instance (the player slot)

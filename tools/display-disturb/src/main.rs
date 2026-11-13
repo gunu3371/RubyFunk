@@ -1,27 +1,11 @@
-//! `display-disturb` — deterministic display-stack disturbance generator (Windows).
+//! Reproducible Windows display disturbances for host stall measurements.
 //!
-//! The vdisplay stall-immunity bench (design: punktfunk-planning
-//! `design/vdisplay-disturbance-immunity.md`) needs both stall classes reproducible on demand,
-//! without waiting for a standby TV or a monitor-tool storm:
+//! `ddc` sends physical-monitor I2C requests; `modeset` recommits the current mode.
+//! `adl-emul` inspects or pins AMD connector emulation.
+//! Each operation prints its epoch, target, duration and result for host-log correlation.
 //!
-//! * `ddc` — Class 2: DDC/CI traffic through the win32k → dxgkrnl → miniport I2C path, exactly
-//!   what Twinkle-Tray/PowerDisplay-class tools emit after every HPD blip (one VCP read ≈ 100 ms,
-//!   a capabilities string up to ~1 s — serialized per physical I2C bus). Requires a physical
-//!   monitor; virtual displays expose no DDC handle.
-//! * `modeset` — Class 1: a same-mode `ChangeDisplaySettingsExW(CDS_RESET)` re-commit — a
-//!   Level-Two modeset-class DDI entry that idles the whole adapter ("the graphics hardware is
-//!   idle") without changing anything Win32-visible.
-//! * `adl-emul` — not a disturbance but the LEVER probe for the standby-sink class: AMD ADL
-//!   connector-emulation caps/state, and `--lock`/`--unlock` to pin the live EDID +
-//!   `ADL_EMUL_MODE_ALWAYS` (the software HPD-dummy experiment — see `adl.rs`).
-//!
-//! Every operation prints `epoch_ms op target duration_ms result` so stalls in a concurrent
-//! stream's host.log correlate line-for-line. The per-op duration is itself measurement: it is
-//! the I2C/modeset service time the GPU driver spent, per disturbance.
-//!
-//! Usage: `display-disturb ddc [--interval-ms 2000] [--caps] [--vcp 0x10]`
-//!        `display-disturb modeset [--interval-ms 2000]`
-//!        `display-disturb adl-emul [--lock|--unlock] [--connector N]`
+//! Run `display-disturb ddc --interval-ms 2000`, `display-disturb modeset`,
+//! or `display-disturb adl-emul --lock` on the Windows host.
 
 #[cfg(not(target_os = "windows"))]
 fn main() {

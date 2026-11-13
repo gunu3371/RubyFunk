@@ -161,7 +161,7 @@ pub fn exit_route(
     wake_armed: bool,
     log: &str,
 ) -> ExitRoute {
-    use punktfunk_core::reject::RejectReason;
+    use rubyfunk_core::reject::RejectReason;
     match outcome {
         ConnectOutcome::Ended(None) | ConnectOutcome::Cancelled => ExitRoute::Silent,
         ConnectOutcome::Ended(Some(reason)) => ExitRoute::Banner(reason.clone()),
@@ -419,7 +419,7 @@ impl ConnectPlan {
     pub fn session_args(&self) -> Vec<String> {
         let mut args = vec![
             "--connect".into(),
-            punktfunk_core::client::join_host_port(&self.host.addr, self.host.port),
+            rubyfunk_core::client::join_host_port(&self.host.addr, self.host.port),
         ];
         if let Some(fp) = self.host.pin() {
             args.push("--fp".into());
@@ -483,7 +483,7 @@ impl ConnectPlan {
 pub enum PlanOutcome {
     Connect(Box<ConnectPlan>),
     /// Same plan, but the link named the host by a guessable label, address, or `host=`.
-    /// `x-scheme-handler/punktfunk` lets any page emit that, so the front-end asks first.
+    /// `x-scheme-handler/rubyfunk` lets any page emit that, so the front-end asks first.
     /// Not [`PlanOutcome::ConfirmUnknown`]: this host is saved and pinned; pairing would
     /// drop the pin.
     ConfirmConnect(Box<ConnectPlan>),
@@ -525,7 +525,7 @@ impl PlanError {
     pub fn message(&self) -> String {
         match self {
             PlanError::AmbiguousHost(r) => {
-                format!("More than one saved host is called \"{r}\" — open Punktfunk and pick one.")
+                format!("More than one saved host is called \"{r}\" — open RubyFunk and pick one.")
             }
             PlanError::UnresolvableHost(r) => {
                 format!("No saved host matches \"{r}\".")
@@ -544,7 +544,7 @@ impl PlanError {
     }
 }
 
-/// Plan from a `punktfunk://` link against this device's stores. Shared URL-router
+/// Plan from a `rubyfunk://` link against this device's stores. Shared URL-router
 /// half (`design/client-architecture-split.md`): no pairing, no silent trust, no
 /// dial on a guessable reference — only the stable record id yields
 /// [`PlanOutcome::Connect`]; a name or address yields [`PlanOutcome::ConfirmConnect`].
@@ -763,7 +763,7 @@ pub enum ConnectOutcome {
     /// The host answered and refused, saying why. Never a wake.
     Refused {
         msg: String,
-        reason: punktfunk_core::reject::RejectReason,
+        reason: rubyfunk_core::reject::RejectReason,
     },
     /// No pin, or the pin no longer matches. Never retried silently.
     TrustRejected(String),
@@ -828,7 +828,7 @@ impl ConnectOutcome {
             ConnectOutcome::RendererFailed { code } => {
                 let how = Self::exit_phrase(*code);
                 Some(format!(
-                    "The console didn't start (punktfunk-session {how}). Check {log}."
+                    "The console didn't start (rubyfunk-session {how}). Check {log}."
                 ))
             }
         }
@@ -838,7 +838,7 @@ impl ConnectOutcome {
     /// crash, or the wrong binary. `log` names where the cause is.
     pub fn died_banner(code: i32, log: &str) -> String {
         let how = Self::exit_phrase(code);
-        format!("The session didn't start (punktfunk-session {how}). Check {log}.")
+        format!("The session didn't start (rubyfunk-session {how}). Check {log}.")
     }
 
     /// How a session that died silently went, for a banner. An NTSTATUS crash reads in
@@ -856,7 +856,7 @@ impl ConnectOutcome {
 /// carries (`design/client-architecture-split.md`).
 ///
 /// The session is a renderer: given this, it performs no store reads. A hand-run
-/// `punktfunk-session --connect` with no spec still resolves through the same
+/// `rubyfunk-session --connect` with no spec still resolves through the same
 /// helper (`effective_settings`), so the two modes cannot drift.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ResolvedSpec {
@@ -877,7 +877,7 @@ impl ResolvedSpec {
     /// something inspectable.
     ///
     /// CSPRNG name, `create_new` + 0600. On Linux this is `$XDG_RUNTIME_DIR`
-    /// (per-user 0700), not shared `/tmp` — a predictable `punktfunk-spec-<pid>-<n>`
+    /// (per-user 0700), not shared `/tmp` — a predictable `rubyfunk-spec-<pid>-<n>`
     /// name lets another local user pre-create the path as a symlink or swap the
     /// spec before the child reads it. A collision fails the exclusive create;
     /// the caller already falls back to letting the child resolve for itself.
@@ -893,7 +893,7 @@ impl ResolvedSpec {
         #[cfg(not(target_os = "linux"))]
         let dir = std::env::temp_dir();
         let path = dir.join(format!(
-            "punktfunk-spec-{:032x}.json",
+            "rubyfunk-spec-{:032x}.json",
             u128::from_le_bytes(rand::random::<[u8; 16]>())
         ));
         let mut opts = std::fs::OpenOptions::new();
@@ -936,7 +936,7 @@ pub enum SessionEvent {
     /// `{"awaiting_approval":true}`: the host parked the dial for its operator.
     AwaitingApproval,
     /// One `stats-json:` window, once a second.
-    Stats(Box<punktfunk_core::hud::StatsSnapshot>),
+    Stats(Box<rubyfunk_core::hud::StatsSnapshot>),
     Error(SessionError),
     Ended(String),
     /// Session window logical size under match-window. The SPAWNER persists it:
@@ -958,7 +958,7 @@ pub struct SessionError {
     pub trust_rejected: bool,
     /// The host's typed refusal (`"refused": "<token>"`). A token this build doesn't know
     /// reads as `None`, an untyped failure.
-    pub refused: Option<punktfunk_core::reject::RejectReason>,
+    pub refused: Option<rubyfunk_core::reject::RejectReason>,
 }
 
 /// Parse one stdout line of the session contract. `None` for the text `stats:` line, which
@@ -983,7 +983,7 @@ pub fn parse_session_line(line: &str) -> Option<SessionEvent> {
             refused: v
                 .get("refused")
                 .and_then(|r| r.as_str())
-                .and_then(punktfunk_core::reject::RejectReason::from_token),
+                .and_then(rubyfunk_core::reject::RejectReason::from_token),
         }));
     }
     if let Some(msg) = v.get("ended").and_then(|m| m.as_str()) {
@@ -1018,7 +1018,7 @@ pub const UNLOCK_STDIN_MAX: usize = 4096;
 /// dropping `to`. Every copy made here wipes.
 pub fn write_unlock(
     mut to: impl std::io::Write,
-    unlock: punktfunk_core::quic::v2::msg::ProfileUnlock,
+    unlock: rubyfunk_core::quic::v2::msg::ProfileUnlock,
 ) -> std::io::Result<()> {
     let frame = unlock.encode();
     drop(unlock);
@@ -1032,8 +1032,8 @@ pub fn write_unlock(
 /// and no error carries a byte of the frame.
 pub fn read_unlock(
     mut from: impl std::io::Read,
-) -> std::io::Result<punktfunk_core::quic::v2::msg::ProfileUnlock> {
-    use punktfunk_core::quic::v2::{field, msg, registry};
+) -> std::io::Result<rubyfunk_core::quic::v2::msg::ProfileUnlock> {
+    use rubyfunk_core::quic::v2::{field, msg, registry};
     let bad = |what| std::io::Error::new(std::io::ErrorKind::InvalidData, what);
     let mut len = [0u8; 4];
     from.read_exact(&mut len)?;
@@ -1055,7 +1055,7 @@ pub fn read_unlock(
 }
 
 /// [`read_unlock`] on this process's stdin, past std's buffer, which is never wiped.
-pub fn read_unlock_from_stdin() -> std::io::Result<punktfunk_core::quic::v2::msg::ProfileUnlock> {
+pub fn read_unlock_from_stdin() -> std::io::Result<rubyfunk_core::quic::v2::msg::ProfileUnlock> {
     #[cfg(unix)]
     let raw = std::os::fd::AsFd::as_fd(&std::io::stdin()).try_clone_to_owned()?;
     #[cfg(windows)]
@@ -1071,7 +1071,7 @@ pub enum SessionLine<'a> {
     Error {
         msg: &'a str,
         trust_rejected: Option<bool>,
-        refused: Option<punktfunk_core::reject::RejectReason>,
+        refused: Option<rubyfunk_core::reject::RejectReason>,
     },
     Ended(&'a str),
     Window {
@@ -1081,7 +1081,7 @@ pub enum SessionLine<'a> {
     /// `stats:` for a person reading a log, then `stats-json:` for a program.
     Stats {
         text: &'a str,
-        snap: &'a punktfunk_core::hud::StatsSnapshot,
+        snap: &'a rubyfunk_core::hud::StatsSnapshot,
     },
 }
 
@@ -1199,9 +1199,9 @@ pub fn session_process() -> Command {
 }
 
 #[cfg(windows)]
-const SESSION_BIN: &str = "punktfunk-session.exe";
+const SESSION_BIN: &str = "rubyfunk-session.exe";
 #[cfg(not(windows))]
-const SESSION_BIN: &str = "punktfunk-session";
+const SESSION_BIN: &str = "rubyfunk-session";
 
 /// Records cancellation and kills the spawned session child. Cancellation remains
 /// visible when it arrives before the child is armed or after an event is queued.
@@ -1342,7 +1342,7 @@ pub fn spawn_child_with_unlock(
     spec_path: Option<std::path::PathBuf>,
     cancel: Option<CancelHandle>,
     stderr_sink: impl std::io::Write + Send + 'static,
-    unlock: Option<punktfunk_core::quic::v2::msg::ProfileUnlock>,
+    unlock: Option<rubyfunk_core::quic::v2::msg::ProfileUnlock>,
     on_event: impl FnMut(SessionEvent) + Send + 'static,
 ) -> Result<CancelHandle, String> {
     if unlock.is_some() {
@@ -1446,8 +1446,8 @@ mod tests {
     use super::*;
     use crate::deeplink;
     use crate::trust::StatsVerbosity;
-    use punktfunk_core::config::{GamepadPref, Mode};
-    use punktfunk_core::quic::HdrMeta;
+    use rubyfunk_core::config::{GamepadPref, Mode};
+    use rubyfunk_core::quic::HdrMeta;
 
     fn host(name: &str, addr: &str, id: &str, fp: &str) -> KnownHost {
         KnownHost {
@@ -1501,7 +1501,7 @@ mod tests {
     /// refusal redials once, a locked profile prompts, and only an armed dial that failed wakes.
     #[test]
     fn exit_route_decides_once_for_every_shell() {
-        use punktfunk_core::reject::RejectReason as R;
+        use rubyfunk_core::reject::RejectReason as R;
         use ConnectOutcome as O;
         use ExitRoute::*;
         let refused = |reason| O::Refused {
@@ -1581,7 +1581,7 @@ mod tests {
         }
         assert_eq!(
             O::died_banner(1, "C:\\logs\\client.log"),
-            "The session didn't start (punktfunk-session exited with code 1). Check C:\\logs\\client.log."
+            "The session didn't start (rubyfunk-session exited with code 1). Check C:\\logs\\client.log."
         );
     }
 
@@ -1589,7 +1589,7 @@ mod tests {
     /// session exits. What a dial named is read at its own exit and at no later one.
     #[test]
     fn a_connect_attempt_reads_its_own_exit() {
-        use punktfunk_core::reject::RejectReason as R;
+        use rubyfunk_core::reject::RejectReason as R;
         use ExitRoute::*;
         let at = |fp: &str, addr: &str| HostTarget {
             addr: addr.into(),
@@ -1669,7 +1669,7 @@ mod tests {
     #[test]
     fn an_unlock_dial_waits_for_its_desktop_and_knows_what_was_refused() {
         use crate::unlock::Pending;
-        use punktfunk_core::reject::RejectReason as R;
+        use rubyfunk_core::reject::RejectReason as R;
         let locked = ConnectOutcome::Refused {
             msg: "Wrong password.".into(),
             reason: R::ProfileLocked,
@@ -1740,7 +1740,7 @@ mod tests {
     /// bytes, empty or of another type, the frame is refused.
     #[test]
     fn one_unlock_crosses_the_session_stdin() {
-        use punktfunk_core::quic::v2::msg::{
+        use rubyfunk_core::quic::v2::msg::{
             ProfileUnlock, V2Message, Zeroizing, ENROLL_NONE, UNLOCK_PASSWORD,
         };
         let secret = Zeroizing::new(b" tr0ub4dor &3 ".to_vec());
@@ -1755,7 +1755,7 @@ mod tests {
         more.push(0);
         let mut long = wire.clone();
         long[..4].copy_from_slice(&(UNLOCK_STDIN_MAX as u32 + 1).to_le_bytes());
-        let other = punktfunk_core::quic::PairResult { ok: true }.encode_v2();
+        let other = rubyfunk_core::quic::PairResult { ok: true }.encode_v2();
         let mut wrong = (other.len() as u32).to_le_bytes().to_vec();
         wrong.extend_from_slice(&other);
         for bad in [
@@ -1875,7 +1875,7 @@ mod tests {
         let plan =
             |url: &str| plan_from_link(&deeplink::parse(url).unwrap(), &known, &catalog, &base);
 
-        let out = plan("punktfunk://connect/11111111-2222-4333-8444-555555555555").unwrap();
+        let out = plan("rubyfunk://connect/11111111-2222-4333-8444-555555555555").unwrap();
         match out {
             PlanOutcome::Connect(p) => {
                 assert_eq!(p.host.addr, "192.168.1.50");
@@ -1887,42 +1887,42 @@ mod tests {
 
         // Same host named by its label: any page can guess that, so the shell must ask.
         // Not ConfirmUnknown — that would re-run pairing on an already-pinned host.
-        match plan("punktfunk://connect/Desk").unwrap() {
+        match plan("rubyfunk://connect/Desk").unwrap() {
             PlanOutcome::ConfirmConnect(p) => {
                 assert_eq!(p.host.addr, "192.168.1.50");
                 assert!(p.host.pin().is_some());
             }
             other => panic!("expected a confirm-connect, got {other:?}"),
         }
-        match plan("punktfunk://connect/192.168.1.50?launch=steam:570").unwrap() {
+        match plan("rubyfunk://connect/192.168.1.50?launch=steam:570").unwrap() {
             PlanOutcome::ConfirmConnect(p) => assert_eq!(p.launch.as_deref(), Some("steam:570")),
             other => panic!("expected a confirm-connect, got {other:?}"),
         }
 
         assert_eq!(
-            plan(&format!("punktfunk://connect/Desk?fp={}", "b".repeat(64))),
+            plan(&format!("rubyfunk://connect/Desk?fp={}", "b".repeat(64))),
             Err(PlanError::PinConflict {
                 host: "Desk".into()
             })
         );
         assert_eq!(
-            plan("punktfunk://connect/Couch"),
+            plan("rubyfunk://connect/Couch"),
             Err(PlanError::AmbiguousHost("Couch".into()))
         );
         assert_eq!(
-            plan("punktfunk://connect/00000000-0000-4000-8000-000000000000"),
+            plan("rubyfunk://connect/00000000-0000-4000-8000-000000000000"),
             Err(PlanError::UnresolvableHost(
                 "00000000-0000-4000-8000-000000000000".into()
             ))
         );
         assert_eq!(
-            plan("punktfunk://connect/Desk?profile=NoSuchProfile"),
+            plan("rubyfunk://connect/Desk?profile=NoSuchProfile"),
             Err(PlanError::UnknownPreset("NoSuchProfile".into()))
         );
         // Unknown address: confirmation sheet, never auto-connect. Carries the claimed
         // name and expected pin so the first connect is verified, not TOFU.
         match plan(&format!(
-            "punktfunk://connect/10.0.0.9:7000?name=Studio&fp={fp}"
+            "rubyfunk://connect/10.0.0.9:7000?name=Studio&fp={fp}"
         ))
         .unwrap()
         {
@@ -1941,7 +1941,7 @@ mod tests {
             other => panic!("expected a confirmation, got {other:?}"),
         }
         // Saved but never pinned: known ≠ trusted.
-        match plan("punktfunk://connect/192.168.1.60").unwrap() {
+        match plan("rubyfunk://connect/192.168.1.60").unwrap() {
             PlanOutcome::ConfirmUnknown(u) => {
                 assert_eq!(u.addr, "192.168.1.60");
                 assert_eq!(u.name.as_deref(), Some("Couch"));
@@ -1949,7 +1949,7 @@ mod tests {
             other => panic!("expected a confirmation, got {other:?}"),
         }
         assert!(matches!(
-            plan("punktfunk://wake/Desk").unwrap(),
+            plan("rubyfunk://wake/Desk").unwrap(),
             PlanOutcome::Unsupported(Route::Wake)
         ));
     }
@@ -1968,8 +1968,8 @@ mod tests {
         };
         let (catalog, base) = (PresetsFile::default(), Settings::default());
         for url in [
-            "punktfunk://connect/10.0.0.9:7000?as=Kid",
-            "punktfunk://connect/192.168.1.60?as=Kid",
+            "rubyfunk://connect/10.0.0.9:7000?as=Kid",
+            "rubyfunk://connect/192.168.1.60?as=Kid",
         ] {
             let link = deeplink::parse(url).unwrap();
             match plan_from_link(&link, &known, &catalog, &base).unwrap() {
@@ -2049,7 +2049,7 @@ mod tests {
     fn session_exits_classify_once() {
         use ConnectOutcome as O;
         // A contract line says more than a code.
-        use punktfunk_core::reject::RejectReason as R;
+        use rubyfunk_core::reject::RejectReason as R;
         let err = |msg: &str, trust_rejected, refused| SessionError {
             msg: msg.into(),
             trust_rejected,
@@ -2104,7 +2104,7 @@ mod tests {
             (
                 O::RendererFailed { code: 4 },
                 Some(
-                    "The console didn't start (punktfunk-session exited with code 4). \
+                    "The console didn't start (rubyfunk-session exited with code 4). \
                      Check the client log."
                         .into(),
                 ),
@@ -2176,7 +2176,7 @@ mod tests {
             Some(SessionEvent::Error(SessionError {
                 msg: "gone".into(),
                 trust_rejected: false,
-                refused: Some(punktfunk_core::reject::RejectReason::ProfileUnknown),
+                refused: Some(rubyfunk_core::reject::RejectReason::ProfileUnknown),
             }))
         );
         assert!(matches!(
@@ -2193,7 +2193,7 @@ mod tests {
             ConnectOutcome::from_exit(2, Some(locked), None, false),
             ConnectOutcome::Refused {
                 msg: "Wrong password.".into(),
-                reason: punktfunk_core::reject::RejectReason::ProfileLocked,
+                reason: rubyfunk_core::reject::RejectReason::ProfileLocked,
             }
         );
         assert_eq!(
@@ -2258,14 +2258,14 @@ mod tests {
         let refused = SessionLine::Error {
             msg: "All seats are taken.",
             trust_rejected: Some(false),
-            refused: Some(punktfunk_core::reject::RejectReason::NoSeat),
+            refused: Some(rubyfunk_core::reject::RejectReason::NoSeat),
         };
         assert_eq!(
             parse(refused),
             Some(SessionEvent::Error(SessionError {
                 msg: "All seats are taken.".into(),
                 trust_rejected: false,
-                refused: Some(punktfunk_core::reject::RejectReason::NoSeat),
+                refused: Some(rubyfunk_core::reject::RejectReason::NoSeat),
             }))
         );
         assert_eq!(
@@ -2275,7 +2275,7 @@ mod tests {
         let win = SessionLine::Window { w: 1600, h: 900 };
         assert_eq!(win.render(), r#"{"window":{"w":1600,"h":900}}"#);
         assert_eq!(parse(win), Some(SessionEvent::Window { w: 1600, h: 900 }));
-        let snap = punktfunk_core::hud::StatsSnapshot {
+        let snap = rubyfunk_core::hud::StatsSnapshot {
             width: 1280,
             received: 60,
             ..Default::default()
@@ -2361,7 +2361,7 @@ mod tests {
             "the av1 ceiling, not H.264's"
         );
         assert_eq!(params.pyrowave_bpp_x100, 120);
-        assert_eq!(params.preferred_codec, punktfunk_core::quic::CODEC_AV1);
+        assert_eq!(params.preferred_codec, rubyfunk_core::quic::CODEC_AV1);
         assert_ne!(plan.settings.codec, Settings::default().codec);
         assert_eq!(params.exclude_codecs, 0);
         assert_eq!(params.want_444, plan.settings.enable_444);
@@ -2369,7 +2369,7 @@ mod tests {
         assert!(params.display_hdr.is_none());
         assert_eq!(
             params.video_caps,
-            punktfunk_core::quic::VIDEO_CAP_MULTI_SLICE
+            rubyfunk_core::quic::VIDEO_CAP_MULTI_SLICE
         );
         assert_eq!(
             params.mode,
@@ -2385,7 +2385,7 @@ mod tests {
         assert_eq!(params.stats_verbosity, StatsVerbosity::Detailed);
         assert!(Arc::ptr_eq(&params.force_software, &force_software));
         // A setup refusal before any frame reads as a waking host until the window shuts.
-        let setup = Some(punktfunk_core::reject::RejectReason::SetupFailed);
+        let setup = Some(rubyfunk_core::reject::RejectReason::SetupFailed);
         assert!(params.auto_wake && params.settle_until.is_none() && params.not_ready(setup, 0));
         assert!(!params.not_ready(setup, 1), "it streamed");
         let mut settling = params.clone();
@@ -2402,16 +2402,16 @@ mod tests {
         let hdr = plan.session_params([9; 32], probes(true, false));
         assert_eq!(
             hdr.video_caps,
-            punktfunk_core::quic::VIDEO_CAP_MULTI_SLICE
-                | punktfunk_core::quic::VIDEO_CAP_10BIT
-                | punktfunk_core::quic::VIDEO_CAP_HDR
+            rubyfunk_core::quic::VIDEO_CAP_MULTI_SLICE
+                | rubyfunk_core::quic::VIDEO_CAP_10BIT
+                | rubyfunk_core::quic::VIDEO_CAP_HDR
         );
         assert!(hdr.display_hdr.is_some());
 
         let chroma = plan.session_params([9; 32], probes(false, true));
         assert_eq!(
             chroma.video_caps,
-            punktfunk_core::quic::VIDEO_CAP_MULTI_SLICE | punktfunk_core::quic::VIDEO_CAP_444
+            rubyfunk_core::quic::VIDEO_CAP_MULTI_SLICE | rubyfunk_core::quic::VIDEO_CAP_444
         );
         assert!(chroma.want_444);
         assert!(chroma.display_hdr.is_none());
@@ -2419,7 +2419,7 @@ mod tests {
         let mut declined = plan.clone();
         declined.settings.hdr_enabled = false;
         let off = declined.session_params([9; 32], probes(true, false));
-        assert_eq!(off.video_caps, punktfunk_core::quic::VIDEO_CAP_MULTI_SLICE);
+        assert_eq!(off.video_caps, rubyfunk_core::quic::VIDEO_CAP_MULTI_SLICE);
         assert!(
             off.display_hdr.is_none(),
             "the volume stays off with HDR off"

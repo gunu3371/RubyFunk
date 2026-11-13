@@ -9,7 +9,7 @@
 //! F32LE at every rate — core already decoded to f32 (process-callback `stride`).
 
 use anyhow::{Context, Result};
-use punktfunk_core::client::NativeClient;
+use rubyfunk_core::client::NativeClient;
 use std::collections::VecDeque;
 use std::sync::mpsc::{Receiver, SyncSender, TrySendError};
 use std::sync::Arc;
@@ -120,17 +120,17 @@ pub struct AudioPlayer {
     recycle_rx: Receiver<Vec<f32>>,
     quit_tx: pipewire::channel::Sender<Terminate>,
     thread: Option<std::thread::JoinHandle<()>>,
-    sync: Arc<punktfunk_core::audio::AudioSyncCell>,
+    sync: Arc<rubyfunk_core::audio::AudioSyncCell>,
     /// Callback publishes atomics only (realtime; it formats nothing). Decode thread logs them.
     vitals: Arc<crate::audio_vitals::PlaybackVitals>,
 }
 
 impl AudioPlayer {
     /// No PipeWire → `Err`; caller continues video-only. `policy` is the session's
-    /// ([`punktfunk_core::audio::AudioPlayout::jitter`]); the callback owns it from here.
+    /// ([`rubyfunk_core::audio::AudioPlayout::jitter`]); the callback owns it from here.
     pub fn spawn(
         fmt: PlaybackFormat,
-        policy: punktfunk_core::audio::JitterPolicy,
+        policy: rubyfunk_core::audio::JitterPolicy,
     ) -> Result<AudioPlayer> {
         // 64 chunks of slack (320 ms at Opus 5 ms, 128 ms at lossless 2 ms) — still above de-jitter.
         // Chunk COUNT, not scaled to frame duration, matching core `AUDIO_QUEUE`.
@@ -139,12 +139,12 @@ impl AudioPlayer {
         // Same capacity as the data channel; a full pool drops the Vec.
         let (recycle_tx, recycle_rx) = std::sync::mpsc::sync_channel::<Vec<f32>>(64);
         let (quit_tx, quit_rx) = pipewire::channel::channel::<Terminate>();
-        let sync: Arc<punktfunk_core::audio::AudioSyncCell> = Arc::default();
+        let sync: Arc<rubyfunk_core::audio::AudioSyncCell> = Arc::default();
         let sync_cb = sync.clone();
         let vitals: Arc<crate::audio_vitals::PlaybackVitals> = Arc::default();
         let vitals_cb = vitals.clone();
         let thread = std::thread::Builder::new()
-            .name("punktfunk-audio".into())
+            .name("rubyfunk-audio".into())
             .spawn(move || {
                 if let Err(e) =
                     pw_thread(pcm_rx, recycle_tx, quit_rx, fmt, policy, sync_cb, vitals_cb)
@@ -163,7 +163,7 @@ impl AudioPlayer {
         })
     }
 
-    pub fn sync_cell(&self) -> Arc<punktfunk_core::audio::AudioSyncCell> {
+    pub fn sync_cell(&self) -> Arc<rubyfunk_core::audio::AudioSyncCell> {
         self.sync.clone()
     }
 
@@ -195,8 +195,8 @@ impl Drop for AudioPlayer {
 
 /// This backend's de-jitter numbers, named so the decode thread reads what the callback runs.
 /// If they drift, one platform quietly carries a third of another's slack.
-pub(crate) const TUNING: punktfunk_core::audio::JitterTuning =
-    punktfunk_core::audio::JitterTuning::PIPEWIRE;
+pub(crate) const TUNING: rubyfunk_core::audio::JitterTuning =
+    rubyfunk_core::audio::JitterTuning::PIPEWIRE;
 
 /// Gate on advertising `CLIENT_CAP_AUDIO_HIRES`: capable *and* the user turned it on
 /// (`design/hi-res-audio.md`).
@@ -215,13 +215,13 @@ struct PlayerData {
     rx: Receiver<Vec<f32>>,
     recycle: SyncSender<Vec<f32>>,
     ring: VecDeque<f32>,
-    policy: punktfunk_core::audio::JitterPolicy,
+    policy: rubyfunk_core::audio::JitterPolicy,
     channels: usize,
     /// Opened format; `param_changed` compares what the graph granted against it.
     fmt: PlaybackFormat,
     /// Last `param_changed` format, so a graph resume is not logged as a change.
     negotiated: Option<(u32, u32)>,
-    sync: Arc<punktfunk_core::audio::AudioSyncCell>,
+    sync: Arc<rubyfunk_core::audio::AudioSyncCell>,
     vitals: Arc<crate::audio_vitals::PlaybackVitals>,
 }
 
@@ -230,8 +230,8 @@ fn pw_thread(
     recycle_tx: SyncSender<Vec<f32>>,
     quit_rx: pipewire::channel::Receiver<Terminate>,
     fmt: PlaybackFormat,
-    policy: punktfunk_core::audio::JitterPolicy,
-    sync: Arc<punktfunk_core::audio::AudioSyncCell>,
+    policy: rubyfunk_core::audio::JitterPolicy,
+    sync: Arc<rubyfunk_core::audio::AudioSyncCell>,
     vitals: Arc<crate::audio_vitals::PlaybackVitals>,
 ) -> Result<()> {
     use pipewire as pw;
@@ -262,25 +262,25 @@ fn pw_thread(
         *pw::keys::MEDIA_TYPE       => "Audio",
         *pw::keys::MEDIA_CATEGORY   => "Playback",
         *pw::keys::MEDIA_ROLE       => "Game",
-        *pw::keys::NODE_NAME        => "punktfunk-client",
-        *pw::keys::NODE_DESCRIPTION => "Punktfunk Stream",
+        *pw::keys::NODE_NAME        => "rubyfunk-client",
+        *pw::keys::NODE_DESCRIPTION => "RubyFunk Stream",
     };
     props.insert(*pw::keys::NODE_LATENCY, node_latency.as_str());
     // Settings speaker pick; unset/empty = PipeWire's default routing.
-    if let Ok(target) = std::env::var("PUNKTFUNK_AUDIO_SINK") {
+    if let Ok(target) = std::env::var("RUBYFUNK_AUDIO_SINK") {
         if !target.is_empty() {
             // Raw key: `keys::TARGET_OBJECT` is feature-gated on a newer libpipewire than we require.
             props.insert("target.object", target);
         }
     }
     let stream =
-        pw::stream::StreamBox::new(&core, "punktfunk-client", props).context("pw Stream")?;
+        pw::stream::StreamBox::new(&core, "rubyfunk-client", props).context("pw Stream")?;
 
     // Pre-reserved so `extend` never reallocates on the realtime loop. Cap plus the
     // 64-chunk channel of this plane's frame; sized from rate, frame, and channels.
     let ring_capacity = {
         let per_ms = fmt.rate_hz as usize * channels / 1000;
-        let frame = punktfunk_core::audio::pcm::samples_per_frame(
+        let frame = rubyfunk_core::audio::pcm::samples_per_frame(
             fmt.rate_hz,
             fmt.frame_us,
             fmt.channels as u8,
@@ -385,7 +385,7 @@ fn pw_thread(
 
                 let step = ud.policy.step(ud.ring.len(), want);
                 if step.drop_front > 0 {
-                    punktfunk_core::audio::crossfade_drop(
+                    rubyfunk_core::audio::crossfade_drop(
                         &mut ud.ring,
                         step.drop_front,
                         step.crossfade,
@@ -394,7 +394,7 @@ fn pw_thread(
                 // Sync asked for a deeper ring: one duplicated, crossfaded frame, not a de-prime.
                 // Allocation-free: the ring is reserved for cap plus slack; policy inserts below target.
                 if step.insert_front > 0 {
-                    punktfunk_core::audio::crossfade_insert(
+                    rubyfunk_core::audio::crossfade_insert(
                         &mut ud.ring,
                         step.insert_front,
                         step.crossfade,
@@ -444,7 +444,7 @@ fn pw_thread(
     info.set_format(AudioFormat::F32LE);
     info.set_rate(fmt.rate_hz);
     info.set_channels(channels as u32);
-    info.set_position(punktfunk_core::audio::spa_positions(channels as u8));
+    info.set_position(rubyfunk_core::audio::spa_positions(channels as u8));
     let obj = pw::spa::pod::Object {
         type_: pw::spa::utils::SpaTypes::ObjectParamFormat.as_raw(),
         id: pw::spa::param::ParamType::EnumFormat.as_raw(),
@@ -487,7 +487,7 @@ impl MicStreamer {
     /// Stopping the stream was rejected — unmute re-primes the device and re-runs
     /// source selection, so the first second back is glitchy.
     ///
-    /// `echo_cancel` is the Settings toggle; `PUNKTFUNK_NO_AEC=1` overrides it off.
+    /// `echo_cancel` is the Settings toggle; `RUBYFUNK_NO_AEC=1` overrides it off.
     pub fn spawn(
         connector: Arc<NativeClient>,
         muted: Arc<std::sync::atomic::AtomicBool>,
@@ -495,10 +495,10 @@ impl MicStreamer {
     ) -> Result<MicStreamer> {
         let (quit_tx, quit_rx) = pipewire::channel::channel::<Terminate>();
         let thread = std::thread::Builder::new()
-            .name("punktfunk-mic".into())
+            .name("rubyfunk-mic".into())
             .spawn(move || {
                 // Capture `process` runs here (no RT_PROCESS): encode and send are on this thread; a late tick is mic latency.
-                crate::audio_rt::boost_and_log("punktfunk-mic");
+                crate::audio_rt::boost_and_log("rubyfunk-mic");
                 if let Err(e) = mic_thread(&connector, quit_rx, muted, echo_cancel) {
                     tracing::warn!(error = %e, "mic uplink thread ended");
                 }
@@ -523,24 +523,24 @@ impl Drop for MicStreamer {
 /// Encode-in-callback is fine: 10 ms Opus is well under 100 µs.
 struct MicData {
     connector: Arc<NativeClient>,
-    mic: punktfunk_core::audio::mic::MicEncoder,
+    mic: rubyfunk_core::audio::mic::MicEncoder,
     /// In-stream mute (B4); session chord flips it. Read per callback.
     muted: Arc<std::sync::atomic::AtomicBool>,
 }
 
-/// Settings toggle, with `PUNKTFUNK_NO_AEC=1` as a one-way override off.
+/// Settings toggle, with `RUBYFUNK_NO_AEC=1` as a one-way override off.
 /// The env var wins — escape hatch for a misbehaving canceller; nothing turns AEC back on.
 fn aec_enabled(echo_cancel: bool) -> bool {
-    echo_cancel && crate::env_on("PUNKTFUNK_NO_AEC") != Some(true)
+    echo_cancel && crate::env_on("RUBYFUNK_NO_AEC") != Some(true)
 }
 
-/// Capture `target.object`: Settings pick (`PUNKTFUNK_AUDIO_SOURCE`) first, else
+/// Capture `target.object`: Settings pick (`RUBYFUNK_AUDIO_SOURCE`) first, else
 /// the first echo-cancelled source so a desktop already running `module-echo-cancel`
 /// does not feed the downlink back into the host mic. `None` = PipeWire default.
 ///
 /// Preference only: `pw_context_load_module` is not safely exposed in pipewire 0.9.
 fn mic_capture_target(echo_cancel: bool) -> Option<String> {
-    if let Ok(target) = std::env::var("PUNKTFUNK_AUDIO_SOURCE") {
+    if let Ok(target) = std::env::var("RUBYFUNK_AUDIO_SOURCE") {
         if !target.is_empty() {
             return Some(target);
         }
@@ -552,7 +552,7 @@ fn mic_capture_target(echo_cancel: bool) -> Option<String> {
     tracing::info!(
         source = %name,
         "mic capture targets the echo-cancelled source (Echo cancellation off, or \
-         PUNKTFUNK_NO_AEC=1, disables this)"
+         RUBYFUNK_NO_AEC=1, disables this)"
     );
     Some(name)
 }
@@ -586,7 +586,7 @@ fn mic_thread(
     pw::init();
 
     // The callback drains every frame it fills, so no backlog builds to self-heal.
-    let mic = punktfunk_core::audio::mic::MicEncoder::new(false)
+    let mic = rubyfunk_core::audio::mic::MicEncoder::new(false)
         .map_err(|e| anyhow::anyhow!("opus encoder: {e}"))?;
 
     let mainloop = pw::main_loop::MainLoopRc::new(None).context("pw mic MainLoop")?;
@@ -604,8 +604,8 @@ fn mic_thread(
         *pw::keys::MEDIA_TYPE       => "Audio",
         *pw::keys::MEDIA_CATEGORY   => "Capture",
         *pw::keys::MEDIA_ROLE       => "Communication",
-        *pw::keys::NODE_NAME        => "punktfunk-mic-capture",
-        *pw::keys::NODE_DESCRIPTION => "Punktfunk Microphone",
+        *pw::keys::NODE_NAME        => "rubyfunk-mic-capture",
+        *pw::keys::NODE_DESCRIPTION => "RubyFunk Microphone",
         // One 10 ms mic frame. Without it the stream inherits the graph quantum (often
         // 1024–2048), so capture arrives in 21–43 ms bursts that sit ahead of the encoder.
         *pw::keys::NODE_LATENCY     => "480/48000",
@@ -614,7 +614,7 @@ fn mic_thread(
         // Raw key: `keys::TARGET_OBJECT` is feature-gated on a newer libpipewire than we require.
         props.insert("target.object", target);
     }
-    let stream = pw::stream::StreamBox::new(&core, "punktfunk-mic-capture", props)
+    let stream = pw::stream::StreamBox::new(&core, "rubyfunk-mic-capture", props)
         .context("pw mic Stream")?;
 
     let ud = MicData {

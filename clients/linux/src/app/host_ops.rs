@@ -17,10 +17,10 @@ impl AppModel {
         self.toast(&format!("Sending logs to {}…", req.host.name));
         let out = sender.input_sender().clone();
         std::thread::Builder::new()
-            .name("punktfunk-sendlogs".into())
+            .name("rubyfunk-sendlogs".into())
             .spawn(move || {
                 let msg = pf_client_core::logring::send_bundle(
-                    "punktfunk-client",
+                    "rubyfunk-client",
                     &req.host.name,
                     &req.host.addr,
                     (mgmt, req.host.port),
@@ -80,7 +80,7 @@ impl AppModel {
         self.toast(&format!("{label} — asking {}…", req.host.name));
         let out = sender.input_sender().clone();
         std::thread::Builder::new()
-            .name("punktfunk-hostaction".into())
+            .name("rubyfunk-hostaction".into())
             .spawn(move || {
                 let msg = pf_client_core::host_actions::run(
                     &req.host.name,

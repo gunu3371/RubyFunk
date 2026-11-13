@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-// Verifies the console handoff ticket `punktfunk-host ctl console-url` mints, keyed by the
+// Verifies the console handoff ticket `rubyfunk-host ctl console-url` mints, keyed by the
 // management token both sides already hold. The ticket never enters browser argv, where
 // /proc/<pid>/cmdline would expose it to other local users: the host writes it into a 0600 page
 // under $XDG_RUNTIME_DIR and the browser is launched at that file.
@@ -107,7 +107,7 @@ export async function verifyHandoff(
  * token each time it starts.
  */
 export function ownerHandoffKeys(
-	dir: string = process.env.PUNKTFUNK_CONFIG_DIR ?? "",
+	dir: string = process.env.RUBYFUNK_CONFIG_DIR ?? "",
 ): string[] {
 	if (!dir) return [];
 	try {

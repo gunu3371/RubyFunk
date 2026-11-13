@@ -32,34 +32,34 @@ from cargo_graph import closure  # noqa: E402
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 LINUX_HOST_AND_CLIENT = [
-    "punktfunk-host", "punktfunk-encode-worker", "punktfunk-tray",
-    "punktfunk-client-linux", "punktfunk-client-session", "punktfunk-cli", "pf-update",
+    "rubyfunk-host", "rubyfunk-encode-worker", "rubyfunk-tray",
+    "rubyfunk-client-linux", "rubyfunk-client-session", "rubyfunk-cli", "pf-update",
 ]
-LINUX_HOST_FEATURES = "punktfunk-host/nvenc,punktfunk-host/vulkan-encode"
+LINUX_HOST_FEATURES = "rubyfunk-host/nvenc,rubyfunk-host/vulkan-encode"
 
 # (workflow, manifest, target triple, packages, --features). Packages None = every member.
 # One row per workflow and workspace: the arch with the widest feature set.
 BUILDS = [
     ("windows-host", "Cargo.toml", "x86_64-pc-windows-msvc",
-     ["punktfunk-host", "punktfunk-tray", "display-disturb"],
-     "punktfunk-host/nvenc,punktfunk-host/qsv"),
+     ["rubyfunk-host", "rubyfunk-tray", "display-disturb"],
+     "rubyfunk-host/nvenc,rubyfunk-host/qsv"),
     ("windows-client", "Cargo.toml", "x86_64-pc-windows-msvc",
-     ["punktfunk-client-windows", "punktfunk-client-session", "punktfunk-cli"], None),
+     ["rubyfunk-client-windows", "rubyfunk-client-session", "rubyfunk-cli"], None),
     ("windows-drivers", "packaging/windows/drivers/Cargo.toml", "x86_64-pc-windows-msvc",
      None, None),
     ("windows-host", "crates/host/pf-seat-keeper/Cargo.toml", "x86_64-pc-windows-msvc", None, None),
     ("setup-windows", "Cargo.toml", "x86_64-pc-windows-msvc",
-     ["punktfunk-setup", "punktfunk-setup-win"], None),
+     ["rubyfunk-setup", "rubyfunk-setup-win"], None),
     ("macos-host", "Cargo.toml", "aarch64-apple-darwin",
-     ["punktfunk-host", "punktfunk-setup"], None),
-    ("apple", "Cargo.toml", "aarch64-apple-ios", ["punktfunk-client-apple"], None),
+     ["rubyfunk-host", "rubyfunk-setup"], None),
+    ("apple", "Cargo.toml", "aarch64-apple-ios", ["rubyfunk-client-apple"], None),
     ("deb", "Cargo.toml", "x86_64-unknown-linux-gnu", LINUX_HOST_AND_CLIENT, LINUX_HOST_FEATURES),
     ("rpm", "Cargo.toml", "x86_64-unknown-linux-gnu", LINUX_HOST_AND_CLIENT, LINUX_HOST_FEATURES),
     ("arch", "Cargo.toml", "x86_64-unknown-linux-gnu", LINUX_HOST_AND_CLIENT, LINUX_HOST_FEATURES),
     ("flatpak", "Cargo.toml", "x86_64-unknown-linux-gnu",
-     ["punktfunk-client-linux", "punktfunk-client-session", "punktfunk-cli"], None),
-    ("setup-binary", "Cargo.toml", "x86_64-unknown-linux-musl", ["punktfunk-setup"], None),
-    ("installer-smoke", "Cargo.toml", "x86_64-unknown-linux-musl", ["punktfunk-setup"], None),
+     ["rubyfunk-client-linux", "rubyfunk-client-session", "rubyfunk-cli"], None),
+    ("setup-binary", "Cargo.toml", "x86_64-unknown-linux-musl", ["rubyfunk-setup"], None),
+    ("installer-smoke", "Cargo.toml", "x86_64-unknown-linux-musl", ["rubyfunk-setup"], None),
 ]
 
 LEGS = ("push", "pull_request")

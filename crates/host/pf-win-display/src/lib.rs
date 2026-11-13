@@ -77,7 +77,7 @@ pub fn seats_addon_reserves_display_slots() -> bool {
         let rc = unsafe {
             RegOpenKeyExW(
                 HKEY_LOCAL_MACHINE,
-                windows::core::w!(r"SOFTWARE\Punktfunk\Seats"),
+                windows::core::w!(r"SOFTWARE\RubyFunk\Seats"),
                 None,
                 KEY_READ | KEY_WOW64_64KEY,
                 &mut key,
@@ -91,7 +91,7 @@ pub fn seats_addon_reserves_display_slots() -> bool {
             if rc != ERROR_FILE_NOT_FOUND && rc != ERROR_PATH_NOT_FOUND {
                 tracing::warn!(
                     error = rc.0,
-                    r"HKLM\SOFTWARE\Punktfunk\Seats not read — seat display-slot reservation stays disabled"
+                    r"HKLM\SOFTWARE\RubyFunk\Seats not read — seat display-slot reservation stays disabled"
                 );
             }
             false

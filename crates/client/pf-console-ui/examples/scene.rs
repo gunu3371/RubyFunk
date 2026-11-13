@@ -184,7 +184,7 @@ mod scene {
     use pf_client_core::trust::Settings;
     use pf_console_ui::bridge::{self, CreateOptions};
     use pf_console_ui::{Console, ConsoleHandles, HostRow, Key, OtherDevice, Platform, Viewport};
-    use punktfunk_core::config::GamepadPref;
+    use rubyfunk_core::config::GamepadPref;
     use sdl3::event::{Event, WindowEvent};
     use sdl3::keyboard::{Keycode, Mod};
     use sdl3::mouse::MouseButton;
@@ -329,7 +329,7 @@ mod scene {
 
         let sdl = sdl3::init()?;
         let video = sdl.video()?;
-        let mut builder = video.window("Punktfunk console", 1920, 1080);
+        let mut builder = video.window("RubyFunk console", 1920, 1080);
         builder.position_centered().resizable().high_pixel_density();
         #[cfg(feature = "metal")]
         builder.metal_view();

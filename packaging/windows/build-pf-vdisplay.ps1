@@ -13,7 +13,7 @@
   secret OR a fresh self-signed). Steps: cargo build (the wdk-sys/windows-drivers-rs driver workspace) ->
   CLEAR the FORCE_INTEGRITY PE bit (wdk-build links /INTEGRITYCHECK, which a non-EV cert can't satisfy) ->
   sign the .dll -> stampinf a strictly-increasing DriverVer into the INF -> Inf2Cat the catalog -> sign the
-  catalog -> export the public .cer. Output (-Out): pf_vdisplay.{dll,inf,cat} + punktfunk-driver.cer,
+  catalog -> export the public .cer. Output (-Out): pf_vdisplay.{dll,inf,cat} + rubyfunk-driver.cer,
   plus pf_vdisplay_seats.{inf,cat} - the same driver claiming the seat display ids, which only a
   box that runs seats installs (see below).
 
@@ -40,7 +40,7 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $PSNativeCommandUseErrorActionPreference = $false
 
-# The decoded DRIVER_CERT key is trusted as a machine root on every box that installs punktfunk,
+# The decoded DRIVER_CERT key is trusted as a machine root on every box that installs rubyfunk,
 # so it must not outlive this script: the trap shreds it on any throw, then re-throws, and the
 # normal exit calls Remove-SigningPfx too. signing.ps1 holds the shred; the key stays this script's.
 . (Join-Path $PSScriptRoot 'signing.ps1')
@@ -106,7 +106,7 @@ elseif ($requireCert) {
 }
 else {
     Write-Host '==> no DRIVER_CERT_PFX_B64 -> generating a fresh self-signed driver cert (the installer trusts the bundled .cer at install time)'
-    $cleanupCert = New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=punktfunk-driver' `
+    $cleanupCert = New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=rubyfunk-driver' `
         -CertStoreLocation Cert:\CurrentUser\My -KeyExportPolicy Exportable -NotAfter (Get-Date).AddYears(10)
     $signArgs = @('/sha1', $cleanupCert.Thumbprint)
     $pubForCer = $cleanupCert
@@ -118,7 +118,7 @@ New-Item -ItemType Directory -Force -Path $Out | Out-Null
 $sDll = Join-Path $Out 'pf_vdisplay.dll'
 $sInf = Join-Path $Out 'pf_vdisplay.inf'
 $sCat = Join-Path $Out 'pf_vdisplay.cat'
-$sCer = Join-Path $Out 'punktfunk-driver.cer'
+$sCer = Join-Path $Out 'rubyfunk-driver.cer'
 Copy-Item $dll $sDll -Force
 Copy-Item $inx $sInf -Force   # stampinf rewrites this copy in place
 
@@ -172,7 +172,7 @@ Remove-SigningPfx
 # itself can't always OPEN a catalog signed by a not-yet-trusted cert (it throws UnableToOpenCatalogFile),
 # so treat ITS failure as inconclusive (warn) - but a real coverage miss still fails the build.
 $cat = $null
-try { $cat = Test-FileCatalog -CatalogFilePath $sCat -Path $Out -FilesToSkip 'pf_vdisplay.cat', 'pf_vdisplay_seats.cat', 'pf_vdisplay_seats.inf', 'punktfunk-driver.cer' -Detailed }
+try { $cat = Test-FileCatalog -CatalogFilePath $sCat -Path $Out -FilesToSkip 'pf_vdisplay.cat', 'pf_vdisplay_seats.cat', 'pf_vdisplay_seats.inf', 'rubyfunk-driver.cer' -Detailed }
 catch { Write-Warning "catalog coverage guard inconclusive (Test-FileCatalog: $($_.Exception.Message))" }
 if ($cat) {
     $covered = @($cat.CatalogItems.Keys)

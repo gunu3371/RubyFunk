@@ -26,7 +26,7 @@ The client reads its switch when a stream starts, so reconnect after changing it
 **Stream → Share Clipboard** (⌃⌥⇧C) turns it on mid-stream and **Stop Sharing Clipboard** turns
 it off. The same keys work on an iPad with a keyboard.
 
-A `PUNKTFUNK_CLIPBOARD` line in `host.env` overrides step 1 and locks it in the console: see
+A `RUBYFUNK_CLIPBOARD` line in `host.env` overrides step 1 and locks it in the console: see
 [Configuration](/docs/configuration).
 
 ## What crosses
@@ -53,7 +53,7 @@ A `PUNKTFUNK_CLIPBOARD` line in `host.env` overrides step 1 and locks it in the 
   sent. On Linux that takes a manager that marks copies the KDE way, such as KeePassXC. The host
   doesn't filter, so a password copied on the host reaches your client.
 - **No client sends files yet**, so **Text** and **Text and files** behave the same.
-- **Moonlight has no clipboard.** It exists only in Punktfunk sessions.
+- **Moonlight has no clipboard.** It exists only in RubyFunk sessions.
 
 A Linux host needs a desktop that offers a clipboard to it: `ext-data-control-v1` (KWin, Sway,
 Hyprland, niri, Umbriel and other wlroots compositors) or GNOME's remote-desktop clipboard. A
@@ -69,7 +69,7 @@ Work down this list:
 | Cause | Fix |
 |---|---|
 | The host's **Shared clipboard** is **Off** | Step 1 in [Turn it on](#turn-it-on). |
-| The console shows **Set by PUNKTFUNK_CLIPBOARD in host.env.** | Change or remove that line, then restart the host ([Configuration](/docs/configuration)). |
+| The console shows **Set by RUBYFUNK_CLIPBOARD in host.env.** | Change or remove that line, then restart the host ([Configuration](/docs/configuration)). |
 | Your client's switch is off for this host, or you changed it while streaming | Step 3, then reconnect. |
 | Your device's access level lacks **Clipboard** | Step 2. |
 | You're on an Apple TV | tvOS gives apps no clipboard. |

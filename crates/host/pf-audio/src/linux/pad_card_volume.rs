@@ -10,7 +10,7 @@
 //! re-applies on a route or profile change; and the card sink's `Props`, the gain itself.
 //!
 //! Not restored: this overrides a default nobody chose. Failures cost loudness, not audio.
-//! `PUNKTFUNK_PAD_SINK_VOLUME=0` skips.
+//! `RUBYFUNK_PAD_SINK_VOLUME=0` skips.
 
 use anyhow::{Context, Result};
 use std::time::Duration;
@@ -25,11 +25,11 @@ const INTERVAL: Duration = Duration::from_secs(1);
 
 /// Detached: the caller is the capture-thread open path, and waiting there drops pad audio.
 pub fn spawn_pin(pad: u8) {
-    if pf_host_config::env_on("PUNKTFUNK_PAD_SINK_VOLUME") == Some(false) {
+    if pf_host_config::env_on("RUBYFUNK_PAD_SINK_VOLUME") == Some(false) {
         return;
     }
     if let Err(e) = std::thread::Builder::new()
-        .name(format!("punktfunk1-padvol{pad}"))
+        .name(format!("rubyfunk1-padvol{pad}"))
         .spawn(move || {
             // Connect errors retry like an absent card: attach is when the graph is busy.
             // Only the last failure is reported. The whole window runs: another pad's card

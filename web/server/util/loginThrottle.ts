@@ -1,6 +1,6 @@
 // In-memory brute-force throttle for the login gate. The password compare is constant-time (no
 // timing leak), but nothing bounded the *volume* of guesses — a LAN peer could hammer
-// PUNKTFUNK_UI_PASSWORD at network speed against a console that is, by design, LAN-exposed. This is
+// RUBYFUNK_UI_PASSWORD at network speed against a console that is, by design, LAN-exposed. This is
 // the console analogue of the host's PAIRING_COOLDOWN / single-use pairing PIN: every other secret
 // gate in the project is rate-limited, so this one is too.
 //

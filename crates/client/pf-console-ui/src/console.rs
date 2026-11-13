@@ -12,7 +12,7 @@ use crate::theme::Fonts;
 use anyhow::Result;
 use pf_client_core::console::{OverlayAction, PointerInput, SessionPhase};
 use pf_client_core::menu_nav::{MenuEvent, MenuPulse, PadInfo};
-use punktfunk_core::config::GamepadPref;
+use rubyfunk_core::config::GamepadPref;
 use skia_safe::Canvas;
 use std::time::{Duration, Instant};
 

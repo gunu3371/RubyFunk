@@ -1,10 +1,10 @@
-//! `punktfunk-seats login <account>`: a person's session opened with their password, as a
+//! `rubyfunk-seats login <account>`: a person's session opened with their password, as a
 //! display manager opens one, so what their own login unlocks with it unlocks here too.
 //!
-//! It is the main process of `punktfunk-seat@<account>.service` for a cold start the person
+//! It is the main process of `rubyfunk-seat@<account>.service` for a cold start the person
 //! proved with their password (the drop-in of `session::render_login`), and runs as root. It
 //! takes the password once from the supervisor ([`super::handover`]), runs one transaction on
-//! the `punktfunk-seat` PAM service ([`pam::Login`]: authenticate, account, credentials,
+//! the `rubyfunk-seat` PAM service ([`pam::Login`]: authenticate, account, credentials,
 //! session), then forks a child that drops to the person and execs `seat-session`. The root
 //! parent forwards the stop signals, closes the session when the child ends and exits with its
 //! status. Before a session exists it exits with a code of [`fallback`]'s, which tells the
@@ -19,10 +19,10 @@ use super::session::Ended;
 #[cfg(target_os = "linux")]
 use std::path::Path;
 
-/// The verb of `punktfunk-seats` that runs the helper.
+/// The verb of `rubyfunk-seats` that runs the helper.
 pub const VERB: &str = "login";
 /// The PAM service the packages install, in `/usr/lib/pam.d` or `/etc/pam.d`.
-pub(super) const SERVICE: &str = "punktfunk-seat";
+pub(super) const SERVICE: &str = "rubyfunk-seat";
 
 /// Exit codes before a session exists. After one, the helper exits with the session's code and
 /// never with one of these.
@@ -88,7 +88,7 @@ fn session_code(code: Option<i32>, signal: Option<i32>) -> u8 {
     }
 }
 
-/// `punktfunk-seats login <account>`, as the unit runs it: the password from
+/// `rubyfunk-seats login <account>`, as the unit runs it: the password from
 /// [`super::handover::SOCKET_PATH`], then `seat-session` beside this binary.
 #[cfg(target_os = "linux")]
 pub fn run(account: &str) -> u8 {
@@ -446,7 +446,7 @@ mod tests {
         }
     }
 
-    /// The built helper as `punktfunk-seat@.service` runs it, as root, through this package's PAM
+    /// The built helper as `rubyfunk-seat@.service` runs it, as root, through this package's PAM
     /// file over the box's `login` stack, with this test as the supervisor. The session child is
     /// the person with their groups, no capability, descriptors 0 to 2 alone, `/` as its
     /// directory and the unit's environment plus the person's names, and no copy of the password
@@ -455,10 +455,10 @@ mod tests {
     /// account, a missing PAM file, a missing `seat-session` and no password at all each end it
     /// before a session; a `seat-session` the person can't run ends it with the session closed.
     /// Makes and removes the account `pfwallet`, the group `pfwalletg`,
-    /// `/etc/pam.d/punktfunk-seat`, the login socket and the row's runtime directory.
+    /// `/etc/pam.d/rubyfunk-seat`, the login socket and the row's runtime directory.
     #[cfg(target_os = "linux")]
     #[test]
-    #[ignore = "needs root, libpam, the login service and a built punktfunk-seats; makes the account pfwallet"]
+    #[ignore = "needs root, libpam, the login service and a built rubyfunk-seats; makes the account pfwallet"]
     fn the_helper_opens_one_session_as_the_person() {
         use super::super::handover::{self, Handover};
         use super::super::pam::tests::{run, seats_binary};
@@ -502,7 +502,7 @@ mod tests {
         let entry = format!("{ACCOUNT}:{PASSWORD}\n");
         std::io::Write::write_all(chpasswd.stdin.as_mut().unwrap(), entry.as_bytes()).unwrap();
         assert!(chpasswd.wait().unwrap().success());
-        let packaged = include_str!("../../../../../packaging/linux/punktfunk-seat.pam");
+        let packaged = include_str!("../../../../../packaging/linux/rubyfunk-seat.pam");
         std::fs::write(&pam_file, packaged).unwrap();
         std::fs::create_dir_all(&runtime).unwrap();
         std::fs::set_permissions(&runtime, std::fs::Permissions::from_mode(0o755)).unwrap();
@@ -533,7 +533,7 @@ mod tests {
         // The helper as the package installs it, with a session program beside it.
         let dir = tempfile::tempdir().unwrap();
         std::fs::set_permissions(dir.path(), std::fs::Permissions::from_mode(0o755)).unwrap();
-        let helper = dir.path().join("punktfunk-seats");
+        let helper = dir.path().join("rubyfunk-seats");
         std::fs::copy(seats_binary(), &helper).unwrap();
         let program = dir.path().join("seat-session");
         let script = "#!/bin/sh\necho \"$$\" > \"$RUNTIME_DIRECTORY/child\"\nexec sleep 60\n";

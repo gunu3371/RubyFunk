@@ -1357,8 +1357,8 @@ mod linux {
         let parent = comp.create_surface(&qh, ());
         let xdg = wm.get_xdg_surface(&parent, &qh, ());
         let top = xdg.get_toplevel(&qh, ());
-        top.set_title("punktfunk wl-scanout-probe".into());
-        top.set_app_id("io.unom.punktfunk.wl-scanout-probe".into());
+        top.set_title("rubyfunk wl-scanout-probe".into());
+        top.set_app_id("io.github.gunu3371.rubyfunk.wl-scanout-probe".into());
         top.set_fullscreen(None);
         parent.commit();
         let deadline = Instant::now() + Duration::from_secs(5);

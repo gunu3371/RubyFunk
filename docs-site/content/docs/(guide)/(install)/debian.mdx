@@ -1,6 +1,6 @@
 ---
 title: Debian
-description: Install the Punktfunk host on Debian 13 or newer with apt, including LMDE 7.
+description: Install the RubyFunk host on Debian 13 or newer with apt, including LMDE 7.
 ---
 
 Install the host on **Debian 13 ("trixie") or newer** and **LMDE 7**. Debian 12 is too old for the
@@ -37,7 +37,7 @@ uses:
 <Install platform="debian" />
 
 `sudo apt upgrade` updates it from then on. Restart the host afterwards with
-`systemctl --user restart punktfunk-host`, or let the [console update it](/docs/updating).
+`systemctl --user restart rubyfunk-host`, or let the [console update it](/docs/updating).
 
 ## 3. Let it use your controllers
 
@@ -45,7 +45,7 @@ Join the groups, then **log out and back in**:
 
 ```sh
 sudo usermod -aG input "$USER"       # virtual gamepads
-sudo usermod -aG punktfunk "$USER"   # virtual Steam Deck controller
+sudo usermod -aG rubyfunk "$USER"   # virtual Steam Deck controller
 ```
 
 ## 4. Start it
@@ -53,7 +53,7 @@ sudo usermod -aG punktfunk "$USER"   # virtual Steam Deck controller
 From a terminal inside your desktop session:
 
 ```sh
-systemctl --user enable --now punktfunk-host punktfunk-web
+systemctl --user enable --now rubyfunk-host rubyfunk-web
 ```
 
 Debian enables no firewall. If you run one, the package installed profiles for ufw and firewalld:
@@ -67,9 +67,9 @@ a device.
 Cinnamon can't give the host a virtual display, so stream games through gamescope instead:
 
 ```sh
-sudo apt install punktfunk-gamescope
-echo 'PUNKTFUNK_COMPOSITOR=gamescope' >> ~/.config/punktfunk/host.env
-systemctl --user restart punktfunk-host
+sudo apt install rubyfunk-gamescope
+echo 'RUBYFUNK_COMPOSITOR=gamescope' >> ~/.config/rubyfunk/host.env
+systemctl --user restart rubyfunk-host
 ```
 
 Each client then gets its own headless gamescope: [Steam / gamescope](/docs/gamescope). Linux

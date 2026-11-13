@@ -1,6 +1,6 @@
 //! Cross-process ownership guards for pf-vdisplay management.
 //!
-//! The console host retains the `Global\punktfunk-vdisplay-manager` mutex.
+//! The console host retains the `Global\rubyfunk-vdisplay-manager` mutex.
 //! A trusted seats reservation gives each explicit seat connector its own
 //! mutex, so distinct reserved slots can coexist but duplicate owners fail.
 //! Every claim is held for the process lifetime and the OS releases it on
@@ -19,8 +19,8 @@ static INSTANCE: Mutex<Option<OwnedHandle>> = Mutex::new(None);
 
 fn instance_name_for(plan: crate::identity::WindowsSlotPlan) -> String {
     match plan.seat_slot() {
-        Some(slot) => format!(r"Global\punktfunk-vdisplay-manager-seat-{slot}"),
-        None => r"Global\punktfunk-vdisplay-manager".to_string(),
+        Some(slot) => format!(r"Global\rubyfunk-vdisplay-manager-seat-{slot}"),
+        None => r"Global\rubyfunk-vdisplay-manager".to_string(),
     }
 }
 
@@ -52,7 +52,7 @@ pub fn claim_instance_eagerly() {
 /// coexist.
 fn acquire_single_instance(name: &str) -> Result<OwnedHandle> {
     let in_use = format!(
-        "another punktfunk-host process already owns pf-vdisplay scope `{name}` — refusing to \
+        "another rubyfunk-host process already owns pf-vdisplay scope `{name}` — refusing to \
          touch that connector scope until the other process exits"
     );
     // `Global\` is creatable by any SeCreateGlobalPrivilege holder, LocalService included, and
@@ -74,10 +74,10 @@ fn acquire_single_instance(name: &str) -> Result<OwnedHandle> {
             // ACCESS_DENIED cannot distinguish a live protected owner, a squat,
             // or a token that cannot create a Global object.
             Err(e) if e.code().0 == 0x8007_0005u32 as i32 => anyhow::bail!(
-                "{in_use}. If no matching punktfunk-host is running, this process lacks rights \
+                "{in_use}. If no matching rubyfunk-host is running, this process lacks rights \
                  on `{name}` (run elevated or as the installed service account), or that name is \
                  squatted by another process. Sysinternals `handle.exe -a \
-                 punktfunk-vdisplay-manager` tells a holder from a missing privilege"
+                 rubyfunk-vdisplay-manager` tells a holder from a missing privilege"
             ),
             Err(e) => {
                 return Err(e).with_context(|| format!("CreateMutexW({name})"));
@@ -169,12 +169,12 @@ mod tests {
 
     #[test]
     fn console_and_seat_owners_have_disjoint_mutex_scopes() {
-        let console = r"Global\punktfunk-vdisplay-manager";
+        let console = r"Global\rubyfunk-vdisplay-manager";
         assert_eq!(instance_name_for(WindowsSlotPlan::Unreserved), console);
         assert_eq!(instance_name_for(WindowsSlotPlan::ReservedConsole), console);
         assert_eq!(
             instance_name_for(WindowsSlotPlan::Seat(12)),
-            r"Global\punktfunk-vdisplay-manager-seat-12"
+            r"Global\rubyfunk-vdisplay-manager-seat-12"
         );
         assert_ne!(
             instance_name_for(WindowsSlotPlan::Seat(12)),

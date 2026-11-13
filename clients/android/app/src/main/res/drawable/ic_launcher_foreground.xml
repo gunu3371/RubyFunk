@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Punktfunk mark: two overlapping ruby circles (two "Punkte") with a lighter lens, from the
-  shared brand logo (clients/apple/.../punktfunk_Logo.icon). The source art lives in a 1001x1000
+  RubyFunk mark: two overlapping ruby circles (two "Punkte") with a lighter lens, from the
+  shared brand logo (clients/apple/.../rubyfunk_Logo.icon). The source art lives in a 1001x1000
   space; the group scales + centers it into the adaptive-icon 108dp safe zone (inner ~66dp circle).
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"

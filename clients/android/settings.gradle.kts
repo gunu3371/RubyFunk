@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "punktfunk-android"
+rootProject.name = "rubyfunk-android"
 include(":app", ":kit")

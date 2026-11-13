@@ -1,15 +1,15 @@
-# punktfunk Nix packages — built with crane (github:ipetkov/crane).
+# rubyfunk Nix packages — built with crane (github:ipetkov/crane).
 #
-# Two derivations, mirroring the RPM's `punktfunk` / `punktfunk-client` split (packaging/rpm/
-# punktfunk.spec) so a headless streaming host never drags in the GTK client closure:
+# Two derivations, mirroring the RPM's `rubyfunk` / `rubyfunk-client` split (packaging/rpm/
+# rubyfunk.spec) so a headless streaming host never drags in the GTK client closure:
 #
-#   * punktfunk-host   — the streaming host + status tray (punktfunk-host, punktfunk-tray).
+#   * rubyfunk-host   — the streaming host + status tray (rubyfunk-host, rubyfunk-tray).
 #                        Built with the same feature set CI ships: the direct-SDK NVENC path
 #                        (`nvenc`) + the raw Vulkan-Video HEVC encoder (`vulkan-encode`). Both are
 #                        AMD/Intel-safe (NVENC/CUDA entry points are dlopen'd at RUNTIME, never
 #                        link-imported), so ONE binary runs on NVIDIA, AMD and Intel.
-#   * punktfunk-client — the native Linux client: the GTK4/libadwaita shell (punktfunk-client) plus
-#                        the Vulkan/ash session streamer it execs (punktfunk-session).
+#   * rubyfunk-client — the native Linux client: the GTK4/libadwaita shell (rubyfunk-client) plus
+#                        the Vulkan/ash session streamer it execs (rubyfunk-session).
 #
 # Why crane and not rustPlatform.buildRustPackage:
 #   * The lockfile carries `windows 0.62.2` (and friends) from BOTH crates.io AND a pinned
@@ -60,7 +60,7 @@
   librsvg,
   gsettings-desktop-schemas,
   adwaita-icon-theme,
-  # web console (punktfunk-web): a bun-built Nitro SSR bundle, run on bun.
+  # web console (rubyfunk-web): a bun-built Nitro SSR bundle, run on bun.
   bun,
   nodejs,
   makeWrapper,
@@ -73,7 +73,7 @@
 let
   gbm = if libgbm != null then libgbm else mesa;
 
-  # Build provenance stamped into the binary (build.rs reads PUNKTFUNK_BUILD_VERSION for
+  # Build provenance stamped into the binary (build.rs reads RUBYFUNK_BUILD_VERSION for
   # `--version` / mgmt /health). A main checkout keeps Cargo.toml's last stable version, so
   # only the commit tells two Nix builds apart. `+g<rev>` is the Deck's source-build shape:
   # no `ci` in it, so the update check never reads it as a CI run.
@@ -116,7 +116,7 @@ let
   };
 
   meta = {
-    homepage = "https://git.unom.io/unom/punktfunk";
+    homepage = "https://github.com/gunu3371/RubyFunk";
     license = with lib.licenses; [
       mit
       asl20
@@ -129,33 +129,33 @@ let
   # Cargo unifies features across every package in a single `cargo build`, so co-building the tray
   # with the host would pull the host's `ashpd → zbus/tokio` onto the tray's SHARED `zbus`. The tray
   # deliberately runs zbus on `ksni`'s `async-io` executor with the `blocking` API and no tokio
-  # runtime (see crates/install/punktfunk-tray/Cargo.toml), so a tokio-flavoured zbus panics at startup:
+  # runtime (see crates/install/rubyfunk-tray/Cargo.toml), so a tokio-flavoured zbus panics at startup:
   # "there is no reactor running, must be called from the context of a Tokio 1.x runtime". A separate
   # invocation keeps the tray's zbus on async-io. (The host package copies this binary into its $out.)
-  punktfunk-tray = craneLib.buildPackage (
+  rubyfunk-tray = craneLib.buildPackage (
     commonArgs
     // {
-      pname = "punktfunk-tray";
-      cargoExtraArgs = "--locked -p punktfunk-tray";
-      PUNKTFUNK_BUILD_VERSION = buildVersion;
-      # Pure-Rust leaf: ksni/zbus talk to the dbus socket, ureq+rustls(ring) + punktfunk-core `tls` —
+      pname = "rubyfunk-tray";
+      cargoExtraArgs = "--locked -p rubyfunk-tray";
+      RUBYFUNK_BUILD_VERSION = buildVersion;
+      # Pure-Rust leaf: ksni/zbus talk to the dbus socket, ureq+rustls(ring) + rubyfunk-core `tls` —
       # nothing to link (no buildInputs) and no GPU driver runpath (it never dlopens libcuda/EGL/vulkan).
       meta = meta // {
-        description = "punktfunk host status tray (Linux StatusNotifierItem)";
-        mainProgram = "punktfunk-tray";
+        description = "rubyfunk host status tray (Linux StatusNotifierItem)";
+        mainProgram = "rubyfunk-tray";
       };
     }
   );
 in
 {
-  inherit punktfunk-tray;
+  inherit rubyfunk-tray;
 
-  punktfunk-host = craneLib.buildPackage (
+  rubyfunk-host = craneLib.buildPackage (
     commonArgs
     // {
-      pname = "punktfunk-host";
+      pname = "rubyfunk-host";
       # HOST + ENCODE WORKER — the tray is a separate derivation (see the note above; co-building
-      # crashes it), but punktfunk-encode-worker belongs here: it is the capability-carrying half of
+      # crashes it), but rubyfunk-encode-worker belongs here: it is the capability-carrying half of
       # the PyroWave encode path, it shares the host's dependency graph by design, and host and
       # worker version-check each other over their socket, so they must be built and shipped
       # lockstep. It is a SEPARATE executable, never a hardlink or a host subcommand — on
@@ -163,10 +163,10 @@ in
       # unidentifiable to KWin (see the note in nixos-module.nix). Without `-p` here crane never
       # builds it and `$out/bin` simply would not contain it.
       cargoExtraArgs =
-        "--locked -p punktfunk-host -p punktfunk-encode-worker "
-        + "--features punktfunk-host/nvenc,punktfunk-host/vulkan-encode";
+        "--locked -p rubyfunk-host -p rubyfunk-encode-worker "
+        + "--features rubyfunk-host/nvenc,rubyfunk-host/vulkan-encode";
 
-      PUNKTFUNK_BUILD_VERSION = buildVersion;
+      RUBYFUNK_BUILD_VERSION = buildVersion;
 
       buildInputs = [
         pipewire # libpipewire-0.3 + libspa-0.2 (portal capture + the `pipewire` crate)
@@ -182,32 +182,32 @@ in
       # the host's authorization .desktop must name the ACTUAL binary path (the store path here). The
       # tray/client .desktop Exec lines are rewritten for the same reason (menu launch / autostart).
       postInstall = ''
-        # The status tray, built in its own derivation (see the punktfunk-tray note above) so its zbus
+        # The status tray, built in its own derivation (see the rubyfunk-tray note above) so its zbus
         # stays on async-io; ship it in the host's $out so the tray .desktop below resolves it.
-        install -Dm0755 ${punktfunk-tray}/bin/punktfunk-tray "$out/bin/punktfunk-tray"
+        install -Dm0755 ${rubyfunk-tray}/bin/rubyfunk-tray "$out/bin/rubyfunk-tray"
 
         # The user unit every channel ships, run from the store path itself: KWin identifies the
         # host by that path. The NixOS module adds its own settings as a drop-in.
-        install -Dm0644 scripts/punktfunk-host.service "$out/lib/systemd/user/punktfunk-host.service"
-        substituteInPlace "$out/lib/systemd/user/punktfunk-host.service" \
-          --replace-fail "%h/punktfunk/target/release/punktfunk-host" "$out/bin/punktfunk-host"
+        install -Dm0644 scripts/rubyfunk-host.service "$out/lib/systemd/user/rubyfunk-host.service"
+        substituteInPlace "$out/lib/systemd/user/rubyfunk-host.service" \
+          --replace-fail "%h/rubyfunk/target/release/rubyfunk-host" "$out/bin/rubyfunk-host"
 
         # udev: /dev/uinput + /dev/uhid (virtual gamepads) + the vhci sysfs perms for the virtual Deck.
-        install -Dm0644 scripts/60-punktfunk.rules "$out/lib/udev/rules.d/60-punktfunk.rules"
+        install -Dm0644 scripts/60-rubyfunk.rules "$out/lib/udev/rules.d/60-rubyfunk.rules"
         # WirePlumber: hold a DualSense's sound card open + keep it off the graph clock.
-        install -Dm0644 scripts/60-punktfunk-dualsense.conf "$out/share/wireplumber/wireplumber.conf.d/60-punktfunk-dualsense.conf"
+        install -Dm0644 scripts/60-rubyfunk-dualsense.conf "$out/share/wireplumber/wireplumber.conf.d/60-rubyfunk-dualsense.conf"
 
         # KWin Desktop-mode authorization (zkde_screencast + fake_input). Point Exec at the store binary.
-        install -Dm0644 packaging/linux/io.unom.punktfunk.host.desktop \
-          "$out/share/applications/io.unom.punktfunk.host.desktop"
-        substituteInPlace "$out/share/applications/io.unom.punktfunk.host.desktop" \
-          --replace-fail "/usr/bin/punktfunk-host" "$out/bin/punktfunk-host"
+        install -Dm0644 packaging/linux/io.github.gunu3371.rubyfunk.host.desktop \
+          "$out/share/applications/io.github.gunu3371.rubyfunk.host.desktop"
+        substituteInPlace "$out/share/applications/io.github.gunu3371.rubyfunk.host.desktop" \
+          --replace-fail "/usr/bin/rubyfunk-host" "$out/bin/rubyfunk-host"
 
         # The tray's launcher + hicolor status icons. The host writes its per-user autostart entry.
-        install -Dm0644 packaging/linux/io.unom.punktfunk.starthost.desktop \
-          "$out/share/applications/io.unom.punktfunk.starthost.desktop"
-        substituteInPlace "$out/share/applications/io.unom.punktfunk.starthost.desktop" \
-          --replace-fail "/usr/bin/punktfunk-tray" "$out/bin/punktfunk-tray"
+        install -Dm0644 packaging/linux/io.github.gunu3371.rubyfunk.starthost.desktop \
+          "$out/share/applications/io.github.gunu3371.rubyfunk.starthost.desktop"
+        substituteInPlace "$out/share/applications/io.github.gunu3371.rubyfunk.starthost.desktop" \
+          --replace-fail "/usr/bin/rubyfunk-tray" "$out/bin/rubyfunk-tray"
         for sz in 22x22 48x48; do
           for png in packaging/linux/icons/hicolor/$sz/apps/*.png; do
             install -Dm0644 "$png" "$out/share/icons/hicolor/$sz/apps/$(basename "$png")"
@@ -215,14 +215,14 @@ in
         done
 
         # Reference material: headless session helpers, example env files, the OpenAPI doc.
-        install -Dm0755 scripts/headless/run-headless-kde.sh  "$out/share/punktfunk-host/headless/run-headless-kde.sh"
-        install -Dm0755 scripts/headless/run-headless-sway.sh "$out/share/punktfunk-host/headless/run-headless-sway.sh"
-        install -Dm0644 scripts/headless/kde-authorized       "$out/share/punktfunk-host/headless/kde-authorized"
-        install -Dm0644 scripts/headless/punktfunk-sink.conf  "$out/share/punktfunk-host/headless/punktfunk-sink.conf"
-        install -Dm0644 scripts/host.env.example              "$out/share/punktfunk-host/host.env.example"
-        install -Dm0644 packaging/bazzite/host.env            "$out/share/punktfunk-host/host.env.bazzite"
-        install -Dm0644 packaging/kde/host.env                "$out/share/punktfunk-host/host.env.kde"
-        install -Dm0644 api/openapi.json                      "$out/share/punktfunk-host/openapi.json"
+        install -Dm0755 scripts/headless/run-headless-kde.sh  "$out/share/rubyfunk-host/headless/run-headless-kde.sh"
+        install -Dm0755 scripts/headless/run-headless-sway.sh "$out/share/rubyfunk-host/headless/run-headless-sway.sh"
+        install -Dm0644 scripts/headless/kde-authorized       "$out/share/rubyfunk-host/headless/kde-authorized"
+        install -Dm0644 scripts/headless/rubyfunk-sink.conf  "$out/share/rubyfunk-host/headless/rubyfunk-sink.conf"
+        install -Dm0644 scripts/host.env.example              "$out/share/rubyfunk-host/host.env.example"
+        install -Dm0644 packaging/bazzite/host.env            "$out/share/rubyfunk-host/host.env.bazzite"
+        install -Dm0644 packaging/kde/host.env                "$out/share/rubyfunk-host/host.env.kde"
+        install -Dm0644 api/openapi.json                      "$out/share/rubyfunk-host/openapi.json"
       '';
 
       # Run AFTER fixup, and add every dlopen'd library by hand. A `buildInputs` entry only reaches
@@ -235,7 +235,7 @@ in
         # Both binaries dlopen the GPU stack; the worker owns the Vulkan devices for PyroWave and
         # the NVIDIA frame convert, and without it the host silently falls back to default
         # priority. The tray (its own derivation, copied in above) does not.
-        for b in punktfunk-host punktfunk-encode-worker; do
+        for b in rubyfunk-host rubyfunk-encode-worker; do
           addDriverRunpath "$out/bin/$b"
           patchelf --add-rpath "${vulkan-loader.out}/lib" "$out/bin/$b"
           patchelf --add-rpath "${libva.out}/lib" "$out/bin/$b"
@@ -253,7 +253,7 @@ in
 
       meta = meta // {
         description = "Low-latency desktop/game streaming host (Moonlight-compatible + native punktfunk/2)";
-        mainProgram = "punktfunk-host";
+        mainProgram = "rubyfunk-host";
       };
     }
   );
@@ -263,11 +263,11 @@ in
   # through `systemd.packages` and `systemd.tmpfiles.packages`. The door's files ride along: its
   # two host and console units still name /usr/bin, which the module points at its own packages.
   # No GPU runpath: it links pf-inject for the pads it builds, not the capture or encode stack.
-  punktfunk-seats = craneLib.buildPackage (
+  rubyfunk-seats = craneLib.buildPackage (
     commonArgs
     // {
-      pname = "punktfunk-seats";
-      cargoExtraArgs = "--locked -p punktfunk-seats --bin punktfunk-seats";
+      pname = "rubyfunk-seats";
+      cargoExtraArgs = "--locked -p rubyfunk-seats --bin rubyfunk-seats";
 
       # bash is a host input so the fixup rewrites the helpers' shebangs to it.
       buildInputs = [
@@ -278,71 +278,71 @@ in
       # Nothing links libpam, so a `buildInputs` entry never reaches RUNPATH: add it by hand, and
       # assert the soname resolves. A miss refuses every adopt of an existing account.
       postFixup = ''
-        patchelf --add-rpath "${linux-pam}/lib" "$out/libexec/punktfunk/punktfunk-seats"
+        patchelf --add-rpath "${linux-pam}/lib" "$out/libexec/rubyfunk/rubyfunk-seats"
         ok=""
-        for d in $(patchelf --print-rpath "$out/libexec/punktfunk/punktfunk-seats" | tr : ' '); do
+        for d in $(patchelf --print-rpath "$out/libexec/rubyfunk/rubyfunk-seats" | tr : ' '); do
           [ -e "$d/libpam.so.0" ] && ok=1
         done
-        [ -n "$ok" ] || { echo "punktfunk-seats: libpam.so.0 unresolvable from RUNPATH"; exit 1; }
+        [ -n "$ok" ] || { echo "rubyfunk-seats: libpam.so.0 unresolvable from RUNPATH"; exit 1; }
       '';
 
       postInstall = ''
-        install -d "$out/libexec/punktfunk"
-        mv "$out/bin/punktfunk-seats" "$out/libexec/punktfunk/"
+        install -d "$out/libexec/rubyfunk"
+        mv "$out/bin/rubyfunk-seats" "$out/libexec/rubyfunk/"
         rmdir "$out/bin"
         for f in seat-session seat-reap; do
-          install -Dm0755 "packaging/linux/$f" "$out/libexec/punktfunk/$f"
+          install -Dm0755 "packaging/linux/$f" "$out/libexec/rubyfunk/$f"
         done
-        for f in punktfunk-seats.service punktfunk-seat@.service; do
+        for f in rubyfunk-seats.service rubyfunk-seat@.service; do
           install -Dm0644 "packaging/linux/$f" "$out/lib/systemd/system/$f"
           substituteInPlace "$out/lib/systemd/system/$f" \
-            --replace-fail /usr/libexec/punktfunk "$out/libexec/punktfunk"
+            --replace-fail /usr/libexec/rubyfunk "$out/libexec/rubyfunk"
         done
-        install -Dm0644 packaging/linux/punktfunk-seats.tmpfiles "$out/lib/tmpfiles.d/punktfunk-seats.conf"
-        # A seat's pads: the rule runs `punktfunk-seats fence` from this store path.
-        install -Dm0644 packaging/linux/65-punktfunk-seats.rules "$out/lib/udev/rules.d/65-punktfunk-seats.rules"
-        substituteInPlace "$out/lib/udev/rules.d/65-punktfunk-seats.rules" \
-          --replace-fail /usr/libexec/punktfunk "$out/libexec/punktfunk"
-        install -Dm0755 packaging/linux/door-helper "$out/libexec/punktfunk/door-helper"
-        substituteInPlace "$out/libexec/punktfunk/door-helper" \
-          --replace-fail /usr/libexec/punktfunk "$out/libexec/punktfunk"
-        for f in punktfunk-door.service punktfunk-door-on@.service punktfunk-door-off@.service; do
+        install -Dm0644 packaging/linux/rubyfunk-seats.tmpfiles "$out/lib/tmpfiles.d/rubyfunk-seats.conf"
+        # A seat's pads: the rule runs `rubyfunk-seats fence` from this store path.
+        install -Dm0644 packaging/linux/65-rubyfunk-seats.rules "$out/lib/udev/rules.d/65-rubyfunk-seats.rules"
+        substituteInPlace "$out/lib/udev/rules.d/65-rubyfunk-seats.rules" \
+          --replace-fail /usr/libexec/rubyfunk "$out/libexec/rubyfunk"
+        install -Dm0755 packaging/linux/door-helper "$out/libexec/rubyfunk/door-helper"
+        substituteInPlace "$out/libexec/rubyfunk/door-helper" \
+          --replace-fail /usr/libexec/rubyfunk "$out/libexec/rubyfunk"
+        for f in rubyfunk-door.service rubyfunk-door-on@.service rubyfunk-door-off@.service; do
           install -Dm0644 "packaging/linux/$f" "$out/lib/systemd/system/$f"
           substituteInPlace "$out/lib/systemd/system/$f" \
-            --replace-fail /usr/libexec/punktfunk "$out/libexec/punktfunk"
+            --replace-fail /usr/libexec/rubyfunk "$out/libexec/rubyfunk"
         done
-        install -Dm0644 packaging/linux/punktfunk-web-door.service \
-          "$out/lib/systemd/system/punktfunk-web-door.service"
-        install -Dm0644 packaging/linux/49-punktfunk-door.rules \
-          "$out/share/polkit-1/rules.d/49-punktfunk-door.rules"
+        install -Dm0644 packaging/linux/rubyfunk-web-door.service \
+          "$out/lib/systemd/system/rubyfunk-web-door.service"
+        install -Dm0644 packaging/linux/49-rubyfunk-door.rules \
+          "$out/share/polkit-1/rules.d/49-rubyfunk-door.rules"
         # seat-session seeds the portal grant and the virtual speaker from these two files. They
         # live in the package, not the host's, so the store path does not depend on the host build.
-        for f in kde-authorized punktfunk-sink.conf; do
-          install -Dm0644 "scripts/headless/$f" "$out/share/punktfunk/headless/$f"
+        for f in kde-authorized rubyfunk-sink.conf; do
+          install -Dm0644 "scripts/headless/$f" "$out/share/rubyfunk/headless/$f"
         done
-        substituteInPlace "$out/libexec/punktfunk/seat-session" \
-          --replace-fail /usr/share/punktfunk/headless "$out/share/punktfunk/headless"
+        substituteInPlace "$out/libexec/rubyfunk/seat-session" \
+          --replace-fail /usr/share/rubyfunk/headless "$out/share/rubyfunk/headless"
       '';
 
       meta = meta // {
-        description = "punktfunk seat supervisor (a user, a session and a host per profile)";
+        description = "rubyfunk seat supervisor (a user, a session and a host per profile)";
       };
     }
   );
 
-  punktfunk-client = craneLib.buildPackage (
+  rubyfunk-client = craneLib.buildPackage (
     commonArgs
     // {
-      pname = "punktfunk-client";
+      pname = "rubyfunk-client";
       # The session's default `ui` feature pulls skia-safe, whose build DOWNLOADS a prebuilt Skia
       # (rust-skia releases) — impossible in Nix's network-less build sandbox, and a from-source Skia
       # build needs the full gn/ninja/python toolchain + network-fetched third-party. The `ui` feature
       # is explicitly droppable (clients/session/Cargo.toml: "same streaming, stats on stdout only"),
-      # so build the session without it. The GTK shell (punktfunk-client-linux) is skia-free and full.
+      # so build the session without it. The GTK shell (rubyfunk-client-linux) is skia-free and full.
       # Re-adding the Skia OSD under Nix is tracked in packaging/nix/README.md.
       cargoExtraArgs =
-        "--locked -p punktfunk-client-linux -p punktfunk-client-session -p punktfunk-cli "
-        + "--no-default-features --features punktfunk-client-session/pyrowave";
+        "--locked -p rubyfunk-client-linux -p rubyfunk-client-session -p rubyfunk-cli "
+        + "--no-default-features --features rubyfunk-client-session/pyrowave";
 
       nativeBuildInputs = commonArgs.nativeBuildInputs ++ [ wrapGAppsHook4 ];
 
@@ -369,25 +369,23 @@ in
 
       postInstall = ''
         # hidraw access for the seated user's DualSense (SDL HIDAPI full-fidelity path).
-        install -Dm0644 scripts/70-punktfunk-client.rules "$out/lib/udev/rules.d/70-punktfunk-client.rules"
+        install -Dm0644 scripts/70-rubyfunk-client.rules "$out/lib/udev/rules.d/70-rubyfunk-client.rules"
 
         # The app icon the desktop entry (and the About dialog) name.
-        install -Dm0644 packaging/linux/icons/hicolor/scalable/apps/io.unom.punktfunk.svg \
-          "$out/share/icons/hicolor/scalable/apps/io.unom.punktfunk.svg"
-        # The CamelCase icon name, which desktop entries users already have still name.
-        ln -s io.unom.punktfunk.svg "$out/share/icons/hicolor/scalable/apps/io.unom.Punktfunk.svg"
+        install -Dm0644 packaging/linux/icons/hicolor/scalable/apps/io.github.gunu3371.rubyfunk.svg \
+          "$out/share/icons/hicolor/scalable/apps/io.github.gunu3371.rubyfunk.svg"
 
         # Desktop launcher — point Exec at the store binary (wrapped below).
-        install -Dm0644 packaging/linux/io.unom.punktfunk.desktop \
-          "$out/share/applications/io.unom.punktfunk.desktop"
-        substituteInPlace "$out/share/applications/io.unom.punktfunk.desktop" \
-          --replace-fail "Exec=punktfunk-client" "Exec=$out/bin/punktfunk-client"
+        install -Dm0644 packaging/linux/io.github.gunu3371.rubyfunk.desktop \
+          "$out/share/applications/io.github.gunu3371.rubyfunk.desktop"
+        substituteInPlace "$out/share/applications/io.github.gunu3371.rubyfunk.desktop" \
+          --replace-fail "Exec=rubyfunk-client" "Exec=$out/bin/rubyfunk-client"
       '';
 
       postFixup = ''
         # Same three runpath entries as the host: the driver link for the vendor ICD and libEGL,
         # vulkan-loader for the presenter and Vulkan-Video decode, libva for pf-vaapi decode.
-        for b in punktfunk-client punktfunk-session; do
+        for b in rubyfunk-client rubyfunk-session; do
           addDriverRunpath "$out/bin/$b"
           patchelf --add-rpath "${vulkan-loader.out}/lib" "$out/bin/$b"
           patchelf --add-rpath "${libva.out}/lib" "$out/bin/$b"
@@ -401,28 +399,28 @@ in
         done
         # Only the GTK shell needs the GApps wrapper (GSETTINGS_SCHEMA_DIR, icon themes, typelibs);
         # the ash session binary is not a GTK app. Wrap last: it renames the ELF just patched.
-        wrapGApp "$out/bin/punktfunk-client"
+        wrapGApp "$out/bin/rubyfunk-client"
       '';
 
       meta = meta // {
         description = "Native Linux punktfunk/2 streaming client (GTK4 shell + Vulkan session)";
-        mainProgram = "punktfunk-client";
+        mainProgram = "rubyfunk-client";
       };
     }
   );
 
-  # --- management web console (punktfunk-web) ------------------------------------------------------
+  # --- management web console (rubyfunk-web) ------------------------------------------------------
   # The browser console every client needs for SPAKE2 PIN pairing + host status: a TanStack Start /
   # React app that vite builds into a Nitro SSR bundle, run on `bun` (the Nitro `bun` preset + a
   # custom Bun.serve TLS entry — node can't run it; web/nitro-entry/bun-https.mjs). This mirrors the
-  # Debian punktfunk-web .deb (packaging/debian/build-web-deb.sh) and the RPM's `--with web`
+  # Debian rubyfunk-web .deb (packaging/debian/build-web-deb.sh) and the RPM's `--with web`
   # subpackage, which the host package Recommends so a default install pulls the console too.
   #
   # Unlike apt/dnf — which have no bun in their repos and so VENDOR a bun binary into the package —
   # Nix has `pkgs.bun`, so the launcher just execs it from the store (no vendored runtime). The
   # systemd `--user` units ship here; the NixOS module adds its drop-ins and the firewall.
-  punktfunk-web = stdenvNoCC.mkDerivation {
-    pname = "punktfunk-web";
+  rubyfunk-web = stdenvNoCC.mkDerivation {
+    pname = "rubyfunk-web";
     inherit src version;
     # nodejs: `bun run codegen` ends in a literal `node tools/check-i18n.mjs`, so `node` must be on
     # PATH. (The JS CLIs' own `#!/usr/bin/env node` shebangs are already rewritten inside the
@@ -504,47 +502,47 @@ in
     installPhase = ''
       runHook preInstall
       # The SSR bundle + its static assets, plus the first-run helper and env sample.
-      mkdir -p $out/share/punktfunk-web/.output
-      cp -R web/.output/server $out/share/punktfunk-web/.output/server
-      cp -R web/.output/public $out/share/punktfunk-web/.output/public
-      install -Dm0755 scripts/web-init.sh $out/share/punktfunk-web/web-init.sh
-      install -Dm0644 web/web.env.example $out/share/punktfunk-web/web.env.example
+      mkdir -p $out/share/rubyfunk-web/.output
+      cp -R web/.output/server $out/share/rubyfunk-web/.output/server
+      cp -R web/.output/public $out/share/rubyfunk-web/.output/public
+      install -Dm0755 scripts/web-init.sh $out/share/rubyfunk-web/web-init.sh
+      install -Dm0644 web/web.env.example $out/share/rubyfunk-web/web.env.example
 
       # The user units every channel ships, pointed at this store path.
-      install -Dm0644 scripts/punktfunk-web.service $out/lib/systemd/user/punktfunk-web.service
-      install -Dm0644 scripts/punktfunk-web-init.service \
-        $out/lib/systemd/user/punktfunk-web-init.service
-      substituteInPlace $out/lib/systemd/user/punktfunk-web.service \
-        --replace-fail /usr/bin/punktfunk-web-server $out/bin/punktfunk-web-server
-      substituteInPlace $out/lib/systemd/user/punktfunk-web-init.service \
-        --replace-fail /usr/share/punktfunk-web $out/share/punktfunk-web
+      install -Dm0644 scripts/rubyfunk-web.service $out/lib/systemd/user/rubyfunk-web.service
+      install -Dm0644 scripts/rubyfunk-web-init.service \
+        $out/lib/systemd/user/rubyfunk-web-init.service
+      substituteInPlace $out/lib/systemd/user/rubyfunk-web.service \
+        --replace-fail /usr/bin/rubyfunk-web-server $out/bin/rubyfunk-web-server
+      substituteInPlace $out/lib/systemd/user/rubyfunk-web-init.service \
+        --replace-fail /usr/share/rubyfunk-web $out/share/rubyfunk-web
 
       # PATH-stable launcher: run the SSR bundle on bun from the store (mirrors the deb/rpm
-      # /usr/bin/punktfunk-web-server, minus the vendored-bun indirection).
-      makeWrapper ${bun}/bin/bun $out/bin/punktfunk-web-server \
-        --add-flags "$out/share/punktfunk-web/.output/server/index.mjs"
+      # /usr/bin/rubyfunk-web-server, minus the vendored-bun indirection).
+      makeWrapper ${bun}/bin/bun $out/bin/rubyfunk-web-server \
+        --add-flags "$out/share/rubyfunk-web/.output/server/index.mjs"
       runHook postInstall
     '';
 
     dontFixup = true;
 
     meta = meta // {
-      description = "punktfunk management web console (Nitro SSR on bun + React)";
-      mainProgram = "punktfunk-web-server";
+      description = "rubyfunk management web console (Nitro SSR on bun + React)";
+      mainProgram = "rubyfunk-web-server";
     };
   };
 
-  # --- plugin/script runner (punktfunk-scripting) --------------------------------------------------
-  # The host's automation runner: the `@punktfunk/host` SDK's `punktfunk-scripting` CLI (built on
-  # Effect), which discovers ~/.config/punktfunk/{scripts,plugins} and supervises each unit as an
+  # --- plugin/script runner (rubyfunk-scripting) --------------------------------------------------
+  # The host's automation runner: the `@rubyfunk/host` SDK's `rubyfunk-scripting` CLI (built on
+  # Effect), which discovers ~/.config/rubyfunk/{scripts,plugins} and supervises each unit as an
   # Effect fiber. It runs on `bun` (it import()s the operator's `.ts` plugin files, which only bun
-  # can do). Mirrors the Debian punktfunk-scripting .deb / the RPM's `--with scripting` subpackage,
+  # can do). Mirrors the Debian rubyfunk-scripting .deb / the RPM's `--with scripting` subpackage,
   # which the host package Recommends. Its systemd --user unit ships here too.
   #
   # Unlike the deb/rpm we don't `bun build` into a bundle + vendor bun; we still bundle (one
   # self-contained JS, effect inlined) but the launcher execs `pkgs.bun` from the store.
-  punktfunk-scripting = stdenvNoCC.mkDerivation {
-    pname = "punktfunk-scripting";
+  rubyfunk-scripting = stdenvNoCC.mkDerivation {
+    pname = "rubyfunk-scripting";
     inherit src version;
     nativeBuildInputs = [
       bun
@@ -552,9 +550,9 @@ in
       bun2nix.hook
     ];
 
-    # Same bun2nix wiring as punktfunk-web, against sdk/bun.lock's generated sdk/bun.nix (kept in
+    # Same bun2nix wiring as rubyfunk-web, against sdk/bun.lock's generated sdk/bun.nix (kept in
     # step by the `bun2nix` devDependency's `prepare` script — `prepare`, not `postinstall`,
-    # because sdk/ is the PUBLISHED @punktfunk/host package and a postinstall would then run on
+    # because sdk/ is the PUBLISHED @rubyfunk/host package and a postinstall would then run on
     # every consumer's install). No aggregate deps hash to bump.
     bunDeps = bun2nix.fetchBunDeps { bunNix = src + "/sdk/bun.nix"; };
     bunRoot = "sdk";
@@ -581,15 +579,15 @@ in
 
     installPhase = ''
       runHook preInstall
-      install -Dm0644 $TMPDIR/runner-cli.js $out/share/punktfunk-scripting/runner-cli.js
-      # Launcher: run the bundle on bun from the store (mirrors the deb/rpm /usr/bin/punktfunk-scripting).
-      makeWrapper ${bun}/bin/bun $out/bin/punktfunk-scripting \
-        --add-flags "$out/share/punktfunk-scripting/runner-cli.js"
+      install -Dm0644 $TMPDIR/runner-cli.js $out/share/rubyfunk-scripting/runner-cli.js
+      # Launcher: run the bundle on bun from the store (mirrors the deb/rpm /usr/bin/rubyfunk-scripting).
+      makeWrapper ${bun}/bin/bun $out/bin/rubyfunk-scripting \
+        --add-flags "$out/share/rubyfunk-scripting/runner-cli.js"
       # The user unit every channel ships, sandbox included. NixOS has no /bin/mkdir.
-      install -Dm0644 scripts/punktfunk-scripting.service \
-        $out/lib/systemd/user/punktfunk-scripting.service
-      substituteInPlace $out/lib/systemd/user/punktfunk-scripting.service \
-        --replace-fail /usr/bin/punktfunk-scripting $out/bin/punktfunk-scripting \
+      install -Dm0644 scripts/rubyfunk-scripting.service \
+        $out/lib/systemd/user/rubyfunk-scripting.service
+      substituteInPlace $out/lib/systemd/user/rubyfunk-scripting.service \
+        --replace-fail /usr/bin/rubyfunk-scripting $out/bin/rubyfunk-scripting \
         --replace-fail =+/bin/mkdir =+${coreutils}/bin/mkdir
       runHook postInstall
     '';
@@ -597,8 +595,8 @@ in
     dontFixup = true;
 
     meta = meta // {
-      description = "punktfunk plugin/script runner (Effect SDK on bun)";
-      mainProgram = "punktfunk-scripting";
+      description = "rubyfunk plugin/script runner (Effect SDK on bun)";
+      mainProgram = "rubyfunk-scripting";
     };
   };
 }

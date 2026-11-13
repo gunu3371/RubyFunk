@@ -8,7 +8,7 @@
 //!
 //! Only the driven head is listed. Mirror capture attaches to gamescope's composited PipeWire
 //! node (`vdisplay::mirror`), so an undriven connector cannot be streamed. The pin id is the
-//! connector name (`HDMI-A-1`), the same string `PUNKTFUNK_CAPTURE_MONITOR` names.
+//! connector name (`HDMI-A-1`), the same string `RUBYFUNK_CAPTURE_MONITOR` names.
 //!
 //! Empty, never an error, when there is no DRM session or nothing is plugged in — same contract
 //! as [`crate::monitors::list`]. See `design/per-monitor-portal-capture.md`.

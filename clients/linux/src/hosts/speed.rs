@@ -98,7 +98,7 @@ pub fn push(
     }
     let (tx, rx) = async_channel::unbounded::<Probe>();
     std::thread::Builder::new()
-        .name("punktfunk-speed".into())
+        .name("rubyfunk-speed".into())
         .spawn(move || {
             let progress = |kbps| {
                 let _ = tx.send_blocking(Probe::Sample(kbps));
@@ -225,7 +225,7 @@ fn canned(mut progress: impl FnMut(u32)) -> Result<HealthReport, String> {
     for kbps in [40_000, 180_000, 310_000, 410_000, 462_000, 470_000, 468_000] {
         progress(kbps);
     }
-    let outcome = punktfunk_core::client::ProbeOutcome {
+    let outcome = rubyfunk_core::client::ProbeOutcome {
         done: true,
         throughput_kbps: 468_000,
         loss_pct: 0.0,

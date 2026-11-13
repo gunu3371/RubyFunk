@@ -12,7 +12,7 @@ use std::os::fd::{AsFd, OwnedFd};
 use std::os::unix::fs::MetadataExt as _;
 use std::path::Path;
 
-/// A directory whose own path only root can change: `/var/lib/punktfunk`, a user's home.
+/// A directory whose own path only root can change: `/var/lib/rubyfunk`, a user's home.
 pub(super) fn dir(path: &Path) -> std::io::Result<OwnedFd> {
     let flags = OFlags::RDONLY | OFlags::DIRECTORY | OFlags::CLOEXEC;
     Ok(rustix::fs::open(path, flags, Mode::empty())?)

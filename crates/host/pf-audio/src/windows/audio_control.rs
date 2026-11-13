@@ -92,7 +92,7 @@ fn hidden_speakers() -> Option<Endpoint> {
     }
     let name = dev
         .get_friendlyname()
-        .unwrap_or_else(|_| "Punktfunk Speakers".to_string());
+        .unwrap_or_else(|_| "RubyFunk Speakers".to_string());
     Some((name, id))
 }
 
@@ -346,8 +346,8 @@ impl PlanInputs {
         };
         PlanInputs {
             pad_ids: pad_render_ids(&renders),
-            mic_want: name_pin("PUNKTFUNK_MIC_DEVICE"),
-            loopback_want: name_pin("PUNKTFUNK_LOOPBACK_DEVICE"),
+            mic_want: name_pin("RUBYFUNK_MIC_DEVICE"),
+            loopback_want: name_pin("RUBYFUNK_LOOPBACK_DEVICE"),
             minted: super::minted::minted_ids(),
             renders,
             captures,
@@ -423,7 +423,7 @@ pub fn wire_now_full(park_defaults: bool) -> WiredPlan {
                 .is_some_and(|(n, _)| n.to_lowercase().contains(want.as_str()));
             if !honoured {
                 tracing::warn!(want = %want,
-                    "PUNKTFUNK_LOOPBACK_DEVICE matches no output device the microphone leaves \
+                    "RUBYFUNK_LOOPBACK_DEVICE matches no output device the microphone leaves \
                      free — capturing the automatic pick");
             }
         }
@@ -433,7 +433,7 @@ pub fn wire_now_full(park_defaults: bool) -> WiredPlan {
                 device = %name,
                 "the desktop-audio loopback endpoint {why} — streamed audio will sound worse \
                  than it does on the host. Attach or select a 48 kHz stereo output device, or \
-                 set audio.output_mode = host_and_client (PUNKTFUNK_HOST_AUDIO=1) to prefer \
+                 set audio.output_mode = host_and_client (RUBYFUNK_HOST_AUDIO=1) to prefer \
                  real hardware"
             );
         }
@@ -706,7 +706,7 @@ impl DefaultSlot {
             return;
         }
         let spawned = std::thread::Builder::new()
-            .name("punktfunk-audio-default-retry".into())
+            .name("rubyfunk-audio-default-retry".into())
             .spawn(move || {
                 let deadline = Instant::now() + RESTORE_RETRY_FOR;
                 if wasapi::initialize_mta().ok().is_ok() {
@@ -1037,7 +1037,7 @@ pub fn set_endpoint_visibility(device_id: &str, visible: bool) -> Result<()> {
 /// behind Windows' speaker setup. Tries device formats in Sunshine's order, first accepted
 /// wins. The zeroed mix format lets the engine derive its own from the device format.
 fn set_endpoint_channels(device_id: &str, channels: u16, rate_hz: u32) -> Result<()> {
-    let mask = punktfunk_core::audio::wasapi_channel_mask(channels as u8);
+    let mask = rubyfunk_core::audio::wasapi_channel_mask(channels as u8);
     // 5.1 drivers split between back (0x3F) and side (0x60F) surrounds.
     let masks: &[u32] = if channels == 6 {
         &[mask, 0x60F]

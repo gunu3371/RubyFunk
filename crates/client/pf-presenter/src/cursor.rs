@@ -11,8 +11,8 @@
 //! surface, so shapes are cached RAW and resampled per install — rebuild when
 //! serial or scale changes.
 
-use punktfunk_core::client::NativeClient;
-use punktfunk_core::quic::{CursorState, HOST_CAP_CURSOR};
+use rubyfunk_core::client::NativeClient;
+use rubyfunk_core::quic::{CursorState, HOST_CAP_CURSOR};
 use sdl3::mouse::{Cursor, MouseUtil, SystemCursor};
 use sdl3::pixels::PixelFormat;
 use sdl3::surface::Surface;

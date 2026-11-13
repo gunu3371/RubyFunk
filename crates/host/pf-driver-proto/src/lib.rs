@@ -1,4 +1,4 @@
-//! Shared binary contract between the punktfunk host and the `pf-vdisplay` IddCx driver.
+//! Shared binary contract between the rubyfunk host and the `pf-vdisplay` IddCx driver.
 //!
 //! Two planes:
 //! * [`control`] — `DeviceIoControl` (add/remove, adapter pin, keepalive, info, clear-all,

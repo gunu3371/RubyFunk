@@ -6,7 +6,7 @@
 #   scripts/abr-rig/read-linkcap.sh <tag> [link_kbps]
 #
 # The guard's per-window line is `debug`, so a run wanting the engagement count
-# needs RUST_LOG=info,punktfunk_core::abr=debug.
+# needs RUST_LOG=info,rubyfunk_core::abr=debug.
 set -euo pipefail
 
 TAG=${1:?usage: read-linkcap.sh <tag> [link_kbps]}

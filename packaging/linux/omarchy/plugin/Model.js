@@ -40,7 +40,7 @@ function heroPhrase(index, phrases) {
 
 function heroTitle(state, clientName) {
   if (state === "streaming" && clientName) return String(clientName)
-  return "Punktfunk"
+  return "RubyFunk"
 }
 
 function heroMeta(state, phrase) {

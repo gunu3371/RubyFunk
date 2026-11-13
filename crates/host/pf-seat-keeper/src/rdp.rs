@@ -213,7 +213,7 @@ fn connector_config(
         },
         bitmap: None,
         client_build: 0,
-        client_name: "PunktfunkSeats".to_owned(),
+        client_name: "RubyFunkSeats".to_owned(),
         client_dir: "C:\\Windows\\System32\\mstscax.dll".to_owned(),
         platform: MajorPlatformType::WINDOWS,
         enable_server_pointer: false,

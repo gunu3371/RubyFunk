@@ -7,7 +7,7 @@
 // `LaunchSpec` — `{ kind, value }`, not a bare command string.
 import { connect } from "../src/index.js";
 
-const PROVIDER = "romm"; // your punktfunk-plugin-* name
+const PROVIDER = "romm"; // your rubyfunk-plugin-* name
 
 const pf = await connect();
 pf.events.on("library.changed", (e) => {

@@ -19,7 +19,7 @@ Each plugin reads its launcher's own files on the host, with no account or API k
 [Plugins](/docs/plugins) lists them all and what each one covers.
 
 Every title gets a stable id, such as `steam:570`. To see what the host found without a client, run
-`punktfunk-host library` on the host; it prints the library as JSON.
+`rubyfunk-host library` on the host; it prints the library as JSON.
 
 If a source reads **… can't read N of its folders**, click that line and **Allow** the folders.
 A source marked **Stopped** has a plugin that isn't running: see
@@ -62,8 +62,8 @@ optional:
 | **Launch** | **Executable path**, **Install directory** or **Process name** | How the host recognizes the running game. Without one it can't see the game exit, end it on disconnect or count play time. |
 | **Launch** | **Who hears this title** | On a [shared display](/docs/virtual-displays): **Everyone**, **The display owner only**, **Joined sessions only** or **The session that launched it**. |
 
-Hand-added entries live in `library.json` in the host config directory (`~/.config/punktfunk/`
-on Linux, `%ProgramData%\punktfunk\` on Windows), readable by the host user only. Steps that run
+Hand-added entries live in `library.json` in the host config directory (`~/.config/rubyfunk/`
+on Linux, `%ProgramData%\rubyfunk\` on Windows), readable by the host user only. Steps that run
 before a title and undo after it go in that file: see
 [Per-app prep/undo](/docs/automation#per-app-prepundo).
 
@@ -75,10 +75,10 @@ right away; a path previews after you save.
 - **A URL:** the host downloads it the first time a client asks, keeps it, and serves it to every
   client from then on. A redirect, a file over 16 MiB or a file that isn't an image goes to
   the client as a plain URL instead.
-- **A path:** it must be inside a folder the host may read art from. `PUNKTFUNK_LIBRARY_ART_ROOTS`
+- **A path:** it must be inside a folder the host may read art from. `RUBYFUNK_LIBRARY_ART_ROOTS`
   in [Configuration](/docs/configuration) sets those folders. Network (UNC) paths are refused.
 
-`punktfunk-host library art --clear` empties the host's cover store. Plugin titles bring their own
+`rubyfunk-host library art --clear` empties the host's cover store. Plugin titles bring their own
 art; a source below fills what they lack.
 
 ### Filling missing art and details
@@ -116,10 +116,10 @@ game runs on the host, the tile reads **Resume** and the game's name.
 | Mac | **Library** in the window's sidebar |
 | iPhone, iPad, Apple TV | The **Library** tab |
 | Controller home (TV, Steam Deck, a client with a controller) | **Y** on a saved host, or the host's options → **Library** |
-| Steam Deck | **Open Punktfunk** in the Decky panel, then the controller home. See [Steam Deck](/docs/steam-deck). |
+| Steam Deck | **Open RubyFunk** in the Decky panel, then the controller home. See [Steam Deck](/docs/steam-deck). |
 | Moonlight | Turn on GameStream ([Moonlight](/docs/moonlight)). Titles appear in Moonlight's app list beside **Desktop**; titles with no launch command are left out. |
-| A link | `punktfunk://connect/couch-pc?launch=steam:570`. See [Presets and links](/docs/presets-and-links). |
-| Command line | `punktfunk library couch-pc` lists ids; `punktfunk launch couch-pc --game steam:570` streams one. See [the `punktfunk` CLI](/docs/clients#scripting-the-punktfunk-cli). |
+| A link | `rubyfunk://connect/couch-pc?launch=steam:570`. See [Presets and links](/docs/presets-and-links). |
+| Command line | `rubyfunk library couch-pc` lists ids; `rubyfunk launch couch-pc --game steam:570` streams one. See [the `rubyfunk` CLI](/docs/clients#scripting-the-rubyfunk-cli). |
 
 Where the game opens (your desktop, a gamescope session, or a headless session of its own) is
 display policy: see [Dedicated game sessions](/docs/virtual-displays#dedicated-game-sessions).
@@ -138,7 +138,7 @@ started yourself on the host.
 | A library | Hold or right-click the running title → **End game** |
 | Controller home | The title's options → **End game** |
 | Steam Deck | **End game** under **Host menus** in the Decky panel |
-| Command line | `punktfunk end-game couch-pc --game steam:570` |
+| Command line | `rubyfunk end-game couch-pc --game steam:570` |
 
 The host asks the game to quit like its window's close button and forces it after 10 seconds.
 Unsaved progress is lost, so every client asks first. The web console's **Home** lists games still
@@ -146,11 +146,11 @@ running after their stream ended as **Nobody streaming**, with **End now**.
 
 ## Play stats
 
-Each launch from Punktfunk records the time and adds one to the title's launch count. Play time
+Each launch from RubyFunk records the time and adds one to the title's launch count. Play time
 grows while the host sees the game running with a session attached. A launcher tile, or a custom
 entry with no **Process** hint, gets no play time.
 
-A Punktfunk session also credits its profile: the title's numbers count every launch, and each
+A RubyFunk session also credits its profile: the title's numbers count every launch, and each
 profile keeps its own beside them. A Moonlight session counts toward the title only.
 
 The Apple apps sort by **Recent** and **Most played** and keep a **Recently Played** row.

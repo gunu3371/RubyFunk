@@ -1,4 +1,4 @@
-//! `punktfunk` — the headless client CLI (design/client-architecture-split.md §4).
+//! `rubyfunk` — the headless client CLI (design/client-architecture-split.md §4).
 //!
 //! One console-subsystem binary over the same brain the GUI shells use, so a script gets the
 //! same behaviour a click does — including wake-then-connect, which the Linux shell's old
@@ -8,9 +8,9 @@
 //! trust prompts and wake progress would have to squeeze through an IPC contract.
 //!
 //! Existing surfaces are a frozen compatibility contract and are NOT replaced by this: the
-//! Linux shell keeps its headless flags (Decky invokes them), and `punktfunk-probe` stays the
+//! Linux shell keeps its headless flags (Decky invokes them), and `rubyfunk-probe` stays the
 //! diagnostics tool. This is the door new consumers should use — the Playnite importer shells
-//! to `punktfunk library <host> --json`.
+//! to `rubyfunk library <host> --json`.
 //!
 //! Exit codes extend the session binary's: 0 ok, 2 connect failed, 3 trust rejected,
 //! 4 renderer failed, 5 could not resolve what was asked for, 6 refused because it needs a
@@ -30,8 +30,8 @@ mod cli {
     use pf_client_core::profiles::{self, ListedProfile};
     use pf_client_core::trust::{self, AddOutcome, HostEdit, KnownHost, KnownHosts, Settings};
     use pf_client_core::{library, start, wol};
-    use punktfunk_core::client::health::{self, CleanRound, FindingId, HealthReport, LegShape};
-    use punktfunk_core::client::ProbeOutcome;
+    use rubyfunk_core::client::health::{self, CleanRound, FindingId, HealthReport, LegShape};
+    use rubyfunk_core::client::ProbeOutcome;
     use std::time::Duration;
 
     pub const OK: u8 = 0;
@@ -50,43 +50,43 @@ mod cli {
     const REQUEST_ACCESS_TIMEOUT_SECS: u64 = 185;
 
     const USAGE: &str = "\
-punktfunk — the Punktfunk client, headless
+rubyfunk — the RubyFunk client, headless
 
-  punktfunk discover [--json] [--timeout SECS]
-  punktfunk pair <host[:port]> [--pin -] [--name LABEL]
-  punktfunk hosts list [--probe] [--json]
-  punktfunk hosts add <host[:port]> [--name LABEL] [--fp HEX]
-  punktfunk hosts forget <host-ref>
-  punktfunk default-host [<host-ref>] [--clear]
-  punktfunk wake <host-ref> [--wait]
-  punktfunk library [<host-ref>] [--json]
-  punktfunk end-game [<host-ref>] --game ID
-  punktfunk launch [<host-ref>] [--game ID] [--preset REF] [--as PROFILE]
+  rubyfunk discover [--json] [--timeout SECS]
+  rubyfunk pair <host[:port]> [--pin -] [--name LABEL]
+  rubyfunk hosts list [--probe] [--json]
+  rubyfunk hosts add <host[:port]> [--name LABEL] [--fp HEX]
+  rubyfunk hosts forget <host-ref>
+  rubyfunk default-host [<host-ref>] [--clear]
+  rubyfunk wake <host-ref> [--wait]
+  rubyfunk library [<host-ref>] [--json]
+  rubyfunk end-game [<host-ref>] --game ID
+  rubyfunk launch [<host-ref>] [--game ID] [--preset REF] [--as PROFILE]
                                 [--request-access] [--exec] [--fullscreen]
-  punktfunk profiles <host-ref> [--json] [--pick PROFILE | --clear]
-  punktfunk open <punktfunk://…> [--yes]
-  punktfunk reachable <host-ref>
-  punktfunk speed-test <host-ref>
-  punktfunk network-check <host-ref> [--json]
-  punktfunk presets list [--json]
-  punktfunk reset
+  rubyfunk profiles <host-ref> [--json] [--pick PROFILE | --clear]
+  rubyfunk open <rubyfunk://…> [--yes]
+  rubyfunk reachable <host-ref>
+  rubyfunk speed-test <host-ref>
+  rubyfunk network-check <host-ref> [--json]
+  rubyfunk presets list [--json]
+  rubyfunk reset
 
 A <host-ref> is a saved host's id, its name, or an address — the same reference a
-punktfunk:// link takes. Where it is optional, leaving it out means the default host.
+rubyfunk:// link takes. Where it is optional, leaving it out means the default host.
 Exit codes: 0 ok, 2 connect, 3 trust, 4 renderer, 5 not found, 6 needs a person.
 
-\"punktfunk help <command>\" (or any command with --help) explains that command.";
+\"rubyfunk help <command>\" (or any command with --help) explains that command.";
 
-    /// The long help for one verb — `punktfunk help <verb>`, or `--help` after the verb.
+    /// The long help for one verb — `rubyfunk help <verb>`, or `--help` after the verb.
     /// Each entry documents its flags and the behaviour a script would need to know
     /// (what goes to stdout vs stderr, and which exit codes mean what).
     fn verb_help(verb: &str) -> Option<&'static str> {
         Some(match verb {
             "discover" => {
                 "\
-punktfunk discover [--json] [--timeout SECS] — browse the LAN for hosts
+rubyfunk discover [--json] [--timeout SECS] — browse the LAN for hosts
 
-Listens for Punktfunk hosts advertising over mDNS and prints what answered:
+Listens for RubyFunk hosts advertising over mDNS and prints what answered:
 name TAB addr:port TAB saved|new TAB paired|unpaired. `saved` means this
 device already has a record for it, matched by fingerprint first and address
 second — the same rule every other surface joins the two lists by.
@@ -98,11 +98,11 @@ second — the same rule every other surface joins the two lists by.
 
 Nothing answering is an answer, not a failure: an empty list exits 0. A host
 mDNS never sees (Tailscale, another subnet) will not appear here — save it by
-address with `punktfunk hosts add` and it shows in `hosts list --probe`."
+address with `rubyfunk hosts add` and it shows in `hosts list --probe`."
             }
             "pair" => {
                 "\
-punktfunk pair <host[:port]> — enrol this device with a host (PIN ceremony)
+rubyfunk pair <host[:port]> — enrol this device with a host (PIN ceremony)
 
   --pin -       read the PIN from stdin (one line). Without it the command asks,
                 and refuses (exit 6) when there is no terminal to ask on
@@ -123,14 +123,14 @@ success; exit 3 if the host refuses or the PIN is wrong."
             }
             "hosts" => {
                 "\
-punktfunk hosts — the saved-hosts store (shared with the desktop client)
+rubyfunk hosts — the saved-hosts store (shared with the desktop client)
 
-  punktfunk hosts list [--probe] [--json]
+  rubyfunk hosts list [--probe] [--json]
       Every saved host, name TAB addr:port TAB paired/trusted TAB state.
       --probe asks each host directly (no mDNS, so routed/VPN hosts answer
       too); --json emits one object with per-host detail, presets included.
 
-  punktfunk hosts add <host[:port]> [--name LABEL] [--fp HEX]
+  rubyfunk hosts add <host[:port]> [--name LABEL] [--fp HEX]
       Save a host by address — the door for a box mDNS never sees (Tailscale,
       another subnet). Without --fp it is a placeholder to pair later; with a
       64-hex fingerprint it is pinned immediately (still unpaired).
@@ -142,14 +142,14 @@ punktfunk hosts — the saved-hosts store (shared with the desktop client)
       A different fingerprint for an address already saved is kept as a second
       host there (the other OS of a dual-boot box); `hosts forget` removes one.
 
-  punktfunk hosts forget <host-ref>
+  rubyfunk hosts forget <host-ref>
       Remove a saved host with its pinned fingerprint and cached game list,
       and stop opening on it by default. A later connect must pair or trust
       it again."
             }
             "default-host" => {
                 "\
-punktfunk default-host [<host-ref>] [--clear] — the host a bare launch opens on
+rubyfunk default-host [<host-ref>] [--clear] — the host a bare launch opens on
 
 Prints `name TAB addr:port TAB explicit|derived`, or `none`. With a <host-ref> it
 points the setting at that host and prints the record it wrote; with --clear it
@@ -161,12 +161,12 @@ explicitly matters once a second host is paired — a derived default is dropped
 an explicit one survives. An unpaired host is refused (exit 6): a launch cannot pair,
 so the setting would never resolve.
 
-Every client reads this: `punktfunk launch` and `library` with no <host-ref>, and the
+Every client reads this: `rubyfunk launch` and `library` with no <host-ref>, and the
 console, desktop and mobile shells at startup, subject to their Start in setting."
             }
             "wake" => {
                 "\
-punktfunk wake <host-ref> [--wait] — Wake-on-LAN
+rubyfunk wake <host-ref> [--wait] — Wake-on-LAN
 
 Sends a magic packet to a saved host's MAC (learned from its advert while it
 was awake; exit 5 if none is known yet). With --wait, keeps sending every 6 s
@@ -175,18 +175,18 @@ answers — the same cadence every graphical shell uses."
             }
             "library" => {
                 "\
-punktfunk library [<host-ref>] [--json] — the host's game library
+rubyfunk library [<host-ref>] [--json] — the host's game library
 
 TSV on stdout by default (id TAB store TAB title), one game per line; --json
 emits {\"games\":[…]} for tools — the Playnite importer shells to exactly
 this. Needs a paired host (exit 6 otherwise).
 
-With no <host-ref> it asks the default host (`punktfunk default-host`), and
+With no <host-ref> it asks the default host (`rubyfunk default-host`), and
 exits 5 when there is none."
             }
             "end-game" => {
                 "\
-punktfunk end-game [<host-ref>] --game ID — end a title this device launched
+rubyfunk end-game [<host-ref>] --game ID — end a title this device launched
 
 Asks the host to close the game, live stream included. The host ends only a
 title this device launched; one another device started stays up. Prints the
@@ -198,20 +198,20 @@ device's access expired, 2 when the host couldn't be asked or is too old,
             }
             "launch" => {
                 "\
-punktfunk launch [<host-ref>] [--game ID] [--preset REF] [--as PROFILE]
+rubyfunk launch [<host-ref>] [--game ID] [--preset REF] [--as PROFILE]
                               [--request-access] [--exec] [--fullscreen]
 
 Start a stream — waking the host first if it is asleep and its MAC is known.
-The stream runs in the punktfunk-session renderer; this command supervises it
+The stream runs in the rubyfunk-session renderer; this command supervises it
 and relays its lifecycle to stderr. With no <host-ref> it streams the default
-host (`punktfunk default-host`), and exits 5 when there is none.
+host (`rubyfunk default-host`), and exits 5 when there is none.
 
   --game ID      ask the host to launch this library title into the stream
   --preset REF   use a preset (id or name) for this connect only;
                  without it the host's own binding applies
   --as PROFILE   play as this profile (id or name) for this connect only;
                  without it the profile saved for this host applies
-                 (`punktfunk profiles`), else the host's default
+                 (`rubyfunk profiles`), else the host's default
   --fullscreen   start the stream window fullscreen
   --exec         become the session process instead of supervising it — the
                  gamescope-wrapper mode, where the launched process must BE
@@ -223,7 +223,7 @@ host (`punktfunk default-host`), and exits 5 when there is none.
                  admits it and the stream starts by itself; the host is
                  recorded as paired once that happens, so later streams are
                  silent. Needs the host's fingerprint pinned already
-                 (`punktfunk hosts add <addr> --fp <hex>`), and cannot be
+                 (`rubyfunk hosts add <addr> --fp <hex>`), and cannot be
                  combined with --exec — under --exec there is no process
                  left to record the approval.
 
@@ -232,7 +232,7 @@ trusts this device (re-pair), 4 the renderer could not start."
             }
             "profiles" => {
                 "\
-punktfunk profiles <host-ref> [--json] [--pick PROFILE | --clear]
+rubyfunk profiles <host-ref> [--json] [--pick PROFILE | --clear]
 
 Who plays on the host: id TAB name TAB a note (`Steam sign-in once`, `In use
 by Ben's Apple TV`), with `*` on the profile this device plays as there.
@@ -242,18 +242,18 @@ by Ben's Apple TV`), with `*` on the profile this device plays as there.
   --clear         forget the pick; the host's default applies again
 
 Exit 5 when the host has no such profile, or no profiles at all; 6 when it
-isn't paired. Without a <host-ref> and without --pick, `punktfunk profiles`
+isn't paired. Without a <host-ref> and without --pick, `rubyfunk profiles`
 lists settings presets, as it did before presets were renamed."
             }
             "open" => {
                 "\
-punktfunk open <punktfunk://…> — follow a punktfunk:// link, headless
+rubyfunk open <rubyfunk://…> — follow a rubyfunk:// link, headless
 
 Same parser and same refusal rules as clicking the link in a shell: a
 contradicted fingerprint refuses and says so, an ambiguous name refuses
 rather than guessing, and an unknown host is never trusted from a URL —
 that is a decision for a person, at a surface that can show the fingerprint
-(exit 6 points at `punktfunk pair`). --exec as in launch.
+(exit 6 points at `rubyfunk pair`). --exec as in launch.
 
 A link that names its host by the stable record id opens straight away. One
 that names it by label or address is a guess anything could make, so it asks
@@ -262,7 +262,7 @@ rather than opening unasked."
             }
             "reachable" => {
                 "\
-punktfunk reachable <host-ref> — one bounded reachability probe
+rubyfunk reachable <host-ref> — one bounded reachability probe
 
 Asks the host directly (no mDNS), so routed/VPN hosts answer too. The
 reference may be an unsaved address — this verb answers \"can I reach it\",
@@ -270,7 +270,7 @@ not \"do I know it\". Exit 0 reachable, 2 not; one line either way."
             }
             "network-check" => {
                 "\
-punktfunk network-check <host-ref> [--json] — what the path to a host does
+rubyfunk network-check <host-ref> [--json] — what the path to a host does
 
 Opens a diagnostic session that streams nothing, runs the speed test, two
 bursty legs at the clean round's rate and a slow round, reads both ends'
@@ -280,7 +280,7 @@ Exit 0 when the check ran, whatever it found."
             }
             "speed-test" => {
                 "\
-punktfunk speed-test <host-ref> [--json] — measure the real data plane
+rubyfunk speed-test <host-ref> [--json] — measure the real data plane
 
 Runs the host's bandwidth probe over an actual session connect and prints the
 measured throughput, loss, and the bitrate it recommends. Deliberately does
@@ -290,17 +290,17 @@ rewriting settings would be exactly the surprise that rule exists to prevent."
             }
             "presets" => {
                 "\
-punktfunk presets list [--json] — the stream presets on this device
+rubyfunk presets list [--json] — the stream presets on this device
 
 One line per preset: id TAB name TAB how many settings it overrides.
 Presets are created and edited in the desktop client; a connect uses one via
-`punktfunk launch --preset` or a punktfunk:// link that names it.
-`punktfunk profiles` with no host is the old spelling; its --json keeps the
+`rubyfunk launch --preset` or a rubyfunk:// link that names it.
+`rubyfunk profiles` with no host is the old spelling; its --json keeps the
 `profiles` key."
             }
             "reset" => {
                 "\
-punktfunk reset — forget every saved host and reset stream settings
+rubyfunk reset — forget every saved host and reset stream settings
 
 Asks for confirmation, and refuses (exit 6) when there is no terminal to ask
 on. This device's identity keypair is deliberately kept, so hosts that knew
@@ -368,7 +368,7 @@ from the config directory for a true factory reset."
 
     /// Resolve a host reference the way every other surface does: stable id, then a unique
     /// name, then `addr[:port]` (design/client-deep-links.md §2). Sharing `resolve_host` is
-    /// what keeps `punktfunk launch desk` and `punktfunk://connect/desk` from disagreeing.
+    /// what keeps `rubyfunk launch desk` and `rubyfunk://connect/desk` from disagreeing.
     ///
     /// [`HostResolution::Confirm`] — a guessable reference — is accepted WITHOUT a prompt here,
     /// and only here: this reference is an argument the user typed in their own terminal, so
@@ -389,7 +389,7 @@ from the config directory for a true factory reset."
             }
             HostResolution::Unknown { addr, port, .. } => {
                 eprintln!(
-                    "{addr}:{port} isn't a saved host — pair it first (punktfunk pair {addr}:{port})"
+                    "{addr}:{port} isn't a saved host — pair it first (rubyfunk pair {addr}:{port})"
                 );
                 Err(NEEDS_INTERACTION)
             }
@@ -418,7 +418,7 @@ from the config directory for a true factory reset."
             Some(i) => Ok((known, i)),
             None => {
                 eprintln!("usage: {usage}");
-                eprintln!("no default host is set — see `punktfunk default-host`");
+                eprintln!("no default host is set — see `rubyfunk default-host`");
                 Err(UNRESOLVED)
             }
         }
@@ -479,7 +479,7 @@ from the config directory for a true factory reset."
         };
         let rest: Vec<String> = args[1..].to_vec();
         // `--help`/`-h` after any verb prints that verb's help — before dispatch, so a verb
-        // never mistakes the flag for its subject (`punktfunk pair -h` must not dial "-h").
+        // never mistakes the flag for its subject (`rubyfunk pair -h` must not dial "-h").
         if rest.iter().any(|a| a == "--help" || a == "-h") {
             println!("{}", verb_help(&verb).unwrap_or(USAGE));
             return OK;
@@ -521,7 +521,7 @@ from the config directory for a true factory reset."
                 },
             },
             "--version" | "version" => {
-                println!("punktfunk {}", env!("CARGO_PKG_VERSION"));
+                println!("rubyfunk {}", env!("CARGO_PKG_VERSION"));
                 OK
             }
             other => {
@@ -645,7 +645,7 @@ from the config directory for a true factory reset."
     /// `--request-access` pairs with no PIN once the host's operator approves.
     fn pair(args: &[String]) -> u8 {
         let Some(target) = positional(args, 0) else {
-            eprintln!("usage: punktfunk pair <host[:port]> [--pin - | --request-access]");
+            eprintln!("usage: rubyfunk pair <host[:port]> [--pin - | --request-access]");
             return UNRESOLVED;
         };
         let (addr, port) = split_host_port(&target);
@@ -842,7 +842,7 @@ from the config directory for a true factory reset."
     /// `hosts add <host[:port]> [--name LABEL] [--fp HEX]`: save a host without dialing it.
     fn hosts_add(args: &[String]) -> u8 {
         let Some(target) = positional(args, 1) else {
-            eprintln!("usage: punktfunk hosts add <host[:port]> [--name LABEL] [--fp HEX]");
+            eprintln!("usage: rubyfunk hosts add <host[:port]> [--name LABEL] [--fp HEX]");
             return UNRESOLVED;
         };
         let (addr, port) = split_host_port(&target);
@@ -907,7 +907,7 @@ from the config directory for a true factory reset."
     /// `hosts forget <host-ref>`: drop a saved host and what is keyed on it.
     fn hosts_forget(args: &[String]) -> u8 {
         let Some(reference) = positional(args, 1) else {
-            eprintln!("usage: punktfunk hosts forget <host-ref>");
+            eprintln!("usage: rubyfunk hosts forget <host-ref>");
             return UNRESOLVED;
         };
         // Resolved in the store as it is under its lock; a refusal keeps its code.
@@ -935,7 +935,7 @@ from the config directory for a true factory reset."
     /// second, 90 s budget).
     fn wake(args: &[String]) -> u8 {
         let Some(reference) = positional(args, 0) else {
-            eprintln!("usage: punktfunk wake <host-ref> [--wait]");
+            eprintln!("usage: rubyfunk wake <host-ref> [--wait]");
             return UNRESOLVED;
         };
         let (known, i) = match resolve(&reference) {
@@ -946,7 +946,7 @@ from the config directory for a true factory reset."
         if host.mac.is_empty() {
             // A MAC is learned from the host's mDNS advert, never from a connect — say so, since
             // "connect to it once" sent at least one Deck owner looking in the wrong place (#322).
-            eprintln!("no Wake-on-LAN address known for {} — run `punktfunk discover` while it's awake (the Deck panel does this every time it opens) so the client learns it from the host's advert", host.name);
+            eprintln!("no Wake-on-LAN address known for {} — run `rubyfunk discover` while it's awake (the Deck panel does this every time it opens) so the client learns it from the host's advert", host.name);
             return UNRESOLVED;
         }
         if !has(args, "--wait") {
@@ -979,7 +979,7 @@ from the config directory for a true factory reset."
     /// Decky's existing consumer parses; `--json` is the door for tools (the Playnite importer
     /// shells to exactly this).
     fn library_cmd(args: &[String]) -> u8 {
-        let (known, i) = match resolve_or_default(args, "punktfunk library [<host-ref>] [--json]") {
+        let (known, i) = match resolve_or_default(args, "rubyfunk library [<host-ref>] [--json]") {
             Ok(v) => v,
             Err(code) => return code,
         };
@@ -994,7 +994,7 @@ from the config directory for a true factory reset."
         let pin = trust::parse_hex32(&host.fp_hex);
         if pin.is_none() {
             eprintln!(
-                "{} isn't paired yet — punktfunk pair {}",
+                "{} isn't paired yet — rubyfunk pair {}",
                 host.name, host.addr
             );
             return NEEDS_INTERACTION;
@@ -1034,7 +1034,7 @@ from the config directory for a true factory reset."
 
     /// `end-game [<host-ref>] --game ID` — close a title this device launched on the host.
     fn end_game_cmd(args: &[String]) -> u8 {
-        let usage = "punktfunk end-game [<host-ref>] --game ID";
+        let usage = "rubyfunk end-game [<host-ref>] --game ID";
         let Some(game) = value(args, "--game") else {
             eprintln!("usage: {usage}");
             return UNRESOLVED;
@@ -1046,7 +1046,7 @@ from the config directory for a true factory reset."
         let host = &known.hosts[i];
         let Some(pin) = trust::parse_hex32(&host.fp_hex) else {
             eprintln!(
-                "{} isn't paired yet — punktfunk pair {}",
+                "{} isn't paired yet — rubyfunk pair {}",
                 host.name, host.addr
             );
             return NEEDS_INTERACTION;
@@ -1092,7 +1092,7 @@ from the config directory for a true factory reset."
             );
             return UNRESOLVED;
         }
-        let usage = "punktfunk launch [<host-ref>] [--game ID] [--preset REF] [--exec]";
+        let usage = "rubyfunk launch [<host-ref>] [--game ID] [--preset REF] [--exec]";
         let (known, i) = match resolve_or_default(args, usage) {
             Ok(v) => v,
             Err(code) => return code,
@@ -1120,7 +1120,7 @@ from the config directory for a true factory reset."
     fn list_profiles(host: &KnownHost) -> Result<Option<Vec<ListedProfile>>, u8> {
         let Some(pin) = trust::parse_hex32(&host.fp_hex) else {
             eprintln!(
-                "{} isn't paired yet — punktfunk pair {}",
+                "{} isn't paired yet — rubyfunk pair {}",
                 host.name, host.addr
             );
             return Err(NEEDS_INTERACTION);
@@ -1178,7 +1178,7 @@ from the config directory for a true factory reset."
 
     /// `profiles <host-ref>` — who plays on the host, and which of them this device plays as.
     fn profiles_cmd(args: &[String]) -> u8 {
-        let usage = "punktfunk profiles <host-ref> [--json] [--pick PROFILE | --clear]";
+        let usage = "rubyfunk profiles <host-ref> [--json] [--pick PROFILE | --clear]";
         let (known, i) = match resolve_or_default(args, usage) {
             Ok(v) => v,
             Err(code) => return code,
@@ -1251,11 +1251,11 @@ from the config directory for a true factory reset."
         OK
     }
 
-    /// `open <url>` — the `punktfunk://` grammar, headless. Same parser, same refusal rules and
+    /// `open <url>` — the `rubyfunk://` grammar, headless. Same parser, same refusal rules and
     /// same connect path as a card click; what changes is only where the notices go.
     fn open(args: &[String]) -> u8 {
         let Some(url) = positional(args, 0) else {
-            eprintln!("usage: punktfunk open <punktfunk://…>");
+            eprintln!("usage: rubyfunk open <rubyfunk://…>");
             return UNRESOLVED;
         };
         let link = match deeplink::parse(&url) {
@@ -1303,7 +1303,7 @@ from the config directory for a true factory reset."
             // surface that can show them the fingerprint.
             Ok(PlanOutcome::ConfirmUnknown(u)) => {
                 eprintln!(
-                    "{} isn't paired with this device — punktfunk pair {}:{}",
+                    "{} isn't paired with this device — rubyfunk pair {}:{}",
                     u.name.unwrap_or_else(|| u.addr.clone()),
                     u.addr,
                     u.port
@@ -1311,7 +1311,7 @@ from the config directory for a true factory reset."
                 NEEDS_INTERACTION
             }
             Ok(PlanOutcome::Unsupported(route)) => {
-                eprintln!("punktfunk can't open \"{}\" links yet", route.as_str());
+                eprintln!("rubyfunk can't open \"{}\" links yet", route.as_str());
                 UNRESOLVED
             }
             Err(e) => {
@@ -1331,7 +1331,7 @@ from the config directory for a true factory reset."
     fn run_plan(plan: ConnectPlan, exec: bool, persist_paired: bool) -> u8 {
         let Some(fp) = plan.host.pin() else {
             eprintln!(
-                "{} has no pinned fingerprint — punktfunk pair {}",
+                "{} has no pinned fingerprint — rubyfunk pair {}",
                 plan.host.name, plan.host.addr
             );
             return NEEDS_INTERACTION;
@@ -1420,7 +1420,7 @@ from the config directory for a true factory reset."
     /// `reachable <host-ref>` — one bounded, mDNS-independent probe. Exit 0 = reachable.
     fn reachable(args: &[String]) -> u8 {
         let Some(reference) = positional(args, 0) else {
-            eprintln!("usage: punktfunk reachable <host-ref>");
+            eprintln!("usage: rubyfunk reachable <host-ref>");
             return UNRESOLVED;
         };
         // An address that isn't saved is still a legitimate thing to probe — this verb answers
@@ -1440,7 +1440,7 @@ from the config directory for a true factory reset."
             }
             _ => split_host_port(&reference),
         };
-        if punktfunk_core::client::NativeClient::probe(&addr, port, PROBE_TIMEOUT) {
+        if rubyfunk_core::client::NativeClient::probe(&addr, port, PROBE_TIMEOUT) {
             println!("reachable {addr}:{port}");
             OK
         } else {
@@ -1456,9 +1456,9 @@ from the config directory for a true factory reset."
         args: &[String],
         verb: &str,
         probe_only: bool,
-    ) -> Result<punktfunk_core::client::NativeClient, u8> {
+    ) -> Result<rubyfunk_core::client::NativeClient, u8> {
         let Some(reference) = positional(args, 0) else {
-            eprintln!("usage: punktfunk {verb} <host-ref>");
+            eprintln!("usage: rubyfunk {verb} <host-ref>");
             return Err(UNRESOLVED);
         };
         let (known, i) = resolve(&reference)?;
@@ -1475,24 +1475,24 @@ from the config directory for a true factory reset."
             }
         };
         // Every Hello field at its default: this connect only runs probes and never presents.
-        let mode = punktfunk_core::config::Mode {
+        let mode = rubyfunk_core::config::Mode {
             width: 1280,
             height: 720,
             refresh_hz: 60,
         };
-        let params = punktfunk_core::client::ConnectParams {
-            name: Some(punktfunk_core::client::device_name()),
+        let params = rubyfunk_core::client::ConnectParams {
+            name: Some(rubyfunk_core::client::device_name()),
             pin: Some(pin),
             identity: Some(identity),
             probe_only,
-            ..punktfunk_core::client::ConnectParams::new(
+            ..rubyfunk_core::client::ConnectParams::new(
                 &host.addr,
                 host.port,
                 mode,
                 Duration::from_secs(15),
             )
         };
-        punktfunk_core::client::NativeClient::connect(params).map_err(|e| {
+        rubyfunk_core::client::NativeClient::connect(params).map_err(|e| {
             eprintln!("connect: {e:?}");
             CONNECT_FAILED
         })
@@ -1786,7 +1786,7 @@ from the config directory for a true factory reset."
             let known = KnownHosts { hosts: vec![saved] };
             let mut advert = pf_client_core::discovery::DiscoveredHost {
                 key: "id-2".into(),
-                fullname: "desk._punktfunk._udp.local.".into(),
+                fullname: "desk._rubyfunk._udp.local.".into(),
                 name: "desk".into(),
                 addr: "192.168.1.9".into(),
                 port: 9777,
@@ -1902,7 +1902,7 @@ from the config directory for a true factory reset."
             ] {
                 let h = verb_help(verb).unwrap_or_else(|| panic!("no help for {verb}"));
                 assert!(
-                    h.starts_with(&format!("punktfunk {verb}")),
+                    h.starts_with(&format!("rubyfunk {verb}")),
                     "help for {verb} must lead with its own invocation"
                 );
                 assert!(USAGE.contains(verb), "USAGE must advertise {verb}");
@@ -2214,7 +2214,7 @@ from the config directory for a true factory reset."
 
 #[cfg(any(target_os = "linux", windows))]
 fn main() -> std::process::ExitCode {
-    punktfunk_core::tls::install_default_provider();
+    rubyfunk_core::tls::install_default_provider();
     // Logs to stderr; stdout is the machine interface (TSV/JSON), exactly like the session
     // binary's contract.
     tracing_subscriber::fmt()
@@ -2230,6 +2230,6 @@ fn main() -> std::process::ExitCode {
 /// Keeps `cargo build --workspace` green on macOS, where the client is clients/apple.
 #[cfg(not(any(target_os = "linux", windows)))]
 fn main() {
-    eprintln!("punktfunk runs on Linux and Windows — the macOS client lives in clients/apple");
+    eprintln!("rubyfunk runs on Linux and Windows — the macOS client lives in clients/apple");
     std::process::exit(2);
 }

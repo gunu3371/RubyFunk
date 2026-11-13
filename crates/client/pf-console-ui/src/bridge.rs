@@ -11,7 +11,7 @@ use crate::{
 use pf_client_core::console::{OverlayAction, PointerButton, PointerInput, SessionPhase};
 use pf_client_core::menu_nav::{MenuDir, MenuEvent, MenuPulse, PadBattery, PadInfo};
 use pf_client_core::trust::{KnownHosts, Settings};
-use punktfunk_core::config::GamepadPref;
+use rubyfunk_core::config::GamepadPref;
 use std::sync::Arc;
 
 /// What the host hands the console at create.
@@ -60,7 +60,7 @@ pub struct CreateOptions {
     /// The preset catalog as `[{id, name, overrides}, …]`.
     #[serde(default)]
     pub presets: Vec<PresetJson>,
-    /// The known-hosts records, for building `punktfunk://` links.
+    /// The known-hosts records, for building `rubyfunk://` links.
     #[serde(default)]
     pub known_hosts: KnownHosts,
     /// Where to start: `{}` is Home, `{"library": <HostRow>}` a shelf.

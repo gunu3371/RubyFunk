@@ -18,7 +18,7 @@ use anyhow::Result;
 /// Stereo: the Opus decoder and the host→client layout are both 2ch.
 pub const MIC_CHANNELS: u32 = 2;
 
-/// One `0xCB` uplink frame (`punktfunk_core::quic::decode_mic_datagram`).
+/// One `0xCB` uplink frame (`rubyfunk_core::quic::decode_mic_datagram`).
 /// `seq`/`pts_ns` ride with the Opus payload so de-jitter can reorder, conceal, and track cadence.
 pub struct MicFrame {
     /// Sending session ([`mic_source_id`]). One pump has one decoder: one source at a time.
@@ -79,7 +79,7 @@ const PUMP_TUNING: PumpTuning = PumpTuning {
 ///
 /// Opens at host start (games bind capture once). Reopens on push-fail or idle heartbeat
 /// without invalidating senders. Discards buffered audio after an uplink gap. De-jitters via
-/// [`MicDejitter`](super::mic_jitter) (`PUNKTFUNK_MIC_LEGACY_BUFFER=1` pins the old fixed prime).
+/// [`MicDejitter`](super::mic_jitter) (`RUBYFUNK_MIC_LEGACY_BUFFER=1` pins the old fixed prime).
 /// Per-frame decode errors drop that frame. Exits when every sender is dropped.
 pub struct MicPump {
     tx: std::sync::mpsc::SyncSender<MicFrame>,
@@ -92,13 +92,13 @@ impl MicPump {
     }
 
     /// [`start`](Self::start) with a `node.name`. `Some` is a session-lifetime source for an
-    /// isolated gamescope session (`design/gamescope-multiuser.md`): `punktfunk-mic-{id}`, fed
+    /// isolated gamescope session (`design/gamescope-multiuser.md`): `rubyfunk-mic-{id}`, fed
     /// only by that session, torn down when the owner and its sender clone drop. `None` is the
-    /// shared `punktfunk-mic`.
+    /// shared `rubyfunk-mic`.
     pub fn start_named(source_name: Option<String>) -> MicPump {
         let (tx, rx) = std::sync::mpsc::sync_channel::<MicFrame>(MIC_QUEUE_CAP);
         let spawned = std::thread::Builder::new()
-            .name("punktfunk-mic-pump".into())
+            .name("rubyfunk-mic-pump".into())
             .spawn(move || {
                 #[cfg(any(target_os = "linux", target_os = "windows"))]
                 pump_thread(
@@ -200,7 +200,7 @@ struct PumpLife {
     mic: Box<dyn VirtualMic>,
     decoder: opus::Decoder,
     tuning: PumpTuning,
-    /// `PUNKTFUNK_MIC_LEGACY_BUFFER=1`: the backend keeps its fixed prime, and nothing trims.
+    /// `RUBYFUNK_MIC_LEGACY_BUFFER=1`: the backend keeps its fixed prime, and nothing trims.
     legacy: bool,
     jitter: MicDejitter,
     pcm: Vec<f32>,

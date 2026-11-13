@@ -64,8 +64,8 @@ In the console, open **Automation** → **Add hook**, pick the event under **Whe
 matches a whole domain) and **Run a command** or **Call a webhook** under **Then**. **Only for a
 specific client or game** narrows it. **Save** asks for the console password.
 
-The console writes `~/.config/punktfunk/hooks.json` (Windows:
-`%ProgramData%\punktfunk\hooks.json`). You can edit that file by hand or `PUT` it to
+The console writes `~/.config/rubyfunk/hooks.json` (Windows:
+`%ProgramData%\rubyfunk\hooks.json`). You can edit that file by hand or `PUT` it to
 `/api/v1/hooks`; changes apply from the next event.
 
 A profile on an existing account runs no hooks, on Linux and Windows: its hooks would run as that
@@ -74,13 +74,13 @@ person. Its seat refuses a new hook, and skips any it already has.
 ```json
 {
   "hooks": [
-    { "on": "stream.started", "run": "/home/me/.config/punktfunk/scripts/on-stream.sh" },
+    { "on": "stream.started", "run": "/home/me/.config/rubyfunk/scripts/on-stream.sh" },
     { "on": "client.connected",
       "filter": { "fingerprint": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" },
       "run": "kscreen-doctor output.HDMI-A-1.mode.3840x2160@60" },
     { "on": "pairing.pending",
       "webhook": "https://ha.local/api/webhook/punktfunk",
-      "hmac_secret_file": "/home/me/.config/punktfunk/webhook-secret" }
+      "hmac_secret_file": "/home/me/.config/rubyfunk/webhook-secret" }
   ]
 }
 ```
@@ -95,7 +95,7 @@ person. Its seat refuses a new hook, and skips any it already has.
 | `debounce_ms` | Minimum gap between firings of this hook. Default 0. |
 | `hold` | Only with `on: game.launching`: the game waits for this hook, up to `timeout_s`. |
 | `elevated` | Windows: runs `run` as administrator. See [Run as administrator](#run-as-administrator). |
-| `hmac_secret_file` | Signs webhooks with `X-Punktfunk-Signature: sha256=<hex HMAC-SHA256 of the body>`. |
+| `hmac_secret_file` | Signs webhooks with `X-RubyFunk-Signature: sha256=<hex HMAC-SHA256 of the body>`. |
 
 Filter on `fingerprint`, not `client`: names aren't unique and change on rename. The console's
 device picker stores the fingerprint; `GET /api/v1/clients` lists both.
@@ -120,7 +120,7 @@ flattened into `PF_EVENT_*` variables:
   paths and bare names like `makoctl` aren't checked.
 - At most 8 hooks run at once; more are dropped and logged, never queued.
 
-`PUNKTFUNK_ON_CONNECT_CMD` and `PUNKTFUNK_ON_DISCONNECT_CMD` in [`host.env`](/docs/configuration)
+`RUBYFUNK_ON_CONNECT_CMD` and `RUBYFUNK_ON_DISCONNECT_CMD` in [`host.env`](/docs/configuration)
 run a command on `client.connected` / `client.disconnected` without a `hooks.json`.
 
 ### Run as administrator
@@ -130,7 +130,7 @@ signed-in user's full administrator rights, without a UAC prompt. Turn it on onc
 an administrator PowerShell:
 
 ```powershell
-punktfunk-host hooks elevated on
+rubyfunk-host hooks elevated on
 ```
 
 Until then the console can't save an elevated hook, and the host skips one written by hand: the
@@ -141,7 +141,7 @@ On Linux, give the script its own sudoers rule and run it with `sudo -n`, which 
 instead of waiting for a password. Keep the script owned by root: whoever can edit it runs as root.
 
 ```sh
-# sudo visudo -f /etc/sudoers.d/punktfunk
+# sudo visudo -f /etc/sudoers.d/rubyfunk
 me ALL=(root) NOPASSWD: /usr/local/bin/tv-hdr.sh
 ```
 
@@ -149,7 +149,7 @@ The hook's `run` is then `sudo -n /usr/local/bin/tv-hdr.sh`.
 
 ### Webhooks
 
-The host POSTs the event JSON with verified TLS, follows no redirects and sends no Punktfunk
+The host POSTs the event JSON with verified TLS, follows no redirects and sends no RubyFunk
 credentials. A webhook can't point at `localhost`, a loopback or a link-local address; use `run`
 for a receiver on the host itself. LAN addresses and hostnames are fine.
 
@@ -159,7 +159,7 @@ With `hmac_secret_file` set, the host signs every POST, and skips it if it can't
 ```python
 import hmac, hashlib
 expected = "sha256=" + hmac.new(secret, body, hashlib.sha256).hexdigest()
-ok = hmac.compare_digest(request.headers["X-Punktfunk-Signature"], expected)
+ok = hmac.compare_digest(request.headers["X-RubyFunk-Signature"], expected)
 ```
 
 ### Hold the launch
@@ -172,7 +172,7 @@ own.
 
 ```json
 { "on": "game.launching", "filter": { "preset": "Docked" }, "hold": true, "timeout_s": 20,
-  "run": "/home/me/.config/punktfunk/scripts/tv-profile.sh" }
+  "run": "/home/me/.config/rubyfunk/scripts/tv-profile.sh" }
 ```
 
 Plugins hold the same stage: see [Writing plugins](/docs/developers/writing-plugins#hold-a-launch).
@@ -181,7 +181,7 @@ Plugins hold the same stage: see [Writing plugins](/docs/developers/writing-plug
 
 One invalid entry disables every hook: the log says `hooks.json invalid — hooks disabled until
 fixed` and names the entry. Read it on the console's **Troubleshooting** page or with
-`journalctl --user -u punktfunk-host`. Log lines name a hook by its program or the webhook's
+`journalctl --user -u rubyfunk-host`. Log lines name a hook by its program or the webhook's
 `scheme://host`, never its arguments or URL path. A `client` filter that never matches is logged
 with the name the event carried.
 
@@ -194,7 +194,7 @@ order, even after a crash. A `do` that fails is logged and its `undo` skipped. T
 Library form keeps prep steps but can't edit them.
 
 Every step gets the session's mode: `PF_STREAM_WIDTH`, `PF_STREAM_HEIGHT`, `PF_STREAM_REFRESH`,
-`PF_STREAM_HDR` (`1` / `0`), plus `PF_APP_ID` (a Punktfunk client's launch) or `PF_APP_TITLE`
+`PF_STREAM_HDR` (`1` / `0`), plus `PF_APP_ID` (a RubyFunk client's launch) or `PF_APP_TITLE`
 (Moonlight), and `PF_PRESET_ID` / `PF_PRESET_NAME` when the device streamed with a preset. `undo` sees the same values as its `do`, so one entry serves every device.
 On Windows, `"elevated": true` on a step runs its `do` and `undo` as administrator, once it is
 [turned on](#run-as-administrator).
@@ -204,8 +204,8 @@ An `apps.json` entry; the `prep` array is the same in `library.json`:
 ```json
 { "id": 2, "title": "Cyberpunk 2077", "cmd": "steam -applaunch 1091500",
   "prep": [
-    { "do":   "/home/me/.config/punktfunk/scripts/mode.sh do",
-      "undo": "/home/me/.config/punktfunk/scripts/mode.sh undo" }
+    { "do":   "/home/me/.config/rubyfunk/scripts/mode.sh do",
+      "undo": "/home/me/.config/rubyfunk/scripts/mode.sh undo" }
   ] }
 ```
 
@@ -252,18 +252,18 @@ A compositor that refuses a step logs one line; the game still opens.
 desktop stream with no game, or when the session outlives its game. Dim the lights on
 `game.running`, when the game's process runs; send "ready" on `game.window`, when its window is on
 screen, which can be half a minute later on a cold Proton prefix. `game.window` doesn't fire on
-KWin without its window-list permission or on GNOME without the Punktfunk extension.
+KWin without its window-list permission or on GNOME without the RubyFunk extension.
 
 Scripts read `PF_EVENT_GAME_TITLE`, `PF_EVENT_GAME_APP` and, on `game.exited`, `PF_EVENT_REASON`:
 `exited` when the player quit, `terminated` when the host closed it.
 
 ## The event stream
 
-For a shell script, [`punktfunk-host ctl watch`](/docs/host-cli#ctl) prints one JSON object per
+For a shell script, [`rubyfunk-host ctl watch`](/docs/host-cli#ctl) prints one JSON object per
 line, and resumes and reconnects by itself:
 
 ```sh
-punktfunk-host ctl watch --kinds pairing.pending,stream.'*'
+rubyfunk-host ctl watch --kinds pairing.pending,stream.'*'
 ```
 
 A `{"kind":"ctl.resync"}` line means events were missed: re-read the state you need.
@@ -271,12 +271,12 @@ A `{"kind":"ctl.resync"}` line means events were missed: re-read the state you n
 To read Server-Sent Events directly, call the management API on the host with its token:
 
 ```sh
-. ~/.config/punktfunk/mgmt-token   # sets PUNKTFUNK_MGMT_TOKEN
-curl -Nk -H "Authorization: Bearer $PUNKTFUNK_MGMT_TOKEN" \
+. ~/.config/rubyfunk/mgmt-token   # sets RUBYFUNK_MGMT_TOKEN
+curl -Nk -H "Authorization: Bearer $RUBYFUNK_MGMT_TOKEN" \
   "https://127.0.0.1:47990/api/v1/events?kinds=pairing.*,stream.*"
 ```
 
-The token file is `PUNKTFUNK_MGMT_TOKEN=<token>`, so source it; `cat` into the header gets 401.
+The token file is `RUBYFUNK_MGMT_TOKEN=<token>`, so source it; `cat` into the header gets 401.
 
 - Each frame carries `id:` (the `seq`), `event:` (the kind) and `data:` (the event JSON).
 - `?kinds=` filters by kind or `domain.*`, comma-separated.
@@ -299,7 +299,7 @@ A plugin under the runner gets a limited token. It can't register hooks, adminis
 the plugin store or the update endpoints, or read the logs; those routes answer 403. A script that
 should approve pairings, say by watching `pairing.pending` and calling
 `POST /api/v1/native/pending/{id}/approve` when you tap yes on your phone, needs the full token:
-set `PUNKTFUNK_MGMT_TOKEN` on its unit.
+set `RUBYFUNK_MGMT_TOKEN` on its unit.
 
 ## Recipe: full controller passthrough (VirtualHere)
 

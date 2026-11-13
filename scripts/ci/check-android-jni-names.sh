@@ -1,5 +1,5 @@
 #!/bin/sh
-# Every `external fun` on NativeBridge has a `Java_io_unom_punktfunk_kit_NativeBridge_*` export in
+# Every `external fun` on NativeBridge has a `Java_io_unom_rubyfunk_kit_NativeBridge_*` export in
 # clients/android/native, and every export has an `external fun`. The JNI name is the whole link:
 # a Kotlin method with no export loads fine and throws UnsatisfiedLinkError on the first call, and
 # an export with no method is dead code that reads as live.
@@ -12,9 +12,9 @@ set -eu
 
 cd "$(dirname "$0")/../.."
 
-KOTLIN=clients/android/kit/src/main/kotlin/io/unom/punktfunk/kit/NativeBridge.kt
+KOTLIN=clients/android/kit/src/main/kotlin/io/github/gunu3371/rubyfunk/kit/NativeBridge.kt
 NATIVE=clients/android/native/src
-PREFIX=Java_io_unom_punktfunk_kit_NativeBridge_
+PREFIX=Java_io_unom_rubyfunk_kit_NativeBridge_
 
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT

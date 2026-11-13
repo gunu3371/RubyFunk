@@ -10,7 +10,7 @@
 //!   Manual is stored by stable identity (PCI vendor:device + occurrence +
 //!   name), not LUID (reassigned every boot) or adapter index.
 //! - **Selection** ([`selected_gpu`] / [`pick`]): inventory + preference +
-//!   `PUNKTFUNK_RENDER_ADAPTER` → render/encode GPU. Precedence: **manual >
+//!   `RUBYFUNK_RENDER_ADAPTER` → render/encode GPU. Precedence: **manual >
 //!   env substring > auto (max dedicated VRAM)**. A vanished preferred GPU
 //!   logs and auto-selects so the host keeps streaming.
 //!
@@ -566,20 +566,20 @@ pub fn manual_selection() -> Option<GpuInfo> {
     gpus.into_iter().nth(i)
 }
 
-/// Trimmed `PUNKTFUNK_RENDER_NODE` override; empty = unset. Parsed here so
+/// Trimmed `RUBYFUNK_RENDER_NODE` override; empty = unset. Parsed here so
 /// every call site agrees on trim. Callers that must not consult the console
 /// preference (PyroWave's oracle: no oracle may change ITS device) read this
 /// directly; [`linux_render_node`] layers the preference on top.
 #[cfg(target_os = "linux")]
 pub fn render_node_env() -> Option<PathBuf> {
-    std::env::var("PUNKTFUNK_RENDER_NODE")
+    std::env::var("RUBYFUNK_RENDER_NODE")
         .ok()
         .map(|s| s.trim().to_string())
         .filter(|s| !s.is_empty())
         .map(PathBuf::from)
 }
 
-/// Live env read of `PUNKTFUNK_RENDER_NODE` after manual preference (see `config.rs`).
+/// Live env read of `RUBYFUNK_RENDER_NODE` after manual preference (see `config.rs`).
 #[cfg(target_os = "linux")]
 pub fn linux_render_node() -> PathBuf {
     if let Some(g) = manual_selection()

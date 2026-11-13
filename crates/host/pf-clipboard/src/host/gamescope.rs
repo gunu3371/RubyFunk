@@ -14,7 +14,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result};
-use punktfunk_core::clipboard::CLIP_FETCH_CAP;
+use rubyfunk_core::clipboard::CLIP_FETCH_CAP;
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 use tokio::sync::oneshot;
 use x11rb::connection::{Connection, RequestConnection};
@@ -99,7 +99,7 @@ impl GamescopeClipboard {
         let thread = {
             let (shared, stop) = (Arc::clone(&shared), Arc::clone(&stop));
             std::thread::Builder::new()
-                .name("punktfunk-clipboard".into())
+                .name("rubyfunk-clipboard".into())
                 .spawn(move || run(&xwayland, &shared, &stop, &tx))
                 .context("spawn gamescope clipboard thread")?
         };

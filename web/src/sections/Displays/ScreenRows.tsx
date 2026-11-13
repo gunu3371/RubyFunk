@@ -62,7 +62,7 @@ export const ScreenRows: FC<{
 		)
 			? pinned
 			: null;
-	// `PUNKTFUNK_CAPTURE_MONITOR` outranks the stored policy: a pin from the unit's environment is
+	// `RUBYFUNK_CAPTURE_MONITOR` outranks the stored policy: a pin from the unit's environment is
 	// read-only here, not a control that silently loses.
 	const envLocked = !!pinned && !!policy && policy.capture_monitor !== pinned;
 	const locked = busy || envLocked;

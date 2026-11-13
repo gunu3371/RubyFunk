@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Build a punktfunk-host .deb for Ubuntu/Debian hosts.
+# Build a rubyfunk-host .deb for Ubuntu/Debian hosts.
 #
-# Mirrors the Fedora RPM (../rpm/punktfunk.spec): the host binary + the uinput udev rule
+# Mirrors the Fedora RPM (../rpm/rubyfunk.spec): the host binary + the uinput udev rule
 # + the systemd *user* unit + headless session helpers + example config + the OpenAPI doc.
 #
 # Runtime Depends are computed by `dpkg-shlibdeps` from the binaries' actual DT_NEEDED, NOT
@@ -13,12 +13,12 @@
 # specific libnvidia-compute-<ver> anyway — NVENC/EGL come from the driver, out of band.
 #
 # Usage: VERSION=0.0.1~ci42.gdeadbee [ARCH=amd64] bash packaging/debian/build-deb.sh
-# Output: dist/punktfunk-host_<version>_<arch>.deb
+# Output: dist/rubyfunk-host_<version>_<arch>.deb
 set -euo pipefail
 
 VERSION="${VERSION:?set VERSION (e.g. 0.0.1 or 0.0.1~ci42.gdeadbee)}"
 ARCH="${ARCH:-amd64}"
-PKG="punktfunk-host"
+PKG="rubyfunk-host"
 ROOTDIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOTDIR"
 
@@ -28,16 +28,16 @@ BIN="target/release/$PKG"
 # unidentifiable to KWin all over again (see the postinst note below). It ships in this same .deb
 # because host and worker version-check each other over their socket and fall back to the
 # in-process encoder on any mismatch, so they must move in lockstep.
-WORKER_BIN="target/release/punktfunk-encode-worker"
+WORKER_BIN="target/release/rubyfunk-encode-worker"
 # Host and worker build together with the encoder features every Linux package ships (deb.yml,
 # the rpm spec, the PKGBUILD). Without them the host has no NVENC and no Vulkan encode.
 if [ ! -x "$BIN" ] || [ ! -x "$WORKER_BIN" ]; then
-  echo "==> building $PKG + punktfunk-encode-worker (release)"
-  PUNKTFUNK_BUILD_VERSION="$VERSION" cargo build --release --locked \
-    --features punktfunk-host/nvenc,punktfunk-host/vulkan-encode \
-    -p "$PKG" -p punktfunk-encode-worker   # PUNKTFUNK_BUILD_VERSION stamps --version (build.rs)
+  echo "==> building $PKG + rubyfunk-encode-worker (release)"
+  RUBYFUNK_BUILD_VERSION="$VERSION" cargo build --release --locked \
+    --features rubyfunk-host/nvenc,rubyfunk-host/vulkan-encode \
+    -p "$PKG" -p rubyfunk-encode-worker   # RUBYFUNK_BUILD_VERSION stamps --version (build.rs)
 fi
-TRAY_BIN="target/release/punktfunk-tray"
+TRAY_BIN="target/release/rubyfunk-tray"
 # ALWAYS built here, in its OWN cargo invocation — load-bearing, not tidiness, and deliberately not
 # skipped when the artifact already exists. Cargo unifies features across everything in one build,
 # so a caller that co-built the tray with the host (the .deb workflow used to) leaves behind a
@@ -46,8 +46,8 @@ TRAY_BIN="target/release/punktfunk-tray"
 # reactor running, must be called from the context of a Tokio 1.x runtime". Skipping the rebuild is
 # exactly how that binary shipped. Building it alone keeps its zbus on async-io; cargo no-ops this
 # when the existing artifact was already resolved that way, and rebuilds it when it wasn't.
-echo "==> building punktfunk-tray (release, own invocation — see comment above)"
-cargo build --release -p punktfunk-tray --locked
+echo "==> building rubyfunk-tray (release, own invocation — see comment above)"
+cargo build --release -p rubyfunk-tray --locked
 # The web-console-update root helper (dep-free; see crates/install/pf-update).
 echo "==> building pf-update (release)"
 cargo build --release -p pf-update --locked
@@ -61,22 +61,22 @@ SHAREDIR="$STAGE/usr/share/$PKG"
 install -Dm0755 "$BIN"                              "$STAGE/usr/bin/$PKG"
 # Next to the host in the SAME bindir — the host resolves the worker as a sibling of
 # /proc/self/exe. postinst grants this one (and only this one) cap_sys_nice=ep.
-install -Dm0755 "$WORKER_BIN"                       "$STAGE/usr/bin/punktfunk-encode-worker"
+install -Dm0755 "$WORKER_BIN"                       "$STAGE/usr/bin/rubyfunk-encode-worker"
 # Web-console-triggered updates (host-update-from-web-console.md §7): root helper + its
-# oneshot unit + the polkit rule scoping `systemctl start punktfunk-update.service` to the
-# (shipped-empty) punktfunk-update group. Opt-in = joining the group; postinst creates it.
-install -Dm0755 target/release/pf-update           "$STAGE/usr/libexec/punktfunk/pf-update"
-install -Dm0644 packaging/linux/punktfunk-update.service \
-                                                   "$STAGE/usr/lib/systemd/system/punktfunk-update.service"
-install -Dm0644 packaging/linux/49-punktfunk-update.rules \
-                                                   "$STAGE/usr/share/polkit-1/rules.d/49-punktfunk-update.rules"
+# oneshot unit + the polkit rule scoping `systemctl start rubyfunk-update.service` to the
+# (shipped-empty) rubyfunk-update group. Opt-in = joining the group; postinst creates it.
+install -Dm0755 target/release/pf-update           "$STAGE/usr/libexec/rubyfunk/pf-update"
+install -Dm0644 packaging/linux/rubyfunk-update.service \
+                                                   "$STAGE/usr/lib/systemd/system/rubyfunk-update.service"
+install -Dm0644 packaging/linux/49-rubyfunk-update.rules \
+                                                   "$STAGE/usr/share/polkit-1/rules.d/49-rubyfunk-update.rules"
 # postinst runs this on configure and on the file trigger below (web, runner, bun).
-install -Dm0755 packaging/linux/restart-user-units.sh "$STAGE/usr/libexec/punktfunk/restart-user-units"
+install -Dm0755 packaging/linux/restart-user-units.sh "$STAGE/usr/libexec/rubyfunk/restart-user-units"
 # The host state postinst shares with every other format, and the groups it creates.
-install -Dm0755 packaging/linux/post-install.sh    "$STAGE/usr/libexec/punktfunk/post-install"
-install -Dm0644 packaging/linux/punktfunk.sysusers "$STAGE/usr/lib/sysusers.d/punktfunk.conf"
-install -Dm0644 scripts/60-punktfunk.rules         "$STAGE/usr/lib/udev/rules.d/60-punktfunk.rules"
-install -Dm0644 scripts/60-punktfunk-dualsense.conf "$STAGE/usr/share/wireplumber/wireplumber.conf.d/60-punktfunk-dualsense.conf"
+install -Dm0755 packaging/linux/post-install.sh    "$STAGE/usr/libexec/rubyfunk/post-install"
+install -Dm0644 packaging/linux/rubyfunk.sysusers "$STAGE/usr/lib/sysusers.d/rubyfunk.conf"
+install -Dm0644 scripts/60-rubyfunk.rules         "$STAGE/usr/lib/udev/rules.d/60-rubyfunk.rules"
+install -Dm0644 scripts/60-rubyfunk-dualsense.conf "$STAGE/usr/share/wireplumber/wireplumber.conf.d/60-rubyfunk-dualsense.conf"
 # ALSA UCM for the DualSense's own sound card — the `SpeakerHaptic` device alsa-ucm-conf has
 # never carried. Without it the card's only playback route is a 1-channel `Speaker` split and a
 # game that opens GE-Proton's "Sony controller speaker" endpoint overruns it. The conf.d files
@@ -85,67 +85,67 @@ install -Dm0644 scripts/60-punktfunk-dualsense.conf "$STAGE/usr/share/wireplumbe
 # above rather than overlapping them: those hold the device open and keep it off the graph-driver
 # election, this decides which sinks the card offers in the first place. See scripts/alsa-ucm2/.
 for f in USB-Audio/conf.d/054c-0ce6.conf USB-Audio/conf.d/054c-0df2.conf \
-         USB-Audio/Punktfunk/DualSense-PS5-Haptic.conf \
-         USB-Audio/Punktfunk/DualSense-PS5-Haptic-HiFi.conf; do
+         USB-Audio/RubyFunk/DualSense-PS5-Haptic.conf \
+         USB-Audio/RubyFunk/DualSense-PS5-Haptic-HiFi.conf; do
   install -Dm0644 "scripts/alsa-ucm2/$f" "$STAGE/usr/share/alsa/ucm2/$f"
 done
 # Managed gamescope takeover on DM-autologin boxes: root helper + polkit action so the host can
 # stop/restore the display manager for the stream (the helper derives the DM unit itself).
-install -Dm0755 scripts/pf-dm-helper               "$STAGE/usr/libexec/punktfunk/pf-dm-helper"
-install -Dm0644 scripts/io.unom.punktfunk.dm-helper.policy \
-                                                   "$STAGE/usr/share/polkit-1/actions/io.unom.punktfunk.dm-helper.policy"
+install -Dm0755 scripts/pf-dm-helper               "$STAGE/usr/libexec/rubyfunk/pf-dm-helper"
+install -Dm0644 scripts/io.github.gunu3371.rubyfunk.dm-helper.policy \
+                                                   "$STAGE/usr/share/polkit-1/actions/io.github.gunu3371.rubyfunk.dm-helper.policy"
 # ...and the other half of stopping one: with the DM stopped the box has no active local session,
 # so logind's power actions fall to auth_admin_keep and Steam's power menu goes quiet mid-stream.
-install -Dm0644 packaging/linux/49-punktfunk-power.rules \
-                                                   "$STAGE/usr/share/polkit-1/rules.d/49-punktfunk-power.rules"
+install -Dm0644 packaging/linux/49-rubyfunk-power.rules \
+                                                   "$STAGE/usr/share/polkit-1/rules.d/49-rubyfunk-power.rules"
 # vhci-hcd autoload — usbip transport for the virtual Steam Deck pad (Steam only adopts USB pads).
-install -Dm0644 scripts/punktfunk-modules.conf     "$STAGE/usr/lib/modules-load.d/punktfunk.conf"
+install -Dm0644 scripts/rubyfunk-modules.conf     "$STAGE/usr/lib/modules-load.d/rubyfunk.conf"
 # UDP socket-buffer tuning (32 MB) — without it the kernel clamps the host's SO_SNDBUF to ~416 KB
 # and high-bitrate frames overflow it (send-side packet loss). systemd-sysctl applies it at boot.
-install -Dm0644 scripts/99-punktfunk-net.conf      "$STAGE/usr/lib/sysctl.d/99-punktfunk-net.conf"
+install -Dm0644 scripts/99-rubyfunk-net.conf      "$STAGE/usr/lib/sysctl.d/99-rubyfunk-net.conf"
 # Nice-limit headroom for the host's data-plane threads: raises the user-session RLIMIT_NICE so
 # pf-frame's setpriority() works on boxes without RealtimeKit (with rtkit the host never needs
 # it). A limit, not a grant, and never a file capability on the host binary (KWin identification).
-install -Dm0644 packaging/linux/50-punktfunk-nice.conf \
-                                                   "$STAGE/usr/lib/systemd/system/user@.service.d/50-punktfunk-nice.conf"
-install -Dm0644 scripts/punktfunk-host.service     "$STAGE/usr/lib/systemd/user/punktfunk-host.service"
+install -Dm0644 packaging/linux/50-rubyfunk-nice.conf \
+                                                   "$STAGE/usr/lib/systemd/system/user@.service.d/50-rubyfunk-nice.conf"
+install -Dm0644 scripts/rubyfunk-host.service     "$STAGE/usr/lib/systemd/user/rubyfunk-host.service"
 # The source unit's ExecStart points at the dev source tree; a packaged install has the binary at
 # /usr/bin. Rewrite it so a fresh apt install (no hand-rolled unit) starts the installed binary.
-sed -i 's#%h/punktfunk/target/release/punktfunk-host#/usr/bin/punktfunk-host#' \
-    "$STAGE/usr/lib/systemd/user/punktfunk-host.service"
+sed -i 's#%h/rubyfunk/target/release/rubyfunk-host#/usr/bin/rubyfunk-host#' \
+    "$STAGE/usr/lib/systemd/user/rubyfunk-host.service"
 # Optional drop-in for a DESKTOP-LOGIN host: binds the host to graphical-session.target so a
 # Plasma/GNOME restart restarts it instead of leaving it on a dead compositor connection. Shipped
 # under /usr/share (NOT as an active drop-in) because it is wrong for the appliance route — the
-# operator copies it into ~/.config/systemd/user/punktfunk-host.service.d/ when they want it.
-install -Dm0644 scripts/punktfunk-host-desktop-session.conf \
-    "$STAGE/usr/share/punktfunk-host/punktfunk-host-desktop-session.conf"
+# operator copies it into ~/.config/systemd/user/rubyfunk-host.service.d/ when they want it.
+install -Dm0644 scripts/rubyfunk-host-desktop-session.conf \
+    "$STAGE/usr/share/rubyfunk-host/rubyfunk-host-desktop-session.conf"
 # Install-kind + channel marker, read by the host's update-check surface (planning:
 # host-update-from-web-console.md §4.1). ONE canonical path across all package formats —
-# /usr/share/punktfunk/, not this package's punktfunk-host/ data dir. A canary version
+# /usr/share/rubyfunk/, not this package's rubyfunk-host/ data dir. A canary version
 # carries `~ciN`; anything else is stable.
 case "$VERSION" in
   *~ci*) _pf_update_channel=canary ;;
   *)     _pf_update_channel=stable ;;
 esac
 printf 'apt %s\n' "$_pf_update_channel" | \
-    install -Dm0644 /dev/stdin "$STAGE/usr/share/punktfunk/install-kind"
+    install -Dm0644 /dev/stdin "$STAGE/usr/share/rubyfunk/install-kind"
 # Optional headless KWin session unit (the kwin --virtual appliance), as the RPM/Arch ship.
 # Repoint its ExecStart from the dev source tree to the packaged script. NOT enabled by default.
-install -Dm0644 scripts/punktfunk-kde-session.service "$STAGE/usr/lib/systemd/user/punktfunk-kde-session.service"
-sed -i 's#%h/punktfunk/scripts/headless/run-headless-kde.sh#/usr/share/punktfunk-host/headless/run-headless-kde.sh#' \
-    "$STAGE/usr/lib/systemd/user/punktfunk-kde-session.service"
+install -Dm0644 scripts/rubyfunk-kde-session.service "$STAGE/usr/lib/systemd/user/rubyfunk-kde-session.service"
+sed -i 's#%h/rubyfunk/scripts/headless/run-headless-kde.sh#/usr/share/rubyfunk-host/headless/run-headless-kde.sh#' \
+    "$STAGE/usr/lib/systemd/user/rubyfunk-kde-session.service"
 
 # KWin Desktop-mode authorization: non-launcher .desktop whose X-KDE-Wayland-Interfaces lets the
 # host bind KWin's restricted zkde_screencast (virtual output) + fake_input globals on an
 # interactive Plasma session. Must ship with the host — KWin caches the per-exe grant on first
 # connect, so it has to be present before the host ever connects. See the file's header comment.
-install -Dm0644 packaging/linux/io.unom.punktfunk.host.desktop \
-    "$STAGE/usr/share/applications/io.unom.punktfunk.host.desktop"
+install -Dm0644 packaging/linux/io.github.gunu3371.rubyfunk.host.desktop \
+    "$STAGE/usr/share/applications/io.github.gunu3371.rubyfunk.host.desktop"
 # Status tray: the per-user SNI icon + the hicolor status icons it names. Its autostart entry is
 # per user, written by the host from the tray_autostart setting.
-install -Dm0755 "$TRAY_BIN"                        "$STAGE/usr/bin/punktfunk-tray"
-install -Dm0644 packaging/linux/io.unom.punktfunk.starthost.desktop \
-    "$STAGE/usr/share/applications/io.unom.punktfunk.starthost.desktop"
+install -Dm0755 "$TRAY_BIN"                        "$STAGE/usr/bin/rubyfunk-tray"
+install -Dm0644 packaging/linux/io.github.gunu3371.rubyfunk.starthost.desktop \
+    "$STAGE/usr/share/applications/io.github.gunu3371.rubyfunk.starthost.desktop"
 for sz in 22x22 48x48; do
   for png in packaging/linux/icons/hicolor/$sz/apps/*.png; do
     install -Dm0644 "$png" "$STAGE/usr/share/icons/hicolor/$sz/apps/$(basename "$png")"
@@ -154,7 +154,7 @@ done
 install -Dm0755 scripts/headless/run-headless-kde.sh   "$SHAREDIR/headless/run-headless-kde.sh"
 install -Dm0755 scripts/headless/run-headless-sway.sh  "$SHAREDIR/headless/run-headless-sway.sh"
 install -Dm0644 scripts/headless/kde-authorized        "$SHAREDIR/headless/kde-authorized"
-install -Dm0644 scripts/headless/punktfunk-sink.conf   "$SHAREDIR/headless/punktfunk-sink.conf"
+install -Dm0644 scripts/headless/rubyfunk-sink.conf   "$SHAREDIR/headless/rubyfunk-sink.conf"
 install -Dm0644 scripts/host.env.example           "$SHAREDIR/host.env.example"
 install -Dm0644 packaging/bazzite/host.env         "$SHAREDIR/host.env.bazzite"
 install -Dm0644 packaging/kde/host.env             "$SHAREDIR/host.env.kde"
@@ -162,16 +162,16 @@ install -Dm0644 api/openapi.json              "$SHAREDIR/openapi.json"
 # Firewall openers (shared across all Linux packaging), NOT auto-enabled — the postinst prints the
 # enable command for whichever firewall is present. Debian ships none and Ubuntu's ufw is
 # installed-but-inactive, so these are a no-op until the admin turns a firewall on.
-install -Dm0644 packaging/linux/punktfunk.ufw \
-                "$STAGE/etc/ufw/applications.d/punktfunk"
-install -Dm0644 packaging/linux/punktfunk-gamestream.xml \
-                "$STAGE/usr/lib/firewalld/services/punktfunk-gamestream.xml"
-install -Dm0644 packaging/linux/punktfunk-native.xml \
-                "$STAGE/usr/lib/firewalld/services/punktfunk-native.xml"
-# Web console opener (TCP 47992) — only meaningful with the optional punktfunk-web package; opened
-# deliberately (see README.md → Firewall). ufw's equivalent is the punktfunk-web profile above.
-install -Dm0644 packaging/linux/punktfunk-web.xml \
-                "$STAGE/usr/lib/firewalld/services/punktfunk-web.xml"
+install -Dm0644 packaging/linux/rubyfunk.ufw \
+                "$STAGE/etc/ufw/applications.d/rubyfunk"
+install -Dm0644 packaging/linux/rubyfunk-gamestream.xml \
+                "$STAGE/usr/lib/firewalld/services/rubyfunk-gamestream.xml"
+install -Dm0644 packaging/linux/rubyfunk-native.xml \
+                "$STAGE/usr/lib/firewalld/services/rubyfunk-native.xml"
+# Web console opener (TCP 47992) — only meaningful with the optional rubyfunk-web package; opened
+# deliberately (see README.md → Firewall). ufw's equivalent is the rubyfunk-web profile above.
+install -Dm0644 packaging/linux/rubyfunk-web.xml \
+                "$STAGE/usr/lib/firewalld/services/rubyfunk-web.xml"
 install -Dm0644 LICENSE-MIT                         "$DOCDIR/LICENSE-MIT"
 install -Dm0644 LICENSE-APACHE                      "$DOCDIR/LICENSE-APACHE"
 install -Dm0644 README.md                           "$DOCDIR/README.md"
@@ -183,11 +183,11 @@ fi
 # Debian copyright + changelog (cheap, keeps the package well-formed).
 cat > "$DOCDIR/copyright" <<EOF
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: punktfunk
-Source: https://git.unom.io/unom/punktfunk
+Upstream-Name: rubyfunk
+Source: https://github.com/gunu3371/RubyFunk
 
 Files: *
-Copyright: unom and the punktfunk contributors
+Copyright: unom and the rubyfunk contributors
 License: MIT or Apache-2.0
  Dual-licensed. Full texts in /usr/share/doc/$PKG/LICENSE-MIT and
  /usr/share/doc/$PKG/LICENSE-APACHE.
@@ -232,21 +232,21 @@ SHDEPS="$(printf '%s' "$SHDEPS_RAW" | tr ',' '\n' | sed 's/^ *//; s/ *$//' \
 # Manual additions shlibdeps can't see:
 #  - libei1: input injection (libei) is loaded at runtime, not in DT_NEEDED.
 #  - pipewire/wireplumber: runtime services (the daemon + session manager), not linked libs.
-#  - punktfunk-seats (build-seats-deb.sh): profile seats and Reachable without logging in. It ships
+#  - rubyfunk-seats (build-seats-deb.sh): profile seats and Reachable without logging in. It ships
 #    disabled and is pinned, because the host and the supervisor speak one socket protocol.
-DEPENDS="$SHDEPS, libei1, pipewire, wireplumber, punktfunk-seats (= $VERSION)"
+DEPENDS="$SHDEPS, libei1, pipewire, wireplumber, rubyfunk-seats (= $VERSION)"
 # gamescope = a ready compositor backend; pipewire-pulse = desktop audio.
 # mesa-va-drivers / intel-media-va-driver = the VAAPI encode drivers for AMD (radeonsi) and Intel
 # (iHD) — pulled by default so the auto-selected VAAPI backend works out of the box; NVIDIA boxes
 # don't need them (NVENC comes from the driver) and can --no-install-recommends.
-# punktfunk-web = the management web console (pairing + status) every user needs — a separate
-# Architecture:all .deb; Recommends so `apt install punktfunk-host` pulls it by default, while a
+# rubyfunk-web = the management web console (pairing + status) every user needs — a separate
+# Architecture:all .deb; Recommends so `apt install rubyfunk-host` pulls it by default, while a
 # headless/encoding-only box can opt out with --no-install-recommends.
-# punktfunk-scripting = the plugin/script runner (host automation on bun). Recommends so it's pulled
+# rubyfunk-scripting = the plugin/script runner (host automation on bun). Recommends so it's pulled
 # by default; its systemd --user unit ships disabled (inert until you add scripts/plugins).
-# punktfunk-gamescope = HDR, the real mode and the cursor in a gamescope session. Recommends because
+# rubyfunk-gamescope = HDR, the real mode and the cursor in a gamescope session. Recommends because
 # the repo carries no build for Ubuntu 24.04; apt skips a recommend it can't find.
-RECOMMENDS="gamescope, punktfunk-gamescope, pipewire-pulse, mesa-va-drivers, intel-media-va-driver, punktfunk-web, punktfunk-scripting"
+RECOMMENDS="gamescope, rubyfunk-gamescope, pipewire-pulse, mesa-va-drivers, intel-media-va-driver, rubyfunk-web, rubyfunk-scripting"
 SUGGESTS="kwin-wayland, mutter"
 
 INSTALLED_KB="$(du -k -s "$STAGE" | cut -f1)"
@@ -260,12 +260,12 @@ Maintainer: unom <packages@unom.io>
 Installed-Size: $INSTALLED_KB
 Section: net
 Priority: optional
-Homepage: https://git.unom.io/unom/punktfunk
+Homepage: https://github.com/gunu3371/RubyFunk
 Depends: $DEPENDS
 Recommends: $RECOMMENDS
 Suggests: $SUGGESTS
 Description: Low-latency desktop/game streaming host (Moonlight + punktfunk/2)
- punktfunk is a Linux-first, low-latency desktop and game streaming host. It speaks
+ rubyfunk is a Linux-first, low-latency desktop and game streaming host. It speaks
  the Moonlight/GameStream protocol (pair a stock Moonlight client) and its own native
  punktfunk/2 protocol (GF(2^16) Leopard FEC + AES-GCM, mid-stream mode renegotiation,
  client microphone passthrough). Each session gets a virtual output at the client's
@@ -275,7 +275,7 @@ Description: Low-latency desktop/game streaming host (Moonlight + punktfunk/2)
  .
  NVENC + GPU EGL come from the NVIDIA driver (libnvidia-encode / libEGL_nvidia),
  installed out of band. After install: add yourself to the 'input' group for virtual
- gamepads, then enable the systemd user service punktfunk-host.
+ gamepads, then enable the systemd user service rubyfunk-host.
 EOF
 
 cat > "$STAGE/DEBIAN/postinst" <<'EOF'
@@ -293,15 +293,15 @@ if [ "$1" = "configure" ]; then
     # KWin holds no capabilities — so a capability here makes the host unidentifiable and the
     # session dies with "KWin does not expose zkde_screencast_unstable_v1 to this client". Full
     # matrix (and why PR_SET_DUMPABLE and AmbientCapabilities= both fail to rescue it) in
-    # packaging/arch/punktfunk-host.install.
+    # packaging/arch/rubyfunk-host.install.
     #
     # Costs pacing only: pf-zerocopy walks REALTIME -> HIGH -> default when a class is refused.
     # postinst runs on upgrade too, so this heals boxes that installed 0.26.0-1. `setcap -r` exits
     # non-zero on a file that has no capability, hence the redirect and `|| true`.
-    setcap -r /usr/bin/punktfunk-host 2>/dev/null || true
+    setcap -r /usr/bin/rubyfunk-host 2>/dev/null || true
     # CAP_SYS_NICE on the ENCODE WORKER — the same grant, on the binary that can carry it.
     #
-    # punktfunk-encode-worker is a SEPARATE executable (never a hardlink or a host subcommand: a
+    # rubyfunk-encode-worker is a SEPARATE executable (never a hardlink or a host subcommand: a
     # shared inode shares the capability and re-creates the breakage above). It is spawned per
     # PyroWave session, speaks one socketpair to its parent, and never connects to Wayland, D-Bus
     # or the network — so nothing ever resolves ITS /proc/<pid>/exe and the KWin identification
@@ -319,42 +319,42 @@ if [ "$1" = "configure" ]; then
     #
     # Debugging the WORKER: a capability makes it AT_SECURE — the loader ignores LD_LIBRARY_PATH
     # and LD_PRELOAD for it, and core dumps are suppressed.
-    if [ -x /usr/bin/punktfunk-encode-worker ]; then
-        setcap 'cap_sys_nice=ep' /usr/bin/punktfunk-encode-worker 2>/dev/null || true
+    if [ -x /usr/bin/rubyfunk-encode-worker ]; then
+        setcap 'cap_sys_nice=ep' /usr/bin/rubyfunk-encode-worker 2>/dev/null || true
     fi
-    echo "punktfunk-host installed. Add yourself to the 'input' group for virtual gamepads:"
+    echo "rubyfunk-host installed. Add yourself to the 'input' group for virtual gamepads:"
     echo "    sudo usermod -aG input \"\$USER\"   # then re-login"
     # Naming only the usbip pad here is how a Nobara host shipped broken: its owner had no Deck
     # pad, so they correctly skipped this group — and then every managed gamescope takeover
     # degraded silently, because pf-dm-helper (which stops the display manager) gates on membership.
-    echo "ALSO join 'punktfunk' if this box streams Steam Gaming Mode (gamescope) or you want the"
-    echo "virtual Steam Deck pad: sudo usermod -aG punktfunk \"\$USER\"   # then log out and back in"
+    echo "ALSO join 'rubyfunk' if this box streams Steam Gaming Mode (gamescope) or you want the"
+    echo "virtual Steam Deck pad: sudo usermod -aG rubyfunk \"\$USER\"   # then log out and back in"
     echo "  — it authorizes stopping the display manager for a managed gamescope session, and the"
     echo "    pad's usbip nodes; it can emulate arbitrary USB devices, so join it only on a box you trust."
-    echo "Settings: the console (Host -> Settings). A line in ~/.config/punktfunk/host.env locks that setting there;"
-    echo "  annotated templates: /usr/share/punktfunk-host/host.env.{example,kde}"
-    echo "Enable:  systemctl --user enable --now punktfunk-host"
+    echo "Settings: the console (Host -> Settings). A line in ~/.config/rubyfunk/host.env locks that setting there;"
+    echo "  annotated templates: /usr/share/rubyfunk-host/host.env.{example,kde}"
+    echo "Enable:  systemctl --user enable --now rubyfunk-host"
     # Debian ships no active firewall and Ubuntu's ufw is inactive by default; hint whichever is present.
     if command -v ufw >/dev/null 2>&1; then
-        echo "Firewall (ufw detected): sudo ufw allow punktfunk-native   (or punktfunk-gamestream for Moonlight)"
+        echo "Firewall (ufw detected): sudo ufw allow rubyfunk-native   (or rubyfunk-gamestream for Moonlight)"
     fi
     if command -v firewall-cmd >/dev/null 2>&1; then
         echo "Firewall (firewalld detected): sudo firewall-cmd --reload &&"
-        echo "    sudo firewall-cmd --permanent --add-service=punktfunk-native && sudo firewall-cmd --reload"
-        echo "    (use punktfunk-gamestream for the Moonlight-compat host)"
+        echo "    sudo firewall-cmd --permanent --add-service=rubyfunk-native && sudo firewall-cmd --reload"
+        echo "    (use rubyfunk-gamestream for the Moonlight-compat host)"
     fi
     # Groups, udev, sysctl, the stale-firewall notes and the conflict check.
-    /usr/libexec/punktfunk/post-install
+    /usr/libexec/rubyfunk/post-install
 fi
 # Restart the running services. configure restarts all three: dpkg may fold a pending trigger into it.
-case "$1" in configure|triggered) /usr/libexec/punktfunk/restart-user-units ;; esac
+case "$1" in configure|triggered) /usr/libexec/rubyfunk/restart-user-units ;; esac
 exit 0
 EOF
 chmod 0755 "$STAGE/DEBIAN/postinst"
 cat > "$STAGE/DEBIAN/triggers" <<'EOF'
-interest-noawait /usr/share/punktfunk-web
-interest-noawait /usr/share/punktfunk-scripting
-interest-noawait /usr/lib/punktfunk-bun
+interest-noawait /usr/share/rubyfunk-web
+interest-noawait /usr/share/rubyfunk-scripting
+interest-noawait /usr/lib/rubyfunk-bun
 EOF
 
 mkdir -p dist

@@ -46,9 +46,9 @@ mod imp {
     /// The unprobed advertisement: H.264 for a software pin, else HEVC.
     pub(crate) fn wire_caps(r: &Resolved) -> u8 {
         if is_software(&r.inputs.pref) {
-            punktfunk_core::quic::CODEC_H264
+            rubyfunk_core::quic::CODEC_H264
         } else {
-            punktfunk_core::quic::CODEC_HEVC
+            rubyfunk_core::quic::CODEC_HEVC
         }
     }
 
@@ -108,11 +108,11 @@ impl Features {
 /// field resolves afresh and no answer outlives its inputs.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub(crate) struct ResolveInputs {
-    /// The Encoder row (`PUNKTFUNK_ENCODER`, lower-cased) as the host config holds it.
+    /// The Encoder row (`RUBYFUNK_ENCODER`, lower-cased) as the host config holds it.
     pub(crate) pref: String,
     /// [`pf_gpu::selection_key`]: the selected GPU, a manual pick included.
     pub(crate) gpu: String,
-    /// The Vulkan encoding row (`PUNKTFUNK_VULKAN_ENCODE`, default on). Linux only.
+    /// The Vulkan encoding row (`RUBYFUNK_VULKAN_ENCODE`, default on). Linux only.
     pub(crate) vulkan_row: bool,
     /// NVIDIA's device nodes exist, which `auto` reads. Linux only.
     pub(crate) nvidia: bool,
@@ -126,7 +126,7 @@ impl ResolveInputs {
             pref: pf_host_config::config().encoder_pref.clone(),
             gpu: pf_gpu::selection_key(),
             vulkan_row: cfg!(target_os = "linux")
-                && pf_host_config::row_bool("PUNKTFUNK_VULKAN_ENCODE"),
+                && pf_host_config::row_bool("RUBYFUNK_VULKAN_ENCODE"),
             #[cfg(target_os = "linux")]
             nvidia: pf_gpu::nvidia_present(),
             #[cfg(not(target_os = "linux"))]
@@ -170,7 +170,7 @@ impl Resolved {
     }
 
     /// `quic::CODEC_*` bits this host can emit on the native path, fed to
-    /// [`punktfunk_core::quic::resolve_codec`]. Software is H.264 only; probed backends
+    /// [`rubyfunk_core::quic::resolve_codec`]. Software is H.264 only; probed backends
     /// advertise what the GPU encodes. An empty probe means the GPU was unusable at probe time,
     /// not that it encodes nothing, so it falls back to the superset.
     pub fn wire_caps(&self) -> u8 {
@@ -181,7 +181,7 @@ impl Resolved {
     /// preference. `0` when the row names a backend; only `pyrowave` names a codec.
     pub fn pinned_codec(&self) -> u8 {
         if self.inputs.pref == "pyrowave" {
-            punktfunk_core::quic::CODEC_PYROWAVE
+            rubyfunk_core::quic::CODEC_PYROWAVE
         } else {
             0
         }
@@ -224,7 +224,7 @@ impl Resolved {
     }
 
     /// Whether the backend can emit 10-bit for `codec` (HEVC Main10 / AV1), asked before
-    /// Welcome. Without this gate `PUNKTFUNK_10BIT` would negotiate 10-bit and then emit 8-bit
+    /// Welcome. Without this gate `RUBYFUNK_10BIT` would negotiate 10-bit and then emit 8-bit
     /// (label HDR / stream SDR).
     pub fn can_encode_10bit(&self, codec: Codec) -> bool {
         if !codec.supports_10bit() || !cfg!(any(target_os = "linux", target_os = "windows")) {
@@ -332,13 +332,13 @@ fn probe_until_found(
 pub(crate) fn codec_support_wire_mask(caps: CodecSupport) -> Option<u8> {
     let mut m = 0u8;
     if caps.h264 {
-        m |= punktfunk_core::quic::CODEC_H264;
+        m |= rubyfunk_core::quic::CODEC_H264;
     }
     if caps.h265 {
-        m |= punktfunk_core::quic::CODEC_HEVC;
+        m |= rubyfunk_core::quic::CODEC_HEVC;
     }
     if caps.av1 {
-        m |= punktfunk_core::quic::CODEC_AV1;
+        m |= rubyfunk_core::quic::CODEC_AV1;
     }
     (m != 0).then_some(m)
 }
@@ -369,7 +369,7 @@ pub(crate) fn windows_backend_vendor_id(backend: WindowsBackend) -> Option<u32> 
     }
 }
 
-/// Pure half of the Windows backend resolution: reconcile an explicit `PUNKTFUNK_ENCODER` pin
+/// Pure half of the Windows backend resolution: reconcile an explicit `RUBYFUNK_ENCODER` pin
 /// with the selected adapter. A hardware pin whose vendor contradicts the selected GPU is
 /// overridden (`derived` is lazy) — honoring it can only fail. Software has no vendor and is
 /// always honored; with no selected GPU a pin is trusted as-is. Compiled everywhere so its
@@ -474,7 +474,7 @@ mod tests {
     #[cfg(any(target_os = "linux", target_os = "windows"))]
     #[test]
     fn codec_support_wire_mask_maps_the_probe_to_bits() {
-        use punktfunk_core::quic::{CODEC_AV1, CODEC_H264, CODEC_HEVC};
+        use rubyfunk_core::quic::{CODEC_AV1, CODEC_H264, CODEC_HEVC};
         let all = CodecSupport {
             h264: true,
             h265: true,

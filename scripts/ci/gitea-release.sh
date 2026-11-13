@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-# Shared Gitea Release helpers for the punktfunk CI workflows (Linux + macOS runners).
+# Shared Gitea Release helpers for the rubyfunk CI workflows (Linux + macOS runners).
 #
 # Source this file, then call ensure_release / upsert_asset. It replaces the three
 # copy-pasted inline blocks that used to live in apple.yml / flatpak.yml / decky.yml,
@@ -8,7 +8,7 @@
 # release with stable filenames — would fail. upsert_asset deletes the old asset first.
 #
 # upsert_asset also attaches a `<asset>.sha256` sidecar for every asset, so a download off a
-# release page is verifiable (`sha256sum -c punktfunk-1.2.3.dmg.sha256`) — see its comment for
+# release page is verifiable (`sha256sum -c rubyfunk-1.2.3.dmg.sha256`) — see its comment for
 # why sidecars rather than one shared SHA256SUMS.
 #
 # Callers run under Gitea Actions' default `bash -eo pipefail`, so a non-zero return from
@@ -16,7 +16,7 @@
 #
 # Env (Gitea Actions sets the first two automatically in every step):
 #   GITHUB_SERVER_URL   e.g. https://git.unom.io
-#   GITHUB_REPOSITORY   e.g. unom/punktfunk
+#   GITHUB_REPOSITORY   e.g. unom/rubyfunk
 #   GITEA_TOKEN         a PAT with repository (release) write scope — set from secrets.REGISTRY_TOKEN
 #                       (the same PAT the package uploads use; it must carry `write:repository`,
 #                       not only `write:package`, or the release-asset POST 403s)
@@ -146,7 +146,7 @@ PY
 
 # upsert_asset RELEASE_ID FILE [NAME]
 #   Attach FILE to the release AND a `<NAME>.sha256` checksum sidecar next to it, so every
-#   download off a release page can be verified:  sha256sum -c punktfunk-1.2.3.dmg.sha256
+#   download off a release page can be verified:  sha256sum -c rubyfunk-1.2.3.dmg.sha256
 #
 #   Sidecars, not one shared SHA256SUMS, ON PURPOSE: half a dozen workflows (release, windows-*,
 #   android, decky, deb, rpm, arch, flatpak) attach to the SAME release object concurrently, and a
@@ -164,7 +164,7 @@ upsert_asset() {
   # A sidecar gets no sidecar of its own (and neither does a caller attaching one by hand).
   case "$name" in *.sha256) return 0 ;; esac
   # `sha256sum -c` wants "<digest>  <filename>" with the filename as downloaded — i.e. the ASSET
-  # name, which is not necessarily the local basename (callers rename, e.g. Punktfunk-$VERSION.dmg).
+  # name, which is not necessarily the local basename (callers rename, e.g. RubyFunk-$VERSION.dmg).
   sums="$(mktemp)"
   printf '%s  %s\n' "$(_sha256 "$file")" "$name" > "$sums"
   if _put_asset "$rid" "$sums" "$name.sha256"; then rm -f "$sums"; else rm -f "$sums"; return 1; fi

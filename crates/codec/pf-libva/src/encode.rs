@@ -211,10 +211,10 @@ impl Encoder {
             }
         };
         // Low power where it exists and rate-controls, unless
-        // `PUNKTFUNK_VAAPI_LOW_POWER=0`. VDEnc's bitrate control is HuC firmware; a
+        // `RUBYFUNK_VAAPI_LOW_POWER=0`. VDEnc's bitrate control is HuC firmware; a
         // box without it (the passthrough VM) offers CQP only there.
         let entrypoints = display.entrypoints(profile)?;
-        let allow_lp = std::env::var("PUNKTFUNK_VAAPI_LOW_POWER")
+        let allow_lp = std::env::var("RUBYFUNK_VAAPI_LOW_POWER")
             .ok()
             .is_none_or(|v| v != "0");
         let lp_has_cbr = || {

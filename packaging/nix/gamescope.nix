@@ -1,4 +1,4 @@
-# `punktfunk-gamescope` — nixpkgs' gamescope carrying punktfunk's `pipewire-hdr` patches, exposed
+# `rubyfunk-gamescope` — nixpkgs' gamescope carrying rubyfunk's `pipewire-hdr` patches, exposed
 # under its own name so it sits BESIDE the system gamescope instead of replacing it.
 #
 # An override rather than a from-scratch derivation on purpose: gamescope vendors wlroots,
@@ -6,7 +6,7 @@
 # wraps, and nixpkgs already solves all of that. What we add is the patch set and a rename.
 #
 # This is also why the override needs none of the `force_fallback_for` armour
-# `build-punktfunk-gamescope.sh` carries: that exists because meson silently prefers a SYSTEM
+# `build-rubyfunk-gamescope.sh` carries: that exists because meson silently prefers a SYSTEM
 # wlroots when the build host has one and links it shared, producing a binary that starts only on
 # machines with that dev library. A nix closure names every library it links, so the outcome is
 # whatever nixpkgs' own gamescope already does — reproducibly.
@@ -37,12 +37,12 @@
 let
   # PIN THE COMPOSITOR SOURCE, rather than patching whatever gamescope nixpkgs happens to carry.
   # Every other channel already ships this exact commit — packaging/gamescope/README.md,
-  # punktfunk-gamescope.spec, the PKGBUILD and build-punktfunk-gamescope.sh — and nix was the
+  # rubyfunk-gamescope.spec, the PKGBUILD and build-rubyfunk-gamescope.sh — and nix was the
   # only one tracking nixpkgs' version and hoping ten patches still applied.
   #
   # They did not, and the failures were not academic (MEASURED 2026-08-19/20):
   #   * nixpkgs shipped 3.16.24 and patch 0009's context did not exist there at all, so the
-  #     build died at patchPhase — every `services.punktfunk.host.enable = true` with it.
+  #     build died at patchPhase — every `services.rubyfunk.host.enable = true` with it.
   #   * bumping the lock to 3.16.25 fixed that, then `--version` printed NOTHING: upstream's
   #     `gamescope::PrintVersion()` landed AFTER the 3.16.25 tag. The host reads that banner to
   #     decide a session's bit depth and cursor compositing BEFORE the virtual display exists,
@@ -94,14 +94,14 @@ let
       base
     else
       throw ''
-        punktfunk-gamescope needs a buildable gamescope derivation (one with a `src` that
+        rubyfunk-gamescope needs a buildable gamescope derivation (one with a `src` that
         `overrideAttrs` can patch); this nixpkgs' `gamescope` is neither that nor a wrapper
         exposing `.unwrapped`. Update nixpkgs, or build the compositor with
-        packaging/gamescope/build-punktfunk-gamescope.sh instead.
+        packaging/gamescope/build-rubyfunk-gamescope.sh instead.
       '';
 in
 unwrapped.overrideAttrs (old: {
-  pname = "punktfunk-gamescope";
+  pname = "rubyfunk-gamescope";
   version = pfVersion;
   src = pfSrc;
 
@@ -126,13 +126,13 @@ unwrapped.overrideAttrs (old: {
         "vcs_tag = run_command(vcs_tag_cmd, check: false).stdout().strip()" \
         "vcs_tag = '${pfVersion}'"
 
-    # Source-level gate, the same one packaging/gamescope/build-punktfunk-gamescope.sh applies.
+    # Source-level gate, the same one packaging/gamescope/build-rubyfunk-gamescope.sh applies.
     # Splits a missing marker into its two possible stages: fire HERE and patch 0005 or the
     # substitution above lost it; pass here and fail the ELF check later, and it was lost in
     # meson configuration or compilation instead. Without this the two are indistinguishable,
     # at a full compositor build per guess.
     grep -q '+pfhdr' src/meson.build || {
-      echo "punktfunk-gamescope: +pfhdr is not in src/meson.build after patching" >&2
+      echo "rubyfunk-gamescope: +pfhdr is not in src/meson.build after patching" >&2
       echo "  --- version block as patched: ---" >&2
       sed -n '/^vcs_tag_cmd/,/^gamescope_version_conf/p' src/meson.build | sed 's/^/    | /' >&2
       exit 1
@@ -148,7 +148,7 @@ unwrapped.overrideAttrs (old: {
   # The layer is not dressing: a game nested under this compositor gets its HDR10 swapchain from it
   # or from nowhere, and a layer built for a DIFFERENT gamescope makes the compositor reject the
   # client's swapchain_feedback and kills every Vulkan client. So it travels with the binary it was
-  # built against. It is renamed and re-homed under $out/lib/punktfunk, with its own enable
+  # built against. It is renamed and re-homed under $out/lib/rubyfunk, with its own enable
   # variable, so it sits beside the system gamescope's layer rather than shadowing it — the Vulkan
   # loader deduplicates implicit layers by name, so two of the same name would be a coin toss.
   #
@@ -157,14 +157,14 @@ unwrapped.overrideAttrs (old: {
     layerSo=$(find $out -type f -name 'libVkLayer_*gamescope_wsi*.so' | head -1)
     layerJson=$(find $out -type f -name '*gamescope_wsi*.json' | head -1)
     if [ -z "$layerSo" ] || [ -z "$layerJson" ]; then
-      echo "punktfunk-gamescope: this nixpkgs' gamescope built no WSI layer, so no game under the" >&2
+      echo "rubyfunk-gamescope: this nixpkgs' gamescope built no WSI layer, so no game under the" >&2
       echo "                     compositor could ever obtain an HDR10 swapchain" >&2
       exit 1
     fi
     cp "$layerSo" "$TMPDIR/pf-layer.so"
     ${python3}/bin/python3 ${manifestRewriter} \
       "$layerJson" "$TMPDIR/pf-layer.json" \
-      "$out/lib/punktfunk/libVkLayer_PUNKTFUNK_gamescope_wsi.so"
+      "$out/lib/rubyfunk/libVkLayer_RUBYFUNK_gamescope_wsi.so"
 
     # gamescope's own default_extras_install.sh lays the reshade shaders and textures down under
     # read-only DIRECTORIES (mode 555). `rm` needs write permission on the CONTAINING directory,
@@ -188,12 +188,12 @@ unwrapped.overrideAttrs (old: {
     # while the target keeps its name.
     find $out/bin -mindepth 1 ! -name gamescope ! -name '.gamescope-wrapped' \
       ! -name gamescopereaper -delete
-    mv $out/bin/gamescope $out/bin/punktfunk-gamescope
+    mv $out/bin/gamescope $out/bin/rubyfunk-gamescope
 
     install -Dm0755 "$TMPDIR/pf-layer.so" \
-      "$out/lib/punktfunk/libVkLayer_PUNKTFUNK_gamescope_wsi.so"
+      "$out/lib/rubyfunk/libVkLayer_RUBYFUNK_gamescope_wsi.so"
     install -Dm0644 "$TMPDIR/pf-layer.json" \
-      "$out/lib/punktfunk/vulkan/implicit_layer.d/punktfunk_gamescope_wsi.json"
+      "$out/lib/rubyfunk/vulkan/implicit_layer.d/rubyfunk_gamescope_wsi.json"
   '';
 
   # `gamescope --version` exits non-zero on some builds; the grep is the real assertion.
@@ -209,18 +209,18 @@ unwrapped.overrideAttrs (old: {
     # so `gamescope --version` DOES print the banner on a real system — which is what the host's
     # capability probe reads.
     #
-    # packaging/gamescope/build-punktfunk-gamescope.sh makes the same call, asserting on
+    # packaging/gamescope/build-rubyfunk-gamescope.sh makes the same call, asserting on
     # src/meson.build. Grepping the installed ELF is strictly stronger: the version string reaches
     # .rodata through GamescopeVersion.h's k_szGamescopeVersion, so this proves the marker survived
     # patching, meson configuration AND compilation into the artifact we actually ship, and it
     # cannot be defeated by the binary being unable to start.
-    # Grep the WRAPPED ELF: bin/punktfunk-gamescope is nixpkgs' launcher and carries no version
+    # Grep the WRAPPED ELF: bin/rubyfunk-gamescope is nixpkgs' launcher and carries no version
     # string at all, so asserting on it would pass only by accident. Fall back to the launcher
     # for a future nixpkgs that stops wrapping.
     gsElf=$out/bin/.gamescope-wrapped
-    [ -f "$gsElf" ] || gsElf=$out/bin/punktfunk-gamescope
+    [ -f "$gsElf" ] || gsElf=$out/bin/rubyfunk-gamescope
     grep -aq '+pfhdr' "$gsElf" || {
-      echo "punktfunk-gamescope: the +pfhdr marker is not in the installed binary." >&2
+      echo "rubyfunk-gamescope: the +pfhdr marker is not in the installed binary." >&2
       echo "  src/meson.build carried it (asserted in postPatch), so it was lost between" >&2
       echo "  meson configuration and the linked artifact. Evidence:" >&2
       echo "  --- $out/bin ---" >&2
@@ -235,19 +235,19 @@ unwrapped.overrideAttrs (old: {
     # The compositor spawns its child through this, by a path next to /proc/self/exe. Missing, it
     # still starts, still paints, and never runs the game.
     [ -x $out/bin/gamescopereaper ] \
-      || { echo "punktfunk-gamescope: no gamescopereaper, so a spawned session would run nothing"; exit 1; }
+      || { echo "rubyfunk-gamescope: no gamescopereaper, so a spawned session would run nothing"; exit 1; }
     # The manifest must name a library this derivation actually installed. A manifest pointing at a
     # path that does not exist is the worst shape of this bug: the loader reads it, finds nothing,
     # and carries on silently, so the box looks healthy and every game renders SDR.
     lib=$(sed -n 's/.*"library_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
-      $out/lib/punktfunk/vulkan/implicit_layer.d/punktfunk_gamescope_wsi.json)
+      $out/lib/rubyfunk/vulkan/implicit_layer.d/rubyfunk_gamescope_wsi.json)
     [ -f "$lib" ] \
-      || { echo "punktfunk-gamescope: the layer manifest points at $lib, which is not installed"; exit 1; }
+      || { echo "rubyfunk-gamescope: the layer manifest points at $lib, which is not installed"; exit 1; }
     runHook postInstallCheck
   '';
 
   meta = (old.meta or { }) // {
-    description = "gamescope with 10-bit BT.2020/PQ PipeWire capture, for punktfunk HDR streaming";
-    mainProgram = "punktfunk-gamescope";
+    description = "gamescope with 10-bit BT.2020/PQ PipeWire capture, for rubyfunk HDR streaming";
+    mainProgram = "rubyfunk-gamescope";
   };
 })

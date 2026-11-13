@@ -1,7 +1,7 @@
 //! Virtual 8BitDo pads in their own HID mode via `/dev/uhid`.
 //!
 //! No kernel driver claims `2DC8:6003/6009/6012`, so `hid-generic` binds and SDL's and Steam's
-//! `8bitdo` driver read hidraw — the hidraw rule in `60-punktfunk.rules` lets the seat user in.
+//! `8bitdo` driver read hidraw — the hidraw rule in `60-rubyfunk.rules` lets the seat user in.
 //! Codec, descriptors and the feature reply live in [`super::eightbitdo_proto`]; this file is the
 //! UHID transport.
 
@@ -12,8 +12,8 @@ use crate::sensor_clock::SensorClock;
 use crate::uhid_abi::{UhidDevice, UhidEvent, BUS_BLUETOOTH, BUS_USB};
 use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
-use punktfunk_core::input::GamepadFrame;
-use punktfunk_core::quic::RichInput;
+use rubyfunk_core::input::GamepadFrame;
+use rubyfunk_core::quic::RichInput;
 use std::time::{Duration, Instant};
 
 /// Drop destroys the device.
@@ -47,8 +47,8 @@ pub(crate) fn identity(model: Model, index: u8) -> crate::uhid_abi::Identity {
             BUS_USB
         },
         name: model.name().to_owned(),
-        phys: format!("punktfunk/8bitdo/{index}"),
-        uniq: format!("punktfunk-8bitdo-{index}"),
+        phys: format!("rubyfunk/8bitdo/{index}"),
+        uniq: format!("rubyfunk-8bitdo-{index}"),
         rdesc: model.rdesc(),
         vendor: VENDOR as u32,
         product: model.product() as u32,
@@ -146,7 +146,7 @@ pub fn manager(model: Model) -> EightBitDoManager {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use punktfunk_core::input::{gamepad as gs, GamepadEvent};
+    use rubyfunk_core::input::{gamepad as gs, GamepadEvent};
 
     /// Holds one of each native pad live for `PF_PAD_HOLD_SECS` (default 3) so an SDL probe can
     /// read them: paddle beats every 400 ms, a steady 100 °/s pitch, rumble echoed to stdout.

@@ -572,12 +572,12 @@ pub(super) const PRESETS_TAB: usize = 5;
 pub(crate) const TAB_COUNT: usize = TABS.len();
 
 /// Sizes by family; the Resolution row lists one family at a time.
-use punktfunk_core::resolutions::{family_of, nearest_in, Family, SAFE_AREA_LABEL, SCREEN_LABEL};
+use rubyfunk_core::resolutions::{family_of, nearest_in, Family, SAFE_AREA_LABEL, SCREEN_LABEL};
 
 /// The Aspect row's entries: this device's screen and safe area first when no
 /// standard shape has them, then the standard families.
 pub(super) fn families(screen: Option<crate::shell::DeviceScreen>) -> Vec<Family> {
-    punktfunk_core::resolutions::families(screen.map(|s| s.full), screen.map(|s| s.safe))
+    rubyfunk_core::resolutions::families(screen.map(|s| s.full), screen.map(|s| s.safe))
 }
 
 /// The entry the Resolution row lists: the stored size's shape. Native (safe
@@ -602,10 +602,10 @@ pub(super) fn family(
 
 /// What a Native stream asks for here. Unknown, a handheld's panel or 1920×1080 at 60 Hz,
 /// as the desktop presenter assumes for a display that reports no mode.
-fn native_mode(device: &crate::screens::Device) -> punktfunk_core::Mode {
+fn native_mode(device: &crate::screens::Device) -> rubyfunk_core::Mode {
     device.native_mode.unwrap_or_else(|| {
         let (width, height) = device.screen.map_or((1920, 1080), |s| s.full);
-        punktfunk_core::Mode {
+        rubyfunk_core::Mode {
             width,
             height,
             refresh_hz: 60,
@@ -615,24 +615,24 @@ fn native_mode(device: &crate::screens::Device) -> punktfunk_core::Mode {
 
 /// This device's link toward its default route, looked up at most once a second: the rows
 /// are rebuilt every frame.
-fn local_link() -> punktfunk_core::transport::LinkFacts {
+fn local_link() -> rubyfunk_core::transport::LinkFacts {
     #[cfg(not(target_family = "wasm"))]
     {
         use std::time::{Duration, Instant};
-        type Seen = Option<(Instant, punktfunk_core::transport::LinkFacts)>;
+        type Seen = Option<(Instant, rubyfunk_core::transport::LinkFacts)>;
         static LAST: std::sync::Mutex<Seen> = std::sync::Mutex::new(None);
         let mut last = LAST.lock().unwrap_or_else(|e| e.into_inner());
         match *last {
             Some((at, facts)) if at.elapsed() < Duration::from_secs(1) => facts,
             _ => {
-                let facts = punktfunk_core::transport::ifinfo::local_link_facts(None);
+                let facts = rubyfunk_core::transport::ifinfo::local_link_facts(None);
                 *last = Some((Instant::now(), facts));
                 facts
             }
         }
     }
     #[cfg(target_family = "wasm")]
-    punktfunk_core::transport::LinkFacts::default()
+    rubyfunk_core::transport::LinkFacts::default()
 }
 
 /// A window the stream can follow (Match window): the desktops, the browser, and every Apple
@@ -674,8 +674,8 @@ fn safe_area(s: &pf_client_core::trust::Settings, platform: crate::platform::Pla
 /// clients/windows/src/app/settings.rs.
 pub(super) const REFRESH: [u32; 8] = [0, 30, 60, 90, 120, 144, 165, 240];
 /// Render-scale multipliers; `1.0` = Native.
-use punktfunk_core::render_scale::PRESETS as RENDER_SCALES;
-use punktfunk_core::video_fit::VideoFit;
+use rubyfunk_core::render_scale::PRESETS as RENDER_SCALES;
+use rubyfunk_core::video_fit::VideoFit;
 /// Left/right rungs in kbps: 5 Mbps apart to 50, 10 to 100, where most links settle;
 /// ceiling 2 Gbps. Off-ladder values go through the typed field rather than a longer ladder.
 pub(super) const BITRATES: [u32; 34] = [
@@ -888,7 +888,7 @@ pub fn row_on(id: RowId, platform: crate::platform::Platform) -> bool {
         // Every client ships third-party code. The browser build has no bundle to list.
         RowId::Licenses => &[Desktop, Android, WebOS, Apple, Ps5],
         // DualSense capture — the pad reaches webOS over Bluetooth HID, not hidraw, so the
-        // concept is real there too (punktfunk-webos docs/NOTES.md).
+        // concept is real there too (rubyfunk-webos docs/NOTES.md).
         RowId::DsCapture => &[Android, WebOS],
         // Apple reads `UIAccessibility.isReduceMotionEnabled` and follows it, so the shell has
         // nothing to ask. The others carry a row because they cannot see the OS switch.
@@ -1355,7 +1355,7 @@ fn row_spec_base(id: RowId, ctx: &Ctx, presets: &[(String, String)]) -> RowSpec 
         ),
         RowId::RenderScale => {
             // In hundredths, so a float-stored 0.67 does not read as 0.6700000167.
-            let x = f64::from(punktfunk_core::render_scale::percent(s.render_scale)) / 100.0;
+            let x = f64::from(rubyfunk_core::render_scale::percent(s.render_scale)) / 100.0;
             let value = if x == 1.0 {
                 "Native".into()
             } else if x > 1.0 {
@@ -1521,7 +1521,7 @@ fn row_spec_base(id: RowId, ctx: &Ctx, presets: &[(String, String)]) -> RowSpec 
             "Statistics size",
             format!(
                 "{} %",
-                (punktfunk_core::hud::stats_scale(s.stats_scale_pct) * 100.0).round()
+                (rubyfunk_core::hud::stats_scale(s.stats_scale_pct) * 100.0).round()
             ),
         ),
         RowId::ExitHint => (None, "Exit hint", extra()),
@@ -1839,7 +1839,7 @@ pub fn detail(id: RowId, ctx: &Ctx) -> &'static str {
         RowId::FullscreenMode => match fullscreen_mode(ctx.settings) {
             0 => "Streams stay in a window.",
             1 => "Streams go fullscreen. The host list returns to a window.",
-            _ => "Punktfunk opens fullscreen and stays fullscreen between streams.",
+            _ => "RubyFunk opens fullscreen and stays fullscreen between streams.",
         },
         RowId::StatsPosition => "Which corner the statistics overlay sits in.",
         RowId::StatsSize => "The size of the statistics overlay, on top of your display's scaling.",
@@ -2058,7 +2058,7 @@ pub fn adjust(id: RowId, delta: i32, wrap: bool, ctx: &mut Ctx) -> bool {
         }
         RowId::RenderScale => {
             // A typed scale sits between two stops: step to the one the thumb is heading for.
-            let stepped = match punktfunk_core::render_scale::preset_index(s.render_scale) {
+            let stepped = match rubyfunk_core::render_scale::preset_index(s.render_scale) {
                 cur @ Some(_) => step_option(cur, RENDER_SCALES.len(), delta, wrap),
                 None if delta < 0 => RENDER_SCALES.iter().rposition(|v| *v < s.render_scale),
                 None => RENDER_SCALES.iter().position(|v| *v > s.render_scale),
@@ -2247,7 +2247,7 @@ pub fn adjust(id: RowId, delta: i32, wrap: bool, ctx: &mut Ctx) -> bool {
                 .map(|i| s.hud_placement = HudCorner::ALL[i].as_name().into())
         }
         RowId::StatsSize => {
-            use punktfunk_core::hud::{stats_scale, STATS_SCALE_PCTS};
+            use rubyfunk_core::hud::{stats_scale, STATS_SCALE_PCTS};
             // Stepped from the size in effect, so an off-list stored value moves to its neighbour.
             let pct = (stats_scale(s.stats_scale_pct) * 100.0).round() as u16;
             let at = STATS_SCALE_PCTS.iter().position(|p| *p == pct);

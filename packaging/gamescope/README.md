@@ -1,13 +1,13 @@
-# `punktfunk-gamescope` — gamescope with 10-bit HDR PipeWire capture
+# `rubyfunk-gamescope` — gamescope with 10-bit HDR PipeWire capture
 
 Upstream gamescope's built-in PipeWire node is SDR-only: `build_format_params()` offers `BGRx`
 and `NV12`, and `paint_pipewire()` hardcodes a Gamma-2.2 composite with the SDR screenshot LUT
 set. An HDR game therefore reaches every capture consumer already tone-mapped down — which is
-why the punktfunk gamescope backend has always streamed 8-bit, even though games *can* render
+why the rubyfunk gamescope backend has always streamed 8-bit, even though games *can* render
 HDR on a headless gamescope today (`--hdr-enabled --hdr-debug-force-support`).
 
 The patches here add the missing half, and nothing else. See
-`punktfunk-planning/design/gamescope-hdr-virtual-output.md` for the full design.
+`rubyfunk-planning/design/gamescope-hdr-virtual-output.md` for the full design.
 
 | Patch | What | Upstream? |
 |---|---|---|
@@ -15,11 +15,11 @@ The patches here add the missing half, and nothing else. See
 | `0002-pipewire-optionally-composite-the-cursor-into-the-ca.patch` | `--pipewire-composite-cursor` (off by default): paint the pointer into the capture stream, using the same `MouseCursor::paint` call the scanout composite uses | **Yes** — independently useful to any consumer with no cursor of its own |
 | `0003-headless-advertise-the-virtual-display-s-mode-and-re.patch` | Give `CHeadlessConnector` a real `GetModes()` + `GetValidDynamicRefreshRates()` from the resolved `-W`/`-H`/`-r`, report `GAMESCOPE_SCREEN_TYPE_EXTERNAL` so `update_mode_atoms` publishes the list, and add `--custom-refresh-rates` | **Yes** — a headless session that cannot report its own mode is a plain bug |
 | `0004-pipewire-optionally-composite-the-external-overlay-i.patch` | `--pipewire-composite-external-overlay` (off by default): paint the external overlay layer (mangoapp — the fps/stats readout) into the capture stream | **Yes** — same shape as the cursor patch, same argument |
-| `0005-punktfunk-stamp-the-version-banner-with-pfhdrN.patch` | Append `+pfhdr<N>` to the `--version` banner | **No** — ours only, retired when the functional patches above land upstream |
-| `0006-punktfunk-never-destroy-the-Vulkan-device-or-output-.patch` | Give `g_device` and `g_output` storage that is never destroyed, so their destructors cannot call a Vulkan driver glibc has already unloaded at `exit()` | **Yes** — a plain static-destruction-order bug, not punktfunk-specific |
+| `0005-rubyfunk-stamp-the-version-banner-with-pfhdrN.patch` | Append `+pfhdr<N>` to the `--version` banner | **No** — ours only, retired when the functional patches above land upstream |
+| `0006-rubyfunk-never-destroy-the-Vulkan-device-or-output-.patch` | Give `g_device` and `g_output` storage that is never destroyed, so their destructors cannot call a Vulkan driver glibc has already unloaded at `exit()` | **Yes** — a plain static-destruction-order bug, not rubyfunk-specific |
 | `0007-pipewire-never-leave-pw_buffer-user_data-pointing-at.patch` | Associate `pw_buffer->user_data` with its `pipewire_buffer` for every path out of `add_buffer`, clear it in `remove_buffer` (the last point both halves are known), and null-check the consumers — killing the use-after-free that aborted the session on every capture renegotiation | **Yes** — a plain use-after-free in the PipeWire buffer lifecycle |
 | `0008-steamcompmgr-honor-GAMESCOPE_NO_FOCUS-never-a-focus-.patch` | Honor `GAMESCOPE_NO_FOCUS` (set by hhd-ui and MangoHud, consumed by nobody): such windows are skipped by both focus-candidate collectors, so a mapped-but-unpainted overlay app can no longer win focus and turn the composite black. Compositing is untouched — only focus SELECTION is barred | **Yes** — the atom's setters already exist in the wild; some compositor has to keep the promise |
-| `0009-pipewire-destroy-capture-textures-on-the-compositor-.patch` | Move capture-buffer destruction off the PipeWire thread: `remove_buffer`/stale-push queue the corpse (`bury_buffer`), steamcompmgr reaps on every vblank — including while the stream is paused, which is exactly the linger window. Without it, dropping the last `CVulkanTexture` ref on the PW thread races `vulkan_screenshot` on the same device and SIGSEGVs (NVIDIA `insertBarrier`), so a lingered display is dead and reconnect loses the session. Reported + written by luxus (punktfunk-overlay#9) | **Yes** — the race is upstream's `paint_pipewire` vs `destroy_buffer`; our patches only make the paint path heavier |
+| `0009-pipewire-destroy-capture-textures-on-the-compositor-.patch` | Move capture-buffer destruction off the PipeWire thread: `remove_buffer`/stale-push queue the corpse (`bury_buffer`), steamcompmgr reaps on every vblank — including while the stream is paused, which is exactly the linger window. Without it, dropping the last `CVulkanTexture` ref on the PW thread races `vulkan_screenshot` on the same device and SIGSEGVs (NVIDIA `insertBarrier`), so a lingered display is dead and reconnect loses the session. Reported + written by luxus (rubyfunk-overlay#9) | **Yes** — the race is upstream's `paint_pipewire` vs `destroy_buffer`; our patches only make the paint path heavier |
 | `0010-wlserver-give-the-seat-s-stub-keyboard-the-compiled-.patch` | Set the compiled keymap on `wlserver.wlr.virtual_keyboard_device` too. gamescope builds a keymap from `XKB_DEFAULT_*` but only puts it on `keyboard_group`, while the SEAT carries the keymap-less stub that `wlserver_keyboardfocus()` re-binds on every focus change — so clients get no keymap and fall back to their own `us`, and a headless session (no libinput devices) never recovers | **Yes** — the stub's own comment says it exists "only to set the keymap"; it just never did |
 | `0011-headless-support-adaptive-sync-paint-on-the-game-s-c.patch` | `CHeadlessConnector` advertises VRR (`SupportsVRR()` true; `IsVRRActive()` = `cv_adaptive_sync` — no scanout cycle to honor, so "supported" and "active" collapse into "asked for"), making `--adaptive-sync` paint — and publish to PipeWire — on the game's commit instead of the synthetic vblank tick. `PacesPresents()` (new, default true, headless false) keeps the VRR framerate limiter armed when the target equals the refresh: that skip defers to a display's own pacing, and a display that paces nothing must not be deferred to | **Yes** — a headless output is the ideal adaptive-sync display (its vblank is a fiction), and the tick-quantization loss it removes is measurable by any PipeWire consumer |
 | `0012-steamcompmgr-persist-the-CLI-framerate-limit.patch` | Seed `--framerate-limit` into both screen types' persistent overrides without enabling refresh switching. Later Steam requests can replace or clear the limit | **Yes** — a CLI limit must survive the refresh-policy update in every paint |
@@ -62,7 +62,7 @@ report 2026-08-08: "gamescope only shows 60hz and there's no other option".
 ### Why the cursor patch matters more than it looks
 
 gamescope keeps the pointer out of its PipeWire node — it lives on a hardware plane for scanout —
-so punktfunk has always reconstructed it from XFixes and blended it into every frame host-side.
+so rubyfunk has always reconstructed it from XFixes and blended it into every frame host-side.
 That blend is what forces the encode path onto its compute colour-conversion arm: the zero-copy
 RGB-direct encode source (`VK_VALVE_video_encode_rgb_conversion`) hands the captured buffer to a
 fixed-function front end with no blend stage. Painting the cursor into the node removes the reason
@@ -77,7 +77,7 @@ PipeWire stream, and the renegotiation is exactly what trips upstream's dangling
 `pw_buffer->user_data`. The signature to recognise:
 
 ```
-punktfunk-gamescope: ../src/pipewire.cpp:88: void destroy_buffer(pipewire_buffer*):
+rubyfunk-gamescope: ../src/pipewire.cpp:88: void destroy_buffer(pipewire_buffer*):
   Assertion `false' failed.
 #5  destroy_buffer(pipewire_buffer*).cold
 ```
@@ -87,7 +87,7 @@ is read out of freed memory and falls off the end of the `switch`. A zeroed slot
 variant of the same fault instead. Two traps when triaging it:
 
 * **It is not HDR-specific.** The abort was first seen right after a 10-bit stream negotiated, so
-  it looked like the HDR path and `PUNKTFUNK_GAMESCOPE_HDR=0` looked like a workaround. It is not
+  it looked like the HDR path and `RUBYFUNK_GAMESCOPE_HDR=0` looked like a workaround. It is not
   — the same abort reproduces on an SDR session with no `--hdr-enabled` in the command line.
   Check the failing process's actual argv before believing an HDR association.
 * **`gamescope-session-plus` hides it.** When our binary crash-loops, the session script retries
@@ -106,12 +106,12 @@ in `CVulkanCmdBuffer::insertBarrier`, timed precisely at stream end — so the d
 keeps lingering for a reconnect is already dead, and the "resumed" session silently becomes a
 fresh compositor with the game lost. The journal signature: a linger line, then a coredump, then
 `kept display was dead — recreating`. Found, fixed and proven live by luxus
-([punktfunk-overlay#9](https://github.com/luxus/punktfunk-overlay/issues/9)) on 4K60 HDR + composited
+([rubyfunk-overlay#9](https://github.com/luxus/punktfunk-overlay/issues/9)) on 4K60 HDR + composited
 cursor, the heaviest paint path we ship.
 
 ## Why the marker exists
 
-punktfunk decides a session's shape **before** the virtual display exists: the bit depth at
+rubyfunk decides a session's shape **before** the virtual display exists: the bit depth at
 handshake time (irrevocable — a PQ stream handed to an 8-bit encoder is a deliberate hard error),
 and whether the host must composite the cursor before the encoder is even opened. Both answers
 must therefore be static properties of the resolved binary, not optimistic negotiations. The host
@@ -191,11 +191,11 @@ The check fails **open** at every ambiguity: no flags expected, or no readable g
 Resolution order, applied identically by the bare spawn, the `GAMESCOPE_BIN` wrapper
 (gamescope-session-plus) and the SteamOS PATH shim:
 
-1. `PUNKTFUNK_GAMESCOPE_BIN` — absolute path override
-2. `punktfunk-gamescope` on `PATH`
+1. `RUBYFUNK_GAMESCOPE_BIN` — absolute path override
+2. `rubyfunk-gamescope` on `PATH`
 3. `gamescope`
 
-So installing this build under the name `punktfunk-gamescope` is enough; nothing replaces the
+So installing this build under the name `rubyfunk-gamescope` is enough; nothing replaces the
 distro's `gamescope`.
 
 ## Building
@@ -212,17 +212,17 @@ Where the system is older (Debian 13: the `.deb` and the SteamOS box), the scrip
 wraps in `subprojects/` and links them into the compositor statically; Arch and Fedora keep their
 own. The WSI layer builds in a second pass that never bundles: it loads into every game beside the
 game's own libwayland-client, and the script fails if the layer does not link the system one.
-Every library compiled in ships its notice under `share/doc/punktfunk-gamescope/`. Bump the wraps
+Every library compiled in ships its notice under `share/doc/rubyfunk-gamescope/`. Bump the wraps
 with the pin; each names its release tag beside the commit.
 
 Build into a staging directory on Linux. The system gamescope and file capabilities stay untouched:
 
 ```sh
-PF=/absolute/path/to/punktfunk
+PF=/absolute/path/to/rubyfunk
 STAGE="$PWD/gamescope-stage"
-bash "$PF/packaging/gamescope/build-punktfunk-gamescope.sh" \
+bash "$PF/packaging/gamescope/build-rubyfunk-gamescope.sh" \
     --destdir "$STAGE" --prefix /usr --jobs "$(nproc)"
-"$STAGE/usr/bin/punktfunk-gamescope" --version
+"$STAGE/usr/bin/rubyfunk-gamescope" --version
 ```
 
 The script requires the exact current capability marker before staging the binary. To retain
@@ -256,9 +256,9 @@ we pin, so it can come up short. `xorg-x11-server-Xwayland-devel` is the one tha
 nor a xserver.wrap file was found`, several minutes into an otherwise clean run. If a different
 one surfaces, meson names it — install and re-run with `--srcdir` so the clone is not repeated.
 
-⚠️ `libstdc++-static` is a **punktfunk** requirement, not gamescope's, so no builddep will ever pull
+⚠️ `libstdc++-static` is a **rubyfunk** requirement, not gamescope's, so no builddep will ever pull
 it: the build script links the C++ runtime statically on purpose (see the long comment beside
-`LDFLAGS` in `build-punktfunk-gamescope.sh`). Without it meson fails at configure with a message
+`LDFLAGS` in `build-rubyfunk-gamescope.sh`). Without it meson fails at configure with a message
 that names neither the flag nor the package (2026-08-10, Fedora 44):
 
 ```
@@ -273,34 +273,34 @@ so build with `--srcdir` when diagnosing, or the evidence is gone before you can
 own binary. Mirror it if you install ours system-wide:
 
 ```sh
-setcap 'CAP_SYS_NICE=eip' /usr/bin/punktfunk-gamescope
+setcap 'CAP_SYS_NICE=eip' /usr/bin/rubyfunk-gamescope
 ```
 
 ## How each channel ships it
 
-Four packaging paths, one build recipe — `build-punktfunk-gamescope.sh` — because the two things
+Four packaging paths, one build recipe — `build-rubyfunk-gamescope.sh` — because the two things
 that are easy to get wrong (which patches get applied, and whether wlroots is linked statically)
 must not be decided twice.
 
 | Channel | Built by | Notes |
 |---|---|---|
 | Bazzite / Fedora Atomic | `.gitea/workflows/rpm.yml` → `build-sysext.sh --gamescope` | Inside the matching Fedora container, per major — the binary is soname-coupled to its base exactly like the RPM |
-| Arch / SteamOS | `.gitea/workflows/arch.yml` → `makepkg` on `./PKGBUILD` | Its own pkgbase in the same pacman repo; `punktfunk-host` depends on it |
+| Arch / SteamOS | `.gitea/workflows/arch.yml` → `makepkg` on `./PKGBUILD` | Its own pkgbase in the same pacman repo; `rubyfunk-host` depends on it |
 | NixOS | `packaging/nix/gamescope.nix` (an `overrideAttrs` on nixpkgs' gamescope) | The one path that does NOT call the script — nixpkgs already solves the submodules, and a nix closure names every library it links |
 | Anything else | the script, by hand | See *Building* above |
 
 Both CI builds are **cached on `packaging/gamescope/**`**: this tree depends on nothing else in the
 repo, so a normal push restores a binary instead of spending ten minutes on someone else's C++. A
 failed build is never cached, so the next run retries. The Fedora build warns and lets the rest
-publish. The Arch build is required: `punktfunk-host` depends on it, so a failure stops the publish.
+publish. The Arch build is required: `rubyfunk-host` depends on it, so a failure stops the publish.
 
 Note what is NOT in that table: the `.deb`. Debian/Ubuntu boxes build it by hand for now.
 
 ## Verifying the patch on a box (P0 exit)
 
 ```sh
-punktfunk-gamescope --version                    # version token ends in +pfhdr10
-punktfunk-gamescope --backend headless -W 1920 -H 1080 -r 60 \
+rubyfunk-gamescope --version                    # version token ends in +pfhdr10
+rubyfunk-gamescope --backend headless -W 1920 -H 1080 -r 60 \
     --hdr-enabled --hdr-debug-force-support --pipewire-composite-cursor -- vkcube &
 pw-dump | grep -A40 '"gamescope"'                # node offers xRGB_210LE / xBGR_210LE
 ```
@@ -316,13 +316,13 @@ With Linux Vulkan, Xwayland and Vulkan-tools' `vkcube`, run the staged binary wi
 The WSI layers are disabled so an installed layer cannot mask the compositor's limiter behavior.
 
 ```sh
-python3 - "$STAGE/usr/bin/punktfunk-gamescope" <<'PY'
+python3 - "$STAGE/usr/bin/rubyfunk-gamescope" <<'PY'
 import os
 import subprocess
 import sys
 import time
 
-env = dict(os.environ, DISABLE_GAMESCOPE_WSI="1", PUNKTFUNK_GAMESCOPE_WSI_DISABLE="1",
+env = dict(os.environ, DISABLE_GAMESCOPE_WSI="1", RUBYFUNK_GAMESCOPE_WSI_DISABLE="1",
            MESA_VK_WSI_PRESENT_MODE="fifo")
 for adaptive_sync in (False, True):
     args = [sys.argv[1], "--backend", "headless", "-W", "1280", "-H", "720",

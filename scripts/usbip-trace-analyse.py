@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Walk a `PUNKTFUNK_USBIP_TRACE` capture and find where the two sides stop agreeing.
+"""Walk a `RUBYFUNK_USBIP_TRACE` capture and find where the two sides stop agreeing.
 
 A USB/IP connection is a framed byte stream whose frame lengths are declared inside the frames, so
 one reply that writes a different number of bytes than its header promises shifts everything after

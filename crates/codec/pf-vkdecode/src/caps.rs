@@ -502,10 +502,10 @@ pub(crate) fn derive_arrangement(
         }
         Ok((dpb.format, output.format))
     };
-    // `PUNKTFUNK_VKDECODE_ARRANGEMENT=distinct` skips coincide on a device with both: the
+    // `RUBYFUNK_VKDECODE_ARRANGEMENT=distinct` skips coincide on a device with both: the
     // switch for a driver whose coincide path faults at the first decode. `=sampler` takes
     // the conversion on a device with plane views: the way to test that route on any card.
-    let knob = std::env::var("PUNKTFUNK_VKDECODE_ARRANGEMENT").ok();
+    let knob = std::env::var("RUBYFUNK_VKDECODE_ARRANGEMENT").ok();
     let prefer_distinct = distinct && knob.as_deref() == Some("distinct");
     // Coincide preferred (struct docs). A device offering both whose coincide
     // arrangement is unusable decodes distinct; the error names distinct then.

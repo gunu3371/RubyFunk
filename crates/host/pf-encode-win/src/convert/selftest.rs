@@ -1,7 +1,7 @@
 //! GPU colour check for [`HdrP010Converter`]: the `hdr-p010-selftest` subcommand,
 //! the f64 analogue of its HLSL, and the f16 encoder that uploads the pattern.
 //!
-//! Does not run in a session. Pin with `punktfunk-host hdr-p010-selftest WxH [vendor]`
+//! Does not run in a session. Pin with `rubyfunk-host hdr-p010-selftest WxH [vendor]`
 //! at a session size (1080 is not 16-aligned — encoder align16 pool seam). `vendor`
 //! is a PCI id (`0x8086` Intel / `0x10de` NVIDIA / `0x1002` AMD); a PASS is only
 //! for that GPU.

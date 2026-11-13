@@ -24,7 +24,7 @@ buffer whose pw_buffer vanished while it was copying), so that call is
 buried too. Corpses queued when the compositor exits are reclaimed by the
 kernel, same as patch 0006's deliberate leak.
 
-Reported, written and proven live by luxus (punktfunk-overlay#9): four
+Reported, written and proven live by luxus (rubyfunk-overlay#9): four
 coredumps on an NVIDIA host, all at stream end / linger, three in
 paint_pipewire → vulkan_screenshot → insertBarrier with a concurrent
 destroy_buffer → ~CVulkanTexture on the PipeWire thread; after this patch
@@ -36,7 +36,7 @@ the same race is reachable in theory — but only when an add FAILS mid-
 renegotiation, which none of the field coredumps show. Left as-is to stay
 byte-identical with the change that was proven on-glass.
 
-punktfunk: the banner moves to +pfhdr7. No new capability — but a build
+rubyfunk: the banner moves to +pfhdr7. No new capability — but a build
 whose linger can die of its own capture teardown is indistinguishable from
 one that cannot except by this marker, and "reconnect lost my game" is
 exactly the field report that needs that read (same rule as pfhdr5/6).

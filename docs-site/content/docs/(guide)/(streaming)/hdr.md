@@ -9,7 +9,7 @@ anything on this page.
 
 ## The chain
 
-1. **The host allows it.** **Host → Video → 10-bit and HDR** (`PUNKTFUNK_10BIT`), on
+1. **The host allows it.** **Host → Video → 10-bit and HDR** (`RUBYFUNK_10BIT`), on
    by default.
 2. **The source delivers 10-bit PQ.** This is the link that fails most — see [Per host](#per-host).
 3. **The codec has a 10-bit path:** HEVC, AV1 or [PyroWave](/docs/pyrowave). H.264 has none, so
@@ -40,33 +40,33 @@ and forces it off for an SDR session; Windows' own **Use HDR** switch doesn't ma
 
 The Linux route to HDR on KDE and GNOME, and in Game Mode everywhere.
 
-1. Have **`punktfunk-gamescope`**; stock gamescope captures 8-bit. The host packages install it;
+1. Have **`rubyfunk-gamescope`**; stock gamescope captures 8-bit. The host packages install it;
    [HDR on gamescope](/docs/gamescope#hdr-on-gamescope) covers every distro.
 2. Restart the host. It reads what the gamescope build can do once, at startup.
 3. Let the host start the gamescope session, which is the default. A session it attaches to
    instead streams SDR: clear **Stream this monitor** under **Displays**, and delete any
-   `PUNKTFUNK_GAMESCOPE_ATTACH` line from `host.env`.
+   `RUBYFUNK_GAMESCOPE_ATTACH` line from `host.env`.
 4. For Steam's own HDR setting to be available, the build must be `+pfhdr14` or newer. Check with
-   `punktfunk-gamescope --version`.
+   `rubyfunk-gamescope --version`.
 
 SDR content in an HDR session (the desktop, the Steam UI, SDR games) starts at **Host → Game Mode
-→ SDR brightness** (advanced, `PUNKTFUNK_GAMESCOPE_SDR_NITS`): 203 nits, the level the
+→ SDR brightness** (advanced, `RUBYFUNK_GAMESCOPE_SDR_NITS`): 203 nits, the level the
 clients expect. Steam's SDR brightness setting moves it during the session. Builds older than
 `+pfhdr16` ignore both and show SDR content oversaturated.
 
-**Game Mode HDR** (`PUNKTFUNK_GAMESCOPE_HDR`) on the same page, turned off, keeps gamescope
+**Game Mode HDR** (`RUBYFUNK_GAMESCOPE_HDR`) on the same page, turned off, keeps gamescope
 sessions SDR.
 
 ### Linux + GNOME
 
 GNOME HDR reaches [Moonlight](/docs/moonlight) only, by mirroring a real monitor (GNOME 50+).
-A Punktfunk app connecting to a GNOME host gets SDR.
+A RubyFunk app connecting to a GNOME host gets SDR.
 
-1. Add `PUNKTFUNK_VIDEO_SOURCE=portal` to [`host.env`](/docs/configuration) and restart the host.
+1. Add `RUBYFUNK_VIDEO_SOURCE=portal` to [`host.env`](/docs/configuration) and restart the host.
 2. Put the monitor in HDR mode in GNOME **Settings → Displays**.
 3. Connect with HDR on in Moonlight.
 
-With `PUNKTFUNK_CAPTURE_MONITOR=<connector>` set, only that monitor's HDR mode counts. If no
+With `RUBYFUNK_CAPTURE_MONITOR=<connector>` set, only that monitor's HDR mode counts. If no
 monitor is in HDR mode, the session streams SDR and says so in the host log.
 
 ### Linux + Hyprland
@@ -86,7 +86,7 @@ to set on the host.
 ### Other Linux desktops
 
 SDR. KDE and GNOME's virtual displays capture 8-bit, and so does streaming a physical monitor
-on KDE to a Punktfunk app. No setting changes this.
+on KDE to a RubyFunk app. No setting changes this.
 
 ## Per client
 
@@ -113,7 +113,7 @@ wherever a game or app renders them. Composing in wide colour costs some GPU tim
 Other desktops hand the host only 8 bits of SDR, so the host could only widen each frame:
 smoother gradients after the encoder, one more colour pass on the GPU, no detail the desktop
 didn't have. There the host streams 8-bit SDR unless **Host → Video → Allow 10-bit
-SDR** (`PUNKTFUNK_10BIT_SDR_WIDEN`, advanced, off by default) is on.
+SDR** (`RUBYFUNK_10BIT_SDR_WIDEN`, advanced, off by default) is on.
 
 ## HDR and 4:4:4
 
@@ -129,7 +129,7 @@ Windows client tone-maps it because the display offers no HDR10.
 **On a Linux host**, one command checks every link:
 
 ```bash
-punktfunk-host hdr-probe
+rubyfunk-host hdr-probe
 ```
 
 It reports the monitor's HDR mode, whether the gamescope build offers 10-bit capture, the Game
@@ -138,8 +138,8 @@ and the GameStream side can do HDR. The service reads `host.env` and your shell 
 first, or the answers describe your shell:
 
 ```bash
-set -a; . ~/.config/punktfunk/host.env; set +a
-punktfunk-host hdr-probe
+set -a; . ~/.config/rubyfunk/host.env; set +a
+rubyfunk-host hdr-probe
 ```
 
 On Windows, [`hdr-p010-selftest`](/docs/host-cli#hdr-probe-and-probe-compositor) checks the GPU's
@@ -158,13 +158,13 @@ and GPU.
 
 The log says `HDR capture negotiation failed`. After that the host offers SDR: on gamescope until
 that display closes, on the GNOME monitor mirror until the host restarts. Fix the cause (usually
-a gamescope that isn't the Punktfunk build, or a monitor out of HDR mode), then reconnect or
+a gamescope that isn't the RubyFunk build, or a monitor out of HDR mode), then reconnect or
 restart.
 
 ### A Vulkan game on Windows says HDR isn't supported
 
 NVIDIA and AMD Vulkan drivers hide HDR from games on a virtual display. The installer's **HDR
-Vulkan layer** option (`VK_LAYER_PUNKTFUNK_hdr_inject`) shows it to them again; re-run the
+Vulkan layer** option (`VK_LAYER_RUBYFUNK_hdr_inject`) shows it to them again; re-run the
 installer with it ticked. The layer does nothing in an SDR session or on a physical monitor, and
 skips a built-in list of anti-cheat titles. To turn it off for one game, set `DISABLE_PF_VKHDR=1` in its environment, or
 list executables in `PF_VKHDR_EXCLUDE=foo.exe,bar.exe`. D3D11 and D3D12 games don't need it.

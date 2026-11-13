@@ -32,22 +32,22 @@ use std::sync::mpsc;
 use std::time::{Duration, Instant};
 
 /// Bitstream pool per session. Stays above [`async_inflight_cap`] so a bitstream is never
-/// reused mid-encode, and at or above `PUNKTFUNK_ENCODE_DEPTH` (≤ 6) so GPU waits overlap.
+/// reused mid-encode, and at or above `RUBYFUNK_ENCODE_DEPTH` (≤ 6) so GPU waits overlap.
 pub const POOL: usize = 8;
 
 const DISABLE: u32 = nv::NV_ENC_SPLIT_ENCODE_MODE::NV_ENC_SPLIT_DISABLE_MODE as u32;
 
-/// `PUNKTFUNK_NVENC_ASYNC=1`: two-thread retrieve from session open.
+/// `RUBYFUNK_NVENC_ASYNC=1`: two-thread retrieve from session open.
 pub fn async_retrieve_requested() -> bool {
     crate::knobs::get().nvenc_async == 1
 }
 
-/// `PUNKTFUNK_NVENC_ASYNC=0`: never escalate to pipelined retrieve (Linux `set_pipelined`).
+/// `RUBYFUNK_NVENC_ASYNC=0`: never escalate to pipelined retrieve (Linux `set_pipelined`).
 pub fn async_retrieve_vetoed() -> bool {
     crate::knobs::get().nvenc_async == 2
 }
 
-/// Two-thread in-flight cap (`PUNKTFUNK_NVENC_ASYNC_DEPTH`, default 4, clamped `2..=POOL-1`).
+/// Two-thread in-flight cap (`RUBYFUNK_NVENC_ASYNC_DEPTH`, default 4, clamped `2..=POOL-1`).
 /// Read once per process: it is the submit backpressure condition.
 pub fn async_inflight_cap() -> usize {
     static CAP: std::sync::OnceLock<usize> = std::sync::OnceLock::new();
@@ -256,7 +256,7 @@ pub struct EncodeInput {
     pub hold: Option<SourceHold>,
 }
 
-/// Where [`NvSession::encode`] spent its time, for the `PUNKTFUNK_PERF` submit split.
+/// Where [`NvSession::encode`] spent its time, for the `RUBYFUNK_PERF` submit split.
 pub struct EncodeTimes {
     pub map: Duration,
     pub pic: Duration,
@@ -446,7 +446,7 @@ pub struct NvSession {
     live: Live,
     pub codec: Codec,
     pub codec_guid: nv::GUID,
-    /// `PUNKTFUNK_NVENC_PRESET` as P1..P7, latched so open and reconfigure present one preset.
+    /// `RUBYFUNK_NVENC_PRESET` as P1..P7, latched so open and reconfigure present one preset.
     pub preset: u8,
     pub width: u32,
     pub height: u32,
@@ -483,7 +483,7 @@ pub struct NvSession {
     /// Live sub-frame readback. Every `build_init_params` reads it, so open and reconfigure
     /// present identical init params.
     pub subframe_on: bool,
-    /// `PUNKTFUNK_NVENC_SUBFRAME=1`, latched at open. Only log severity reads it.
+    /// `RUBYFUNK_NVENC_SUBFRAME=1`, latched at open. Only log severity reads it.
     pub subframe_forced: bool,
     /// Sub-frame as opened. A return to non-forced split restores it; never turns it on.
     pub subframe_opened_with: bool,
@@ -753,7 +753,7 @@ impl NvSession {
     }
 
     /// Split mode, slice count and sub-frame for the next open, from the probed caps.
-    /// The slice count is the client's, unless `PUNKTFUNK_NVENC_SLICES` overrides it.
+    /// The slice count is the client's, unless `RUBYFUNK_NVENC_SLICES` overrides it.
     /// A measured split verdict beats the static rule ([`open_split_mode`]), except on a
     /// single-slice client: a verdict cached for a sliced session must not turn split on.
     /// `subframe_broken` beats the operator's force.
@@ -994,8 +994,8 @@ impl NvSession {
         self.slices >= 2 && subframe && !self.session_async && self.async_rt.is_none()
     }
 
-    /// Arm a live split experiment (`PUNKTFUNK_NVENC_SPLIT_ARBITRATE=1`). An operator pin
-    /// (`PUNKTFUNK_SPLIT_ENCODE`) wins and a cached verdict is not re-run. Sync depth-1 only:
+    /// Arm a live split experiment (`RUBYFUNK_NVENC_SPLIT_ARBITRATE=1`). An operator pin
+    /// (`RUBYFUNK_SPLIT_ENCODE`) wins and a cached verdict is not re-run. Sync depth-1 only:
     /// a pipelined or event-driven session keeps frames in flight, so `last_submit_at` names
     /// a newer submit than the AU it is measured against. Needs ≥ 2 engines; never H.264.
     /// Forced HEVC split drops sub-frame, so that trade is priced as a handicap

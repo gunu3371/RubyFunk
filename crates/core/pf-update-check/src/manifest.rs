@@ -21,7 +21,7 @@ pub const SCHEMA: u32 = 1;
 pub const MAX_MANIFEST_BYTES: usize = 64 * 1024;
 
 /// `notes_url` must start with this origin or parse fails.
-const NOTES_ORIGIN: &str = "https://git.unom.io/";
+const NOTES_ORIGIN: &str = "https://github.com/gunu3371/RubyFunk/";
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Manifest {
@@ -153,9 +153,9 @@ mod tests {
             "serial": 1785400000u64,
             "published_at": "2026-07-30T12:00:00Z",
             "version": "0.23.0",
-            "notes_url": "https://git.unom.io/unom/punktfunk/releases/tag/v0.23.0",
+            "notes_url": "https://github.com/gunu3371/RubyFunk/releases/tag/v0.23.0",
             "windows_host": {
-                "url": "https://git.unom.io/unom/punktfunk/releases/download/v0.23.0/punktfunk-host-setup-0.23.0.exe",
+                "url": "https://github.com/gunu3371/RubyFunk/releases/download/v0.23.0/rubyfunk-host-setup-0.23.0.exe",
                 "sha256": "aa".repeat(32),
                 "authenticode_sha256": ["bb".repeat(32)],
                 "authenticode_subject": "unom UG",

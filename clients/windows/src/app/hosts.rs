@@ -700,7 +700,7 @@ fn header(props: &HostsProps, settings: &Settings, saved: usize) -> View {
     Grid::new()
         .children((
             vstack((
-                text("Punktfunk")
+                text("RubyFunk")
                     .font_size(30.0)
                     .font_weight(FontWeight::BOLD),
                 muted(&svc.pal, "Stream from a host on your network.")
@@ -1178,7 +1178,7 @@ fn run_host_action(svc: &Svc, target: &Target, a: &pf_client_core::host_actions:
     let (svc, target) = (svc.clone(), target.clone());
     svc.note(format!("{label} — asking {}…", target.host.name));
     let _ = std::thread::Builder::new()
-        .name("punktfunk-hostaction".into())
+        .name("rubyfunk-hostaction".into())
         .spawn(move || {
             svc.report(pf_client_core::host_actions::run(
                 &target.host.name,
@@ -1203,10 +1203,10 @@ fn send_logs(svc: &Svc, target: &Target) {
     let (svc, target) = (svc.clone(), target.clone());
     svc.note(format!("Sending logs to {}…", target.host.name));
     let _ = std::thread::Builder::new()
-        .name("punktfunk-sendlogs".into())
+        .name("rubyfunk-sendlogs".into())
         .spawn(move || {
             svc.report(pf_client_core::logring::send_bundle(
-                "punktfunk-client",
+                "rubyfunk-client",
                 &target.host.name,
                 &target.host.addr,
                 (

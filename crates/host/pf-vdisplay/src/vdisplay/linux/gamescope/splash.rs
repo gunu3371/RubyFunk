@@ -56,7 +56,7 @@ pub(crate) fn run() -> Result<()> {
         win,
         AtomEnum::WM_NAME,
         AtomEnum::STRING,
-        b"Punktfunk",
+        b"RubyFunk",
     )?;
     // Seed the baselayer only while empty; Steam's rewrite at game launch is the handover.
     let steam_game = conn.intern_atom(false, b"STEAM_GAME")?.reply()?.atom;

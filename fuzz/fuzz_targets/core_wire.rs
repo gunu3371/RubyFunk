@@ -1,4 +1,4 @@
-//! Every decoder punktfunk-core runs on a peer's bytes, behind one libFuzzer target.
+//! Every decoder rubyfunk-core runs on a peer's bytes, behind one libFuzzer target.
 //!
 //! `data[0]` picks the arm and the rest is the wire. The crate is `deny(unsafe_code)`, so a
 //! finding is a panic, which is a remote stop of a network-facing host and not a memory bug.
@@ -7,16 +7,16 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
-use punktfunk_core::input::InputEvent;
-use punktfunk_core::quic::v2::dgram::{self, Dgram, Feedback, RetiredFeedback};
-use punktfunk_core::quic::v2::features::FeatureSet;
-use punktfunk_core::quic::v2::hello::{ClientHello, Ready, ServerHello};
-use punktfunk_core::quic::v2::msg::{
+use rubyfunk_core::input::InputEvent;
+use rubyfunk_core::quic::v2::dgram::{self, Dgram, Feedback, RetiredFeedback};
+use rubyfunk_core::quic::v2::features::FeatureSet;
+use rubyfunk_core::quic::v2::hello::{ClientHello, Ready, ServerHello};
+use rubyfunk_core::quic::v2::msg::{
     self, AudioConfig, Pending, Redirect, StreamConfig, V2Message,
 };
-use punktfunk_core::quic::v2::{field, registry as reg};
-use punktfunk_core::quic::*;
-use punktfunk_core::{discovery, fp, packet, wol};
+use rubyfunk_core::quic::v2::{field, registry as reg};
+use rubyfunk_core::quic::*;
+use rubyfunk_core::{discovery, fp, packet, wol};
 
 /// What decodes must encode to bytes that decode and encode the same.
 fn settle<T>(b: &[u8], dec: impl Fn(&[u8]) -> Option<T>, enc: impl Fn(&T) -> Vec<u8>) {

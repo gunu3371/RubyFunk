@@ -2,7 +2,7 @@
 """Compare criterion benchmark results against a committed baseline and report (soft-warn).
 
 Reads the median time of every benchmark from target/criterion/**/new/estimates.json (written by
-`cargo bench -p punktfunk-core`), diffs each against scripts/bench/baseline.json, and prints a
+`cargo bench -p rubyfunk-core`), diffs each against scripts/bench/baseline.json, and prints a
 markdown table (also appended to $GITHUB_STEP_SUMMARY in CI). A metric slower than the baseline by
 more than the regression threshold is flagged ⚠, but the script ALWAYS exits 0 — CI timing is noisy
 (shared hardware), so this is report-only by design; the tight gate lives on the dedicated Tier-3
@@ -52,7 +52,7 @@ def main():
 
     current = collect()
     if not current:
-        print("no criterion results found — run `cargo bench -p punktfunk-core` first", file=sys.stderr)
+        print("no criterion results found — run `cargo bench -p rubyfunk-core` first", file=sys.stderr)
         return 0  # soft
 
     if args.update:

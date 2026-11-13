@@ -1,5 +1,5 @@
 #version 450
-// One axis of the host's reframe (`punktfunk_core::video_fit::Reframe`): x from the crop of
+// One axis of the host's reframe (`rubyfunk_core::video_fit::Reframe`): x from the crop of
 // the captured picture into an intermediate, then y into the encoder's picture. Lanczos-3
 // widened by the downscale ratio, the kernel the clients use; a 1:1 axis copies. Taps clamp
 // inside the crop, so nothing that was cut off bleeds in, and the result clamps to [0, 1] so

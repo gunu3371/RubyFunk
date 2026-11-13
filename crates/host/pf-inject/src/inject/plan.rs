@@ -10,7 +10,7 @@
 
 use crate::held::HeldInput;
 use crate::keymap::{gs_button_to_evdev, vk_to_evdev};
-use punktfunk_core::input::{InputEvent, InputKind};
+use rubyfunk_core::input::{InputEvent, InputKind};
 
 /// Largest normalized absolute position. A client may send `x == w` (a touch on the far edge);
 /// mapped as 1.0 that lands one pixel past the head, on the neighbouring monitor.

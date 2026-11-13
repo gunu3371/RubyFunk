@@ -1,5 +1,5 @@
 //! A network check's finding in words, from its id and figures
-//! ([`punktfunk_core::client::health::FindingId`] as a byte). Every shell shows the same
+//! ([`rubyfunk_core::client::health::FindingId`] as a byte). Every shell shows the same
 //! sentence: what did not happen, then the next move. `clients/shared/finding-vectors.json`
 //! pins the wording and the figures for the Kotlin and Swift copies.
 

@@ -307,7 +307,7 @@ mod tests {
     /// keyboard group at the first `groups.append`.
     fn about_rows(from: &str) -> Vec<(String, String)> {
         const ABOUT: &str = include_str!(
-            "../../../../clients/apple/Sources/PunktfunkClient/Settings/ShortcutsReference.swift"
+            "../../../../clients/apple/Sources/RubyFunkClient/Settings/ShortcutsReference.swift"
         );
         let spell = |s: &str| {
             [

@@ -7,7 +7,7 @@
 # ⚠️ Bumping PYROWAVE_COMMIT is a protocol-affecting change: the PyroWave
 # bitstream has no version field, so the CODEC_PYROWAVE wire bit means
 # "PyroWave bitstream as of this pin" (design/pyrowave-codec-plan.md §4.2).
-# A bump that changes the bitstream must bump the punktfunk protocol version,
+# A bump that changes the bitstream must bump the rubyfunk protocol version,
 # and the Apple Metal hand-port (§4.7) must re-diff the two decode shaders +
 # bitstream header structs.
 set -euo pipefail
@@ -72,7 +72,7 @@ for p in "$REPO_ROOT"/crates/codec/pyrowave-sys/patches/*.patch; do
   echo "applied $(basename "$p")"
 done
 
-cat > "$DEST/PUNKTFUNK-VENDOR.txt" <<EOF
+cat > "$DEST/RUBYFUNK-VENDOR.txt" <<EOF
 Vendored by scripts/vendor-pyrowave.sh — do not edit by hand.
 
 pyrowave:        $PYROWAVE_COMMIT

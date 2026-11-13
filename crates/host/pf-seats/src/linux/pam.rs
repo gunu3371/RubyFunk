@@ -1,10 +1,10 @@
 //! PAM for a person's account: the password check, and the login helper's transaction.
 //!
-//! The check's stack is the `login` service's, which `punktfunk-seat@.service` runs its unit
+//! The check's stack is the `login` service's, which `rubyfunk-seat@.service` runs its unit
 //! under (`PAMName=login`), so an account that stack would refuse to log in is refused here:
 //! `pam_authenticate` takes the password, `pam_acct_mgmt` a locked, expired or must-change
 //! account. The daemon never loads libpam: [`check`] runs its own binary as
-//! `punktfunk-seats pam-check <account>` ([`run_check`]), hands it the password on stdin and
+//! `rubyfunk-seats pam-check <account>` ([`run_check`]), hands it the password on stdin and
 //! reads one code back, and kills it after [`CHECK_TIMEOUT`]. The child's environment is empty
 //! and its argv holds the account alone. Nothing is kept: each side holds the password in one
 //! wiped buffer for the length of the check. [`Login`] is the login helper's whole transaction
@@ -23,7 +23,7 @@ use zeroize::Zeroizing;
 
 const SERVICE: &CStr = c"login";
 
-/// The verb of `punktfunk-seats` that runs one check.
+/// The verb of `rubyfunk-seats` that runs one check.
 pub const CHECK_VERB: &str = "pam-check";
 /// A check still running then is killed and answers `pam_unavailable`.
 pub(super) const CHECK_TIMEOUT: Duration = Duration::from_secs(30);
@@ -242,7 +242,7 @@ pub(super) fn check(account: &str, password: &Secret) -> Result<(), BackendError
     if let Some(program) = tests::REAL.with(|real| real.borrow().clone()) {
         return check_in(&program, account, password, CHECK_TIMEOUT);
     }
-    let output = super::fake::answer("punktfunk-seats", &[CHECK_VERB, account])
+    let output = super::fake::answer("rubyfunk-seats", &[CHECK_VERB, account])
         .expect("a test that checks a password installs the fake");
     refusal(account, String::from_utf8_lossy(&output.stdout).trim())
 }
@@ -262,7 +262,7 @@ fn check_in(
         return refusal(account, WRONG);
     }
     let mut child = std::process::Command::new(program)
-        .arg0("punktfunk-seats")
+        .arg0("rubyfunk-seats")
         .args([CHECK_VERB, account])
         .env_clear()
         .current_dir("/")
@@ -311,7 +311,7 @@ fn read_code(stdout: std::process::ChildStdout) -> String {
     String::from_utf8_lossy(&code).trim().to_owned()
 }
 
-/// `punktfunk-seats pam-check <account>`: reads the password from stdin, at most
+/// `rubyfunk-seats pam-check <account>`: reads the password from stdin, at most
 /// [`MAX_PASSWORD`] bytes and one more to see a longer one, checks it and prints the code. stdin
 /// is read through its own descriptor, past std's buffer, so the password is in one wiped buffer.
 pub fn run_check(account: &str) {
@@ -647,7 +647,7 @@ pub(super) mod tests {
     /// process starts: the program below doesn't exist.
     #[test]
     fn a_password_that_can_t_cross_is_wrong() {
-        let nowhere = Path::new("/nonexistent/punktfunk-seats");
+        let nowhere = Path::new("/nonexistent/rubyfunk-seats");
         let check = |password: &str| {
             let checked = check_in(
                 nowhere,
@@ -706,18 +706,18 @@ pub(super) mod tests {
         assert!(started.elapsed() < Duration::from_secs(10));
     }
 
-    /// The `punktfunk-seats` binary beside this test's: `target/<profile>/punktfunk-seats`.
+    /// The `rubyfunk-seats` binary beside this test's: `target/<profile>/rubyfunk-seats`.
     pub(in crate::linux) fn seats_binary() -> std::path::PathBuf {
         let exe = std::env::current_exe().unwrap();
         let binary = exe
             .parent()
             .and_then(Path::parent)
             .unwrap()
-            .join("punktfunk-seats");
+            .join("rubyfunk-seats");
         let shown = binary.display();
         assert!(
             binary.is_file(),
-            "{shown} is missing: cargo build -p punktfunk-seats first"
+            "{shown} is missing: cargo build -p rubyfunk-seats first"
         );
         binary
     }
@@ -728,11 +728,11 @@ pub(super) mod tests {
     }
 
     /// Against the box's own `login` stack, in this process and through the `pam-check` child of
-    /// the built `punktfunk-seats`, which must agree: the right password passes, a wrong one is
+    /// the built `rubyfunk-seats`, which must agree: the right password passes, a wrong one is
     /// refused with the wrong-password code, and a locked, an expired and a must-change account
     /// are each refused. Makes and removes the account `pfpamcheck`, so it needs root.
     #[test]
-    #[ignore = "needs root, libpam, the login service and a built punktfunk-seats; makes the account pfpamcheck"]
+    #[ignore = "needs root, libpam, the login service and a built rubyfunk-seats; makes the account pfpamcheck"]
     fn the_login_stack_decides() {
         const ACCOUNT: &str = "pfpamcheck";
         const PASSWORD: &str = "right-password-1";

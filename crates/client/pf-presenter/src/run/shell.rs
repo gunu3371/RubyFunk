@@ -27,9 +27,9 @@ impl Shell {
         // Wayland `app_id` and X11 WM_CLASS name the desktop entry a task manager groups and
         // pins this window under. The console has its own entry, so it carries that one's id.
         let app_id = if browse {
-            "io.unom.punktfunk.console"
+            "io.github.gunu3371.rubyfunk.console"
         } else {
-            "io.unom.punktfunk"
+            "io.github.gunu3371.rubyfunk"
         };
         sdl3::hint::set("SDL_APP_ID", app_id);
         // SDL picks XWayland where the compositor lacks `wp_fifo_v1` (KWin before 6.4, Mutter
@@ -58,15 +58,12 @@ impl Shell {
         // ioctl that taking master is, so this stays an explicit operator choice.
         if let Some(card) = knobs.drm_card.as_deref() {
             if card.chars().all(|c| c.is_ascii_digit()) && !card.is_empty() {
-                tracing::info!(
-                    card,
-                    "PUNKTFUNK_DRM_CARD: pinning SDL's KMSDRM device index"
-                );
+                tracing::info!(card, "RUBYFUNK_DRM_CARD: pinning SDL's KMSDRM device index");
                 sdl3::hint::set("SDL_KMSDRM_DEVICE_INDEX", card);
             } else {
                 tracing::warn!(
                     card,
-                    "PUNKTFUNK_DRM_CARD must be a card NUMBER (e.g. 0) — ignoring"
+                    "RUBYFUNK_DRM_CARD must be a card NUMBER (e.g. 0) — ignoring"
                 );
             }
         }
@@ -122,7 +119,7 @@ impl Shell {
 
         let arrival_override = knobs.presenter_arrival;
         let present_priority = if arrival_override {
-            tracing::info!("PUNKTFUNK_PRESENTER=arrival — presentation pacing disabled");
+            tracing::info!("RUBYFUNK_PRESENTER=arrival — presentation pacing disabled");
             PresentPriority::Latency
         } else {
             opts.present_priority
@@ -384,7 +381,7 @@ impl Shell {
         let hold = stream
             .and_then(|st| Some((st, st.connector.as_ref()?)))
             .is_none_or(|(st, c)| {
-                punktfunk_core::client::holds_screen_awake(st.params.keep_awake, c.input_idle())
+                rubyfunk_core::client::holds_screen_awake(st.params.keep_awake, c.input_idle())
             });
         if hold != self.screen_held {
             self.screen_held = hold;
@@ -467,7 +464,7 @@ pub(super) fn apply_capture(
     inhibit: bool,
     grants: u32,
 ) {
-    use punktfunk_core::quic::{GRANT_KEYBOARD, GRANT_POINTER};
+    use rubyfunk_core::quic::{GRANT_KEYBOARD, GRANT_POINTER};
     let pointer = grants & GRANT_POINTER != 0;
     mouse.set_relative_mouse_mode(window, on && !desktop && pointer);
     // The local cursor hides only while the host's cursor stands in for it — without

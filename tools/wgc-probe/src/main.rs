@@ -1,6 +1,6 @@
 //! `wgc-probe` — what Windows Graphics Capture does on this box.
 //!
-//! The spikes of punktfunk-planning `design/windows-wgc-capture.md` §7 as one command, run the
+//! The spikes of rubyfunk-planning `design/windows-wgc-capture.md` §7 as one command, run the
 //! way the capture worker will run: a user process a SYSTEM parent started (`as-user`), on
 //! `winsta0\default`, with the console user's unelevated token.
 //!

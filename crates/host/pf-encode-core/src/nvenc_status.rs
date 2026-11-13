@@ -32,7 +32,7 @@ fn invalid_version(session_opened: bool) -> String {
         return "this process already opened an NVENC session successfully, so this is NOT a driver \
                 version mismatch — that cannot come and go within a process, and a reboot is not \
                 the fix. The NVIDIA driver state in THIS process is exhausted or wedged: restart \
-                the Punktfunk host service to clear it, and please report this with the host log \
+                the RubyFunk host service to clear it, and please report this with the host log \
                 so it can be fixed properly"
             .to_string();
     }
@@ -166,7 +166,7 @@ mod tests {
     fn invalid_version_after_a_session_blames_process_state_not_the_driver() {
         let msg = invalid_version(true);
         assert!(msg.contains("NOT a driver version mismatch"), "{msg}");
-        assert!(msg.contains("restart the Punktfunk host service"), "{msg}");
+        assert!(msg.contains("restart the RubyFunk host service"), "{msg}");
         assert!(
             !msg.contains("older than this build's NVENC headers"),
             "must not repeat the version-skew advice: {msg}"

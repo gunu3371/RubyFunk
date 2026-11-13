@@ -181,7 +181,7 @@ impl Fault {
                 "The seat's screen didn't start. The graphics card or the seat display driver failed its check."
             }
             Code::HostReadyTimeout | Code::HostExited => {
-                "punktfunk didn't start on the seat. The seat's log has the cause."
+                "rubyfunk didn't start on the seat. The seat's log has the cause."
             }
             Code::AccountNotOwned
             | Code::AccountIsAdministrator
@@ -226,7 +226,7 @@ impl Stage {
         match self {
             Self::SignIn => "signing in to the seat's Windows account",
             Self::Display => "checking the seat's screen and graphics card",
-            Self::Host => "starting punktfunk on the seat",
+            Self::Host => "starting rubyfunk on the seat",
         }
     }
 
@@ -607,7 +607,7 @@ impl State {
         } else if let Some(code) = probe.host {
             self.fail(
                 "host_exited",
-                format!("punktfunk-host exited with code {code} before readiness"),
+                format!("rubyfunk-host exited with code {code} before readiness"),
             )
         } else if probe.ready {
             self.status = RuntimeStatus::running();
@@ -620,7 +620,7 @@ impl State {
             self.fail(
                 "host_ready_timeout",
                 format!(
-                    "punktfunk-host did not open both assigned ports within {} seconds",
+                    "rubyfunk-host did not open both assigned ports within {} seconds",
                     HOST_READY_TIMEOUT.as_secs()
                 ),
             )
@@ -645,7 +645,7 @@ impl State {
         } else if let Some(code) = probe.host {
             let delay = self.host_restart.failed(now);
             self.status = starting(format!(
-                "punktfunk stopped on the seat. Restarting it in {} s…",
+                "rubyfunk stopped on the seat. Restarting it in {} s…",
                 delay.as_secs()
             ));
             self.phase = Phase::HostDown { until: now + delay };
@@ -777,7 +777,7 @@ mod tests {
 
     const SIGN_IN: &str = "Windows didn't sign in to the seat's account.";
     const SCREEN: &str = "The seat's screen didn't start.";
-    const HOST: &str = "punktfunk didn't start on the seat.";
+    const HOST: &str = "rubyfunk didn't start on the seat.";
     const MESSAGE: &str = "the operator's message";
 
     /// Code, whether a retry is pointless, and how the console's sentence starts.
@@ -855,9 +855,9 @@ mod tests {
     };
     const SIGNING_IN: &str = "Signing in to the seat's Windows account…";
     const CHECKING: &str = "Checking the seat's screen and graphics card…";
-    const STARTING_HOST: &str = "Starting punktfunk on the seat…";
+    const STARTING_HOST: &str = "Starting rubyfunk on the seat…";
     const NO_SCREEN: &str = "The seat's screen didn't start. The graphics card or the seat display driver failed its check.";
-    const NO_HOST: &str = "punktfunk didn't start on the seat. The seat's log has the cause.";
+    const NO_HOST: &str = "rubyfunk didn't start on the seat. The seat's log has the cause.";
     const GATE_OUT_OF_TIME: &str =
         "same-session virtual-display quality gate did not finish within 60 seconds";
     const STOPPED_EARLY: (&str, &str) = ("seat_stopping", "seat stopped before startup completed");
@@ -1121,7 +1121,7 @@ mod tests {
                 30,
                 READY_POLL,
                 "host_ready_timeout",
-                "punktfunk-host did not open both assigned ports within 30 seconds",
+                "rubyfunk-host did not open both assigned ports within 30 seconds",
             ),
         ];
         for (at, limit, poll, code, message) in rows {
@@ -1183,7 +1183,7 @@ mod tests {
 
     #[test]
     fn a_host_that_exits_before_it_is_ready_ends_the_cycle() {
-        let exited = "punktfunk-host exited with code 1 before readiness";
+        let exited = "rubyfunk-host exited with code 1 before readiness";
         let mut bench = bench(At::Readying);
         assert_eq!(bench.see(host(1)), [Action::EndCycle]);
         // The console reads the old status until the session is logged off.
@@ -1227,7 +1227,7 @@ mod tests {
         ] {
             let served = Duration::from_secs(served);
             assert_eq!(bench.later(served).see(host(3)), [Action::LogHostExit(3)]);
-            let detail = format!("punktfunk stopped on the seat. Restarting it in {secs} s…");
+            let detail = format!("rubyfunk stopped on the seat. Restarting it in {secs} s…");
             assert_eq!(
                 *bench.state.status(),
                 shows(RuntimeState::Starting, &detail)
@@ -1277,7 +1277,7 @@ mod tests {
         assert_eq!(bench.see(NOTHING), start_host());
         assert_eq!(bench.see(READY), []);
         assert_eq!(bench.see(host(3)), [Action::LogHostExit(3)]);
-        let detail = "punktfunk stopped on the seat. Restarting it in 1 s…";
+        let detail = "rubyfunk stopped on the seat. Restarting it in 1 s…";
         assert_eq!(*bench.state.status(), shows(RuntimeState::Starting, detail));
     }
 
@@ -1528,7 +1528,7 @@ mod tests {
     fn a_start_out_of_time_reads_failed_from_every_stage() {
         const SIGN_IN: &str = "signing in to the seat's Windows account";
         const DISPLAY: &str = "checking the seat's screen and graphics card";
-        const HOST: &str = "starting punktfunk on the seat";
+        const HOST: &str = "starting rubyfunk on the seat";
         let rows = [
             (At::Fresh, SIGN_IN),
             (At::SigningIn, SIGN_IN),

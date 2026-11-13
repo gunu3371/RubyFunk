@@ -6,7 +6,7 @@
 //!
 //! The global is restricted: KWin advertises it only to a client whose `.desktop` lists it
 //! under `X-KDE-Wayland-Interfaces` (matched by `/proc/<pid>/exe` → `Exec=`). Packages ship
-//! `io.unom.punktfunk.host.desktop` for that. The host binary must carry no file capability and
+//! `io.github.gunu3371.rubyfunk.host.desktop` for that. The host binary must carry no file capability and
 //! must still be the file at its path ([`screencast_withheld`] names which one broke).
 //! Headless tests use `KWIN_WAYLAND_NO_PERMISSION_CHECKS=1`. `createVirtualOutput` needs the
 //! DRM backend, or VirtualBackend since KWin 6.5.6.
@@ -78,14 +78,14 @@ const REPAIRED_HINT: &str = "enabled it over output management";
 const WITHHELD: &str = "KWin does not expose zkde_screencast_unstable_v1 to this client";
 
 /// KWin exposes the created output to output-management as `Virtual-<name>`.
-const VOUT_NAME: &str = "punktfunk";
+const VOUT_NAME: &str = "rubyfunk";
 
 /// Bind cap. KWin advertises 5; we need the `created` event (deprecated since v6) for the node id.
 const MAX_VERSION: u32 = 5;
 
 /// KWin virtual-display driver. A paired client's cert fingerprint (set before
 /// [`create`](VirtualDisplay::create)) yields a stable per-slot name
-/// (`Virtual-punktfunk-<id>`); KWin keys `kwinoutputconfig.json` by name, so reconnect
+/// (`Virtual-rubyfunk-<id>`); KWin keys `kwinoutputconfig.json` by name, so reconnect
 /// reapplies that client's scale/mode. Each `create` owns its own Wayland connection.
 #[derive(Default)]
 pub struct KwinDisplay {
@@ -274,12 +274,12 @@ impl VirtualDisplay for KwinDisplay {
     }
 
     fn create(&mut self, mode: Mode) -> Result<VirtualOutput> {
-        // One create at a time: a shared identity names every output `Virtual-punktfunk`, and
+        // One create at a time: a shared identity names every output `Virtual-rubyfunk`, and
         // resolving by name and size would otherwise hand a concurrent sibling's output to us.
         let _create = CREATE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
-        // Per-slot name: a resolved identity becomes `punktfunk-<id>` (KWin exposes
-        // `Virtual-punktfunk-<id>` and keys config by name). Shared/anonymous stays
-        // `punktfunk`. Two concurrent sessions must not share one name.
+        // Per-slot name: a resolved identity becomes `rubyfunk-<id>` (KWin exposes
+        // `Virtual-rubyfunk-<id>` and keys config by name). Shared/anonymous stays
+        // `rubyfunk`. Two concurrent sessions must not share one name.
         let slot = crate::identity::resolve_slot(
             self.client_fp,
             (mode.width, mode.height),
@@ -311,7 +311,7 @@ impl VirtualDisplay for KwinDisplay {
             let stop_thread = stop.clone();
             let name_thread = name.clone();
             thread::Builder::new()
-                .name("punktfunk-kwin-vout".into())
+                .name("rubyfunk-kwin-vout".into())
                 .spawn(move || {
                     virtual_output_thread(w, h, name_thread, pointer_mode, setup_tx, stop_thread)
                 })
@@ -485,7 +485,7 @@ fn reenable_stranded(pre_enabled: Vec<(String, String)>) {
 /// stored setup on its own time, not ours. One shot, never a loop.
 fn reenable_later(expected: Vec<(String, String)>, wave: &'static str, abort_if_managed: bool) {
     std::thread::Builder::new()
-        .name("punktfunk-kwin-reenable".into())
+        .name("rubyfunk-kwin-reenable".into())
         .spawn(move || {
             std::thread::sleep(STRAND_RECHECK_DELAY);
             reenable_pass(&expected, wave, abort_if_managed);
@@ -682,11 +682,11 @@ fn verify_or_reassert(
     }
 }
 
-/// Prefix every managed KWin output shares (`Virtual-punktfunk` / `Virtual-punktfunk-<id>`).
+/// Prefix every managed KWin output shares (`Virtual-rubyfunk` / `Virtual-rubyfunk-<id>`).
 /// Group membership is this prefix so we never thread the live set through the backend.
 /// Shared with [`crate::kwin::mgmt`]: a drift would let the in-process path disable
 /// a sibling session's output that the kscreen path spares.
-pub(crate) const MANAGED_PREFIX: &str = "Virtual-punktfunk";
+pub(crate) const MANAGED_PREFIX: &str = "Virtual-rubyfunk";
 
 #[derive(Default)]
 struct State {
@@ -864,7 +864,7 @@ pub(crate) fn stream_existing_output(
     let stop_thread = stop.clone();
     let connector_thread = connector.to_string();
     thread::Builder::new()
-        .name("punktfunk-kwin-mirror".into())
+        .name("rubyfunk-kwin-mirror".into())
         .spawn(move || {
             if let Err(e) = run_existing(&connector_thread, pointer_mode, &setup_tx, &stop_thread) {
                 let _ = setup_tx.send(Err(format!("{e:#}")));
@@ -907,7 +907,7 @@ fn screencast_withheld() -> anyhow::Error {
     anyhow!(
         "{WITHHELD} ({}) — KWin grants it only to a binary whose path is the Exec= of an \
          installed .desktop listing it in X-KDE-Wayland-Interfaces \
-         (io.unom.punktfunk.host.desktop){}",
+         (io.github.gunu3371.rubyfunk.host.desktop){}",
         exe.display(),
         identity_hint(replaced, permitted)
     )
@@ -944,7 +944,7 @@ fn capability_denial_hint_for(permitted: Option<u64>) -> String {
             " — NOTE: this process carries capabilities (CapPrm={caps:#018x}), which is enough on \
              its own to cause this: the kernel then refuses KWin the /proc/<pid>/exe read it \
              identifies clients by, so no .desktop can match however correctly it is installed. \
-             Clear them with `sudo setcap -r /usr/bin/punktfunk-host` and restart the host"
+             Clear them with `sudo setcap -r /usr/bin/rubyfunk-host` and restart the host"
         ),
         _ => String::new(),
     }
@@ -962,9 +962,9 @@ mod capability_hint_tests {
     use super::*;
 
     /// `/proc/self/status` excerpt from a `cap_sys_nice=ep` process.
-    const CAPPED: &str = "Name:\tpunktfunk-host\nUid:\t1000\t1000\t1000\t1000\nCapPrm:\t0000000000800000\nCapEff:\t0000000000800000\n";
+    const CAPPED: &str = "Name:\trubyfunk-host\nUid:\t1000\t1000\t1000\t1000\nCapPrm:\t0000000000800000\nCapEff:\t0000000000800000\n";
     /// Same binary with no capability — the hint must stay silent.
-    const CLEAN: &str = "Name:\tpunktfunk-host\nUid:\t1000\t1000\t1000\t1000\nCapPrm:\t0000000000000000\nCapEff:\t0000000000000000\n";
+    const CLEAN: &str = "Name:\trubyfunk-host\nUid:\t1000\t1000\t1000\t1000\nCapPrm:\t0000000000000000\nCapEff:\t0000000000000000\n";
 
     #[test]
     fn parses_the_kernels_permitted_mask() {
@@ -1392,10 +1392,10 @@ mod tests {
     #[test]
     fn exclusive_disables_only_non_managed() {
         let enabled = [
-            "Virtual-punktfunk",   // base name (shared identity)
-            "Virtual-punktfunk-1", // client A's per-slot output
-            "Virtual-punktfunk-7", // client B's per-slot output
-            "eDP-1",               // a physical panel
+            "Virtual-rubyfunk",   // base name (shared identity)
+            "Virtual-rubyfunk-1", // client A's per-slot output
+            "Virtual-rubyfunk-7", // client B's per-slot output
+            "eDP-1",              // a physical panel
         ];
         let to_disable: Vec<&str> = enabled
             .iter()

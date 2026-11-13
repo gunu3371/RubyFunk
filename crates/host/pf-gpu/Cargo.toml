@@ -6,7 +6,7 @@ name = "pf-gpu"
 version.workspace = true
 edition.workspace = true
 license = "MIT OR Apache-2.0"
-description = "punktfunk host GPU vendor/adapter enumeration, selection preference, and active-session accounting."
+description = "rubyfunk host GPU vendor/adapter enumeration, selection preference, and active-session accounting."
 publish = false
 
 [dependencies]

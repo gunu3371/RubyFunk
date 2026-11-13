@@ -20,10 +20,10 @@
 use crate::keymap_sdl;
 use crate::touch::{Abs, Act, Gestures, TouchScrollPhase};
 use pf_client_core::trust::{MouseMode, TouchMode};
-use punktfunk_core::client::NativeClient;
-use punktfunk_core::input::scroll::{ScrollAccumulator, ScrollEvent, ScrollPhase, ScrollSource};
-use punktfunk_core::input::{InputEvent, InputKind};
-use punktfunk_core::quic::{GRANT_KEYBOARD, GRANT_POINTER};
+use rubyfunk_core::client::NativeClient;
+use rubyfunk_core::input::scroll::{ScrollAccumulator, ScrollEvent, ScrollPhase, ScrollSource};
+use rubyfunk_core::input::{InputEvent, InputKind};
+use rubyfunk_core::quic::{GRANT_KEYBOARD, GRANT_POINTER};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 

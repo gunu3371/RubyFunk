@@ -358,7 +358,7 @@ pub fn codec_guid(codec: Codec) -> nv::GUID {
     }
 }
 
-/// `PUNKTFUNK_NVENC_PRESET` as NVENC's preset: `2..=7` = P2..P7, anything else P1. A higher
+/// `RUBYFUNK_NVENC_PRESET` as NVENC's preset: `2..=7` = P2..P7, anything else P1. A higher
 /// preset buys quality per bit with encode time, which every frame of latency pays.
 pub fn preset_guid(preset: u8) -> nv::GUID {
     match preset {
@@ -372,7 +372,7 @@ pub fn preset_guid(preset: u8) -> nv::GUID {
     }
 }
 
-/// H.264/HEVC slice count: `PUNKTFUNK_NVENC_SLICES` (1..=32; 1 = single-slice
+/// H.264/HEVC slice count: `RUBYFUNK_NVENC_SLICES` (1..=32; 1 = single-slice
 /// escape) else `default_slices`. AV1 is always 1 (tiles, not slices). Shared by
 /// [`apply_low_latency_config`] and the Linux chunked-poll arm so they cannot
 /// disagree. A client that never advertised `VIDEO_CAP_MULTI_SLICE` stays at 1.
@@ -387,7 +387,7 @@ pub fn resolve_slices(codec: Codec, default_slices: u32) -> u32 {
 }
 
 /// Sub-frame readback tri-state (`enableSubFrameWrite` + `reportSliceOffsets`,
-/// sync sessions only — see [`build_init_params`]): `PUNKTFUNK_NVENC_SUBFRAME`
+/// sync sessions only — see [`build_init_params`]): `RUBYFUNK_NVENC_SUBFRAME`
 /// `0` never, `1` force, unset = `default_on` (the GPU's `SUBFRAME_READBACK`
 /// cap on both backends). Off below two slices, force included: there is no
 /// slice to read ahead of, and on HEVC it costs the second engine.
@@ -402,7 +402,7 @@ pub fn resolve_subframe(slices: u32, default_on: bool) -> bool {
     }
 }
 
-/// True when `PUNKTFUNK_NVENC_SUBFRAME=1`. Latch once next to the resolved
+/// True when `RUBYFUNK_NVENC_SUBFRAME=1`. Latch once next to the resolved
 /// subframe flag — a re-read at reconfigure would diverge from open.
 #[cfg(any(target_os = "linux", windows))]
 pub fn subframe_env_forced() -> bool {
@@ -439,7 +439,7 @@ pub fn resolve_split_subframe(
         if subframe_forced {
             tracing::warn!(
                 split_mode,
-                "PUNKTFUNK_NVENC_SUBFRAME=1 cannot be honoured on AV1 — its sub-frame units are \
+                "RUBYFUNK_NVENC_SUBFRAME=1 cannot be honoured on AV1 — its sub-frame units are \
                  TILES and the chunked reader cuts on Annex-B slice boundaries, so arming the \
                  writer would ship only the first tile of every frame; sub-frame readback \
                  disabled for this session (split encode is unaffected)"
@@ -460,16 +460,16 @@ pub fn resolve_split_subframe(
         if subframe_forced {
             tracing::warn!(
                 split_mode,
-                "HEVC forced split-encode and PUNKTFUNK_NVENC_SUBFRAME=1 are mutually \
+                "HEVC forced split-encode and RUBYFUNK_NVENC_SUBFRAME=1 are mutually \
                  unsupported (nvEncodeAPI.h) — sub-frame readback disabled for this session; \
-                 set PUNKTFUNK_SPLIT_ENCODE=0 to choose sub-frame instead"
+                 set RUBYFUNK_SPLIT_ENCODE=0 to choose sub-frame instead"
             );
         } else {
             tracing::info!(
                 split_mode,
                 "HEVC forced split-encode supersedes default-on sub-frame readback (mutually \
                  unsupported per nvEncodeAPI.h; split is the 4K120 throughput lever) — set \
-                 PUNKTFUNK_SPLIT_ENCODE=0 to choose sub-frame instead"
+                 RUBYFUNK_SPLIT_ENCODE=0 to choose sub-frame instead"
             );
         }
         return (split_mode, false);
@@ -480,7 +480,7 @@ pub fn resolve_split_subframe(
         tracing::debug!(
             "NVENC: split-encode AUTO with sub-frame readback on — the driver cannot split HEVC \
              in this combination, so this session runs SINGLE-ENGINE (measured). Set \
-             PUNKTFUNK_NVENC_SUBFRAME=0 to trade sub-frame for a real split."
+             RUBYFUNK_NVENC_SUBFRAME=0 to trade sub-frame for a real split."
         );
     }
     (split_mode, subframe)
@@ -568,7 +568,7 @@ mod split_subframe_tests {
     }
 
     /// AV1 keeps split and never arms subframe, even when
-    /// `PUNKTFUNK_NVENC_SUBFRAME=1`. Writer and reader arm independently; the
+    /// `RUBYFUNK_NVENC_SUBFRAME=1`. Writer and reader arm independently; the
     /// reader needs `slices >= 2` and [`resolve_slices`] returns 1 for AV1.
     #[test]
     fn av1_keeps_split_but_never_arms_subframe() {
@@ -831,7 +831,7 @@ pub fn store_split_verdict(key: SplitKey, mode: u32) {
 #[cfg(any(target_os = "linux", windows))]
 /// Split mode a new session opens at: the cached verdict for `key`, else
 /// `static_mode` from [`crate::resolve_split_mode`]. An operator pin
-/// (`PUNKTFUNK_SPLIT_ENCODE`) beats the verdict.
+/// (`RUBYFUNK_SPLIT_ENCODE`) beats the verdict.
 pub fn open_split_mode(static_mode: u32, key: &SplitKey) -> u32 {
     if crate::knobs::get().split_encode != 0 {
         return static_mode;
@@ -852,7 +852,7 @@ pub fn open_split_mode(static_mode: u32, key: &SplitKey) -> u32 {
 
 /// Drop every cached verdict. For tests: the cache is process-global, so an
 /// on-hardware arbitration would otherwise leak into later tests that open
-/// the same config with `PUNKTFUNK_SPLIT_ENCODE` unset.
+/// the same config with `RUBYFUNK_SPLIT_ENCODE` unset.
 // Gated like its two siblings, NOT on `test`: the sole caller is `nvenc_cuda`'s
 // on-hw test in pf-encode, and `cfg(test)` is false for a crate built as that
 // crate's dependency. Public in a public module, so never dead code.
@@ -875,7 +875,7 @@ mod tests {
         assert!(preset_guid(8) == nv::NV_ENC_PRESET_P1_GUID);
     }
 
-    // Assumes `PUNKTFUNK_SPLIT_ENCODE` is unset (CI); an operator override wins.
+    // Assumes `RUBYFUNK_SPLIT_ENCODE` is unset (CI); an operator override wins.
 
     #[test]
     fn a_new_session_opens_at_the_measured_split() {
@@ -1080,7 +1080,7 @@ mod tests {
         let hd_60 = 1920u64 * 1080 * 60;
 
         // 10-bit over the pixel-rate bar now splits. The old Main10 veto was one
-        // sample at low bits/frame; `PUNKTFUNK_SPLIT_ENCODE=0` is the escape.
+        // sample at low bits/frame; `RUBYFUNK_SPLIT_ENCODE=0` is the escape.
         assert_eq!(
             resolve_split_mode(Codec::H265, 10, five_k_240, 2, 32),
             M::NV_ENC_SPLIT_TWO_FORCED_MODE as u32
@@ -1470,10 +1470,10 @@ pub const LTR_FRAMES: u32 = 3;
 /// A periodic wave that never comes: only the forced one runs.
 const INTRA_REFRESH_NEVER: u32 = 1 << 30;
 
-/// `PUNKTFUNK_NVENC_IR_ALWAYS=1` answers every RFI with a wave, process environment only.
+/// `RUBYFUNK_NVENC_IR_ALWAYS=1` answers every RFI with a wave, process environment only.
 /// A loopback never declines an RFI on its own, so the wave soak needs this to run waves.
 pub fn wave_always() -> bool {
-    std::env::var("PUNKTFUNK_NVENC_IR_ALWAYS").is_ok_and(|v| v == "1")
+    std::env::var("RUBYFUNK_NVENC_IR_ALWAYS").is_ok_and(|v| v == "1")
 }
 
 /// Rows the driver sweeps: 32-px blocks bound the cycle for every NVENC codec.
@@ -1553,7 +1553,7 @@ pub fn apply_low_latency_config(cfg: &mut nv::NV_ENC_CONFIG, c: LowLatencyConfig
     // Shrink VBV with bitrate (NVENC validates it against the level ceiling),
     // but only when the GPU advertises custom-VBV — else keep the preset default.
     if c.custom_vbv {
-        // ~1-frame VBV; `PUNKTFUNK_VBV_FRAMES` scales it (parity with AMF/VAAPI/QSV).
+        // ~1-frame VBV; `RUBYFUNK_VBV_FRAMES` scales it (parity with AMF/VAAPI/QSV).
         let vbv = ((c.bitrate as f64 / c.fps.max(1) as f64) * crate::vbv_frames_env())
             .clamp(1.0, u32::MAX as f64) as u32;
         cfg.rcParams.vbvBufferSize = vbv;

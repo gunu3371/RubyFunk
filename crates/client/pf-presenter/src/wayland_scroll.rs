@@ -8,7 +8,7 @@
 use crate::scroll::{NativeAxisSource, WaylandScrollFrame};
 use crate::wl_side::{release_registry, SdlWayland};
 use anyhow::Context;
-use punktfunk_core::input::InputEvent;
+use rubyfunk_core::input::InputEvent;
 use sdl3::video::WindowContext;
 use std::collections::HashMap;
 use std::sync::Arc;

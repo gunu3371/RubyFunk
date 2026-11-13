@@ -3,7 +3,7 @@ title: Virtual displays
 description: Choose what happens to your screens when a device connects — presets, keep-alive, your monitors, per-device settings and game sessions.
 ---
 
-When a device connects, Punktfunk creates a virtual display at that device's resolution and
+When a device connects, RubyFunk creates a virtual display at that device's resolution and
 refresh rate and streams it. The **Displays** page of the [web console](/docs/web-console) decides
 what happens around it. A change applies to the next connection.
 
@@ -60,7 +60,7 @@ On gamescope the game keeps running as long as its screen does.
 - **Stay on**: the stream is an extra screen beside your monitors.
 - **Stay on, stream is main**: the stream becomes the main screen.
 - **Turn off**: the stream is the only screen until streaming ends.
-- **Automatic**: **Turn off**, or **Stay on** when `PUNKTFUNK_COMPOSITOR` pins a compositor.
+- **Automatic**: **Turn off**, or **Stay on** when `RUBYFUNK_COMPOSITOR` pins a compositor.
 
 | | KWin | GNOME | Sway · Hyprland · niri · Umbriel | Windows |
 |---|---|---|---|---|
@@ -78,7 +78,7 @@ On gamescope the game keeps running as long as its screen does.
   lights them mid-stream: see [Umbriel](/docs/umbriel#config-save).
 - **KWin, Sway, Hyprland, niri and Umbriel** can keep chosen monitors lit under **Turn off**: set each to
   **Stay on** on its row in **Screens**.
-- Punktfunk never turns off a screen it created, so a second device never goes dark.
+- RubyFunk never turns off a screen it created, so a second device never goes dark.
 
 ### A second device connects
 
@@ -140,13 +140,13 @@ its own screen.
   the prompt. A device that connects while the PC is locked or signed out gets a virtual screen
   instead, so you can sign in; the monitor is streamed again from the next connection.
 
-On Linux, monitors are named by connector (`HDMI-A-1`, `DP-2`). `punktfunk-host list-monitors`
+On Linux, monitors are named by connector (`HDMI-A-1`, `DP-2`). `rubyfunk-host list-monitors`
 lists them, and `mirror-test` checks the capture without a client
-([Host CLI](/docs/host-cli#list-monitors)). `punktfunk-host anchor-test --monitor HDMI-A-1` checks
+([Host CLI](/docs/host-cli#list-monitors)). `rubyfunk-host anchor-test --monitor HDMI-A-1` checks
 where absolute input lands. On Windows they carry the Windows display name (`\\.\DISPLAY1`), which
 the console shows.
 
-To pin it from the host instead, set `PUNKTFUNK_CAPTURE_MONITOR=HDMI-A-1` in
+To pin it from the host instead, set `RUBYFUNK_CAPTURE_MONITOR=HDMI-A-1` in
 [`host.env`](/docs/configuration). It wins over the console, which then shows the choice as locked.
 
 ## Dedicated game sessions
@@ -272,12 +272,12 @@ A real monitor is being streamed, and those settings only apply to virtual scree
 
 ### The console won't let me pick a monitor
 
-`PUNKTFUNK_CAPTURE_MONITOR` is set in `host.env`. Remove it and restart the host.
+`RUBYFUNK_CAPTURE_MONITOR` is set in `host.env`. Remove it and restart the host.
 
 ### A session fails with "no monitor named …"
 
 The monitor you picked isn't connected, was renamed, or the host runs in another session. Run
-`punktfunk-host list-monitors` and pick a listed one.
+`rubyfunk-host list-monitors` and pick a listed one.
 
 ### My couch box's TV stayed on the stream after I disconnected
 

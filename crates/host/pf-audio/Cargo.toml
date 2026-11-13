@@ -1,6 +1,6 @@
 # Host audio (plan §W6): desktop capture (PipeWire stream sink / WASAPI loopback), the virtual
 # microphone, pad audio and the Windows wiring plan, behind the AudioCapturer / VirtualMic traits.
-# Consumes punktfunk_core::audio and never reaches the orchestrator: the voice-chat pin's host
+# Consumes rubyfunk_core::audio and never reaches the orchestrator: the voice-chat pin's host
 # services arrive through `voice_route::HOST_HOOKS`, set at host startup.
 [package]
 name = "pf-audio"
@@ -8,12 +8,12 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license = "MIT OR Apache-2.0"
-description = "punktfunk host audio: PipeWire/WASAPI capture, the virtual microphone, pad audio and the Windows wiring plan."
+description = "rubyfunk host audio: PipeWire/WASAPI capture, the virtual microphone, pad audio and the Windows wiring plan."
 publish = false
 
 [dependencies]
 # `audio` (Opus layouts, gain) lives outside the `quic` feature.
-punktfunk-core = { path = "../../core/punktfunk-core", default-features = false }
+rubyfunk-core = { path = "../../core/rubyfunk-core", default-features = false }
 pf-host-config = { path = "../pf-host-config" }
 # Real-time priority for the capture and mic threads.
 pf-frame = { path = "../pf-frame" }

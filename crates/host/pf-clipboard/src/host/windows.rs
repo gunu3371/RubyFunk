@@ -362,7 +362,7 @@ impl WindowsClipboard {
         let (ready_tx, ready_rx) = tokio::sync::oneshot::channel::<anyhow::Result<isize>>();
         let cw = Arc::clone(&current_wire);
         let join = std::thread::Builder::new()
-            .name("punktfunk-clipboard-win".into())
+            .name("rubyfunk-clipboard-win".into())
             .spawn(move || {
                 pump_thread(
                     clip_tx, cmd_rx, cw, fmt_html, fmt_rtf, fmt_png, fmt_jfif, fmt_gif, ready_tx,
@@ -519,7 +519,7 @@ fn create_window() -> anyhow::Result<HWND> {
         let hinstance: HINSTANCE = GetModuleHandleW(PCWSTR::null())
             .context("GetModuleHandleW")?
             .into();
-        let class_name = w!("PunktfunkClipboardWindow");
+        let class_name = w!("RubyFunkClipboardWindow");
         let wc = WNDCLASSW {
             lpfnWndProc: Some(wndproc),
             hInstance: hinstance,

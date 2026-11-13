@@ -1,6 +1,6 @@
 //! PyroWave host encoder: intra-only CDF 9/7 wavelet over a private Vulkan 1.3
 //! compute device (`pyrowave-sys`). Every frame is a keyframe, so IDR/RFI recovery
-//! is unused. Opt-in via `PUNKTFUNK_ENCODER=pyrowave`; no shipping client decodes
+//! is unused. Opt-in via `RUBYFUNK_ENCODER=pyrowave`; no shipping client decodes
 //! this until `CODEC_PYROWAVE` negotiation lands.
 //!
 //! `pyrowave_create_device` retains the original instance/device create-infos for
@@ -71,7 +71,7 @@ pub(crate) fn capture_modifiers(fourcc: u32) -> Vec<u64> {
     super::vk_util::sampled_capture_modifiers(fourcc)
 }
 
-/// Render node named beside the picked device: `PUNKTFUNK_RENDER_NODE` else
+/// Render node named beside the picked device: `RUBYFUNK_RENDER_NODE` else
 /// `/dev/dri/renderD128`. Log-only — the device pick must not use this.
 fn capture_anchor_node() -> std::path::PathBuf {
     pf_gpu::render_node_env().unwrap_or_else(|| std::path::PathBuf::from("/dev/dri/renderD128"))
@@ -388,7 +388,7 @@ fn mono_ns() -> u64 {
     ts.tv_sec as u64 * 1_000_000_000 + ts.tv_nsec as u64
 }
 
-/// `PUNKTFUNK_PERF` GPU split of one encode: three timestamps per slot (start, after
+/// `RUBYFUNK_PERF` GPU split of one encode: three timestamps per slot (start, after
 /// CSC, end) mapped onto `CLOCK_MONOTONIC`, so a slow submit→AU reads as a late GPU
 /// start, GPU work, or a late CPU wake. Without calibration only the GPU spans are real.
 struct GpuTimer {
@@ -578,7 +578,7 @@ struct InFlight {
     wire_chunk: Option<usize>,
     t0: std::time::Instant,
     /// `CLOCK_MONOTONIC` at record start, around the pyrowave record, and after
-    /// `vkQueueSubmit` returned. Read only by the `PUNKTFUNK_PERF` GPU split.
+    /// `vkQueueSubmit` returned. Read only by the `RUBYFUNK_PERF` GPU split.
     cpu_ns: [u64; 4],
     /// Keeps a raw producer buffer stable through the GPU read.
     _src_hold: Option<pf_frame::FrameHold>,
@@ -657,11 +657,11 @@ pub struct PyroWaveEncoder {
     /// Opened `deviceName`. On a multi-GPU host the worker's GPU is otherwise invisible.
     device_name: String,
     budget: FrameBudget,
-    /// `PUNKTFUNK_PERF` reservoir of submit→AU durations. Other backends already log
+    /// `RUBYFUNK_PERF` reservoir of submit→AU durations. Other backends already log
     /// a submit split; this is the number the priority lever exists to protect.
     perf_us: Vec<u32>,
     perf_logged_at: Option<std::time::Instant>,
-    /// `PUNKTFUNK_PERF` only; `None` when the queue family has no timestamps.
+    /// `RUBYFUNK_PERF` only; `None` when the queue family has no timestamps.
     gpu_timer: Option<GpuTimer>,
     /// Boundary and streamed-AU cursor. Packets pad to the boundary so each shard carries
     /// whole self-delimiting packets, and an AU is complete before its first chunk leaves.
@@ -768,7 +768,7 @@ impl Drop for AuArena {
 unsafe impl Send for PyroWaveEncoder {}
 
 impl PyroWaveEncoder {
-    /// `PUNKTFUNK_PERF`: record one encode duration and summarise on a slow cadence.
+    /// `RUBYFUNK_PERF`: record one encode duration and summarise on a slow cadence.
     /// Sample is stamped when `submit` starts and taken when the AU is readable
     /// (CSC + encode + fence wait + packetize). At depth > 1 this grows by about one
     /// loop period: N's AU is not retrieved until after N+1 has been submitted.
@@ -889,7 +889,7 @@ impl PyroWaveEncoder {
         )
     }
 
-    /// [`Self::open`] as `punktfunk-encode-worker` runs it. Same open path; two
+    /// [`Self::open`] as `rubyfunk-encode-worker` runs it. Same open path; two
     /// differences: `intent` comes from the host handshake (the worker strips
     /// `PYROWAVE_QUEUE_PRIORITY` at startup), and the inert warn is left to the host
     /// so it names the worker binary, not the host.

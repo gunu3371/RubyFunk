@@ -4,15 +4,15 @@
 use crate::trust::Settings;
 pub use pf_client_core::session::AUDIO_FORMATS;
 use pf_client_core::trust::{HudCorner, StatsVerbosity};
-use punktfunk_core::hud::{stats_scale, STATS_SCALE_PCTS};
+use rubyfunk_core::hud::{stats_scale, STATS_SCALE_PCTS};
 
 /// Sizes by family; the Resolution row lists one family at a time behind the Aspect row.
 /// `(0, 0)` = the native size of the monitor the window is on, resolved at connect.
-pub use punktfunk_core::resolutions::{aspect_of, nearest, ASPECTS};
+pub use rubyfunk_core::resolutions::{aspect_of, nearest, ASPECTS};
 /// `0` = the monitor's native refresh, resolved at connect.
 pub const REFRESH: &[u32] = &[0, 30, 60, 90, 120, 144, 165, 240];
 /// Render-scale multipliers. `1.0` = Native; applied at connect and each match-window resize.
-pub use punktfunk_core::render_scale::PRESETS as RENDER_SCALES;
+pub use rubyfunk_core::render_scale::PRESETS as RENDER_SCALES;
 
 /// Where each picker sits for a given settings snapshot. Factored out because two places need
 /// exactly this: seeding the dialog, and putting ONE row back to the inherited value when its
@@ -57,8 +57,7 @@ pub mod index {
 
     /// A stop's entry, or Custom for a typed scale.
     pub fn render_scale(s: &Settings) -> u32 {
-        punktfunk_core::render_scale::preset_index(s.render_scale)
-            .map_or(CUSTOM_SCALE, |i| i as u32)
+        rubyfunk_core::render_scale::preset_index(s.render_scale).map_or(CUSTOM_SCALE, |i| i as u32)
     }
 
     pub fn codec(s: &Settings) -> u32 {

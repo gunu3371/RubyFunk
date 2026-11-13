@@ -12,7 +12,7 @@ pub(super) fn linger_for(client_fp: Option<[u8; 32]>) -> Linger {
 /// A verified isolate is not durable — see
 /// `VirtualDisplayManager::ensure_exclusive_watch`.
 pub(super) fn exclusive_reassert_ms() -> u64 {
-    std::env::var("PUNKTFUNK_EXCLUSIVE_REASSERT_MS")
+    std::env::var("RUBYFUNK_EXCLUSIVE_REASSERT_MS")
         .ok()
         .and_then(|s| s.parse().ok())
         .unwrap_or(2_000)
@@ -20,7 +20,7 @@ pub(super) fn exclusive_reassert_ms() -> u64 {
 
 /// Topology for a freshly-created monitor (never `Auto`): console
 /// [`effective_topology`](crate::effective_topology) when configured, else
-/// `PUNKTFUNK_NO_ISOLATE` on (`env_on`, so `=0` is off) → `Extend`, otherwise `Exclusive`.
+/// `RUBYFUNK_NO_ISOLATE` on (`env_on`, so `=0` is off) → `Extend`, otherwise `Exclusive`.
 pub(super) fn topology_action(client: Option<[u8; 32]>) -> crate::policy::Topology {
     let configured = crate::policy::prefs()
         .configured_effective()
@@ -35,10 +35,10 @@ pub(crate) fn unconfigured_topology() -> crate::policy::Topology {
 }
 
 fn no_isolate() -> bool {
-    pf_host_config::env_on("PUNKTFUNK_NO_ISOLATE") == Some(true)
+    pf_host_config::env_on("RUBYFUNK_NO_ISOLATE") == Some(true)
 }
 
-/// Unconfigured host: `PUNKTFUNK_NO_ISOLATE` → `Extend`, else `Exclusive`.
+/// Unconfigured host: `RUBYFUNK_NO_ISOLATE` → `Extend`, else `Exclusive`.
 /// A configured answer is passed through; the env knob does not override it.
 fn resolve_topology_action(
     configured: Option<crate::policy::Topology>,

@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=RubyFunk Console
+Comment=Controller-driven couch interface — browse hosts and stream with a gamepad
+# The shell already execs `rubyfunk-session --browse` for this argv, so the shortcut goes
+# through the same binary the main entry uses (which is also what flatpak's Exec rewrite
+# expects). A couch UI is fullscreen; the session fullscreens itself on the Deck and under
+# gamescope anyway.
+Exec=rubyfunk-client --browse --fullscreen
+Icon=io.github.gunu3371.rubyfunk
+Terminal=false
+Categories=Network;Game;
+Keywords=streaming;remote;game;gamepad;controller;couch;console;bigpicture;
+StartupNotify=true

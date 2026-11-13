@@ -35,9 +35,9 @@ pub(crate) struct DisplayFacts {
     /// SDR wide colour is open to this session: it asked for 10-bit SDR, the build has it, and
     /// no session on this host found it refused.
     pub(crate) wide_colour: bool,
-    /// `PUNKTFUNK_IDD_DIAG` is on.
+    /// `RUBYFUNK_IDD_DIAG` is on.
     pub(crate) diag: bool,
-    /// `PUNKTFUNK_IDD_FLOW` is on.
+    /// `RUBYFUNK_IDD_FLOW` is on.
     pub(crate) flow: bool,
 }
 

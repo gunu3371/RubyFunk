@@ -7,7 +7,7 @@
 //! Linux-only `decoder::stateless`, plus SEI payload parsing (upstream classifies
 //! SEI NALUs but never reads them).
 //!
-//! Scope: punktfunk hosts — zero-reorder, no B-frames, progressive, controlled
+//! Scope: rubyfunk hosts — zero-reorder, no B-frames, progressive, controlled
 //! parameter sets. Implement to spec where cheap; reject-with-log outside that
 //! envelope. CPU-only: no GPU API, OS handle, or network.
 #![forbid(unsafe_code)]

@@ -845,7 +845,7 @@ impl LibraryPage {
         let (addr, port, fp) = (shelf.req.host.addr, shelf.mgmt_port, shelf.req.host.fp_hex);
         let stream_port = shelf.req.host.port;
         std::thread::Builder::new()
-            .name("punktfunk-library".into())
+            .name("rubyfunk-library".into())
             .spawn(move || {
                 let send = |l| sender.send(LibraryMsg::Loaded(generation, l)).is_ok();
                 // Keyed on the pin, so a box on a new DHCP lease is the same library.
@@ -995,7 +995,7 @@ impl LibraryPage {
             .map_or_else(|| id.to_string(), |g| g.title.clone())
     }
 
-    /// A title's `punktfunk://` link and a launcher label for it. A pinned shelf's preset rides
+    /// A title's `rubyfunk://` link and a launcher label for it. A pinned shelf's preset rides
     /// the link: copying off that shelf is pressing its card and picking the title.
     fn link(&self, id: &str) -> Option<(String, String)> {
         let shelf = self.shelf()?;
@@ -1042,7 +1042,7 @@ impl LibraryPage {
                 .as_deref()
                 .and_then(crate::trust::parse_hex32);
             std::thread::Builder::new()
-                .name("punktfunk-endgame".into())
+                .name("rubyfunk-endgame".into())
                 .spawn(move || {
                     let outcome = library::end_game(&addr, port, stream_port, &identity, pin, &id);
                     let running = library::fetch_running(&addr, port, stream_port, &identity, pin);

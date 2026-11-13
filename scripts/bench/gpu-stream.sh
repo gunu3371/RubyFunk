@@ -7,7 +7,7 @@
 #   scripts/bench/gpu-stream.sh [WxHxHz] [seconds]      # measure + compare to the baseline
 #   scripts/bench/gpu-stream.sh 1920x1080x120 12 --update   # (re)write scripts/bench/gpu-baseline.json
 #
-# Metrics (host PUNKTFUNK_PERF + client report): encode_us_p50/p99, tx_mbps, send_dropped, and the
+# Metrics (host RUBYFUNK_PERF + client report): encode_us_p50/p99, tx_mbps, send_dropped, and the
 # client's capture→received lat_p50/p95/p99_us. Lower is better for latency/encode/drops, higher
 # for throughput. Regressions are flagged ⚠ but the script exits 0 (gate decisions stay human).
 set -uo pipefail
@@ -24,8 +24,8 @@ BASELINE="scripts/bench/gpu-baseline.json" # not in the repo — mint it on the 
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-kde}"
 export XDG_CURRENT_DESKTOP="${XDG_CURRENT_DESKTOP:-KDE}"
-export PUNKTFUNK_COMPOSITOR="${PUNKTFUNK_COMPOSITOR:-kwin}"
-export PUNKTFUNK_VIDEO_SOURCE=virtual PUNKTFUNK_ZEROCOPY=1 PUNKTFUNK_PERF=1
+export RUBYFUNK_COMPOSITOR="${RUBYFUNK_COMPOSITOR:-kwin}"
+export RUBYFUNK_VIDEO_SOURCE=virtual RUBYFUNK_ZEROCOPY=1 RUBYFUNK_PERF=1
 OWN_KWIN=""
 if [[ ! -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]]; then
   echo "==> no $WAYLAND_DISPLAY — bringing up a headless KWin session"
@@ -35,18 +35,18 @@ if [[ ! -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]]; then
 fi
 
 echo "==> building host + client (release)"
-cargo build -rq -p punktfunk-host -p punktfunk-probe
+cargo build -rq -p rubyfunk-host -p rubyfunk-probe
 
 HOST_LOG="$(mktemp)"; CLI_LOG="$(mktemp)"
 trap 'kill "$HOST_PID" 2>/dev/null; [[ -n "$OWN_KWIN" ]] && pkill -f "kwin_wayland --virtual" 2>/dev/null; rm -f "$HOST_LOG" "$CLI_LOG"' EXIT
 
-echo "==> host: punktfunk1-host --source virtual ($MODE, ${SECS}s)"
-target/release/punktfunk-host punktfunk1-host --source virtual --seconds "$SECS" --max-sessions 1 \
+echo "==> host: rubyfunk1-host --source virtual ($MODE, ${SECS}s)"
+target/release/rubyfunk-host rubyfunk1-host --source virtual --seconds "$SECS" --max-sessions 1 \
   >"$HOST_LOG" 2>&1 &
 HOST_PID=$!
 sleep 3
 echo "==> client: streaming + measuring latency"
-target/release/punktfunk-probe --connect 127.0.0.1:9777 --mode "$MODE" --out /dev/null \
+target/release/rubyfunk-probe --connect 127.0.0.1:9777 --mode "$MODE" --out /dev/null \
   >"$CLI_LOG" 2>&1 || true
 wait "$HOST_PID" 2>/dev/null || true
 

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Build + sign the punktfunk virtual-gamepad UMDF drivers (pf-gamepad = DualSense/DualShock 4/Edge/Deck, pf-xusb =
+  Build + sign the rubyfunk virtual-gamepad UMDF drivers (pf-gamepad = DualSense/DualShock 4/Edge/Deck, pf-xusb =
   Xbox 360 / XInput) FROM SOURCE, in CI, and stage them for the host installer. The gamepad analogue of
   build-pf-vdisplay.ps1 - replaces the checked-in prebuilt binaries (packaging/windows/gamepad-drivers/)
   so the .dll/.inf/.cat stay in lockstep with the source and never go stale.
@@ -10,11 +10,11 @@
   `cargo build --release` builds the whole workspace (this shares wdk-sys/wdk-build + the bindgen pin with
   pf-vdisplay). Then, per driver: CLEAR the FORCE_INTEGRITY PE bit, sign the .dll, stampinf a DriverVer
   into the INF; then Inf2Cat both catalogs and sign them. Both drivers share ONE self-signed cert (or a
-  supplied DRIVER_CERT secret) + ONE exported .cer - the layout `punktfunk-host.exe driver install
-  --gamepad` consumes (per-driver .inf/.cat/.dll + one shared punktfunk-driver.cer).
+  supplied DRIVER_CERT secret) + ONE exported .cer - the layout `rubyfunk-host.exe driver install
+  --gamepad` consumes (per-driver .inf/.cat/.dll + one shared rubyfunk-driver.cer).
 
   Output (-Out): pf_gamepad.{dll,inf,cat} + pf_xusb.{dll,inf,cat} + pf_mouse.{dll,inf,cat} +
-  punktfunk-driver.cer. (pf_mouse is the resident virtual HID pointer, not a gamepad - it shares
+  rubyfunk-driver.cer. (pf_mouse is the resident virtual HID pointer, not a gamepad - it shares
   this pipeline + the --gamepad install path.)
 
 .EXAMPLE
@@ -36,7 +36,7 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $PSNativeCommandUseErrorActionPreference = $false
 
-# The decoded DRIVER_CERT key is trusted as a machine root on every box that installs punktfunk,
+# The decoded DRIVER_CERT key is trusted as a machine root on every box that installs rubyfunk,
 # so it must not outlive this script: the trap shreds it on any throw, then re-throws, and the
 # normal exit calls Remove-SigningPfx too. signing.ps1 holds the shred; the key stays this script's.
 . (Join-Path $PSScriptRoot 'signing.ps1')
@@ -110,7 +110,7 @@ elseif ($requireCert) {
 }
 else {
     Write-Host '==> no DRIVER_CERT_PFX_B64 -> generating a fresh self-signed driver cert (the installer trusts the bundled .cer at install time)'
-    $cleanupCert = New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=punktfunk-driver' `
+    $cleanupCert = New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=rubyfunk-driver' `
         -CertStoreLocation Cert:\CurrentUser\My -KeyExportPolicy Exportable -NotAfter (Get-Date).AddYears(10)
     $signArgs = @('/sha1', $cleanupCert.Thumbprint)
     $pubForCer = $cleanupCert
@@ -144,7 +144,7 @@ foreach ($d in $drivers) {
 }
 
 # --- 6. one shared public .cer ----------------------------------------------------------------
-Export-Certificate -Cert $pubForCer -FilePath (Join-Path $Out 'punktfunk-driver.cer') | Out-Null
+Export-Certificate -Cert $pubForCer -FilePath (Join-Path $Out 'rubyfunk-driver.cer') | Out-Null
 if ($cleanupCert) { Remove-Item "Cert:\CurrentUser\My\$($cleanupCert.Thumbprint)" -Force -ErrorAction SilentlyContinue }
 Remove-SigningPfx
 

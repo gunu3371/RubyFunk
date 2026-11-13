@@ -48,7 +48,7 @@ const fmtVram = (mb: number) =>
 	mb >= 1024 ? `${Math.round(mb / 1024)} GiB` : `${mb} MiB`;
 
 /**
- * The vendor an explicit `PUNKTFUNK_ENCODER` pin can open on (display name) — the console mirror
+ * The vendor an explicit `RUBYFUNK_ENCODER` pin can open on (display name) — the console mirror
  * of the host's backend→vendor table. Vendor-agnostic and multi-vendor pins map to nothing.
  */
 const encoderPinVendor: Record<string, string> = {

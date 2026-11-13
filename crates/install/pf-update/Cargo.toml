@@ -1,6 +1,6 @@
 [package]
 name = "pf-update"
-description = "Root helper for web-console-triggered host updates: runs the distro package manager against the punktfunk packages, gates on the new binary actually running, and reports a result record. Deliberately tiny — root runs these few hundred lines, never the host's dependency tree."
+description = "Root helper for web-console-triggered host updates: runs the distro package manager against the rubyfunk packages, gates on the new binary actually running, and reports a result record. Deliberately tiny — root runs these few hundred lines, never the host's dependency tree."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

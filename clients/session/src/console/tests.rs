@@ -391,7 +391,7 @@ fn service(library: &LibraryShared) -> ServiceState {
         console: ConsoleShared::default(),
         library: library.clone(),
         bus: pf_console_ui::ConsoleBus::default(),
-        identity: punktfunk_core::quic::endpoint::generate_identity().expect("identity"),
+        identity: rubyfunk_core::quic::endpoint::generate_identity().expect("identity"),
         seed: None,
         discovered: HashMap::new(),
         probed: Arc::default(),

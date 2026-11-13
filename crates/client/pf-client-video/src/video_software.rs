@@ -30,8 +30,8 @@ pub(crate) enum SwCodec {
 impl SwCodec {
     pub(crate) fn for_wire(codec: u8) -> Option<SwCodec> {
         match codec {
-            punktfunk_core::quic::CODEC_H264 => Some(SwCodec::H264),
-            punktfunk_core::quic::CODEC_AV1 => Some(SwCodec::Av1),
+            rubyfunk_core::quic::CODEC_H264 => Some(SwCodec::H264),
+            rubyfunk_core::quic::CODEC_AV1 => Some(SwCodec::Av1),
             _ => None,
         }
     }
@@ -158,7 +158,7 @@ struct AuFacts {
     is_idr: bool,
     /// `None` = AU did not plan; caller keeps the last colour.
     color: Option<ColorDesc>,
-    recovery: punktfunk_core::reanchor::LocalRecovery,
+    recovery: rubyfunk_core::reanchor::LocalRecovery,
 }
 
 impl H264Software {
@@ -221,7 +221,7 @@ impl H264Software {
                     plan.picture.bit_depth_luma_minus8,
                 ) {
                     return Err(NoSoftwareRung {
-                        codec: punktfunk_core::quic::CODEC_H264,
+                        codec: rubyfunk_core::quic::CODEC_H264,
                         shape: Some(shape),
                     }
                     .into());
@@ -236,7 +236,7 @@ impl H264Software {
                 Ok(AuFacts {
                     is_idr: plan.picture.is_idr,
                     color: Some(ColorDesc::from(&plan.picture.colour)),
-                    recovery: punktfunk_core::reanchor::LocalRecovery {
+                    recovery: rubyfunk_core::reanchor::LocalRecovery {
                         sei_here: mark.sei_here,
                         is_recovery_point: mark.is_recovery_point,
                     },
@@ -256,7 +256,7 @@ impl H264Software {
                 Ok(AuFacts {
                     is_idr: false,
                     color: None,
-                    recovery: punktfunk_core::reanchor::LocalRecovery::NONE,
+                    recovery: rubyfunk_core::reanchor::LocalRecovery::NONE,
                 })
             }
         }
@@ -270,7 +270,7 @@ fn unsupported_shape(chroma_format_idc: u8, bit_depth_minus8: u8) -> Option<&'st
     if bit_depth_minus8 != 0 {
         return Some("10-bit or deeper");
     }
-    if chroma_format_idc != punktfunk_core::quic::CHROMA_IDC_420 {
+    if chroma_format_idc != rubyfunk_core::quic::CHROMA_IDC_420 {
         return Some("chroma other than 4:2:0");
     }
     None
@@ -407,7 +407,7 @@ impl Av1Software {
         // Main 10, so a mid-session demotion lands here on that stream.
         if let Some(shape) = self.unsupported_sequence(au) {
             return Err(NoSoftwareRung {
-                codec: punktfunk_core::quic::CODEC_AV1,
+                codec: rubyfunk_core::quic::CODEC_AV1,
                 shape: Some(shape),
             }
             .into());
@@ -431,7 +431,7 @@ impl Av1Software {
                 // `Err` would look survivable and freeze the session on every following AU.
                 if dav1d_errno(r) == Some(libc::ENOPROTOOPT) {
                     return Err(NoSoftwareRung {
-                        codec: punktfunk_core::quic::CODEC_AV1,
+                        codec: rubyfunk_core::quic::CODEC_AV1,
                         shape: Some("10-bit or deeper"),
                     }
                     .into());
@@ -533,7 +533,7 @@ impl Av1Software {
         };
         if let Some(shape) = shape {
             return Err(NoSoftwareRung {
-                codec: punktfunk_core::quic::CODEC_AV1,
+                codec: rubyfunk_core::quic::CODEC_AV1,
                 shape: Some(shape),
             }
             .into());
@@ -588,7 +588,7 @@ impl Av1Software {
             strides,
             *color,
             keyframe,
-            punktfunk_core::reanchor::LocalRecovery::NONE,
+            rubyfunk_core::reanchor::LocalRecovery::NONE,
         )
     }
 }
@@ -723,7 +723,7 @@ mod tests {
             ),
         ];
         for (name, au, want_color) in fixtures {
-            let f = decode_one(punktfunk_core::quic::CODEC_H264, au);
+            let f = decode_one(rubyfunk_core::quic::CODEC_H264, au);
             assert_eq!(f.color, want_color, "{name}: signalling");
             assert_eq!((f.width, f.height), (288, 64), "{name}: dims");
             assert!(f.keyframe, "{name}: the fixture is a single IDR");
@@ -746,11 +746,11 @@ mod tests {
     #[test]
     fn the_601_and_709_fixtures_really_do_carry_different_luma() {
         let f601 = decode_one(
-            punktfunk_core::quic::CODEC_H264,
+            rubyfunk_core::quic::CODEC_H264,
             include_bytes!("../tests/bars-601-limited.h264"),
         );
         let f709 = decode_one(
-            punktfunk_core::quic::CODEC_H264,
+            rubyfunk_core::quic::CODEC_H264,
             include_bytes!("../tests/bars-709-limited.h264"),
         );
         // Pure red: Y ≈ 76 under 601, ≈ 54 under 709 (then 16..235). Same
@@ -775,17 +775,17 @@ mod tests {
     /// HEVC has no CPU rung. Must be [`NoSoftwareRung`], not a string and not `Ok(None)`.
     #[test]
     fn hevc_is_refused_with_the_typed_no_rung_error() {
-        let err = SoftwareDecoder::new(punktfunk_core::quic::CODEC_HEVC)
+        let err = SoftwareDecoder::new(rubyfunk_core::quic::CODEC_HEVC)
             .err()
             .expect("HEVC must not build a software decoder");
         let typed = err
             .downcast_ref::<NoSoftwareRung>()
             .expect("the refusal must survive as NoSoftwareRung through anyhow");
-        assert_eq!(typed.codec, punktfunk_core::quic::CODEC_HEVC);
+        assert_eq!(typed.codec, rubyfunk_core::quic::CODEC_HEVC);
         assert_eq!(typed.shape, None, "the CODEC is missing, not a shape");
         assert!(err.to_string().contains("HEVC"), "{err}");
-        assert!(SoftwareDecoder::new(punktfunk_core::quic::CODEC_H264).is_ok());
-        assert!(SoftwareDecoder::new(punktfunk_core::quic::CODEC_AV1).is_ok());
+        assert!(SoftwareDecoder::new(rubyfunk_core::quic::CODEC_H264).is_ok());
+        assert!(SoftwareDecoder::new(rubyfunk_core::quic::CODEC_AV1).is_ok());
     }
 
     /// A shape this rung cannot decode is the same typed refusal as a missing
@@ -793,7 +793,7 @@ mod tests {
     /// Covers Main 10 (in-band, so the active SPS not Welcome) and 4:4:4.
     #[test]
     fn a_shape_the_cpu_rung_cannot_decode_is_the_same_typed_refusal() {
-        use punktfunk_core::quic::{CHROMA_IDC_420, CHROMA_IDC_444};
+        use rubyfunk_core::quic::{CHROMA_IDC_420, CHROMA_IDC_444};
         assert_eq!(unsupported_shape(CHROMA_IDC_420, 0), None);
         assert_eq!(
             unsupported_shape(CHROMA_IDC_420, 2),
@@ -809,7 +809,7 @@ mod tests {
             Some("10-bit or deeper")
         );
         let e: anyhow::Error = NoSoftwareRung {
-            codec: punktfunk_core::quic::CODEC_AV1,
+            codec: rubyfunk_core::quic::CODEC_AV1,
             shape: Some("10-bit or deeper"),
         }
         .into();
@@ -825,7 +825,7 @@ mod tests {
     #[test]
     fn the_full_range_fixture_is_decoded_wrong_by_the_wrong_range() {
         let f = decode_one(
-            punktfunk_core::quic::CODEC_H264,
+            rubyfunk_core::quic::CODEC_H264,
             include_bytes!("../tests/bars-709-full.h264"),
         );
         let wrong = ColorDesc {
@@ -870,7 +870,7 @@ mod tests {
             0x32, 0x16, 0x10, 0x00, 0xba, 0x02, 0x0b, 0x2c, 0x51, 0x41, 0x00, 0x00, 0x08, 0x00,
             0x95, 0xd1, 0xe2, 0x7e, 0xac, 0x4f, 0x04, 0xad, 0xa4, 0x70,
         ];
-        let mut dec = SoftwareDecoder::new(punktfunk_core::quic::CODEC_AV1).expect("av1 decoder");
+        let mut dec = SoftwareDecoder::new(rubyfunk_core::quic::CODEC_AV1).expect("av1 decoder");
         let err = dec
             .decode(&TU_10BIT)
             .err()
@@ -879,7 +879,7 @@ mod tests {
             "the refusal must survive as NoSoftwareRung through anyhow — a generic \
                      error here is the permanent freeze this test exists to prevent",
         );
-        assert_eq!(typed.codec, punktfunk_core::quic::CODEC_AV1);
+        assert_eq!(typed.codec, rubyfunk_core::quic::CODEC_AV1);
         assert_eq!(typed.shape, Some("10-bit or deeper"));
         // `RungLoss::Shape`: the retry is not narrowed to codecs with a CPU rung.
         assert_eq!(typed.loss(), crate::video::RungLoss::Shape);
@@ -932,7 +932,7 @@ mod tests {
     /// rav1d FFI, I420 copy, and colour — none of which the H.264 leg hits.
     #[test]
     fn software_av1_decodes_and_reports_its_sequence_colour() {
-        let mut dec = SoftwareDecoder::new(punktfunk_core::quic::CODEC_AV1).expect("av1 decoder");
+        let mut dec = SoftwareDecoder::new(rubyfunk_core::quic::CODEC_AV1).expect("av1 decoder");
         let mut first = None;
         let (mut units, mut frames) = (0u32, 0u32);
         // Whole vector: send loop + `Dav1dData` drop once per TU, so a leak or

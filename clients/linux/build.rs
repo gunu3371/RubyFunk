@@ -3,16 +3,16 @@
 //! and stamp the build version the update check compares against.
 
 fn main() {
-    // Build provenance, as in crates/host/punktfunk-host/build.rs: packaging sets
-    // PUNKTFUNK_BUILD_VERSION to the full package version; a plain `cargo build` uses the crate's.
+    // Build provenance, as in crates/host/rubyfunk-host/build.rs: packaging sets
+    // RUBYFUNK_BUILD_VERSION to the full package version; a plain `cargo build` uses the crate's.
     // `--version` prints it and `--check-update` compares it with the signed manifest. Canary
     // channels compare the CI run number in its suffix (pf_update_check::version).
-    let version = std::env::var("PUNKTFUNK_BUILD_VERSION")
+    let version = std::env::var("RUBYFUNK_BUILD_VERSION")
         .ok()
         .filter(|v| !v.trim().is_empty())
         .unwrap_or_else(|| std::env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| "unknown".into()));
-    println!("cargo:rustc-env=PUNKTFUNK_VERSION={version}");
-    println!("cargo:rerun-if-env-changed=PUNKTFUNK_BUILD_VERSION");
+    println!("cargo:rustc-env=RUBYFUNK_VERSION={version}");
+    println!("cargo:rerun-if-env-changed=RUBYFUNK_BUILD_VERSION");
 
     // Host cfg gate mirrors this crate's `#[cfg(target_os = "linux")]` modules: on any other
     // host the crate compiles to an empty stub and `glib-compile-resources` may not exist.
@@ -21,7 +21,7 @@ fn main() {
         glib_build_tools::compile_resources(
             &["data"],
             "data/resources.gresource.xml",
-            "punktfunk-client.gresource",
+            "rubyfunk-client.gresource",
         );
     }
 }

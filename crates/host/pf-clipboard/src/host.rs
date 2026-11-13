@@ -1,6 +1,6 @@
 //! Host clipboard backends (`design/clipboard-and-file-transfer.md`).
 //!
-//! Wire protocol and client half live in `punktfunk-core`. This module owns the
+//! Wire protocol and client half live in `rubyfunk-core`. This module owns the
 //! host selection: offer what a host app copied, paste what the remote offered.
 //! [`HostClipboard::open`] picks one backend; [`session`] stays agnostic.
 //!
@@ -32,7 +32,7 @@ use std::os::fd::OwnedFd;
 use std::sync::Arc;
 
 #[cfg(target_os = "linux")]
-use punktfunk_core::clipboard::CLIP_FETCH_CAP;
+use rubyfunk_core::clipboard::CLIP_FETCH_CAP;
 
 pub enum ClipEvent {
     /// Empty `mimes` means cleared; bytes wait for a client fetch.

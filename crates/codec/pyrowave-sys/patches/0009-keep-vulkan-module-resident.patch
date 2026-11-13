@@ -1,4 +1,4 @@
-Keep a dlopen reference to libvulkan on every init_loader path — PUNKTFUNK LOCAL PATCH.
+Keep a dlopen reference to libvulkan on every init_loader path — RUBYFUNK LOCAL PATCH.
 
 Not upstream. `Context::init_loader` only dlopens the loader when it must resolve
 `vkGetInstanceProcAddr` itself (`addr == nullptr`). When the first call arrives with a
@@ -40,7 +40,7 @@ index e76839b..1e81032 100644
 -			auto vulkan_path = Util::get_environment_string("GRANITE_VULKAN_LIBRARY", "");
 -			if (!vulkan_path.empty())
 -				module = dlopen(vulkan_path.c_str(), RTLD_LOCAL | RTLD_LAZY);
-+	// PUNKTFUNK LOCAL PATCH (patches/0009-keep-vulkan-module-resident.patch), not upstream.
++	// RUBYFUNK LOCAL PATCH (patches/0009-keep-vulkan-module-resident.patch), not upstream.
 +	// volkInitializeCustom binds the global procs through `addr`, but the trampolines it
 +	// resolves live in libvulkan.so.1. When the first init arrives with a caller-owned
 +	// `addr` (pyrowave_create_device's GetInstanceProcAddr), upstream holds no dlopen

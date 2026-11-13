@@ -121,11 +121,11 @@ impl VkBridge {
     /// `full_range`, or studio.
     pub fn new(full_range: bool) -> Result<VkBridge> {
         // CSC shares SM with the game: request elevated global priority so it schedules first.
-        // `PUNKTFUNK_VK_QUEUE_PRIORITY` = off | high | realtime (default high); a refused class
+        // `RUBYFUNK_VK_QUEUE_PRIORITY` = off | high | realtime (default high); a refused class
         // steps down to the next, so it never fails the bridge. This device is always NVIDIA,
         // whose REALTIME queue adds ~0.5 ms to every frame's convert, more than it preempts.
         let priorities: &[vk::QueueGlobalPriorityKHR] =
-            match std::env::var("PUNKTFUNK_VK_QUEUE_PRIORITY").as_deref() {
+            match std::env::var("RUBYFUNK_VK_QUEUE_PRIORITY").as_deref() {
                 Ok("off" | "0") => &[],
                 Ok("realtime") => &[
                     vk::QueueGlobalPriorityKHR::REALTIME,
@@ -148,7 +148,7 @@ impl VkBridge {
             ),
             // A GPU-bound game then delays every frame's convert by milliseconds.
             None if !priorities.is_empty() => tracing::warn!(
-                needs = "CAP_SYS_NICE (punktfunk-encode-worker)",
+                needs = "CAP_SYS_NICE (rubyfunk-encode-worker)",
                 "VkBridge queue at default GPU priority; the convert waits behind a GPU-bound game"
             ),
             None => {}

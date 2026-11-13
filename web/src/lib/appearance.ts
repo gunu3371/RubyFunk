@@ -27,7 +27,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
  * `check-omarchy-palette.mjs` enforces, in both modes.
  */
 export const ACCENT_SWATCHES = [
-	"#6c5bf3", // punktfunk violet
+	"#6c5bf3", // rubyfunk violet
 	"#3584e4", // libadwaita blue
 	"#2ec27e", // green
 	"#c88800", // amber

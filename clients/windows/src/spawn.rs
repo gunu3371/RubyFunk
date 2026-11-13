@@ -1,4 +1,4 @@
-//! The shell↔session handoff: streams run in the spawned `punktfunk-session` binary,
+//! The shell↔session handoff: streams run in the spawned `rubyfunk-session` binary,
 //! spawned and supervised by `pf_client_core::orchestrate` like the GTK shell's. This module
 //! adds what only this shell needs: CREATE_NO_WINDOW (the session keeps the console subsystem
 //! for its stdout contract, and a GUI parent would otherwise pop a console window),
@@ -8,7 +8,7 @@
 use pf_client_core::orchestrate::{
     self, CancelHandle, ConnectOutcome, ConnectPlan, HostTarget, SessionEvent,
 };
-use punktfunk_core::quic::v2::msg::ProfileUnlock;
+use rubyfunk_core::quic::v2::msg::ProfileUnlock;
 use std::os::windows::process::CommandExt as _;
 use std::path::PathBuf;
 use std::process::Command;
@@ -20,7 +20,7 @@ pub(crate) enum SpawnEvent {
     /// The child presented its first frame (its window is up and streaming).
     Ready,
     /// One stats window for the session status page.
-    Stats(Box<punktfunk_core::hud::StatsSnapshot>),
+    Stats(Box<rubyfunk_core::hud::StatsSnapshot>),
     /// The child exited (stdout EOF + reap; a kill lands here too), classified.
     Exited(ConnectOutcome),
 }

@@ -1,9 +1,9 @@
 ---
 title: Host CLI
-description: Every punktfunk-host command and flag you would run by hand, plus where the client's punktfunk command is documented.
+description: Every rubyfunk-host command and flag you would run by hand, plus where the client's rubyfunk command is documented.
 ---
 
-Look up a `punktfunk-host` command or flag here. Most behaviour comes from
+Look up a `rubyfunk-host` command or flag here. Most behaviour comes from
 [`host.env`](/docs/configuration), not the command line; a flag wins over its `host.env` twin.
 
 | Command | What it does | Platform |
@@ -14,7 +14,7 @@ Look up a `punktfunk-host` command or flag here. Most behaviour comes from
 | [`library`](#library) | Print the resolved [game library](/docs/game-library) as JSON. | all |
 | [`detect-conflicts`](#detect-conflicts) | Report other Moonlight-compatible hosts on this machine. | all |
 | `openapi` | Print the management API's OpenAPI document. | all |
-| [`punktfunk1-host`](#punktfunk1-host) | Standalone native-only test host. | all |
+| [`rubyfunk1-host`](#rubyfunk1-host) | Standalone native-only test host. | all |
 | `--version` | Print the host version. | all |
 | [`list-monitors`](#list-monitors) | List the physical monitors by connector name. | Linux |
 | [`mirror-test`](#list-monitors) | Capture one of them with no client, to prove the path works. | Linux |
@@ -29,7 +29,7 @@ Look up a `punktfunk-host` command or flag here. Most behaviour comes from
 | [`hooks`](#hooks-windows) | Let hooks and prep steps run as administrator. | Windows |
 | [`web`](#web-windows) | Print the web-console login password. | Windows |
 
-`punktfunk-host --help` prints the common commands. `ctl`, `plugins`, `service`, `tray`, `driver`
+`rubyfunk-host --help` prints the common commands. `ctl`, `plugins`, `service`, `tray`, `driver`
 and `web` print their usage when run with no arguments.
 
 ## `serve`
@@ -38,19 +38,19 @@ Runs the native `punktfunk/2` host and the management API in one process. The na
 runs.
 
 ```sh
-punktfunk-host serve
+rubyfunk-host serve
 ```
 
 | Flag | `host.env` twin | Meaning |
 |---|---|---|
-| `--gamestream` / `--moonlight` | `PUNKTFUNK_GAMESTREAM=1` | Also serve stock [Moonlight](/docs/moonlight) clients. Trusted LAN only: GameStream pairs over plain HTTP. |
-| `--native-port <PORT>` | `PUNKTFUNK_NATIVE_PORT` | Native QUIC port (default `9777`). |
-| `--mgmt-bind <IP:PORT>` | `PUNKTFUNK_MGMT_BIND` | Management API address (default `0.0.0.0:47990`). `127.0.0.1:47990` keeps it off the LAN, and paired clients can't browse your library. |
-| `--webtransport` | `PUNKTFUNK_WEBTRANSPORT=1` | Also accept the [browser client](/docs/browser-client) (preview). |
-| `--webtransport-port <PORT>` | `PUNKTFUNK_WEBTRANSPORT_PORT` | Its UDP port (default `9778`). |
-| `--webtransport-bind <IP>` | `PUNKTFUNK_WEBTRANSPORT_BIND` | Its interface (default: all). |
-| `--open` | — | Serve unpaired devices. Trusted single-user setups only. With the browser client on, it also needs `PUNKTFUNK_WEBTRANSPORT_ORIGINS`, or the host refuses to start. |
-| `--no-mdns` | `PUNKTFUNK_MDNS=0` | Skip the mDNS adverts; add the host on the client by address. |
+| `--gamestream` / `--moonlight` | `RUBYFUNK_GAMESTREAM=1` | Also serve stock [Moonlight](/docs/moonlight) clients. Trusted LAN only: GameStream pairs over plain HTTP. |
+| `--native-port <PORT>` | `RUBYFUNK_NATIVE_PORT` | Native QUIC port (default `9777`). |
+| `--mgmt-bind <IP:PORT>` | `RUBYFUNK_MGMT_BIND` | Management API address (default `0.0.0.0:47990`). `127.0.0.1:47990` keeps it off the LAN, and paired clients can't browse your library. |
+| `--webtransport` | `RUBYFUNK_WEBTRANSPORT=1` | Also accept the [browser client](/docs/browser-client) (preview). |
+| `--webtransport-port <PORT>` | `RUBYFUNK_WEBTRANSPORT_PORT` | Its UDP port (default `9778`). |
+| `--webtransport-bind <IP>` | `RUBYFUNK_WEBTRANSPORT_BIND` | Its interface (default: all). |
+| `--open` | — | Serve unpaired devices. Trusted single-user setups only. With the browser client on, it also needs `RUBYFUNK_WEBTRANSPORT_ORIGINS`, or the host refuses to start. |
+| `--no-mdns` | `RUBYFUNK_MDNS=0` | Skip the mDNS adverts; add the host on the client by address. |
 | `--door` | — | Linux: the box's host as a system service. It advertises, pairs, serves the console and places every connect on a seat, and opens no display. The [**Reachable without logging in**](/docs/profiles#on-linux) switch runs it. |
 | `--native` | — | No-op. |
 
@@ -60,7 +60,7 @@ Pairing is required unless `--open`: arm it from the web console — see
 The management API is HTTPS and listens on every interface by default. Off loopback it serves
 paired clients the read-only status and library. Every admin action needs the token in
 `mgmt-token` and works from loopback only. The host writes that file on first start into its
-config directory (`~/.config/punktfunk`, or `%ProgramData%\punktfunk` on Windows); the console,
+config directory (`~/.config/rubyfunk`, or `%ProgramData%\rubyfunk` on Windows); the console,
 `ctl` and the tray read it. Every endpoint is in the [API Reference](/api).
 
 ## `ctl`
@@ -69,8 +69,8 @@ Drives a running host over loopback: everything the [web console](/docs/web-cons
 day, from a terminal.
 
 ```sh
-punktfunk-host ctl pending
-punktfunk-host ctl approve 3
+rubyfunk-host ctl pending
+rubyfunk-host ctl approve 3
 ```
 
 | Verb | What it does |
@@ -123,7 +123,7 @@ never creates a token and takes none on the command line or from the environment
 ## `settings`
 
 ```sh
-punktfunk-host settings set gamestream true
+rubyfunk-host settings set gamestream true
 ```
 
 Writes one **Host** value to `host-settings.json`, as the console does, without a
@@ -132,23 +132,23 @@ JSON (`true`, `30`, `null` to clear) or a bare string. Restart the host to apply
 
 ## `plugins`
 
-`punktfunk-host plugins add|remove|list|enable|disable|status|grant|access|revoke` does what
+`rubyfunk-host plugins add|remove|list|enable|disable|status|grant|access|revoke` does what
 the console's **Plugins** page does. Plugins run with the host's privileges; read [Plugins](/docs/plugins)
 first.
 
 ## `library`
 
-`punktfunk-host library` prints the game library as JSON, the same as `GET /api/v1/library` — the
-quick answer to "does the host see my games?". `punktfunk-host library art --clear` deletes the
+`rubyfunk-host library` prints the game library as JSON, the same as `GET /api/v1/library` — the
+quick answer to "does the host see my games?". `rubyfunk-host library art --clear` deletes the
 covers the host cached for clients.
 
-## `punktfunk1-host`
+## `rubyfunk1-host`
 
 A standalone native-only host for testing the `punktfunk/2` path, with no GameStream and no console.
 Pairing is required; it logs a PIN at startup.
 
 ```sh
-punktfunk-host punktfunk1-host --source virtual
+rubyfunk-host rubyfunk1-host --source virtual
 ```
 
 | Flag | Meaning |
@@ -177,27 +177,27 @@ The installer runs `service install`; you need these only to change an option or
 service. Run them from an **Administrator** prompt.
 
 ```powershell
-punktfunk-host service install [--gamestream=on|off] [--allow-public-network[=on|off]]
+rubyfunk-host service install [--gamestream=on|off] [--allow-public-network[=on|off]]
                                [--mgmt-bind=IP:PORT] [--web-bind=ADDR]
-punktfunk-host service start | stop | restart | status | uninstall
+rubyfunk-host service start | stop | restart | status | uninstall
 ```
 
 | Subcommand or option | What it does |
 |---|---|
-| `install` | Registers the auto-start `PunktfunkHost` service, adds the firewall rules, and writes `%ProgramData%\punktfunk\host.env` if missing. Re-run it to change an option. |
+| `install` | Registers the auto-start `RubyFunkHost` service, adds the firewall rules, and writes `%ProgramData%\rubyfunk\host.env` if missing. Re-run it to change an option. |
 | `--gamestream=on\|off` | The GameStream setting, as in the console. |
 | `--allow-public-network[=on\|off]` | Also open the ports on networks Windows calls **Public**. Default: Private and Domain only; left out, the previous choice stays. |
-| `--mgmt-bind=IP:PORT` | Sets `PUNKTFUNK_MGMT_BIND` and opens that port. |
-| `--web-bind=ADDR` | Sets `PUNKTFUNK_UI_BIND`, the console's address: `127.0.0.1`, `0.0.0.0`, or one of yours. |
+| `--mgmt-bind=IP:PORT` | Sets `RUBYFUNK_MGMT_BIND` and opens that port. |
+| `--web-bind=ADDR` | Sets `RUBYFUNK_UI_BIND`, the console's address: `127.0.0.1`, `0.0.0.0`, or one of yours. |
 | `uninstall` | Stops and deletes the service and its firewall rules. The host stays — see [Uninstalling](/docs/uninstall). |
 | `start` / `stop` / `restart` | Service control. `restart` waits for the old process, so it picks up a `host.env` edit. |
-| `status` | Same as `sc query PunktfunkHost`. |
+| `status` | Same as `sc query RubyFunkHost`. |
 
 See [Running as a Service](/docs/running-as-a-service) and [Windows Host](/docs/windows-host).
 
 ## `tray` (Windows)
 
-`punktfunk-host tray start|stop|status` brings the per-user status tray back after an update or a
+`rubyfunk-host tray start|stop|status` brings the per-user status tray back after an update or a
 crash, without signing out. `status` says whether it is installed and running.
 
 ## `driver` (Windows)
@@ -205,67 +205,67 @@ crash, without signing out. `status` says whether it is installed and running.
 The installer manages the drivers. These remove one without uninstalling the host:
 
 ```powershell
-punktfunk-host driver check                # does the virtual display driver answer?
-punktfunk-host driver uninstall            # the virtual display driver
-punktfunk-host driver uninstall --gamepad  # the virtual gamepad driver
-punktfunk-host driver uninstall --audio    # the host's virtual speaker and microphone devices
+rubyfunk-host driver check                # does the virtual display driver answer?
+rubyfunk-host driver uninstall            # the virtual display driver
+rubyfunk-host driver uninstall --gamepad  # the virtual gamepad driver
+rubyfunk-host driver uninstall --audio    # the host's virtual speaker and microphone devices
 ```
 
 ## `seats` (Windows)
 
-`punktfunk-host seats off`, run elevated, turns [seats](/docs/windows-seats) off without the
+`rubyfunk-host seats off`, run elevated, turns [seats](/docs/windows-seats) off without the
 service: Remote Desktop's listener and firewall rules and the shared Steam shortcuts go back to how
 they were before seats, and the seat listener goes. The seat accounts stay. Uninstalling runs it; while the host runs, use
 **Profiles** → **Seats** instead, which also stops the seats first.
 
 ## `hooks` (Windows)
 
-`punktfunk-host hooks elevated on`, run elevated, lets hooks and prep steps marked `elevated` run
+`rubyfunk-host hooks elevated on`, run elevated, lets hooks and prep steps marked `elevated` run
 with the signed-in administrator's full rights. `off` stops them. The host reads it on every run,
 with no restart. See [Run as administrator](/docs/automation#run-as-administrator).
 
 ## `web` (Windows)
 
-`punktfunk-host web password` prints the [web console](/docs/web-console) login password. Run it
+`rubyfunk-host web password` prints the [web console](/docs/web-console) login password. Run it
 elevated: the file is readable by Administrators and SYSTEM only. A silent install (winget,
 `/VERYSILENT`) shows the password nowhere else.
 
 ## `list-monitors`
 
-Prints the physical monitors by connector name, the name `PUNKTFUNK_CAPTURE_MONITOR` takes to
+Prints the physical monitors by connector name, the name `RUBYFUNK_CAPTURE_MONITOR` takes to
 [stream a real monitor](/docs/virtual-displays#stream-a-real-monitor-instead). Run it inside the
 session you want to stream.
 
 ```
-$ punktfunk-host list-monitors
+$ rubyfunk-host list-monitors
 Kwin:
   HDMI-A-1        1920x1080@60 at +0,+0    scale 1  Dell U2412M  [primary]
   DP-2            2560x1440@144 at +1920,+0  scale 1  ACME 27  [PINNED]
 ```
 
-Tags: `primary`, `disabled`, `punktfunk virtual display` (one of the host's own), `PINNED` (the
+Tags: `primary`, `disabled`, `rubyfunk virtual display` (one of the host's own), `PINNED` (the
 current pick).
 
-`punktfunk-host mirror-test --monitor <CONNECTOR> [--seconds N] [--cpu]` captures that monitor with
+`rubyfunk-host mirror-test --monitor <CONNECTOR> [--seconds N] [--cpu]` captures that monitor with
 no client and reports the first frame, the frame count and the size. Move the mouse while it runs:
 a still screen produces almost no frames.
 
-`punktfunk-host anchor-test --monitor <CONNECTOR> [--width W --height H]` walks the pointer to the
+`rubyfunk-host anchor-test --monitor <CONNECTOR> [--width W --height H]` walks the pointer to the
 centre and four corners of that monitor, one second apart; `--none` walks it unanchored for
 comparison. The log line `libei: absolute input maps into this output` names the monitor it hit.
-It needs the libei input backend (GNOME, or `PUNKTFUNK_INPUT_BACKEND=libei`).
+It needs the libei input backend (GNOME, or `RUBYFUNK_INPUT_BACKEND=libei`).
 
 ## `hdr-probe` and `probe-compositor`
 
 Linux checks that need no client.
 
 ```sh
-punktfunk-host hdr-probe
-punktfunk-host probe-compositor
+rubyfunk-host hdr-probe
+rubyfunk-host probe-compositor
 ```
 
 `hdr-probe` answers "why isn't my stream HDR?": a monitor in HDR mode (GNOME), a
-`punktfunk-gamescope` with HDR on, 10-bit HEVC and AV1 encode, and the verdict for each plane. Run
+`rubyfunk-gamescope` with HDR on, 10-bit HEVC and AV1 encode, and the verdict for each plane. Run
 it with the host service's environment: [HDR → Check it](/docs/hdr#check-it) has the command
 and reads the output.
 
@@ -277,7 +277,7 @@ On Windows, `hdr-p010-selftest` checks the GPU's HDR capture conversion with no 
 and prints PASS or FAIL with the largest error:
 
 ```powershell
-punktfunk-host hdr-p010-selftest 1920x1080 nvidia
+rubyfunk-host hdr-p010-selftest 1920x1080 nvidia
 ```
 
 Both arguments are optional: your capture size (default `64x64`; 1080 takes a different driver
@@ -287,12 +287,12 @@ path) and, on a dual-GPU box, the encoding vendor (`intel`, `nvidia` or `amd`).
 
 Lists Sunshine, Apollo and other Moonlight-compatible hosts installed on this machine. It exits
 **1** when one runs or starts on its own, **0** otherwise, so scripts can gate on it. Running
-one beside Punktfunk is unsupported: they fight over ports and the virtual display. `serve` runs
+one beside RubyFunk is unsupported: they fight over ports and the virtual display. `serve` runs
 the same check at startup. See
 [Troubleshooting](/docs/troubleshooting-connect#another-streaming-host-sunshine-apollo--is-installed).
 
-## The client's `punktfunk` command
+## The client's `rubyfunk` command
 
-The machine you stream *to* has its own command, `punktfunk`. Its verbs and exit codes are on
-[Clients → the `punktfunk` CLI](/docs/clients#scripting-the-punktfunk-cli); `punktfunk wake` is on
+The machine you stream *to* has its own command, `rubyfunk`. Its verbs and exit codes are on
+[Clients → the `rubyfunk` CLI](/docs/clients#scripting-the-rubyfunk-cli); `rubyfunk wake` is on
 [Wake on LAN](/docs/wake-on-lan#from-the-command-line).

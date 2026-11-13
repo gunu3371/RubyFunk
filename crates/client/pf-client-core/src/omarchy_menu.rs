@@ -1,8 +1,8 @@
-//! Punktfunk rows in the Omarchy menu (Super+Space).
+//! RubyFunk rows in the Omarchy menu (Super+Space).
 //!
 //! One managed block in `~/.config/omarchy/extensions/omarchy-menu.jsonc`: a
-//! `punktfunk` submenu, Open, couch console, and a connect (and wake) row per
-//! saved host. Reusing the host tool's `"punktfunk"` root id is the format's
+//! `rubyfunk` submenu, Open, couch console, and a connect (and wake) row per
+//! saved host. Reusing the host tool's `"rubyfunk"` root id is the format's
 //! own override rule — both packages merge into one submenu.
 //!
 //! The menu cannot generate rows (`provider` is a map baked into the shell),
@@ -10,17 +10,17 @@
 //! known-hosts store; every write of that store calls it.
 //!
 //! Opt-in: nothing is written until the preferences switch or
-//! `punktfunk-client --omarchy-menu on`. `off` removes only our block.
+//! `rubyfunk-client --omarchy-menu on`. `off` removes only our block.
 //! The file is one document — a parse error drops every row the user owns —
 //! so edits validate on a copy and an unparsable file is left alone. Same
-//! traps as `packaging/linux/omarchy/punktfunk-omarchy`'s `setup_menu`.
+//! traps as `packaging/linux/omarchy/rubyfunk-omarchy`'s `setup_menu`.
 
 use crate::trust::KnownHosts;
 use std::path::{Path, PathBuf};
 
 const BEGIN: &str =
-    "// >>> punktfunk-client (managed by punktfunk-client --omarchy-menu — do not edit between these markers)";
-const END: &str = "// <<< punktfunk-client";
+    "// >>> rubyfunk-client (managed by rubyfunk-client --omarchy-menu — do not edit between these markers)";
+const END: &str = "// <<< rubyfunk-client";
 
 fn menu_path() -> Option<PathBuf> {
     Some(
@@ -235,16 +235,16 @@ fn slug(name: &str) -> String {
 fn rows_for(known: &KnownHosts) -> String {
     let j = |s: &str| serde_json::to_string(s).unwrap_or_else(|_| "\"\"".into());
     let mut out = String::new();
-    // Client root. Host rows live under `punktfunk-host` — do not merge connect
+    // Client root. Host rows live under `rubyfunk-host` — do not merge connect
     // and administer into one submenu.
     out.push_str(
-        "  \"punktfunk\": {\"icon\":\"\u{f0379}\",\"label\":\"Punktfunk\",\"aliases\":[\"stream\",\"connect\"]},\n",
+        "  \"rubyfunk\": {\"icon\":\"\u{f0379}\",\"label\":\"RubyFunk\",\"aliases\":[\"stream\",\"connect\"]},\n",
     );
     out.push_str(
-        "  \"punktfunk.app\": {\"icon\":\"\u{f003b}\",\"label\":\"Open Punktfunk\",\"description\":\"Hosts, pairing, settings\",\"action\":\"uwsm-app -- punktfunk-client\"},\n",
+        "  \"rubyfunk.app\": {\"icon\":\"\u{f003b}\",\"label\":\"Open RubyFunk\",\"description\":\"Hosts, pairing, settings\",\"action\":\"uwsm-app -- rubyfunk-client\"},\n",
     );
     out.push_str(
-        "  \"punktfunk.couch\": {\"icon\":\"\u{f0eb5}\",\"label\":\"Game console\",\"description\":\"The couch UI — library, hosts, pairing\",\"action\":\"uwsm-app -- punktfunk-client --browse\"},\n",
+        "  \"rubyfunk.couch\": {\"icon\":\"\u{f0eb5}\",\"label\":\"Game console\",\"description\":\"The couch UI — library, hosts, pairing\",\"action\":\"uwsm-app -- rubyfunk-client --browse\"},\n",
     );
     let mut hosts: Vec<_> = known.hosts.iter().collect();
     hosts.sort_by_key(|h| std::cmp::Reverse(h.last_used.unwrap_or(0)));
@@ -255,19 +255,19 @@ fn rows_for(known: &KnownHosts) -> String {
             id.push('-');
         }
         let label = if h.name.is_empty() { &h.addr } else { &h.name };
-        let target = punktfunk_core::client::join_host_port(&h.addr, h.port);
+        let target = rubyfunk_core::client::join_host_port(&h.addr, h.port);
         out.push_str(&format!(
-            "  \"punktfunk.connect-{id}\": {{\"icon\":\"\u{f0318}\",\"label\":{},\"description\":{},\"aliases\":[\"connect\"],\"action\":{}}},\n",
+            "  \"rubyfunk.connect-{id}\": {{\"icon\":\"\u{f0318}\",\"label\":{},\"description\":{},\"aliases\":[\"connect\"],\"action\":{}}},\n",
             j(label),
             j(&format!("Connect and stream — {target}")),
-            j(&format!("uwsm-app -- punktfunk-client --connect '{target}'")),
+            j(&format!("uwsm-app -- rubyfunk-client --connect '{target}'")),
         ));
         // Wake row only when a MAC is known: a row that cannot work is worse than none.
         if !h.mac.is_empty() {
             out.push_str(&format!(
-                "  \"punktfunk.wake-{id}\": {{\"icon\":\"\u{f0425}\",\"label\":{},\"description\":\"Send Wake-on-LAN\",\"action\":{}}},\n",
+                "  \"rubyfunk.wake-{id}\": {{\"icon\":\"\u{f0425}\",\"label\":{},\"description\":\"Send Wake-on-LAN\",\"action\":{}}},\n",
                 j(&format!("Wake {label}")),
-                j(&format!("punktfunk-client --wake '{target}'")),
+                j(&format!("rubyfunk-client --wake '{target}'")),
             ));
         }
     }
@@ -319,15 +319,15 @@ mod tests {
         .unwrap();
         assert!(jsonc_valid(&with_ours), "{with_ours}");
         assert!(with_ours.contains("personal.notes"), "their row survives");
-        assert!(with_ours.contains("punktfunk.connect-desk"));
-        assert!(with_ours.contains("punktfunk.wake-desk"));
+        assert!(with_ours.contains("rubyfunk.connect-desk"));
+        assert!(with_ours.contains("rubyfunk.wake-desk"));
         let v6 = rows_for(&known(vec![host("Lab", "fd00::5", false)]));
         assert!(v6.contains("--connect '[fd00::5]:"), "{v6}");
         // Idempotent: a second pass replaces, never stacks.
         let again = insert_block(&strip_block(&with_ours), &rows_for(&known(vec![]))).unwrap();
         assert_eq!(again.matches(BEGIN).count(), 1);
         assert!(
-            !again.contains("punktfunk.connect-desk"),
+            !again.contains("rubyfunk.connect-desk"),
             "the stale host is gone"
         );
         assert_eq!(strip_block(&again), theirs);
@@ -342,7 +342,7 @@ mod tests {
         )
         .unwrap();
         let v = jsonc_parse(&doc).expect("parses");
-        assert_eq!(v["punktfunk.connect-a-b-c"]["label"].as_str(), Some(spiky));
+        assert_eq!(v["rubyfunk.connect-a-b-c"]["label"].as_str(), Some(spiky));
 
         // `//` and a comma inside a string are data; the strip must not eat them.
         let commenty = "x // y, }";
@@ -352,7 +352,7 @@ mod tests {
         )
         .unwrap();
         let v = jsonc_parse(&doc).expect("a URL-ish name still parses");
-        assert_eq!(v["punktfunk.connect-x-y"]["label"].as_str(), Some(commenty));
+        assert_eq!(v["rubyfunk.connect-x-y"]["label"].as_str(), Some(commenty));
     }
 
     #[test]
@@ -361,13 +361,13 @@ mod tests {
         let real = concat!(
             "{\n",
             "  // header comment with an example: \"a\": {\"b\":1},\n",
-            "  \"punktfunk.console\": {\"label\":\"Open console\",\"action\":\"sh -c 'omarchy-launch-webapp \\\"$(punktfunk-host ctl console-url || echo https://localhost:47992)\\\"'\"},\n",
+            "  \"rubyfunk.console\": {\"label\":\"Open console\",\"action\":\"sh -c 'omarchy-launch-webapp \\\"$(rubyfunk-host ctl console-url || echo https://localhost:47992)\\\"'\"},\n",
             "  \"last\": {\"label\":\"x\"}, // trailing, then a comment\n",
             "}\n"
         );
         let v = jsonc_parse(real).expect("the deployed shapes are valid");
         assert!(
-            v["punktfunk.console"]["action"]
+            v["rubyfunk.console"]["action"]
                 .as_str()
                 .unwrap()
                 .contains("https://localhost:47992"),
@@ -382,9 +382,9 @@ mod tests {
             host("Desk", "10.0.0.2", false),
             host("", "10.0.0.3", false),
         ]));
-        assert!(rows.contains("punktfunk.connect-desk\""));
-        assert!(rows.contains("punktfunk.connect-desk-\""));
-        assert!(rows.contains("punktfunk.connect-10-0-0-3\""));
+        assert!(rows.contains("rubyfunk.connect-desk\""));
+        assert!(rows.contains("rubyfunk.connect-desk-\""));
+        assert!(rows.contains("rubyfunk.connect-10-0-0-3\""));
     }
 
     #[test]
@@ -394,7 +394,7 @@ mod tests {
         let p = dir.join("omarchy-menu.jsonc");
         std::fs::write(&p, "{ this is not jsonc").unwrap();
         let before = std::fs::read_to_string(&p).unwrap();
-        assert!(write_rows(&p, Some("  \"punktfunk\": {},\n")).is_err());
+        assert!(write_rows(&p, Some("  \"rubyfunk\": {},\n")).is_err());
         assert_eq!(std::fs::read_to_string(&p).unwrap(), before, "untouched");
         let _ = std::fs::remove_dir_all(&dir);
     }

@@ -28,9 +28,9 @@ use ashpd::desktop::{
 };
 use ashpd::zbus;
 use futures_util::StreamExt;
-use punktfunk_core::input::{InputEvent, InputKind};
 use reis::ei;
 use reis::event::{DeviceCapability, EiEvent};
+use rubyfunk_core::input::{InputEvent, InputKind};
 use std::collections::HashMap;
 use std::os::unix::net::UnixStream;
 use std::time::{Duration, Instant};
@@ -63,7 +63,7 @@ impl LibeiInjector {
     pub fn open_with(source: EiSource) -> Result<Self> {
         let (tx, rx) = unbounded_channel::<InputEvent>();
         std::thread::Builder::new()
-            .name("punktfunk-libei".into())
+            .name("rubyfunk-libei".into())
             .spawn(move || worker(rx, source))
             .map_err(|e| anyhow!("spawn libei worker thread: {e}"))?;
         // Handshake stays off the control thread: a slow or denied portal would freeze
@@ -255,7 +255,7 @@ async fn connect(source: EiSource) -> Result<Connected> {
     // socket never completes the EI handshake. Bound so InjectorService can reopen.
     let (_conn, events) = tokio::time::timeout(
         Duration::from_secs(8),
-        context.handshake_tokio("punktfunk-host", ei::handshake::ContextType::Sender),
+        context.handshake_tokio("rubyfunk-host", ei::handshake::ContextType::Sender),
     )
     .await
     .map_err(|_| {

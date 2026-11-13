@@ -2,7 +2,7 @@
 //! client that vanishes mid-press leaves the button, key or finger latched for the next one
 //! (Mutter keeps the implicit grab; the Windows touch refresher re-injects a held contact).
 
-use punktfunk_core::input::{InputEvent, InputKind};
+use rubyfunk_core::input::{InputEvent, InputKind};
 use std::collections::{HashMap, HashSet};
 
 /// Per kind. A flood of never-released codes cannot grow the sets; codes past it stay latched.

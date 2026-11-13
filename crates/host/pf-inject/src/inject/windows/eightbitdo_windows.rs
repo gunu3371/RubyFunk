@@ -13,8 +13,8 @@ use super::pad_shm::ShmPad;
 use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
 use pf_driver_proto::eightbitdo::NEUTRAL_REPORT;
-use punktfunk_core::input::GamepadFrame;
-use punktfunk_core::quic::RichInput;
+use rubyfunk_core::input::GamepadFrame;
+use rubyfunk_core::quic::RichInput;
 
 /// INF hardware ids. A package rename must not change them (`hwid_matches_inf`).
 pub(super) const ULTIMATE2_HWID: &str = "pf_8bitdo_ultimate2";
@@ -49,7 +49,7 @@ impl EightBitDoWinPad {
                 usb_vid_pid: Some(&vid_pid),
                 usb_mi: None,
                 bluetooth: model.bluetooth(),
-                description: &format!("Punktfunk Virtual {}", model.name()),
+                description: &format!("RubyFunk Virtual {}", model.name()),
                 enumerator: &vid_pid,
                 property: None,
             },
@@ -74,7 +74,7 @@ impl PadProto for EightBitDoWinProto {
     const LABEL: &'static str = "8BitDo/Windows";
     const DEVICE: &'static str = "8BitDo";
     const CREATE_HINT: &'static str =
-        " (install/repair: punktfunk-host.exe driver install --gamepad)";
+        " (install/repair: rubyfunk-host.exe driver install --gamepad)";
 
     fn open(&mut self, idx: u8) -> Result<EightBitDoWinPad> {
         let p = EightBitDoWinPad::open(self.model, idx)?;

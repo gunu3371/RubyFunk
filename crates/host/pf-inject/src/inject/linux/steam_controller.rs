@@ -21,7 +21,7 @@ use super::steam_proto::{
 use crate::uhid_abi::{UhidDevice, UhidEvent};
 use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
-use punktfunk_core::quic::{HidOutput, RichInput, HID_RAW_FEATURE};
+use rubyfunk_core::quic::{HidOutput, RichInput, HID_RAW_FEATURE};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
@@ -57,9 +57,9 @@ pub(crate) fn identity(index: u8, model: SteamModel) -> crate::uhid_abi::Identit
     };
     crate::uhid_abi::Identity {
         bus: crate::uhid_abi::BUS_USB,
-        name: format!("Punktfunk {name} {index}"),
-        phys: format!("punktfunk/{phys}/{index}"),
-        uniq: format!("punktfunk-{uniq}-{index}"),
+        name: format!("RubyFunk {name} {index}"),
+        phys: format!("rubyfunk/{phys}/{index}"),
+        uniq: format!("rubyfunk-{uniq}-{index}"),
         rdesc: STEAMDECK_RDESC,
         vendor: STEAM_VENDOR,
         product: model.product(),
@@ -157,7 +157,7 @@ impl SteamDeckPad {
                 SteamModel::Controller => fb.forward_sc_set(data.get(1..).unwrap_or_default()),
             },
             UhidEvent::GetReport { id, .. } => {
-                let _ = dev.reply_get_report(id, Some(&serial_reply("PUNKTFUNK01")));
+                let _ = dev.reply_get_report(id, Some(&serial_reply("RUBYFUNK01")));
             }
         });
         fb
@@ -294,11 +294,7 @@ impl PadProto for SteamProto {
         open_transport(idx)
     }
 
-    fn merge_frame(
-        &self,
-        prev: &SteamState,
-        f: &punktfunk_core::input::GamepadFrame,
-    ) -> SteamState {
+    fn merge_frame(&self, prev: &SteamState, f: &rubyfunk_core::input::GamepadFrame) -> SteamState {
         SteamState::merge_frame(prev, f)
     }
 
@@ -329,7 +325,7 @@ impl PadProto for SteamProto {
     }
 }
 
-/// Session Steam Deck pads (`PUNKTFUNK_GAMEPAD=steamdeck`).
+/// Session Steam Deck pads (`RUBYFUNK_GAMEPAD=steamdeck`).
 pub type SteamControllerManager = UhidManager<SteamProto>;
 
 /// A classic Steam Controller's transport: usbip (`vhci_hcd`), a USB device Steam adopts, else
@@ -430,7 +426,7 @@ impl PadProto for ScProto {
 
     /// Typed frames keep arriving beside a mirrored pad's reports: they update the fallback
     /// and show the client is alive.
-    fn merge_frame(&self, prev: &ScState, f: &punktfunk_core::input::GamepadFrame) -> ScState {
+    fn merge_frame(&self, prev: &ScState, f: &rubyfunk_core::input::GamepadFrame) -> ScState {
         let mut next = *prev;
         let typed = sc_merge_frame(&prev.typed, f, self.remap.paddles);
         next.typed_frame(typed, Instant::now());
@@ -464,7 +460,7 @@ impl PadProto for ScProto {
     }
 }
 
-/// Session classic Steam Controllers (`PUNKTFUNK_GAMEPAD=steamcontroller`).
+/// Session classic Steam Controllers (`RUBYFUNK_GAMEPAD=steamcontroller`).
 pub type SteamCtrlManager = UhidManager<ScProto>;
 
 #[cfg(test)]
@@ -519,7 +515,7 @@ mod tests {
     #[test]
     #[ignore = "creates a real /dev/uhid device; needs hid-steam + the input group"]
     fn backend_binds_and_input_flows() {
-        use punktfunk_core::input::gamepad as gs;
+        use rubyfunk_core::input::gamepad as gs;
         const BTN_A: u16 = 0x130;
         const ABS_HAT0X: u16 = 0x10; // left trackpad X
         let mut pad = SteamDeckPad::open(0).expect("open SteamDeckPad (/dev/uhid + input group?)");
@@ -581,7 +577,7 @@ mod tests {
     #[test]
     #[ignore = "creates a real /dev/uhid device; needs hid-steam + the input group"]
     fn sc_backend_binds_and_input_flows() {
-        use punktfunk_core::input::gamepad as gs;
+        use rubyfunk_core::input::gamepad as gs;
         const BTN_A: u16 = 0x130;
         const ABS_RX: u16 = 0x03;
         let mut pad = SteamDeckPad::open_model(0, SteamModel::Controller)
@@ -636,7 +632,7 @@ mod tests {
     #[test]
     #[ignore = "attaches a real vhci_hcd device; needs root"]
     fn steam_controller_holds_for_a_probe() {
-        use punktfunk_core::input::{gamepad as gs, GamepadEvent, GamepadFrame};
+        use rubyfunk_core::input::{gamepad as gs, GamepadEvent, GamepadFrame};
         let secs = std::env::var("PF_PAD_HOLD_SECS")
             .ok()
             .and_then(|s| s.parse().ok())

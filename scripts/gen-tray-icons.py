@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the punktfunk-tray status icons (committed, like the other branding assets).
+"""Generate the rubyfunk-tray status icons (committed, like the other branding assets).
 
 Renders the brand mark — the two overlapping circles ("lens") from web's brand-mark.tsx, the
 same geometry gen-branding.ps1 uses — with a status dot in the lower-right corner:
@@ -11,9 +11,9 @@ same geometry gen-branding.ps1 uses — with a status dot in the lower-right cor
   streaming  colored mark + bright-violet dot
 
 Outputs (all checked in; re-run only when the brand or the palette changes):
-  packaging/windows/branding/punktfunk-tray-<state>.ico   16/20/24/32/48 px PNG-entry icos
-                                                          (Vista+ format, same as punktfunk.ico)
-  packaging/linux/icons/hicolor/{22x22,48x48}/apps/punktfunk-tray[-<state>].png
+  packaging/windows/branding/rubyfunk-tray-<state>.ico   16/20/24/32/48 px PNG-entry icos
+                                                          (Vista+ format, same as rubyfunk.ico)
+  packaging/linux/icons/hicolor/{22x22,48x48}/apps/rubyfunk-tray[-<state>].png
                                                           (running is the unsuffixed base name)
 
 Pure stdlib (zlib PNG writer, analytic 4x-supersampled rasterizer) so it runs on any dev box —
@@ -128,7 +128,7 @@ def png_bytes(size, rows):
 
 
 def ico_bytes(pngs):
-    """PNG-entry .ico (Vista+; the format punktfunk.ico already uses)."""
+    """PNG-entry .ico (Vista+; the format rubyfunk.ico already uses)."""
     header = struct.pack("<HHH", 0, 1, len(pngs))
     entries = b""
     blobs = b""
@@ -149,12 +149,12 @@ def main():
             (s, png_bytes(s, render(s, spec["dot"], spec["gray"])))
             for s in (16, 20, 24, 32, 48)
         ]
-        out = ico_dir / f"punktfunk-tray-{state}.ico"
+        out = ico_dir / f"rubyfunk-tray-{state}.ico"
         out.write_bytes(ico_bytes(pngs))
         print(f"wrote {out.relative_to(REPO)}")
 
         for s in (22, 48):
-            name = "punktfunk-tray" if state == "running" else f"punktfunk-tray-{state}"
+            name = "rubyfunk-tray" if state == "running" else f"rubyfunk-tray-{state}"
             png_dir = REPO / f"packaging/linux/icons/hicolor/{s}x{s}/apps"
             png_dir.mkdir(parents=True, exist_ok=True)
             out = png_dir / f"{name}.png"

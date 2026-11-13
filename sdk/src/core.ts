@@ -1,6 +1,6 @@
-// `@punktfunk/host/core` — the SDK with nothing Node in it.
+// `@rubyfunk/host/core` — the SDK with nothing Node in it.
 //
-// The generated client and its Schemas, the `PunktfunkHost` service, the typed errors, the
+// The generated client and its Schemas, the `RubyFunkHost` service, the typed errors, the
 // event-stream decoder, and the credential kinds — everything a program needs to talk to a host
 // once it already knows how to reach one. What it lacks is deliberate: resolving a connection
 // from environment and token files is `config.ts`, which imports `node:fs`, and the runner,
@@ -10,7 +10,7 @@
 // specifier, so this entry stays consumable from a browser by construction rather than by
 // habit.
 //
-//   import { api, connection, deviceKey, httpClientFor } from "@punktfunk/host/core";
+//   import { api, connection, deviceKey, httpClientFor } from "@rubyfunk/host/core";
 //
 //   const conn = connection({ url, credential: deviceKey({ url, hostFingerprint, signer }) });
 //   const program = Effect.gen(function* () {
@@ -24,8 +24,8 @@ export {
 	EventStreamError,
 	layerFrom,
 	makeService,
-	PunktfunkHost,
-	type PunktfunkHostService,
+	RubyFunkHost,
+	type RubyFunkHostService,
 	type RequestError,
 	SseAuthError,
 	TransportError,
@@ -52,4 +52,4 @@ export * from "./wire.js";
  * from `@effect/openapi-generator` over `api/openapi.json`. Regenerate with `bun run gen`; CI
  * fails if this file and the spec disagree.
  */
-export * as api from "./gen/punktfunk.js";
+export * as api from "./gen/rubyfunk.js";

@@ -541,7 +541,7 @@ impl Drop for DualSenseUsbip {
 }
 
 /// Enumerate + HID-bind grace (3 s). Bind is ~330 ms idle; a failed URB tears the device
-/// down ~400 ms after attach. `PUNKTFUNK_DUALSENSE_USBIP_GRACE_MS` overrides; `0` skips.
+/// down ~400 ms after attach. `RUBYFUNK_DUALSENSE_USBIP_GRACE_MS` overrides; `0` skips.
 const BIND_GRACE: std::time::Duration = std::time::Duration::from_millis(3000);
 
 /// Wait until a HID driver has bound the pad's HID interface, or the grace expires.
@@ -550,7 +550,7 @@ const BIND_GRACE: std::time::Duration = std::time::Duration::from_millis(3000);
 /// fails. A bound HID driver with an `input` child means the pad actually came up. Only a
 /// node outside `before` (the pads already attached) is this pad's.
 fn wait_until_bound(index: u8, before: &[std::path::PathBuf]) -> Result<()> {
-    let grace = std::env::var("PUNKTFUNK_DUALSENSE_USBIP_GRACE_MS")
+    let grace = std::env::var("RUBYFUNK_DUALSENSE_USBIP_GRACE_MS")
         .ok()
         .and_then(|s| s.parse::<u64>().ok())
         .map(std::time::Duration::from_millis)
@@ -671,14 +671,14 @@ fn vhci_dualsenses() -> impl Iterator<Item = UsbTopology> {
     })
 }
 
-/// Prefer usbip DualSense over uhid when the `PUNKTFUNK_DUALSENSE_USBIP` row is on. Every seat
+/// Prefer usbip DualSense over uhid when the `RUBYFUNK_DUALSENSE_USBIP` row is on. Every seat
 /// host follows the box's row, handed on in its Seat defaults: the owner's row too, since one
 /// switch covers the box's controllers.
 ///
 /// Opt-in: this mints a real ALSA card that supersedes the pad-audio sinks.
 pub fn usbip_preferred() -> bool {
     pf_host_config::seat_defaults::of_box().map_or_else(
-        || pf_host_config::row_bool("PUNKTFUNK_DUALSENSE_USBIP"),
+        || pf_host_config::row_bool("RUBYFUNK_DUALSENSE_USBIP"),
         |defaults| defaults.dualsense_usbip,
     )
 }

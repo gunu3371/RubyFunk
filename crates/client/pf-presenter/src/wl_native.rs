@@ -13,7 +13,7 @@
 //!
 //! Each buffer is imported once under a key and reused; the caller's hold is kept until the
 //! compositor releases the buffer. The overlay rides on its own subsurface above the picture,
-//! with an empty input region. Opt-in (`PUNKTFUNK_NATIVE_SCANOUT=1`) until measured on a display.
+//! with an empty input region. Opt-in (`RUBYFUNK_NATIVE_SCANOUT=1`) until measured on a display.
 //!
 //! SDL owns the socket. A private queue takes this lane's events; SDL's pump reads them in
 //! and [`NativeLane::pump`] dispatches them. Presentation times arrive on CLOCK_MONOTONIC
@@ -22,8 +22,8 @@
 use crate::wl_side::{monotonic_to_realtime, release_registry, SdlWayland};
 use anyhow::{Context as _, Result};
 use pf_client_core::video::{ColorDesc, DmabufFrame};
-use punktfunk_core::quic::HdrMeta;
-use punktfunk_core::video_fit::VideoFit;
+use rubyfunk_core::quic::HdrMeta;
+use rubyfunk_core::video_fit::VideoFit;
 use sdl3::video::WindowContext;
 use std::any::Any;
 use std::collections::{HashMap, HashSet};
@@ -62,7 +62,7 @@ const KIND_ZERO_COPY: u32 = 8;
 /// linux-dmabuf tranche flag: this tranche's buffers can go straight to a plane.
 const TRANCHE_SCANOUT: u32 = 1;
 
-/// `PUNKTFUNK_NATIVE_SCANOUT=1` arms the lane.
+/// `RUBYFUNK_NATIVE_SCANOUT=1` arms the lane.
 pub fn enabled() -> bool {
     pf_client_core::video::native_scanout_wanted()
 }
@@ -1326,7 +1326,7 @@ impl Drop for NativeLane {
 
 #[cfg(test)]
 mod tests {
-    use punktfunk_core::quic::HdrMeta;
+    use rubyfunk_core::quic::HdrMeta;
 
     fn meta(max_cll: u16, max_fall: u16) -> HdrMeta {
         HdrMeta {

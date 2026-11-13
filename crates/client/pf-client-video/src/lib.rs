@@ -5,7 +5,7 @@
 //! vocabulary, the `VkDevice` handoff, the presenter's SPIR-V and PyroWave decode: the
 //! modules Android links directly. webOS, Apple and wasm never build it.
 
-// Decoder-input capture behind `PUNKTFUNK_DUMP_VIDEO`, written by the session pump.
+// Decoder-input capture behind `RUBYFUNK_DUMP_VIDEO`, written by the session pump.
 #[cfg(desktop)]
 pub mod au_dump;
 // The ladder. Every item is re-exported at the root, so `pf_client_core::video::X` is `X` here.
@@ -62,23 +62,23 @@ pub mod video_csc_spv;
 mod video_software;
 // Native VAAPI: pf-vaapi plans into dlopen'd libva, DRM-PRIME dmabufs for the presenter.
 // Only VAAPI rung. It is `verified: false`, so `auto` never tries it before a usable Vulkan rung;
-// pin `PUNKTFUNK_DECODER=native-vaapi` to run it first. Evidence: `video`.
+// pin `RUBYFUNK_DECODER=native-vaapi` to run it first. Evidence: `video`.
 #[cfg(all(desktop, target_os = "linux"))]
 pub mod video_vaapi_native;
-// V4L2 decode: the hardware rung of SoCs with no Vulkan Video and no VA-API. `auto` reaches it after both; pin `PUNKTFUNK_DECODER=native-v4l2`.
+// V4L2 decode: the hardware rung of SoCs with no Vulkan Video and no VA-API. `auto` reaches it after both; pin `RUBYFUNK_DECODER=native-v4l2`.
 #[cfg(all(desktop, target_os = "linux"))]
 mod video_v4l2;
 // The stateless half of that rung: HEVC on decoders that take parsed slices (Raspberry Pi 5, RK3588).
 #[cfg(all(desktop, target_os = "linux"))]
 mod video_v4l2_hevc;
-// Native Vulkan Video (H.264/H.265/AV1) on the presenter's device. Auto's top rung on both desktop OSes; pin `PUNKTFUNK_DECODER=native-vulkan`. Evidence: `video`.
+// Native Vulkan Video (H.264/H.265/AV1) on the presenter's device. Auto's top rung on both desktop OSes; pin `RUBYFUNK_DECODER=native-vulkan`. Evidence: `video`.
 #[cfg(desktop)]
 mod video_vk_native;
 // D3D11 decode-device: shareable-texture hand-off ring, device creation, `display_hdr_volume`. `video_d3d11_native` and `clients/session` build on it.
 #[cfg(all(feature = "d3d11va", windows))]
 pub mod video_d3d11;
 // Native D3D11VA: `ID3D11VideoDecoder` from pf-bitstream plans into `video_d3d11`'s hand-off ring.
-// Only DXVA rung; in `auto` for H.264/H.265/AV1. Pin `PUNKTFUNK_DECODER=native-d3d11va`. Evidence: `video`.
+// Only DXVA rung; in `auto` for H.264/H.265/AV1. Pin `RUBYFUNK_DECODER=native-d3d11va`. Evidence: `video`.
 #[cfg(all(feature = "d3d11va", windows))]
 pub mod video_d3d11_native;
 // PyroWave: Vulkan compute on the device the frame is presented from (no fds, no dmabuf,

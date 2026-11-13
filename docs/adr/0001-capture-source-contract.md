@@ -34,7 +34,7 @@ with choices, and environment knobs were read where they were used.
 4. **Model and shell.** A decision fixed more than once is a pure model: an enum state, a `step`
    from an observation to actions, and a table test whose rows name the fixes they pin. The shell
    samples the OS, steps the model, executes the actions.
-5. **Knobs once.** Every `PUNKTFUNK_*` read in the crate is in `knobs.rs`, resolved once per open
+5. **Knobs once.** Every `RUBYFUNK_*` read in the crate is in `knobs.rs`, resolved once per open
    and passed as a value.
 6. **Crate edges.** pf-capture depends on pf-frame, pf-zerocopy, the display leaves and
    pf-encode-core (the `Encoder` contract), never on pf-encode or the host. What only the host

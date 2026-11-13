@@ -74,7 +74,7 @@ export interface DeviceKeyOptions {
 /**
  * The exact bytes a device signature covers: context, the channel, then the nonce.
  *
- * The same construction as `punktfunk_core::quic::auth_signed_message`, which is what the host
+ * The same construction as `rubyfunk_core::quic::auth_signed_message`, which is what the host
  * verifies against. Both halves have to agree byte for byte, so this is the one place the SDK
  * writes it and `credential.test.ts` pins it against a known vector.
  */

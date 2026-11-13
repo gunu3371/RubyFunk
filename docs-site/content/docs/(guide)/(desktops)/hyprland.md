@@ -32,7 +32,7 @@ org.freedesktop.impl.portal.ScreenCast=hyprland
 
 Nothing is required: the host finds Hyprland on every connect.
 
-Don't set `PUNKTFUNK_COMPOSITOR`: a pin turns off detection and session following. Every other
+Don't set `RUBYFUNK_COMPOSITOR`: a pin turns off detection and session following. Every other
 option is in [Configuration](/docs/configuration).
 
 The host adds its picker to `~/.config/hypr/xdph.conf` and restarts xdph when that changes. A
@@ -43,8 +43,8 @@ picker you configured there still runs for every share the host didn't ask for.
 From inside your Hyprland session:
 
 ```sh
-systemctl --user enable --now punktfunk-host
-journalctl --user -u punktfunk-host -f    # watch it start and print its fingerprint
+systemctl --user enable --now rubyfunk-host
+journalctl --user -u rubyfunk-host -f    # watch it start and print its fingerprint
 ```
 
 Open [the web console](/docs/web-console) to pair a [client](/docs/clients). To serve Moonlight
@@ -81,7 +81,7 @@ Hyprland as a real session and check your driver's GBM support.
 
 A host that predates the cursor-mode check asked xdph for a cursor mode it doesn't offer. Update
 the host, or switch the client to **game** [mouse mode](/docs/input#mouse-modes) meanwhile. If the
-pointer misbehaves on an xdph that does offer it, set `PUNKTFUNK_PORTAL_CURSOR_MODE=embedded`.
+pointer misbehaves on an xdph that does offer it, set `RUBYFUNK_PORTAL_CURSOR_MODE=embedded`.
 
 ### Black frames with `enforce_permissions` on [#permission-system]
 
@@ -91,14 +91,14 @@ and to xdph, which the host falls back to, with the paths your packages installe
 `hyprland.lua`:
 
 ```lua
-hl.permission("/usr/bin/punktfunk-host", "screencopy", "allow")
+hl.permission("/usr/bin/rubyfunk-host", "screencopy", "allow")
 hl.permission("/usr/(lib|libexec|lib64)/xdg-desktop-portal-hyprland", "screencopy", "allow")
 ```
 
 or in `hyprland.conf`:
 
 ```ini
-permission = /usr/bin/punktfunk-host, screencopy, allow
+permission = /usr/bin/rubyfunk-host, screencopy, allow
 permission = /usr/(lib|libexec|lib64)/xdg-desktop-portal-hyprland, screencopy, allow
 ```
 

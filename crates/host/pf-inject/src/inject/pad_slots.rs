@@ -11,7 +11,7 @@
 
 use crate::pad_gate::PadGate;
 use anyhow::Result;
-use punktfunk_core::input::MAX_PADS;
+use rubyfunk_core::input::MAX_PADS;
 use std::time::{Duration, Instant};
 
 // The unplug sweep walks a u16 `active_mask` (the wire type); every slot must have a bit.
@@ -58,16 +58,16 @@ impl PadCreateFault {
         match self {
             PadCreateFault::IndexOwnedElsewhere => {
                 " — this pad index is already owned by another LIVE process (on a Windows host \
-                 that is the LocalSystem PunktfunkHost service, whose session still holds the \
+                 that is the LocalSystem RubyFunkHost service, whose session still holds the \
                  pad). The drivers are not the problem and reinstalling them will not help: the \
                  retry succeeds on its own once that process releases the index (end its session, \
-                 or Restart-Service PunktfunkHost), or run against a pad index it does not hold."
+                 or Restart-Service RubyFunkHost), or run against a pad index it does not hold."
             }
             PadCreateFault::SessionFence => {
                 " — the pad was removed: it did not carry this host's session id, so every \
                  session on the box could have seen and opened it. The retry makes a new one. If \
                  every retry fails, PnP or a driver stacked on the pad drops the property; \
-                 reinstalling the punktfunk drivers does not set it."
+                 reinstalling the rubyfunk drivers does not set it."
             }
         }
     }

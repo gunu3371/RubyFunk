@@ -15,8 +15,8 @@ use std::time::Duration;
 
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
-use punktfunk_core::clipboard::CLIP_FETCH_CAP;
-use punktfunk_core::quic::{
+use rubyfunk_core::clipboard::CLIP_FETCH_CAP;
+use rubyfunk_core::quic::{
     clipstream, ClipFetch, ClipFetchHdr, ClipKind, ClipOffer, CLIP_FETCH_OK, CLIP_FETCH_STALE,
     CLIP_FETCH_UNAVAILABLE, CLIP_FILE_INDEX_NONE,
 };

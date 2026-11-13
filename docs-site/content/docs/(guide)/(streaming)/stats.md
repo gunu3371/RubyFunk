@@ -66,12 +66,12 @@ not shown as zero.
 | `skipped N%` | Frames your device chose not to show because a newer one had arrived | Frames dropped due to network jitter |
 | `rtt X ms` | Round trip of the connection | Average network latency |
 
-Three differences remain, and none makes Punktfunk look better than it is:
+Three differences remain, and none makes RubyFunk look better than it is:
 
-- Punktfunk's `host` includes the paced send of the frame; Sunshine's stops just before it.
+- RubyFunk's `host` includes the paced send of the frame; Sunshine's stops just before it.
 - Moonlight's headline FPS estimates what the host produced, lost frames included. `received`
   counts what arrived and reports loss separately.
-- On Android, Moonlight measures nothing after the decoder. Punktfunk shows `display`, with the
+- On Android, Moonlight measures nothing after the decoder. RubyFunk shows `display`, with the
   phone's own compositor wait left out.
 
 The Advanced headline has no Moonlight counterpart. To hold one against Moonlight, add up
@@ -197,5 +197,5 @@ The other graphs show frame rate, bitrate against the encoder's target, drops, t
 on a native stream, the cost of sealing each frame. The header names the encoder backend and GPU.
 
 **Download** saves a recording as a `.json` file to attach to a report; **Delete** removes it.
-Recordings live on the host in `~/.config/punktfunk/captures/`
-(`%ProgramData%\punktfunk\captures\` on Windows).
+Recordings live on the host in `~/.config/rubyfunk/captures/`
+(`%ProgramData%\rubyfunk\captures\` on Windows).

@@ -1,11 +1,11 @@
-// The managed script/plugin runner (RFC §8, M5) — what the `punktfunk-scripting` package runs:
+// The managed script/plugin runner (RFC §8, M5) — what the `rubyfunk-scripting` package runs:
 // discover the operator's units, supervise them as Effect fibers, shut down structurally.
 //
 // Units:
 // - **Plugins** — a file whose default export is a [`PluginDef`] (`definePlugin`), from the
-//   scripts dir or an installed `punktfunk-plugin-*` package. Supervised: a failure restarts
+//   scripts dir or an installed `rubyfunk-plugin-*` package. Supervised: a failure restarts
 //   it with capped exponential backoff; a clean return completes it. The Effect `main` shape
-//   runs with the `PunktfunkHost` layer provided and is interrupted STRUCTURALLY on shutdown
+//   runs with the `RubyFunkHost` layer provided and is interrupted STRUCTURALLY on shutdown
 //   (scoped finalizers run — release the preset, deregister cleanly); the async-fn shape gets
 //   a connected facade client whose close is guaranteed by the same scope.
 // - **Bare scripts** — any other `.ts`/`.js` file in the scripts dir: importing it IS the run
@@ -27,11 +27,11 @@ import {
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { pathToFileURL } from "node:url";
-import { PunktfunkHost } from "./client.js";
+import { RubyFunkHost } from "./client.js";
 import { discoverUnits } from "./discover.js";
 import { layer as hostLayer } from "./effect.js";
 import { type ConnectOptions, configDir } from "./config.js";
-import { connect, type PluginDef, type Punktfunk } from "./index.js";
+import { connect, type PluginDef, type RubyFunk } from "./index.js";
 import { grantedRoots, type PluginManifest, sandboxProbe } from "./sandbox.js";
 import { pluginToken, runSandboxed } from "./runner-linux.js";
 import { defaultLog, type LogSink, type RunnerLogLevel } from "./runner-log.js";
@@ -41,15 +41,15 @@ export interface RunnerOptions {
 	/** Where loose scripts live. Default `<config_dir>/scripts`. */
 	scriptsDir?: string;
 	/**
-	 * Where plugin packages are installed (`<pluginsDir>/node_modules/punktfunk-plugin-*`,
-	 * i.e. the operator runs `bun add punktfunk-plugin-x` there). Default `<config_dir>/plugins`.
+	 * Where plugin packages are installed (`<pluginsDir>/node_modules/rubyfunk-plugin-*`,
+	 * i.e. the operator runs `bun add rubyfunk-plugin-x` there). Default `<config_dir>/plugins`.
 	 */
 	pluginsDir?: string;
 	/** Connection overrides handed to every unit's client/layer. */
 	connect?: ConnectOptions;
 	/** Restart backoff base (test seam). Default 1 s, capped at 60 s, jittered. */
 	restartBase?: Duration.Input;
-	/** `"off"` runs plugins in-process. Default: `PUNKTFUNK_PLUGIN_SANDBOX` on Linux, off elsewhere. */
+	/** `"off"` runs plugins in-process. Default: `RUBYFUNK_PLUGIN_SANDBOX` on Linux, off elsewhere. */
 	sandbox?: "on" | "off";
 	/**
 	 * With the sandbox off, still give each plugin that declared a manifest a process of its
@@ -90,7 +90,7 @@ export interface Unit {
 	file: string;
 	/** The installed package's directory — absent for a loose script. */
 	packageDir?: string;
-	/** Its `punktfunk` block, when it declared one. A plugin package without it gets no host-run
+	/** Its `rubyfunk` block, when it declared one. A plugin package without it gets no host-run
 	 * commands, and does not run at all while sandboxing is on. */
 	manifest?: PluginManifest;
 }
@@ -100,7 +100,7 @@ export interface Unit {
  * will see it — never a silent downgrade because a box could not manage a namespace.
  */
 export const sandboxMode = (): "on" | "off" =>
-	/^(0|off|false)$/i.test(process.env.PUNKTFUNK_PLUGIN_SANDBOX ?? "") ||
+	/^(0|off|false)$/i.test(process.env.RUBYFUNK_PLUGIN_SANDBOX ?? "") ||
 	// The Windows host publishes `host.env`'s answer here; the runner's task never sees host.env.
 	(process.platform === "win32" &&
 		fs.existsSync(path.join(configDir(), "plugin-run", "sandbox-off")))
@@ -141,7 +141,7 @@ const client = (own: ConnectOptions | undefined) =>
  * lease that can't be held never stops the plugin.
  */
 const holdLease = (
-	acquire: Effect.Effect<Punktfunk, unknown, Scope.Scope>,
+	acquire: Effect.Effect<RubyFunk, unknown, Scope.Scope>,
 	id: string,
 	options: RunnerOptions,
 ) =>
@@ -211,7 +211,7 @@ const attemptUnit = (
 				if (Effect.isEffect(def.main)) {
 					// The well-behaved shape: interruption reaches it structurally, its scoped
 					// finalizers run on shutdown.
-					yield* (def.main as Effect.Effect<unknown, unknown, PunktfunkHost>).pipe(
+					yield* (def.main as Effect.Effect<unknown, unknown, RubyFunkHost>).pipe(
 						Effect.provide(hostLayer(own)),
 					);
 				} else {
@@ -375,7 +375,7 @@ const watchGrantChanges = (
 
 /**
  * The runner ended at start: the sandbox is on, this box builds none, and a plugin is installed.
- * Running one without its sandbox is the operator's choice (`PUNKTFUNK_PLUGIN_SANDBOX=off`),
+ * Running one without its sandbox is the operator's choice (`RUBYFUNK_PLUGIN_SANDBOX=off`),
  * never a fallback.
  */
 export class SandboxRefused extends Error {}
@@ -431,7 +431,7 @@ const sandboxRefusal = (
 	noteRefusal(config, probe.reason);
 	log(`[runner] plugins can't be sandboxed here: ${probe.reason}`, "error");
 	log(
-		`[runner] stopping instead of running ${plugins.join(", ")} unsandboxed — repair the sandbox and start the runner again, or set PUNKTFUNK_PLUGIN_SANDBOX=off to accept that`,
+		`[runner] stopping instead of running ${plugins.join(", ")} unsandboxed — repair the sandbox and start the runner again, or set RUBYFUNK_PLUGIN_SANDBOX=off to accept that`,
 		"error",
 	);
 	return new SandboxRefused(probe.reason);
@@ -463,7 +463,7 @@ export const runner = (
 			const sandbox = options.sandbox ?? (confines ? sandboxMode() : "off");
 			if (sandbox === "off" && confines) {
 				log(
-					"[runner] PUNKTFUNK_PLUGIN_SANDBOX=off — plugins run with the runner's whole access",
+					"[runner] RUBYFUNK_PLUGIN_SANDBOX=off — plugins run with the runner's whole access",
 					"warn",
 				);
 			}
@@ -475,14 +475,14 @@ export const runner = (
 			const units = found.filter((unit) => {
 				if (sandbox === "off" || !unit.packageDir || unit.manifest) return true;
 				log(
-					`[runner] not starting ${unit.name}: no punktfunk manifest to sandbox it with — update the plugin`,
+					`[runner] not starting ${unit.name}: no rubyfunk manifest to sandbox it with — update the plugin`,
 					"error",
 				);
 				return false;
 			});
 			if (units.length === 0) {
 				log(
-					"[runner] nothing to run — add scripts to the scripts dir or install punktfunk-plugin-* packages",
+					"[runner] nothing to run — add scripts to the scripts dir or install rubyfunk-plugin-* packages",
 				);
 			}
 

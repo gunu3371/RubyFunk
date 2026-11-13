@@ -911,7 +911,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "punktfunk-core"
+name = "rubyfunk-core"
 version = "0.46.0"
 dependencies = [
  "aes-gcm",
@@ -940,14 +940,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "punktfunk-fuzz"
+name = "rubyfunk-fuzz"
 version = "0.0.0"
 dependencies = [
  "aes-gcm",
  "anyhow",
  "libfuzzer-sys",
  "pf-bitstream",
- "punktfunk-core",
+ "rubyfunk-core",
 ]
 
 [[package]]

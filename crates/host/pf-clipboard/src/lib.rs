@@ -1,7 +1,7 @@
 //! Host-side shared clipboard.
 //!
-//! Wire protocol and the client half live in `punktfunk-core`
-//! (`punktfunk_core::quic` + `punktfunk_core::clipboard`). This crate opens the
+//! Wire protocol and the client half live in `rubyfunk-core`
+//! (`rubyfunk_core::quic` + `rubyfunk_core::clipboard`). This crate opens the
 //! per-OS backends in [`host`] and bridges them to the QUIC clipboard plane
 //! through [`host::session`].
 //!
@@ -12,7 +12,7 @@
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
 
-use punktfunk_core::quic::ClipOffer;
+use rubyfunk_core::quic::ClipOffer;
 
 /// Per-OS backends and the backend-agnostic [`host::session`] coordinator.
 #[cfg(any(target_os = "linux", target_os = "windows"))]
@@ -22,7 +22,7 @@ pub mod host;
 /// (default): the host neither advertises the cap nor starts [`host::session`].
 pub fn policy() -> Option<u8> {
     use pf_host_config::ClipboardPolicy;
-    use punktfunk_core::quic::{CLIP_POLICY_FILES, CLIP_POLICY_TEXT};
+    use rubyfunk_core::quic::{CLIP_POLICY_FILES, CLIP_POLICY_TEXT};
     match pf_host_config::config().clipboard {
         ClipboardPolicy::Off => None,
         ClipboardPolicy::Text => Some(CLIP_POLICY_TEXT),
@@ -124,7 +124,7 @@ pub async fn start(
 /// accepted, so this loop only sees clipboard fetch streams.
 pub fn spawn_decline_loop(conn: quinn::Connection) {
     tokio::spawn(async move {
-        use punktfunk_core::quic::{clipstream, ClipFetchHdr, CLIP_FETCH_UNAVAILABLE};
+        use rubyfunk_core::quic::{clipstream, ClipFetchHdr, CLIP_FETCH_UNAVAILABLE};
         while let Ok((mut send, mut recv)) = conn.accept_bi().await {
             tokio::spawn(async move {
                 if clipstream::read_stream_header(&mut recv).await.is_err() {

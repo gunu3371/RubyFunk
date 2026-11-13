@@ -147,7 +147,7 @@ pub fn set_enabled(on: bool) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pf_client_core::omarchy::{parse_hex, parse_punktfunk_json};
+    use pf_client_core::omarchy::{parse_hex, parse_rubyfunk_json};
 
     fn theme() -> OsTheme {
         OsTheme {
@@ -190,7 +190,7 @@ mod tests {
         // Everforest Light's shape: the accent is handsome as a fill and illegible as text.
         // The text form moves (see pf-client-core's `readable` tests); the fill must not.
         let raw = r##"{"schema":1,"mode":"light","background":"#fdf6e3","foreground":"#5c6a72","accent":"#dfa000"}"##;
-        let t = parse_punktfunk_json(raw).unwrap();
+        let t = parse_rubyfunk_json(raw).unwrap();
         assert!(css(&t).contains("@define-color accent_bg_color #dfa000;"));
     }
 
@@ -204,7 +204,7 @@ mod tests {
     /// in their OWN process; whichever starts first wins and the rest panic with "Attempted
     /// to initialize GTK from two different threads". Run it by name:
     ///
-    ///     cargo test -p punktfunk-client-linux -- --ignored the_theme_reaches_a_widget
+    ///     cargo test -p rubyfunk-client-linux -- --ignored the_theme_reaches_a_widget
     #[test]
     #[ignore = "needs a Wayland/X display"]
     fn the_theme_reaches_a_widget_through_the_app_stylesheet() {

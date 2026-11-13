@@ -1,4 +1,4 @@
-# Publish the TypeScript SDK (@punktfunk/host) to the Gitea npm registry
+# Publish the TypeScript SDK (@rubyfunk/host) to the Gitea npm registry
 # (https://git.unom.io/api/packages/unom/npm/).
 #
 # Trigger: push a tag `sdk-vX.Y.Z` (must equal sdk/package.json "version"), or run manually.
@@ -66,6 +66,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
         run: |
           test -n "$NODE_AUTH_TOKEN" || { echo "REGISTRY_TOKEN secret is empty"; exit 1; }
-          # .npmrc already maps the @punktfunk scope to the registry; append the auth line.
+          # .npmrc already maps the @rubyfunk scope to the registry; append the auth line.
           printf '//git.unom.io/api/packages/unom/npm/:_authToken=%s\n' "$NODE_AUTH_TOKEN" >> .npmrc
           bun publish

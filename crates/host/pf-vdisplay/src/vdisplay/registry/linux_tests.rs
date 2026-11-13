@@ -34,7 +34,7 @@ const UHD: Mode = Mode {
 };
 
 /// For a child whose released displays must stay kept for the length of the test.
-const KEPT: &[(&str, &str)] = &[("PUNKTFUNK_MONITOR_LINGER_MS", "60000")];
+const KEPT: &[(&str, &str)] = &[("RUBYFUNK_MONITOR_LINGER_MS", "60000")];
 
 /// [`crate::fake::in_child`] for this module.
 fn in_child(test: &str, env: &[(&str, &str)], body: fn()) {
@@ -372,7 +372,7 @@ fn a_dead_kept_display_is_torn_down_before_the_create() {
 /// never inside its window.
 #[test]
 fn a_linger_window_ends_in_a_teardown() {
-    let window = &[("PUNKTFUNK_MONITOR_LINGER_MS", "20")];
+    let window = &[("RUBYFUNK_MONITOR_LINGER_MS", "20")];
     in_child("a_linger_window_ends_in_a_teardown", window, || {
         let fake = restoring("kwin");
         log_events(&fake);

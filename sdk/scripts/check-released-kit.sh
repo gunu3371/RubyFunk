@@ -7,7 +7,7 @@
 #
 #   bash sdk/scripts/check-released-kit.sh [plugin-kit-vX.Y.Z]
 #
-# A release whose `@punktfunk/host` peer range leaves this SDK version out never claimed it: the
+# A release whose `@rubyfunk/host` peer range leaves this SDK version out never claimed it: the
 # check says so and passes. That is the state between a breaking SDK bump and the kit cut on it.
 set -euo pipefail
 
@@ -33,9 +33,9 @@ trap 'rm -rf "$work"' EXIT
 git archive "$tag" plugin-kit clients/shared | tar -x -C "$work"
 
 sdk_version="$(bun -e 'console.log(require(process.argv[1]).version)' "$root/sdk/package.json")"
-range="$(bun -e 'console.log(require(process.argv[1]).peerDependencies["@punktfunk/host"])' "$work/plugin-kit/package.json")"
+range="$(bun -e 'console.log(require(process.argv[1]).peerDependencies["@rubyfunk/host"])' "$work/plugin-kit/package.json")"
 if ! bun -e 'process.exit(Bun.semver.satisfies(process.argv[1], process.argv[2]) ? 0 : 1)' "$sdk_version" "$range"; then
-    echo "$tag asks for @punktfunk/host $range and this tree is $sdk_version: no released kit claims this SDK yet"
+    echo "$tag asks for @rubyfunk/host $range and this tree is $sdk_version: no released kit claims this SDK yet"
     exit 0
 fi
 
@@ -44,11 +44,11 @@ fi
 ln -s "$root/sdk" "$work/sdk"
 cd "$work/plugin-kit"
 retry bun install --ignore-scripts
-rm -rf node_modules/@punktfunk/host
-mkdir -p node_modules/@punktfunk/host
-cp -R "$root/sdk/dist" "$root/sdk/package.json" node_modules/@punktfunk/host/
+rm -rf node_modules/@rubyfunk/host
+mkdir -p node_modules/@rubyfunk/host
+cp -R "$root/sdk/dist" "$root/sdk/package.json" node_modules/@rubyfunk/host/
 
-echo "== $tag against @punktfunk/host $sdk_version at $(git -C "$root" rev-parse --short HEAD)"
+echo "== $tag against @rubyfunk/host $sdk_version at $(git -C "$root" rev-parse --short HEAD)"
 bun run typecheck
 bun test
 # The worked example the first-party scanners are cut from: it has to load on this SDK.

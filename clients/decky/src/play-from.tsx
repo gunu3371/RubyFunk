@@ -1,14 +1,14 @@
-// Punktfunk hosts in Steam's own "Play from" dropdown, and Steam's Play button as Stream when
+// RubyFunk hosts in Steam's own "Play from" dropdown, and Steam's Play button as Stream when
 // one is chosen.
 //
 // The ▾ beside Play opens Steam's streaming selector: `overview.per_client_data` as "This device"
 // / "Stream from: <PC>" rows, selection through `SteamClient.Apps.SetStreamingClientForApp`. That
 // menu is built inside the Play button class's bound ShowStreamingMenu, so the ▾ is re-pointed
 // at a menu built here from the same data with Steam's own Menu components, class names and
-// localization tokens, plus a row per Punktfunk host that has the title. The choice is kept per
+// localization tokens, plus a row per RubyFunk host that has the title. The choice is kept per
 // title; while it stands, the Play button is re-dressed as Stream and launches ours.
 //
-// Steam draws the ▾ only while a second Steam client has the title, so where a Punktfunk host
+// Steam draws the ▾ only while a second Steam client has the title, so where a RubyFunk host
 // has it and Steam left the ▾ out, it is drawn here. No ▾, no re-dressed button: the menu's
 // "This device" row is the only way back to Steam's Play.
 import { findClassModule, Menu, MenuItem, MenuSeparator, showContextMenu } from "@decky/ui";
@@ -16,7 +16,7 @@ import { cloneElement, createElement } from "react";
 import { FaCheck } from "react-icons/fa";
 import { hostsForApp, subscribeCatalog } from "./catalog";
 import { diag } from "./diag";
-import { Game, PunktfunkMark, streamFrom } from "./game";
+import { Game, RubyFunkMark, streamFrom } from "./game";
 import { getHostStore, subscribeHosts } from "./hooks";
 import type { HostView } from "./hosts";
 import { collectElements, createRenderPatcher, describe } from "./patch";
@@ -50,9 +50,9 @@ function gameOf(overview: Overview): Game {
   };
 }
 
-// ---- The choice: which Punktfunk host this title's Play button streams from ------------------
+// ---- The choice: which RubyFunk host this title's Play button streams from ------------------
 
-const SEL_PREFIX = "punktfunk:playFrom:";
+const SEL_PREFIX = "rubyfunk:playFrom:";
 
 export function playFromSelection(appId: number): string | null {
   try {
@@ -176,7 +176,7 @@ export function openPlayFromMenu(overview: Overview, anchor?: EventTarget): void
       </MenuItem>,
     );
   }
-  // Punktfunk hosts as a second group, drawn exactly like Steam's rows — same check column, same
+  // RubyFunk hosts as a second group, drawn exactly like Steam's rows — same check column, same
   // label, Steam's text colour — with a small lens mark at the row's end as the only brand hint.
   // A separator is how Steam's own menu groups its entries.
   if (hosts.length > 0) {
@@ -196,7 +196,7 @@ export function openPlayFromMenu(overview: Overview, anchor?: EventTarget): void
           {!host.online && <span style={{ opacity: 0.6 }}> · asleep</span>}
         </span>
         <span style={{ marginLeft: "auto", paddingLeft: "1em", display: "inline-flex", opacity: 0.85 }}>
-          <PunktfunkMark size={18} />
+          <RubyFunkMark size={18} />
         </span>
       </MenuItem>,
     );
@@ -206,7 +206,7 @@ export function openPlayFromMenu(overview: Overview, anchor?: EventTarget): void
 
 // ---- The Play button ------------------------------------------------------------------------
 
-const DROPDOWN_KEY = "punktfunk-play-from";
+const DROPDOWN_KEY = "rubyfunk-play-from";
 
 /** Steam's ▾ where Steam left it out: the main button's own component in Steam's selector
  *  classes, in Steam's place after the button and before the explainer. False when the output
@@ -247,7 +247,7 @@ function addDropdown(out: any, main: any, onClick: (e: any) => void): boolean {
 }
 
 /** Steam's Play button class renders [main button, ▾, explainer]. Re-point the ▾ at our menu,
- *  draw it where Steam left it out, and while a Punktfunk host is chosen, re-dress the main
+ *  draw it where Steam left it out, and while a RubyFunk host is chosen, re-dress the main
  *  button as our Stream. */
 const playButtonPatcher = createRenderPatcher((out, self) => {
   const overview = (self as any)?.props?.overview as Overview | undefined;
@@ -291,13 +291,13 @@ const playButtonPatcher = createRenderPatcher((out, self) => {
     return out;
   }
   const streaming = isGameStreaming(game.appId);
-  main.props.className = `${main.props.className ?? ""} punktfunk-play`;
+  main.props.className = `${main.props.className ?? ""} rubyfunk-play`;
   main.props.onClick = () => (streaming ? stopGameStream(game.appId) : streamFrom(host, game));
   const kids = main.props.children as any[];
   const iconIdx = kids.findIndex((k) => k && typeof k === "object" && k.type && typeof k.type !== "string");
   const labelIdx = kids.findIndex((k) => k && k.type === "div");
   if (iconIdx >= 0) {
-    kids[iconIdx] = <PunktfunkMark key="pf-mark" size={26} />;
+    kids[iconIdx] = <RubyFunkMark key="pf-mark" size={26} />;
   }
   if (labelIdx >= 0) {
     kids[labelIdx] = cloneElement(kids[labelIdx], {}, streaming ? "Stop" : "Stream");

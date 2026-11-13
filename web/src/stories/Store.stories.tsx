@@ -18,7 +18,7 @@ type Story = StoryObj<typeof meta>;
 
 const BASE: CatalogEntry = {
 	id: "rom-manager",
-	pkg: "@punktfunk/plugin-rom-manager",
+	pkg: "@rubyfunk/plugin-rom-manager",
 	title: "ROM Manager",
 	description:
 		"Scans your ROM directories, maps them to emulators, fetches box art, and reconciles everything into the host game library as a provider.",
@@ -47,7 +47,7 @@ export const SinglePlatform: Story = {
 		entry: {
 			...BASE,
 			id: "playnite",
-			pkg: "@punktfunk/plugin-playnite",
+			pkg: "@rubyfunk/plugin-playnite",
 			title: "Playnite",
 			description:
 				"Syncs your Playnite library into the host game library — every store and emulator Playnite manages, launched back through Playnite.",
@@ -78,7 +78,7 @@ export const Incompatible: Story = {
 			...BASE,
 			compatible: false,
 			incompatible_reason:
-				"needs Punktfunk host ≥ 0.16.0 (this host is 0.15.0)",
+				"needs RubyFunk host ≥ 0.16.0 (this host is 0.15.0)",
 		},
 	},
 };

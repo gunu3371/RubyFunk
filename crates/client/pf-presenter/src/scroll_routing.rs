@@ -3,7 +3,7 @@ use crate::overlay::Overlay;
 #[cfg(target_os = "linux")]
 use crate::wayland_scroll::WaylandScroll;
 #[cfg(target_os = "linux")]
-use punktfunk_core::input::InputEvent;
+use rubyfunk_core::input::InputEvent;
 use sdl3::{event::Event, video::Window};
 
 pub(crate) struct ScrollRouting {

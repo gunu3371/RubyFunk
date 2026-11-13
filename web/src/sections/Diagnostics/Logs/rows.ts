@@ -65,7 +65,7 @@ export const hostRows = (entries: LogEntry[]): Row[] =>
 	});
 
 /**
- * `2026-08-15T12:03:47.123Z INFO  punktfunk_session::stream  frame late by 34ms`
+ * `2026-08-15T12:03:47.123Z INFO  rubyfunk_session::stream  frame late by 34ms`
  *
  * The level is written through `{:5}`, so it arrives padded and the gap before the target is one
  * or two spaces — matched loosely rather than pinned, since the padding is a formatting detail of

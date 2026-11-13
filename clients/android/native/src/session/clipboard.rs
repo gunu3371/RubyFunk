@@ -1,5 +1,5 @@
 //! Shared-clipboard plane (text-only v1): Kotlin drives the Android `ClipboardManager`, these
-//! shims drive [`punktfunk_core::client::NativeClient`]'s clipboard surface.
+//! shims drive [`rubyfunk_core::client::NativeClient`]'s clipboard surface.
 //!
 //! Model (mirrors the desktop clients): opt-in via `nativeClipControl(true)`; local copies are
 //! announced lazily as format-list offers (`nativeClipOfferText`) and the bytes cross only when
@@ -20,9 +20,9 @@ use jni::errors::LogErrorAndDefault;
 use jni::objects::{JObject, JString};
 use jni::sys::{jboolean, jint, jlong};
 use jni::EnvUnowned;
-use punktfunk_core::clipboard::ClipEventCore;
-use punktfunk_core::error::PunktfunkError;
-use punktfunk_core::quic::{ClipKind, CLIP_FILE_INDEX_NONE, HOST_CAP_CLIPBOARD};
+use rubyfunk_core::clipboard::ClipEventCore;
+use rubyfunk_core::error::RubyFunkError;
+use rubyfunk_core::quic::{ClipKind, CLIP_FILE_INDEX_NONE, HOST_CAP_CLIPBOARD};
 
 use super::{jni_guard, SessionHandle, SESSIONS};
 
@@ -36,7 +36,7 @@ fn client(handle: jlong) -> Option<Arc<SessionHandle>> {
 
 /// `NativeBridge.nativeClipSupported(handle)` — the host advertised `HOST_CAP_CLIPBOARD`.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeClipSupported(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeClipSupported(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -53,7 +53,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeClipSupport
 /// moved its mgmt port off 47990 WITHOUT ever having seen an mDNS advert — the VPN / routed-subnet
 /// / added-by-address cases, where the `mgmt` TXT the discovery path relies on never arrives.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeHostMgmtPort(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeHostMgmtPort(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -66,7 +66,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeHostMgmtPor
 /// `NativeBridge.nativeClipControl(handle, enabled)` — session-level opt-in/out. Nothing
 /// clipboard-related happens on either side until an `enabled: true` crosses.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeClipControl(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeClipControl(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -83,7 +83,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeClipControl
 /// text" (format list only; bytes cross when the host fetches). `seq` is Kotlin's monotonic
 /// counter, newest wins.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeClipOfferText(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeClipOfferText(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -105,7 +105,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeClipOfferTe
 /// `NativeBridge.nativeClipFetchText(handle, seq)` — pull the text of the host's offer `seq`.
 /// Returns the transfer id echoed on the matching `data:`/`error:` event, or −1.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeClipFetchText(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeClipFetchText(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -125,7 +125,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeClipFetchTe
 /// `NativeBridge.nativeClipServeText(handle, reqId, text)` — answer a `fetch:` event with the
 /// clipboard's current text (the host is pasting our offer).
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeClipServeText(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeClipServeText(
     mut env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -150,7 +150,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeClipServeTe
 
 /// `NativeBridge.nativeClipCancel(handle, id)` — abort a transfer (either direction).
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeClipCancel(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeClipCancel(
     _env: EnvUnowned,
     _this: JObject,
     handle: jlong,
@@ -171,7 +171,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeClipCancel(
 /// clipboard task delivers a whole payload in ONE event (`last = true`), so a chunk boundary
 /// can never split a UTF-8 sequence.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeNextClip<'local>(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeNextClip<'local>(
     mut env: EnvUnowned<'local>,
     _this: JObject<'local>,
     handle: jlong,
@@ -202,7 +202,7 @@ pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeNextClip<'l
             }
             Ok(ClipEventCore::Cancelled { id }) => format!("cancel:{id}"),
             Ok(ClipEventCore::Error { id, code }) => format!("error:{id}:{code}"),
-            Err(PunktfunkError::NoFrame) => return Ok(JString::default()),
+            Err(RubyFunkError::NoFrame) => return Ok(JString::default()),
             Err(_) => "closed".into(),
         };
         env.new_string(msg)

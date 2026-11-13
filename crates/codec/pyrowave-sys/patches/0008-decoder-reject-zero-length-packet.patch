@@ -1,4 +1,4 @@
-Decoder: reject a sub-header packet so the parse cursor always advances — PUNKTFUNK LOCAL PATCH.
+Decoder: reject a sub-header packet so the parse cursor always advances — RUBYFUNK LOCAL PATCH.
 
 Not upstream. Decoder::Impl::push_packet walks a window body of self-delimiting
 packets by advancing `data`/`size` by `packet_size = header->payload_words * 4`.
@@ -33,7 +33,7 @@ index f300dc2..45cc9bc 100644
  
  		size_t packet_size = header->payload_words * sizeof(uint32_t);
  
-+		// PUNKTFUNK: a packet must be at least its own header, so this parse cursor ALWAYS advances.
++		// RUBYFUNK: a packet must be at least its own header, so this parse cursor ALWAYS advances.
 +		// payload_words is a 12-bit wire field that may be 0, and decode_packet's duplicate-block
 +		// early return fires BEFORE its own payload_words minimum check — so a duplicate block_index
 +		// with payload_words == 0 returns true and `data += 0; size -= 0;` spins the decode thread

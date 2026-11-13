@@ -1,6 +1,6 @@
 //! Uninstall-time sweep of MEDIA-class audio DEVNODEs this host minted.
 //!
-//! `punktfunk-host driver uninstall --audio` (Inno `[UninstallRun]`). DEVNODEs
+//! `rubyfunk-host driver uninstall --audio` (Inno `[UninstallRun]`). DEVNODEs
 //! persist across restarts by design ([`minted`](super::minted),
 //! [`pad_endpoint`](super::pad_endpoint)); uninstall must still remove them.
 //! Match owner markers, never names — our instances share VALVE streaming-audio
@@ -233,8 +233,8 @@ mod tests {
     #[test]
     fn every_minted_family_is_swept() {
         // A new minted family that omits itself here ships as a leftover after uninstall.
-        assert!(OWNER_MARKERS.contains(&"PunktfunkPadIndex"));
-        assert!(OWNER_MARKERS.contains(&"PunktfunkAudioRole"));
-        assert!(OWNER_MARKERS.contains(&"PunktfunkAudioProbe"));
+        assert!(OWNER_MARKERS.contains(&"RubyFunkPadIndex"));
+        assert!(OWNER_MARKERS.contains(&"RubyFunkAudioRole"));
+        assert!(OWNER_MARKERS.contains(&"RubyFunkAudioProbe"));
     }
 }

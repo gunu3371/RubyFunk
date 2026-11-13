@@ -7,7 +7,7 @@ index 9572555..2e78fad 100644
  		{
  			auto *y = cmd->update_image(*img);
 -			if (!input.read(y, img->get_width() * img->get_height()))
-+			// PUNKTFUNK PATCH 0003: size the plane read in BYTES, not texels — 16-bit y4m
++			// RUBYFUNK PATCH 0003: size the plane read in BYTES, not texels — 16-bit y4m
 +			// inputs otherwise read half a plane and desync the stream after frame 1.
 +			if (!input.read(y, size_t(img->get_width()) * img->get_height() *
 +			                       YUV4MPEGFile::format_to_bytes_per_component(input.get_format())))

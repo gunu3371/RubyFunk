@@ -86,7 +86,7 @@ pad as stereo, or as a mono speaker plus headphones, which drops them. When the 
 four-channel output, the client switches its card to **Pro Audio** for the session and restores
 your profile afterwards; it never saves the switch. SteamOS already has a four-channel output.
 
-- To manage the card yourself, set `PUNKTFUNK_PAD_AUDIO_PROFILE=0` in the client's environment
+- To manage the card yourself, set `RUBYFUNK_PAD_AUDIO_PROFILE=0` in the client's environment
   and pick a four-channel profile.
 - A Flatpak client may not be allowed to switch the profile. If the log says so, set the
   controller's **Profile** to **Pro Audio** in your sound settings.
@@ -99,7 +99,7 @@ your profile afterwards; it never saves the switch. SteamOS already has a four-c
 Plug in the DualSense and run:
 
 ```sh
-punktfunk-session --pad-audio-test
+rubyfunk-session --pad-audio-test
 ```
 
 It lists the DualSense outputs it finds, names the one it picked, and plays a three-second tone
@@ -109,18 +109,18 @@ the game. Add `--speaker` to test the speaker instead, `--seconds N` to run long
 In a Flatpak install, including the Steam Deck:
 
 ```sh
-flatpak run --command=punktfunk-session io.unom.punktfunk --pad-audio-test
+flatpak run --command=rubyfunk-session io.github.gunu3371.rubyfunk --pad-audio-test
 ```
 
 ## Known limits
 
 - **The pad's speaker stays silent.** The speaker shares channel 1 with the headphone jack. The
   client points it at the speaker when **Controller speaker** is on, but a game that sets the
-  pad's audio itself overrides that. `PUNKTFUNK_PAD_SPEAKER_PATH` and `PUNKTFUNK_PAD_SPEAKER_VOLUME`
+  pad's audio itself overrides that. `RUBYFUNK_PAD_SPEAKER_PATH` and `RUBYFUNK_PAD_SPEAKER_VOLUME`
   ([client-side settings](/docs/configuration#client-side-native-clients)) try other values.
 - **A real DualSense plugged into the host can take the audio.** Some titles find it first. Unplug
   it while you stream.
 - **Titles that match the pad by container ID** don't recognise it on a Linux host. Titles that
   match by name or USB ids work.
-- **A Windows host gives one pad controller audio by default.** `PUNKTFUNK_PAD_AUDIO_SLOTS` raises
+- **A Windows host gives one pad controller audio by default.** `RUBYFUNK_PAD_AUDIO_SLOTS` raises
   it to four ([Configuration](/docs/configuration)).

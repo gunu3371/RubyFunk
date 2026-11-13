@@ -34,7 +34,7 @@ pub struct Build<'a> {
     /// The preset's overrides, in preset scope.
     pub overlay: Option<&'a SettingsOverlay>,
     /// What a Native stream asks for: the monitor the window is on.
-    pub native: punktfunk_core::Mode,
+    pub native: rubyfunk_core::Mode,
     pub store: &'a Rc<Store>,
     /// The values the rows open on: the defaults, or the preset over them.
     pub seed: &'a Settings,

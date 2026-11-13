@@ -16,7 +16,7 @@
 //! is not the user's — a German host would y↔z / ü-on-ö scramble.
 
 use anyhow::Result;
-use punktfunk_core::input::{InputEvent, InputKind};
+use rubyfunk_core::input::{InputEvent, InputKind};
 
 use crate::scroll::{ScrollBackend, ScrollMapper, ScrollOp};
 use std::mem::size_of;

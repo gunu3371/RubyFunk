@@ -2,7 +2,7 @@
 //! preset or a game), design/client-deep-links.md §5.
 //!
 //! The shortcut is a **container for a URL**, not a second launch mechanism: it invokes the
-//! client with a positional `punktfunk://…`, which is the same door xdg-open and a browser
+//! client with a positional `rubyfunk://…`, which is the same door xdg-open and a browser
 //! prompt use. That is deliberate — it keeps working if scheme registration is lost or the
 //! host store changes, because the URL itself carries the stable id, the address and the pin.
 //!
@@ -20,7 +20,7 @@ pub fn create(parent: &impl IsA<gtk::Widget>, label: &str, url: &str) -> Option<
         let dialog = adw::AlertDialog::new(
             Some("Create Shortcut"),
             Some(
-                "Punktfunk is sandboxed here, so it can't add the shortcut itself. Copy this \
+                "RubyFunk is sandboxed here, so it can't add the shortcut itself. Copy this \
                  link and make a launcher for it \u{2014} it opens the same stream.",
             ),
         );
@@ -54,7 +54,7 @@ fn sandboxed() -> bool {
     std::path::Path::new("/.flatpak-info").exists()
 }
 
-/// Write `~/.local/share/applications/punktfunk-<slug>.desktop` for this URL and return the
+/// Write `~/.local/share/applications/rubyfunk-<slug>.desktop` for this URL and return the
 /// path. Best-effort `update-desktop-database` afterwards: an entry nothing indexes still
 /// works from a file manager, it just won't show up in search straight away.
 fn write_desktop_entry(label: &str, url: &str) -> Result<PathBuf, String> {
@@ -65,7 +65,7 @@ fn write_desktop_entry(label: &str, url: &str) -> Result<PathBuf, String> {
     // thing telling their shortcuts apart — the second silently replaced the first. The same
     // host always resolves to the same URL, so re-creating its shortcut still overwrites its own.
     let path = dir.join(format!(
-        "punktfunk-{}-{:08x}.desktop",
+        "rubyfunk-{}-{:08x}.desktop",
         file_slug(label),
         url_tag(url)
     ));
@@ -79,9 +79,9 @@ fn write_desktop_entry(label: &str, url: &str) -> Result<PathBuf, String> {
         "[Desktop Entry]\n\
          Type=Application\n\
          Name={name}\n\
-         Comment=Stream from this Punktfunk host\n\
-         Exec=punktfunk-client \"{exec_url}\"\n\
-         Icon=io.unom.punktfunk\n\
+         Comment=Stream from this RubyFunk host\n\
+         Exec=rubyfunk-client \"{exec_url}\"\n\
+         Icon=io.github.gunu3371.rubyfunk\n\
          Terminal=false\n\
          Categories=Game;Network;\n\
          StartupNotify=true\n"

@@ -182,7 +182,7 @@ mod tests {
     use super::*;
     use pf_client_core::menu_nav::MenuDir;
     use pf_client_core::trust::Settings;
-    use punktfunk_core::config::GamepadPref;
+    use rubyfunk_core::config::GamepadPref;
 
     fn pad() -> PadInfo {
         PadInfo {

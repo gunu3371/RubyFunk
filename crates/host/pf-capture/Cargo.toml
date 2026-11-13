@@ -10,7 +10,7 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license = "MIT OR Apache-2.0"
-description = "punktfunk host frame capture: Linux PipeWire portal + Windows IDD direct-push capturers behind one Capturer trait."
+description = "rubyfunk host frame capture: Linux PipeWire portal + Windows IDD direct-push capturers behind one Capturer trait."
 publish = false
 
 [dependencies]

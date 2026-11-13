@@ -17,7 +17,7 @@ use std::time::{Duration, Instant};
 use wasapi::{Direction, SampleType, StreamMode, WaveFormat};
 
 pub const PAD_CHANNELS: u32 = 4;
-/// 4-ch pad layout (FL FR BL BR). Not `punktfunk_core::audio::wasapi_channel_mask`,
+/// 4-ch pad layout (FL FR BL BR). Not `rubyfunk_core::audio::wasapi_channel_mask`,
 /// which only speaks GameStream stereo/5.1/7.1.
 pub const PAD_CHANNEL_MASK: u32 = 0x33;
 const PAD_BLOCK_ALIGN: usize = PAD_CHANNELS as usize * 4;
@@ -38,7 +38,7 @@ impl PadLoopbackCapturer {
         let stop = Arc::new(AtomicBool::new(false));
         let (stop_t, id) = (stop.clone(), endpoint_id.to_string());
         let ((), join) = crate::ready::spawn_ready(
-            "punktfunk-pad-cap",
+            "rubyfunk-pad-cap",
             Duration::from_secs(10),
             move |ready| {
                 if let Err(e) = pad_capture_thread(&id, tx, stop_t, ready) {

@@ -1,10 +1,10 @@
 //! Production Windows implementation of the seat platform boundary.
 //!
 //! Account, credential, WTS, process/job, RDP and supervisor concerns are split
-//! into narrow modules. `WindowsBackend` runs inside the punktfunk service and
+//! into narrow modules. `WindowsBackend` runs inside the rubyfunk service and
 //! owns only per-instance state. It opens one hardened secret root, takes the
 //! host executable from its caller, and delegates each portable command. The
-//! `HKLM\SOFTWARE\Punktfunk\Seats` key is the switch, which `enable` writes
+//! `HKLM\SOFTWARE\RubyFunk\Seats` key is the switch, which `enable` writes
 //! and removes: without it no seat starts, and a turn-on that did not finish leaves
 //! it marked `Enabling`, which reads as off. Doctor reports prerequisite and ownership evidence
 //! but never infers HDR or IDD health from static configuration.
@@ -50,7 +50,7 @@ use winreg::RegKey;
 
 /// Whose existence reserves display slots 12 through 15, and turns seats on unless it holds
 /// [`ENABLING`].
-const SEATS_KEY: &str = r"SOFTWARE\Punktfunk\Seats";
+const SEATS_KEY: &str = r"SOFTWARE\RubyFunk\Seats";
 /// How long the boot warm-up waits for TermService, and how often it looks.
 const TERMSERVICE_WAIT: Duration = Duration::from_secs(600);
 const TERMSERVICE_POLL: Duration = Duration::from_secs(2);
@@ -143,7 +143,7 @@ fn termservice_running() -> WinResult<bool> {
 }
 
 impl WindowsBackend {
-    /// `host_path` is the absolute `punktfunk-host.exe` each seat runs, the service's own.
+    /// `host_path` is the absolute `rubyfunk-host.exe` each seat runs, the service's own.
     pub fn open(root: impl AsRef<Path>, host_path: PathBuf) -> Result<Self, BackendError> {
         if !host_path.is_absolute() {
             return Err(backend_error(
@@ -205,7 +205,7 @@ impl WindowsBackend {
         if !seats_enabled() {
             return Err(backend_error(
                 "seats_off",
-                r"HKLM\SOFTWARE\Punktfunk\Seats is missing or unfinished; seats are off on this host",
+                r"HKLM\SOFTWARE\RubyFunk\Seats is missing or unfinished; seats are off on this host",
             ));
         }
         if !termservice_running()? {
@@ -300,7 +300,7 @@ impl PlatformBackend for WindowsBackend {
         Ok(self.doctor_report(ledger))
     }
 
-    /// `<root>\hosts\<id>`, the `PUNKTFUNK_CONFIG_DIR` the supervisor starts the host with.
+    /// `<root>\hosts\<id>`, the `RUBYFUNK_CONFIG_DIR` the supervisor starts the host with.
     fn host_config_dir(&self, seat: &Seat) -> Option<PathBuf> {
         Some(self.root.path().join("hosts").join(seat.id.as_str()))
     }
@@ -493,7 +493,7 @@ mod tests {
     /// A bare key and one a turn-on finished are on; one still marked is off.
     #[test]
     fn a_key_marked_enabling_is_not_finished() {
-        let path = format!(r"Software\Punktfunk\SeatsTest{}", std::process::id());
+        let path = format!(r"Software\RubyFunk\SeatsTest{}", std::process::id());
         let hkcu = RegKey::predef(HKEY_CURRENT_USER);
         let (key, _) = hkcu.create_subkey(&path).unwrap();
         assert!(finished(&key));

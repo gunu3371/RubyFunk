@@ -11,13 +11,13 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license = "MIT OR Apache-2.0"
-description = "punktfunk host virtual-display orchestration: per-compositor Linux backends + the Windows IddCx driver backend behind one VirtualDisplay trait."
+description = "rubyfunk host virtual-display orchestration: per-compositor Linux backends + the Windows IddCx driver backend behind one VirtualDisplay trait."
 publish = false
 
 [dependencies]
 # `Mode`, `CompositorPref` and `quic::REFUSED_REASON_MAX`, all outside the `quic` feature, so the
 # display crate never builds quinn, rustls or opus.
-punktfunk-core = { path = "../../core/punktfunk-core", default-features = false }
+rubyfunk-core = { path = "../../core/rubyfunk-core", default-features = false }
 # `HdrMeta` in the `VirtualDisplay` trait (the client's mastering volume) + the DXGI capture
 # identity and the CTA-861.3 luminance fields on Windows. A leaf: no QUIC, no codec.
 pf-frame = { path = "../pf-frame" }

@@ -8,7 +8,7 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license = "MIT OR Apache-2.0"
-description = "punktfunk host: the never-dropped tokio runtime every xdg-desktop-portal call runs on, and its bounded handshake steps."
+description = "rubyfunk host: the never-dropped tokio runtime every xdg-desktop-portal call runs on, and its bounded handshake steps."
 publish = false
 
 [target.'cfg(target_os = "linux")'.dependencies]
@@ -18,7 +18,7 @@ tokio = { version = "1", features = ["rt", "rt-multi-thread", "net", "time"] }
 ashpd = { version = "0.13", features = ["screencast"] }
 anyhow = "1"
 tracing = "0.1"
-# `PUNKTFUNK_PORTAL_CURSOR_MODE`, read by the cursor negotiation.
+# `RUBYFUNK_PORTAL_CURSOR_MODE`, read by the cursor negotiation.
 pf-host-config = { path = "../pf-host-config" }
 
 [lints]

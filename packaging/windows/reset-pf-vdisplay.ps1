@@ -1,48 +1,48 @@
 #requires -Version 5.1
 <#
 .SYNOPSIS
-  Recover the pf-vdisplay (punktfunk) virtual-display driver after it WEDGES under rapid ADD/REMOVE
+  Recover the pf-vdisplay (rubyfunk) virtual-display driver after it WEDGES under rapid ADD/REMOVE
   churn - no reboot. The dev-iteration counterpart to redeploy-pf-vdisplay.ps1.
 
 .DESCRIPTION
   Sustained connect/disconnect churn (e.g. a client reconnect loop x the host's 8 pipeline-build
   retries - ~100 ADD/REMOVE cycles) exhausts the driver's IddCx monitor slots: the per-monitor
-  target_ids climb, ghost "Generic Monitor (Punktfunk)" device nodes pile up, and eventually
+  target_ids climb, ghost "Generic Monitor (RubyFunk)" device nodes pile up, and eventually
   IOCTL_ADD returns 0x80070490 ERROR_NOT_FOUND ("Element nicht gefunden"). Every session then fails
   to create a virtual output -> the client gets a hard blackscreen. A host-service restart's
   IOCTL_CLEAR_ALL does NOT recover it; the driver instance itself must be reloaded.
 
   Steps (run ELEVATED):
     1. Stop the host service (it holds the driver's control device).
-    2. pnputil /remove-device the GHOST (Status != OK = not-present) punktfunk virtual-monitor nodes
+    2. pnputil /remove-device the GHOST (Status != OK = not-present) rubyfunk virtual-monitor nodes
        that accumulated - the root of the slot exhaustion.
-    3. Disable + Enable the pf-vdisplay adapter (ROOT\DISPLAY\*, "Punktfunk Virtual Display") to
+    3. Disable + Enable the pf-vdisplay adapter (ROOT\DISPLAY\*, "RubyFunk Virtual Display") to
        reload the IddCx driver instance and reset its monitor list. (Restart-PnpDevice does NOT exist
        on this box's PowerShell, so we disable+enable explicitly.)
     4. Restart the host service.
   Avoids a reboot on purpose (this box boots to Proxmox).
 
-.PARAMETER Service     Host service name. Default PunktfunkHost.
-.PARAMETER AdapterName FriendlyName substring of the IddCx adapter to cycle. Default "Punktfunk
+.PARAMETER Service     Host service name. Default RubyFunkHost.
+.PARAMETER AdapterName FriendlyName substring of the IddCx adapter to cycle. Default "RubyFunk
                        Virtual Display" (NOT SudoVDA's "SudoMaker Virtual Display Adapter").
-.PARAMETER GhostMatch  FriendlyName substring of the virtual monitors to reap. Default "Punktfunk".
+.PARAMETER GhostMatch  FriendlyName substring of the virtual monitors to reap. Default "RubyFunk".
 .PARAMETER KeepGhosts  Skip the ghost-node cleanup; only cycle the adapter.
 .PARAMETER NoHost      Don't stop/start the host service (just reset the driver) - used by
                        redeploy-pf-vdisplay.ps1, which manages the service itself.
-.PARAMETER Verify      After recovery, run a punktfunk-probe loopback and report whether ADD works
-                       again (best-effort; needs punktfunk-probe.exe on PATH or via -Probe).
-.PARAMETER Probe       Path to punktfunk-probe.exe for -Verify.
+.PARAMETER Verify      After recovery, run a rubyfunk-probe loopback and report whether ADD works
+                       again (best-effort; needs rubyfunk-probe.exe on PATH or via -Probe).
+.PARAMETER Probe       Path to rubyfunk-probe.exe for -Verify.
 
 .EXAMPLE
   powershell -ExecutionPolicy Bypass -File reset-pf-vdisplay.ps1
 .EXAMPLE
-  powershell -ExecutionPolicy Bypass -File reset-pf-vdisplay.ps1 -Verify -Probe C:\t-goal1\debug\punktfunk-probe.exe
+  powershell -ExecutionPolicy Bypass -File reset-pf-vdisplay.ps1 -Verify -Probe C:\t-goal1\debug\rubyfunk-probe.exe
 #>
 [CmdletBinding()]
 param(
-    [string]$Service     = 'PunktfunkHost',
-    [string]$AdapterName = 'Punktfunk Virtual Display',
-    [string]$GhostMatch  = 'Punktfunk',
+    [string]$Service     = 'RubyFunkHost',
+    [string]$AdapterName = 'RubyFunk Virtual Display',
+    [string]$GhostMatch  = 'RubyFunk',
     [switch]$KeepGhosts,
     [switch]$NoHost,
     [switch]$Verify,
@@ -64,7 +64,7 @@ if (-not $NoHost -and $hostWasRunning) {
     Start-Sleep -Seconds 2
 }
 
-# 2) Reap the ghost (not-present) punktfunk virtual-monitor device nodes.
+# 2) Reap the ghost (not-present) rubyfunk virtual-monitor device nodes.
 if (-not $KeepGhosts) {
     $ghosts = Get-PnpDevice -Class Monitor -ErrorAction SilentlyContinue |
         Where-Object { $_.Status -ne 'OK' -and $_.FriendlyName -match $GhostMatch }
@@ -109,13 +109,13 @@ if (-not $NoHost -and $svc) {
 # 5) Optional: probe to confirm ADD recovers.
 if ($Verify) {
     if (-not $Probe) {
-        $Probe = (Get-Command punktfunk-probe.exe -ErrorAction SilentlyContinue).Source
+        $Probe = (Get-Command rubyfunk-probe.exe -ErrorAction SilentlyContinue).Source
     }
     if (-not $Probe -or -not (Test-Path $Probe)) {
-        Write-Warning "-Verify: punktfunk-probe.exe not found (pass -Probe <path>); skipping verification."
+        Write-Warning "-Verify: rubyfunk-probe.exe not found (pass -Probe <path>); skipping verification."
     }
     else {
-        $log = Join-Path $env:ProgramData 'punktfunk\logs\host.log'
+        $log = Join-Path $env:ProgramData 'rubyfunk\logs\host.log'
         Write-Host "==> verifying with $Probe"
         & $Probe *> $null
         Start-Sleep -Seconds 2

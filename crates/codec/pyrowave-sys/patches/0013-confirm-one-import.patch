@@ -1,4 +1,4 @@
-Confirm one external import instead of every handle type — PUNKTFUNK LOCAL PATCH.
+Confirm one external import instead of every handle type — RUBYFUNK LOCAL PATCH.
 
 Not upstream. `pyrowave_device_confirm_interop_support` passes only when the device imports
 all five Win32 memory handle types with STORAGE|SAMPLED usage, plus OPAQUE_WIN32 binary and
@@ -30,7 +30,7 @@ index d2fa2957f..2557cbcf2 100644
  PYROWAVE_PUBLIC_API bool
  pyrowave_device_confirm_interop_support(pyrowave_device device);
  
-+// PUNKTFUNK LOCAL EXTENSION (patches/0013-confirm-one-import.patch), not upstream.
++// RUBYFUNK LOCAL EXTENSION (patches/0013-confirm-one-import.patch), not upstream.
 +// Confirm the one import a caller makes (a 2D optimal image, a semaphore), where the check
 +// above wants every handle type and STORAGE usage. The semaphore is asked without a
 +// VkSemaphoreTypeCreateInfo, as upstream asks a D3D12 fence.
@@ -53,7 +53,7 @@ index 7ccdf2320..444d5ca80 100644
  	return true;
  }
  
-+// PUNKTFUNK LOCAL EXTENSION (patches/0013-confirm-one-import.patch), not upstream.
++// RUBYFUNK LOCAL EXTENSION (patches/0013-confirm-one-import.patch), not upstream.
 +bool pyrowave_device_confirm_image_import_support(pyrowave_device device,
 +		VkExternalMemoryHandleTypeFlagBits handle_type, VkFormat format, VkImageUsageFlags usage)
 +{

@@ -1,24 +1,24 @@
 ---
 title: Connect with Moonlight
-description: Stream from a Punktfunk host using any Moonlight client.
+description: Stream from a RubyFunk host using any Moonlight client.
 ---
 
 Turn on GameStream on the host and any [Moonlight](https://moonlight-stream.org/) client can stream
-from it: a browser, a smart TV, a console, an old phone. Where a [Punktfunk app](/docs/clients)
+from it: a browser, a smart TV, a console, an old phone. Where a [RubyFunk app](/docs/clients)
 exists, use it instead: it has lower latency and more features.
 
 ## 1. Turn on GameStream
 
 GameStream is off by default. In the [web console](/docs/web-console), open **Host**,
-turn on **GameStream**, then click **Restart Punktfunk**. Or:
+turn on **GameStream**, then click **Restart RubyFunk**. Or:
 
 | Where | How |
 |---|---|
 | Windows installer | Turn on **Moonlight compat** |
 | Guided installer (Linux, SteamOS) | Add `--gamestream` |
-| NixOS | `services.punktfunk.host.gamestream = true;` (also opens the firewall) |
-| `serve` by hand | `punktfunk-host serve --gamestream` |
-| `host.env` | `PUNKTFUNK_GAMESTREAM=1`, then restart the host |
+| NixOS | `services.rubyfunk.host.gamestream = true;` (also opens the firewall) |
+| `serve` by hand | `rubyfunk-host serve --gamestream` |
+| `host.env` | `RUBYFUNK_GAMESTREAM=1`, then restart the host |
 
 The installers set the console's setting, so you can turn it off there later. NixOS,
 `serve --gamestream` and the `host.env` line lock it.
@@ -37,15 +37,15 @@ the host's IP address.
   packages ship a firewall rule to turn on:
 
   ```sh
-  sudo ufw allow punktfunk-gamestream                               # ufw
-  sudo firewall-cmd --permanent --add-service=punktfunk-gamestream  # firewalld
+  sudo ufw allow rubyfunk-gamestream                               # ufw
+  sudo firewall-cmd --permanent --add-service=rubyfunk-gamestream  # firewalld
   sudo firewall-cmd --reload
   ```
 
   The Windows installer opens them on Private and Domain networks; **Public-network firewall
   rules** adds Public ones.
 - **Sunshine, Apollo or a fork runs on the same machine.** They use the same ports. Run
-  `punktfunk-host detect-conflicts` to list them, and stop them.
+  `rubyfunk-host detect-conflicts` to list them, and stop them.
 
 More in [Troubleshooting](/docs/troubleshooting-connect#another-streaming-host-sunshine-apollo--is-installed).
 
@@ -74,5 +74,5 @@ An `apps.json` in the host's config directory replaces that list, **Desktop** in
   Pick HEVC or AV1; H.264 stays SDR.
 - **Bitrate:** the number covers video and error correction together. Start moderate and raise it.
 - The host adapts error correction and bitrate to the loss Moonlight reports. Nothing to set.
-- Moonlight's overlay and the Punktfunk [stats overlay](/docs/stats) measure different things.
-- The console's mute, access and player-slot controls work on Punktfunk-app sessions only.
+- Moonlight's overlay and the RubyFunk [stats overlay](/docs/stats) measure different things.
+- The console's mute, access and player-slot controls work on RubyFunk-app sessions only.

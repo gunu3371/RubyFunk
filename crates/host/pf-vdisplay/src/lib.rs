@@ -11,7 +11,7 @@
 #![cfg_attr(not(target_os = "linux"), allow(dead_code))]
 
 use anyhow::Result;
-pub use punktfunk_core::Mode;
+pub use rubyfunk_core::Mode;
 #[cfg(target_os = "linux")]
 use std::os::fd::OwnedFd;
 
@@ -127,7 +127,7 @@ pub enum Compositor {
 }
 
 impl Compositor {
-    /// Wire / management id: the [`punktfunk_core::CompositorPref`] spelling.
+    /// Wire / management id: the [`rubyfunk_core::CompositorPref`] spelling.
     pub fn id(self) -> &'static str {
         self.as_pref().as_str()
     }
@@ -178,8 +178,8 @@ impl Compositor {
         }
     }
 
-    pub fn as_pref(self) -> punktfunk_core::CompositorPref {
-        use punktfunk_core::CompositorPref as P;
+    pub fn as_pref(self) -> rubyfunk_core::CompositorPref {
+        use rubyfunk_core::CompositorPref as P;
         match self {
             Compositor::Kwin => P::Kwin,
             Compositor::Wlroots => P::Wlroots,
@@ -194,8 +194,8 @@ impl Compositor {
 
     /// `Wlroots` names the exact backend here; `pick_compositor` (host `native`) widens it
     /// to Hyprland too, because clients before the Hyprland byte sent it for both.
-    pub fn from_pref(p: punktfunk_core::CompositorPref) -> Option<Compositor> {
-        use punktfunk_core::CompositorPref as P;
+    pub fn from_pref(p: rubyfunk_core::CompositorPref) -> Option<Compositor> {
+        use rubyfunk_core::CompositorPref as P;
         Some(match p {
             P::Auto => return None,
             P::Kwin => Compositor::Kwin,
@@ -268,7 +268,7 @@ pub fn available() -> Vec<Compositor> {
     }
 }
 
-/// Backend named by an explicit `PUNKTFUNK_COMPOSITOR` pin, aliases included.
+/// Backend named by an explicit `RUBYFUNK_COMPOSITOR` pin, aliases included.
 /// [`detect`] errors on `None`; [`available`] ignores a typo.
 fn compositor_from_pin(v: &str) -> Option<Compositor> {
     Some(match v.trim().to_ascii_lowercase().as_str() {
@@ -298,7 +298,7 @@ pub fn with_env_lock<R>(f: impl FnOnce() -> R) -> R {
     f()
 }
 
-/// Compositor to drive: `PUNKTFUNK_COMPOSITOR` pin, else the live session
+/// Compositor to drive: `RUBYFUNK_COMPOSITOR` pin, else the live session
 /// ([`detect_active_session`]), else a last-resort read of the stored session's
 /// `XDG_CURRENT_DESKTOP` ([`pf_host_config::session::current_desktop`]).
 ///
@@ -334,7 +334,7 @@ pub fn detect() -> Result<Compositor> {
     }
 }
 
-/// Error for a `PUNKTFUNK_COMPOSITOR` value that names no backend.
+/// Error for a `RUBYFUNK_COMPOSITOR` value that names no backend.
 ///
 /// `cinnamon`/`muffin` get their own answer: the bare list invites `mutter`
 /// (Muffin is a Mutter fork), which then fails inside `org.gnome.Mutter.ScreenCast`.
@@ -347,13 +347,13 @@ fn unknown_pin_error(v: &str) -> anyhow::Error {
         "cinnamon" | "muffin"
     ) {
         return anyhow::anyhow!(
-            "PUNKTFUNK_COMPOSITOR='{v}' names no backend — Muffin has no virtual-output API and \
+            "RUBYFUNK_COMPOSITOR='{v}' names no backend — Muffin has no virtual-output API and \
              'mutter' does not substitute for it (Muffin is a Mutter fork that serves none of \
-             `RecordVirtual`). Use PUNKTFUNK_COMPOSITOR=gamescope. See \
+             `RecordVirtual`). Use RUBYFUNK_COMPOSITOR=gamescope. See \
              https://docs.punktfunk.unom.io/docs/debian#cinnamon-linux-mint-and-lmde"
         );
     }
-    anyhow::anyhow!("unknown PUNKTFUNK_COMPOSITOR '{v}' ({ACCEPTED})")
+    anyhow::anyhow!("unknown RUBYFUNK_COMPOSITOR '{v}' ({ACCEPTED})")
 }
 
 /// Last-resort `XDG_CURRENT_DESKTOP` sniff as a pure function of the (uppercased)
@@ -367,7 +367,7 @@ fn compositor_from_xdg(desktop: &str) -> Result<Compositor> {
     if desktop.contains("CINNAMON") {
         anyhow::bail!(
             "Cinnamon (XDG_CURRENT_DESKTOP='{desktop}') has no virtual-output API — its \
-             compositor Muffin serves no `RecordVirtual`. Set PUNKTFUNK_COMPOSITOR=gamescope in \
+             compositor Muffin serves no `RecordVirtual`. Set RUBYFUNK_COMPOSITOR=gamescope in \
              host.env for a headless gamescope per connect. See \
              https://docs.punktfunk.unom.io/docs/debian#cinnamon-linux-mint-and-lmde"
         )
@@ -388,7 +388,7 @@ fn compositor_from_xdg(desktop: &str) -> Result<Compositor> {
     } else {
         anyhow::bail!(
             "compositor not detected: no live graphical session for this uid and \
-             XDG_CURRENT_DESKTOP='{desktop}'; set PUNKTFUNK_COMPOSITOR"
+             XDG_CURRENT_DESKTOP='{desktop}'; set RUBYFUNK_COMPOSITOR"
         )
     }
 }
@@ -419,7 +419,7 @@ pub fn rebuild_probe_active() -> bool {
 
 /// Monitor to mirror instead of creating a virtual display, or `None`.
 ///
-/// **`PUNKTFUNK_CAPTURE_MONITOR` wins over stored policy** — an appliance pin
+/// **`RUBYFUNK_CAPTURE_MONITOR` wins over stored policy** — an appliance pin
 /// in `host.env` must not be overridden by a console click. Unset, the
 /// persisted picker applies (the env is snapshotted at startup, so a UI
 /// cannot write it). Read per `open`, not cached, so a console change takes
@@ -540,7 +540,7 @@ pub(crate) fn backend_by_id(id: &str) -> Option<Box<dyn VirtualDisplay>> {
 }
 
 /// Mirror backend for an explicit head, bypassing [`open`]'s
-/// `PUNKTFUNK_CAPTURE_MONITOR` pin. `pf_host_config` snapshots env at
+/// `RUBYFUNK_CAPTURE_MONITOR` pin. `pf_host_config` snapshots env at
 /// startup, so a tool cannot set the pin for itself.
 #[cfg(target_os = "linux")]
 pub fn open_mirror(compositor: Compositor, connector: &str) -> Result<Box<dyn VirtualDisplay>> {
@@ -677,7 +677,7 @@ pub mod registry;
 pub(crate) mod layout;
 
 /// Concrete topology (never [`policy::Topology::Auto`]). `Auto` is **extend**
-/// under a `PUNKTFUNK_COMPOSITOR` pin (host is not the sole desktop), else
+/// under a `RUBYFUNK_COMPOSITOR` pin (host is not the sole desktop), else
 /// **exclusive** (promote the virtual output to sole).
 pub fn resolve_topology(t: policy::Topology) -> policy::Topology {
     match t {
@@ -708,18 +708,18 @@ pub fn effective_topology(client: Option<[u8; 32]>) -> policy::Topology {
     }
 }
 
-// The Windows manager applies its own unconfigured rule (`PUNKTFUNK_NO_ISOLATE`).
+// The Windows manager applies its own unconfigured rule (`RUBYFUNK_NO_ISOLATE`).
 #[cfg(target_os = "windows")]
 use manager::unconfigured_topology;
 
-/// Legacy `PUNKTFUNK_{KWIN,MUTTER}_VIRTUAL_PRIMARY` (`1`→exclusive, `0`→extend), else
+/// Legacy `RUBYFUNK_{KWIN,MUTTER}_VIRTUAL_PRIMARY` (`1`→exclusive, `0`→extend), else
 /// [`resolve_topology`] of `Auto`.
 #[cfg(not(target_os = "windows"))]
 fn unconfigured_topology() -> policy::Topology {
     let legacy = with_env_lock(|| {
         [
-            "PUNKTFUNK_KWIN_VIRTUAL_PRIMARY",
-            "PUNKTFUNK_MUTTER_VIRTUAL_PRIMARY",
+            "RUBYFUNK_KWIN_VIRTUAL_PRIMARY",
+            "RUBYFUNK_MUTTER_VIRTUAL_PRIMARY",
         ]
         .iter()
         .find_map(|k| std::env::var(k).ok())
@@ -755,7 +755,7 @@ pub fn gamescope_splash_client() -> anyhow::Result<()> {
 /// Settled **before spawn** — punktfunk/1 Welcome fixes bit depth and cannot
 /// take it back. Both terms must hold: the resolved binary offers 10-bit PQ
 /// capture (`--version` banner, once per process), and this host **spawns**
-/// gamescope rather than attaching (`PUNKTFUNK_GAMESCOPE_NODE` inherits
+/// gamescope rather than attaching (`RUBYFUNK_GAMESCOPE_NODE` inherits
 /// someone else's flags). A host-managed `gamescope-session-plus` / SteamOS
 /// session counts as a spawn: we own `GAMESCOPE_BIN`.
 ///
@@ -816,7 +816,7 @@ pub fn gamescope_sdr10_capture(route: Option<&GamescopeRoute>) -> bool {
 /// Shared half of the HDR/cursor answers: this host must **spawn** the
 /// session (an attach inherits someone else's flags), then `probe` the binary.
 ///
-/// Ask the resolved **route**, never `PUNKTFUNK_GAMESCOPE_NODE` — that key is
+/// Ask the resolved **route**, never `RUBYFUNK_GAMESCOPE_NODE` — that key is
 /// an operator override, not the published decision. [`GamescopeRoute::Attach`]
 /// and the monitor-pin mirror would otherwise answer "ours".
 ///
@@ -940,7 +940,7 @@ mod kwin;
 #[path = "vdisplay/linux/kwin_windows.rs"]
 mod kwin_windows;
 
-// GNOME's window list from punktfunk's shell extension, for the launch window stage.
+// GNOME's window list from rubyfunk's shell extension, for the launch window stage.
 #[cfg(target_os = "linux")]
 #[path = "vdisplay/linux/gnome_windows.rs"]
 mod gnome_windows;
@@ -1019,13 +1019,13 @@ mod tests {
     #[test]
     fn umbriel_is_named_by_its_pin_and_its_byte() {
         assert_eq!(compositor_from_pin(" Umbriel "), Some(Compositor::Umbriel));
-        let byte = punktfunk_core::CompositorPref::from_u8(8);
+        let byte = rubyfunk_core::CompositorPref::from_u8(8);
         assert_eq!(Compositor::from_pref(byte), Some(Compositor::Umbriel));
         assert_eq!(Compositor::Umbriel.id(), "umbriel");
         assert!(Compositor::all().contains(&Compositor::Umbriel));
     }
 
-    /// Muffin has no virtual-output API: there is no `PUNKTFUNK_COMPOSITOR`
+    /// Muffin has no virtual-output API: there is no `RUBYFUNK_COMPOSITOR`
     /// that makes Cinnamon host a virtual display. The error must name gamescope.
     #[cfg(target_os = "linux")]
     #[test]
@@ -1066,7 +1066,7 @@ mod tests {
     #[test]
     fn unknown_desktop_keeps_the_generic_error() {
         let err = compositor_from_xdg("XFCE").unwrap_err().to_string();
-        assert!(err.contains("PUNKTFUNK_COMPOSITOR"), "{err}");
+        assert!(err.contains("RUBYFUNK_COMPOSITOR"), "{err}");
         assert!(!err.contains("Muffin"), "{err}");
     }
 

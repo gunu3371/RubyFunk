@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# WP3 — the on-glass validation kit for `punktfunk-encode-worker`.
+# WP3 — the on-glass validation kit for `rubyfunk-encode-worker`.
 #
-# Plan: punktfunk-planning/design/gpu-priority-capability-worker-implementation-plan.md §2/WP3.
+# Plan: rubyfunk-planning/design/gpu-priority-capability-worker-implementation-plan.md §2/WP3.
 # This script is the mechanical half of that table. It runs ON a real box (Deck desktop mode, .21,
 # .25, .41, a nobara VM); it needs a GPU, and for the KDE legs a live KDE session. Nothing here
 # talks to another machine.
 #
-# WHAT IS BEING VALIDATED. `punktfunk-encode-worker` is a separate binary carrying
+# WHAT IS BEING VALIDATED. `rubyfunk-encode-worker` is a separate binary carrying
 # `cap_sys_nice=ep`; it encodes PyroWave at an elevated VK_KHR_global_priority class so the encode
-# dispatch can preempt a GPU-bound game. `punktfunk-host` carries NO capability, ever: KWin
+# dispatch can preempt a GPU-bound game. `rubyfunk-host` carries NO capability, ever: KWin
 # identifies a Wayland client by resolving its /proc/<pid>/exe, the kernel refuses that readlink to
 # any reader whose effective set is not a superset of the target's PERMITTED set
 # (cap_ptrace_access_check), KWin holds no capabilities — so a capability-carrying host is
@@ -73,7 +73,7 @@ SELF="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # option set is saved and restored around the source.
 CAP_MATRIX_SH="$SELF/ci/assert-cap-matrix.sh"
 if [ ! -r "$CAP_MATRIX_SH" ]; then
-  echo "FATAL: cannot read $CAP_MATRIX_SH — run this from a Punktfunk checkout (it owns the" >&2
+  echo "FATAL: cannot read $CAP_MATRIX_SH — run this from a RubyFunk checkout (it owns the" >&2
   echo "       capability-string canonicalizer this kit reuses)." >&2
   exit 3
 fi
@@ -84,8 +84,8 @@ eval "$_saved_opts"
 unset _saved_opts
 set +e   # `eval` above restored -e from the sourced file's perspective; this is our posture.
 
-WORKER_BIN_NAME='punktfunk-encode-worker'
-HOST_BIN_NAME='punktfunk-host'
+WORKER_BIN_NAME='rubyfunk-encode-worker'
+HOST_BIN_NAME='rubyfunk-host'
 # CAP_SYS_NICE is capability bit 23, so the kernel prints it as CapPrm: 0000000000800000.
 CAP_SYS_NICE_BIT=23
 
@@ -94,7 +94,7 @@ CAP_SYS_NICE_BIT=23
 # messages contain em dashes and parentheses). If a message is reworded, this block is the single
 # place to fix, and a leg that stops matching FAILS rather than silently passing.
 L_FALLBACK='encoding in-process at default GPU priority'        # the clause EVERY fallback ends with
-L_OFF='pyrowave: PUNKTFUNK_ENCODE_WORKER=off'
+L_OFF='pyrowave: RUBYFUNK_ENCODE_WORKER=off'
 L_NOTFOUND='the encode worker was not found beside the host binary or on PATH'
 L_NOTUP='the encode worker did not come up'
 L_GRANTED='encoding in the capability-carrying worker at an elevated global queue priority'
@@ -111,7 +111,7 @@ L_NORESPAWN='the encode worker would not respawn'
 # never reaches `Encoder::reset`, which is where L_DIED/L_RESPAWNED are emitted. See v4.e.
 L_PEERGONE='no reply from the encode worker'
 L_PEERPIPE='send to the encode worker'
-L_WORKER_READY='punktfunk-encode-worker ready'
+L_WORKER_READY='rubyfunk-encode-worker ready'
 L_PERF='pyrowave encode, submit->AU'
 L_CAPTURE='capture pipeline resolved:'
 L_KWIN_DENIED='does not expose zkde_screencast_unstable_v1'
@@ -140,11 +140,11 @@ usage() {
   cat <<'EOF'
 
   Options:
-    --host-bin PATH     the INSTALLED punktfunk-host (default: from a running host, then the
+    --host-bin PATH     the INSTALLED rubyfunk-host (default: from a running host, then the
                         installed .desktop's Exec=, then PATH)
-    --worker-bin PATH   the INSTALLED punktfunk-encode-worker (default: $PUNKTFUNK_ENCODE_WORKER,
+    --worker-bin PATH   the INSTALLED rubyfunk-encode-worker (default: $RUBYFUNK_ENCODE_WORKER,
                         then beside the host binary, then PATH — mirrors the host's own resolution)
-    --host-pid PID      inspect this host process only (default: every running punktfunk-host)
+    --host-pid PID      inspect this host process only (default: every running rubyfunk-host)
     --source SRC        spike capture source: kwin-virtual | portal (default: kwin-virtual under
                         KWin, portal elsewhere). ⚠ synthetic is NOT usable — see the note in v3a.
     --seconds N         wall clock per measured arm (default 45)
@@ -153,7 +153,7 @@ usage() {
     --bitrate MBPS      spike bitrate (default 20)
     --gate-ms X         v3a abandonment gate, p99 headroom in ms (default 1.0)
     --fd-tolerance N    v5 allowed fd growth in the steady-state window (default 0)
-    --with-loopback     keep the spike's punktfunk-core loopback on (default: --no-loopback, less
+    --with-loopback     keep the spike's rubyfunk-core loopback on (default: --no-loopback, less
                         CPU noise in the latency arms)
     --allow-mutate      permit the legs that change the box: v4's `kill -9` of a live worker
     --log-dir DIR       where the captured spike logs go (default: a mktemp dir)
@@ -265,16 +265,16 @@ capprm_has_bit() {
 
 host_pids() {
   if [ -n "$OPT_HOST_PID" ]; then printf '%s\n' "$OPT_HOST_PID"; return 0; fi
-  # -x matches `comm`, which for a normally-exec'd host IS punktfunk-host.
+  # -x matches `comm`, which for a normally-exec'd host IS rubyfunk-host.
   pgrep -x "$HOST_BIN_NAME" 2>/dev/null
 }
 
 # The worker processes spawned by a given host pid.
 #
-# ⚠ `pgrep -x punktfunk-encode-worker` does NOT find them. The host execs the worker through the
+# ⚠ `pgrep -x rubyfunk-encode-worker` does NOT find them. The host execs the worker through the
 # pinned `/proc/self/fd/<n>` path (so a replaced binary cannot be swapped under a spawn), and the
 # kernel sets `comm` from the basename of the path passed to execve — i.e. a bare number. argv[0]
-# IS `punktfunk-encode-worker`, so a full-cmdline match works — but matching by PARENT is exact and
+# IS `rubyfunk-encode-worker`, so a full-cmdline match works — but matching by PARENT is exact and
 # cannot pick up somebody else's worker, which matters a great deal before a `kill -9`.
 worker_pids_of() {
   local parent="$1" p cmd
@@ -300,7 +300,7 @@ find_desktop() {
   for d in "${XDG_DATA_HOME:-$HOME/.local/share}/applications" \
            /usr/share/applications /usr/local/share/applications \
            /var/lib/flatpak/exports/share/applications; do
-    f="$d/io.unom.punktfunk.host.desktop"
+    f="$d/io.github.gunu3371.rubyfunk.host.desktop"
     if [ -r "$f" ]; then
       DESKTOP_FILE="$f"
       DESKTOP_EXEC="$(sed -n 's/^Exec=//p' "$f" | head -1 | awk '{print $1}')"
@@ -337,9 +337,9 @@ resolve_binaries() {
   # Mirror the host's own resolution order (pyrowave_remote::resolve_worker_path).
   if [ -n "$OPT_WORKER_BIN" ]; then
     WORKER_BIN="$OPT_WORKER_BIN"; WORKER_BIN_FROM='--worker-bin'
-  elif [ -n "${PUNKTFUNK_ENCODE_WORKER:-}" ] && \
-       [ "$(printf '%s' "${PUNKTFUNK_ENCODE_WORKER}" | tr 'A-Z' 'a-z')" != off ]; then
-    WORKER_BIN="$PUNKTFUNK_ENCODE_WORKER"; WORKER_BIN_FROM='$PUNKTFUNK_ENCODE_WORKER'
+  elif [ -n "${RUBYFUNK_ENCODE_WORKER:-}" ] && \
+       [ "$(printf '%s' "${RUBYFUNK_ENCODE_WORKER}" | tr 'A-Z' 'a-z')" != off ]; then
+    WORKER_BIN="$RUBYFUNK_ENCODE_WORKER"; WORKER_BIN_FROM='$RUBYFUNK_ENCODE_WORKER'
   elif [ -n "$HOST_BIN" ] && [ -f "$(dirname "$HOST_BIN")/$WORKER_BIN_NAME" ]; then
     WORKER_BIN="$(dirname "$HOST_BIN")/$WORKER_BIN_NAME"; WORKER_BIN_FROM='beside the host binary'
   else
@@ -421,7 +421,7 @@ spike_failure_reason() {
   line="$(log_cat "$log" | LC_ALL=C grep -E 'ERROR' | head -1 | sed 's/^.*ERROR[[:space:]]*//')"
   if [ -n "$line" ]; then printf '%s' "$line"; return 0; fi
   if [ "$(perf_windows "$log")" = 0 ]; then
-    printf '%s' "the spike never encoded a frame — no PUNKTFUNK_PERF window in the log at all"
+    printf '%s' "the spike never encoded a frame — no RUBYFUNK_PERF window in the log at all"
     return 0
   fi
   return 1
@@ -430,7 +430,7 @@ spike_failure_reason() {
 assert_inline_arm() {
   local log="$1" tag="$2" rc=0
   if ! logs_have "$log" "$L_OFF"; then
-    info "$tag: no 'PUNKTFUNK_ENCODE_WORKER=off' line — this arm did not force the in-process path"; rc=1
+    info "$tag: no 'RUBYFUNK_ENCODE_WORKER=off' line — this arm did not force the in-process path"; rc=1
   fi
   if logs_have "$log" "$L_GRANTED" || logs_have "$log" "$L_NOPRIO"; then
     info "$tag: a 'capability-carrying worker' line is present — this arm is not in-process"; rc=1
@@ -440,7 +440,7 @@ assert_inline_arm() {
 
 # --- the perf instrument ----------------------------------------------------------------------------
 #
-# `PUNKTFUNK_PERF` makes the PyroWave encoder emit one summary line every ~2 s over >=30 frames:
+# `RUBYFUNK_PERF` makes the PyroWave encoder emit one summary line every ~2 s over >=30 frames:
 #   frames=30 mean_us=… p50_us=… p99_us=… max_us=… depth=… pyrowave encode, submit->AU (…)
 # The measured quantity is submit→AU: CSC + encode + fence wait + packetize. Per PW1 the FIRST
 # window is warm-up and is dropped, and `encode_fps` is a VACUOUS metric here (a starved capture
@@ -517,7 +517,7 @@ compositor_guess() {
 
 # run_spike <arm-name> <wall-seconds> <env-assignment>...
 #
-# Launches `punktfunk-host spike --codec pyrowave` with PUNKTFUNK_PERF armed, captures the combined
+# Launches `rubyfunk-host spike --codec pyrowave` with RUBYFUNK_PERF armed, captures the combined
 # stderr of the host AND its worker (one inherited stream), waits at most `wall + grace`, then
 # terminates it. Echoes the log path. Returns non-zero only if the spike could not be started.
 #
@@ -533,14 +533,14 @@ run_spike() {
   # plain log is also the one a human greps by hand when a leg goes red, and `p99_us\e[0m\e[2m=…`
   # defeats the obvious grep just as thoroughly as it defeated this kit's parser.
   #
-  # PUNKTFUNK_ENCODER=pyrowave is NOT redundant with `--codec pyrowave`, and leaving it out cost a
+  # RUBYFUNK_ENCODER=pyrowave is NOT redundant with `--codec pyrowave`, and leaving it out cost a
   # real V3b run on .21. `--codec` selects the ENCODER; the capture pipeline picks its consumer from
   # `ZeroCopyPolicy::pyrowave_session`, which on the spike path is fed only by this env (see
-  # punktfunk-host/src/capture.rs — "the global PUNKTFUNK_ENCODER=pyrowave lab lever"). Without it an
+  # rubyfunk-host/src/capture.rs — "the global RUBYFUNK_ENCODER=pyrowave lab lever"). Without it an
   # NVIDIA host resolves `cuda-import -> nvenc`, imports the dmabuf to CUDA as NV12, and hands the
   # wavelet encoder a payload it rejects: "unsupported FramePayload (need Dmabuf or Cpu RGB)". AMD
   # boxes hide this — they have no CUDA arm to pick — so it reproduces only where the A/B lives.
-  local -a envs=(PUNKTFUNK_PERF=1 NO_COLOR=1 PUNKTFUNK_ENCODER=pyrowave)
+  local -a envs=(RUBYFUNK_PERF=1 NO_COLOR=1 RUBYFUNK_ENCODER=pyrowave)
   for kv in "$@"; do envs+=("$kv"); done
   local -a cmd=("$HOST_BIN" spike --codec pyrowave --source "$SPIKE_SOURCE"
                 --width "$OPT_WIDTH" --height "$OPT_HEIGHT" --fps "$OPT_FPS"
@@ -726,7 +726,7 @@ leg_inspect() {
 
   # --- I6 the KWin .desktop grant -------------------------------------------------------------------
   if [ -z "$DESKTOP_FILE" ]; then
-    skip I6 "no io.unom.punktfunk.host.desktop installed — KWin has nothing to match the host"
+    skip I6 "no io.github.gunu3371.rubyfunk.host.desktop installed — KWin has nothing to match the host"
     info  "against, so zkde_screencast_unstable_v1 is never advertised however clean the capability"
     info  "state is. On the Deck this file is written by scripts/steamdeck/install.sh; packaged"
     info  "installs ship it. This is a MISSING PRECONDITION, not the capability regression."
@@ -757,7 +757,7 @@ leg_v1() {
     return 0
   fi
   if [ -z "$DESKTOP_FILE" ]; then
-    skip V1 "precondition missing: no io.unom.punktfunk.host.desktop (run scripts/steamdeck/install.sh"
+    skip V1 "precondition missing: no io.github.gunu3371.rubyfunk.host.desktop (run scripts/steamdeck/install.sh"
     info  "on the Deck, or install a package). Without it KWin cannot advertise the screencast"
     info  "global for any reason, which would mask the capability question this leg exists to ask."
     return 0
@@ -829,7 +829,7 @@ leg_v2() {
   setup_logdir
   # The intent is pinned rather than inherited: a host.env or shell with PYROWAVE_QUEUE_PRIORITY=off
   # in it would produce "no queue priority requested" and read as a failed grant.
-  run_spike v2-grant "$OPT_SECONDS" "PUNKTFUNK_ENCODE_WORKER=$WORKER_BIN" "PYROWAVE_QUEUE_PRIORITY=realtime"
+  run_spike v2-grant "$OPT_SECONDS" "RUBYFUNK_ENCODE_WORKER=$WORKER_BIN" "PYROWAVE_QUEUE_PRIORITY=realtime"
   wait_spike "$OPT_SECONDS"
   local log="$SPIKE_LOG"
 
@@ -865,7 +865,7 @@ ab_report() {
   local tag="$1" a_log="$2" a_name="$3" b_log="$4" b_name="$5" gate_us="${6:-}"
   local a b a50 a99 an b50 b99 bn
   a="$(perf_summary "$a_log")" || { fail "$tag" "$a_name: fewer than 3 usable perf windows — the"
-    info "capture may be starved, or PUNKTFUNK_PERF did not arm. Log: $a_log"; return 1; }
+    info "capture may be starved, or RUBYFUNK_PERF did not arm. Log: $a_log"; return 1; }
   b="$(perf_summary "$b_log")" || { fail "$tag" "$b_name: fewer than 3 usable perf windows. Log: $b_log"; return 1; }
   read -r a50 a99 an <<<"$a"
   read -r b50 b99 bn <<<"$b"
@@ -902,11 +902,11 @@ leg_v3a() {
   resolve_source
 
   # Arm A: in-process, priority explicitly OFF so the two arms differ in nothing but the boundary.
-  run_spike v3a-inline "$OPT_SECONDS" "PUNKTFUNK_ENCODE_WORKER=off" "PYROWAVE_QUEUE_PRIORITY=off"
+  run_spike v3a-inline "$OPT_SECONDS" "RUBYFUNK_ENCODE_WORKER=off" "PYROWAVE_QUEUE_PRIORITY=off"
   wait_spike "$OPT_SECONDS"
   local a_log="$SPIKE_LOG"
   # Arm B: the uncapped worker, same intent.
-  run_spike v3a-worker "$OPT_SECONDS" "PUNKTFUNK_ENCODE_WORKER=$UNCAPPED_COPY" "PYROWAVE_QUEUE_PRIORITY=off"
+  run_spike v3a-worker "$OPT_SECONDS" "RUBYFUNK_ENCODE_WORKER=$UNCAPPED_COPY" "PYROWAVE_QUEUE_PRIORITY=off"
   wait_spike "$OPT_SECONDS"
   local b_log="$SPIKE_LOG"
 
@@ -940,10 +940,10 @@ leg_v3b() {
 
   # Arm A is exactly PW1's "refused" arm: in-process, asking for priority and being refused (the
   # host binary is uncapped by construction, so the ladder walks REALTIME -> HIGH -> default).
-  run_spike v3b-inline "$OPT_SECONDS" "PUNKTFUNK_ENCODE_WORKER=off" "PYROWAVE_QUEUE_PRIORITY=realtime"
+  run_spike v3b-inline "$OPT_SECONDS" "RUBYFUNK_ENCODE_WORKER=off" "PYROWAVE_QUEUE_PRIORITY=realtime"
   wait_spike "$OPT_SECONDS"
   local a_log="$SPIKE_LOG"
-  run_spike v3b-worker "$OPT_SECONDS" "PUNKTFUNK_ENCODE_WORKER=$WORKER_BIN" "PYROWAVE_QUEUE_PRIORITY=realtime"
+  run_spike v3b-worker "$OPT_SECONDS" "RUBYFUNK_ENCODE_WORKER=$WORKER_BIN" "PYROWAVE_QUEUE_PRIORITY=realtime"
   wait_spike "$OPT_SECONDS"
   local b_log="$SPIKE_LOG"
 
@@ -980,10 +980,10 @@ leg_v4() {
   local short=$(( OPT_SECONDS < 20 ? OPT_SECONDS : 20 ))
 
   # --- rung: the binary is not there. Read-only — a path that does not exist, never a deletion.
-  # An operator-set PUNKTFUNK_ENCODE_WORKER is deliberately NOT existence-checked (a named path is
+  # An operator-set RUBYFUNK_ENCODE_WORKER is deliberately NOT existence-checked (a named path is
   # entitled to a failure that names it back), so this lands on the SPAWN rung ("did not come up")
   # rather than the not-found one; both are accepted here because both are the same guarantee.
-  run_spike v4-missing "$short" "PUNKTFUNK_ENCODE_WORKER=$LOG_DIR/definitely-not-here"
+  run_spike v4-missing "$short" "RUBYFUNK_ENCODE_WORKER=$LOG_DIR/definitely-not-here"
   wait_spike "$short"
   local log="$SPIKE_LOG"
   if logs_have "$log" "$L_NOTUP" || logs_have "$log" "$L_NOTFOUND"; then
@@ -996,19 +996,19 @@ leg_v4() {
     fail V4.a "no fallback warn for a worker path that does not exist — see $log"
   fi
 
-  # --- rung: PUNKTFUNK_ENCODE_WORKER=off (the documented escape hatch).
-  run_spike v4-off "$short" "PUNKTFUNK_ENCODE_WORKER=off"
+  # --- rung: RUBYFUNK_ENCODE_WORKER=off (the documented escape hatch).
+  run_spike v4-off "$short" "RUBYFUNK_ENCODE_WORKER=off"
   wait_spike "$short"
   log="$SPIKE_LOG"
   if logs_have "$log" "$L_OFF" && [ "$(perf_windows "$log")" -ge 1 ]; then
-    pass V4.b "PUNKTFUNK_ENCODE_WORKER=off: one info line, encoding in-process, stream up"
+    pass V4.b "RUBYFUNK_ENCODE_WORKER=off: one info line, encoding in-process, stream up"
   else
     fail V4.b "the off escape hatch did not behave — see $log"
   fi
 
   # --- rung: a worker that starts and immediately dies (spawn ok, handshake never completes).
   if [ -x /bin/false ]; then
-    run_spike v4-false "$short" "PUNKTFUNK_ENCODE_WORKER=/bin/false"
+    run_spike v4-false "$short" "RUBYFUNK_ENCODE_WORKER=/bin/false"
     wait_spike "$short"
     log="$SPIKE_LOG"
     if logs_have "$log" "$L_NOTUP" && [ "$(perf_windows "$log")" -ge 1 ]; then
@@ -1026,7 +1026,7 @@ leg_v4() {
   if [ -n "$WORKER_BIN" ] && [ -x "$WORKER_BIN" ] && [ "$(file_caps "$WORKER_BIN")" = "$WANT_WORKER_CAPS" ]; then
     make_uncapped_copy
     if [ $? = 0 ]; then
-      run_spike v4-inert "$short" "PUNKTFUNK_ENCODE_WORKER=$UNCAPPED_COPY" "PYROWAVE_QUEUE_PRIORITY=realtime"
+      run_spike v4-inert "$short" "RUBYFUNK_ENCODE_WORKER=$UNCAPPED_COPY" "PYROWAVE_QUEUE_PRIORITY=realtime"
       wait_spike "$short"
       log="$SPIKE_LOG"
       if logs_have "$log" "$L_INERT" && logs_have "$log" "$L_INERT_WORKER" \
@@ -1056,7 +1056,7 @@ leg_v4() {
     skip V4.e "no worker binary to kill"
   else
     local kwall=$(( short * 3 ))
-    run_spike v4-kill "$kwall" "PUNKTFUNK_ENCODE_WORKER=$WORKER_BIN" "PYROWAVE_QUEUE_PRIORITY=realtime"
+    run_spike v4-kill "$kwall" "RUBYFUNK_ENCODE_WORKER=$WORKER_BIN" "PYROWAVE_QUEUE_PRIORITY=realtime"
     local spike_pid="$SPIKE_PID" wlog="$SPIKE_LOG" wpid='' t=0
     while [ "$t" -lt 30 ] && [ -z "$wpid" ]; do
       wpid="$(worker_pids_of "$spike_pid" | head -1)"
@@ -1094,8 +1094,8 @@ leg_v4() {
           info "⚠ THE RESPAWN RUNG IS NOT OBSERVABLE HERE. \`spike\` has no encoder-recovery loop"
           info "(submit errors propagate and it exits), so \`Encoder::reset\` — the only emitter of"
           info "'$L_DIED' — is never called. Verify that half against a REAL session:"
-          info "    1. connect a client, then:  pkill -f punktfunk-encode-worker"
-          info "    2. journalctl --user -u punktfunk-host -b | grep -E 'died mid-session|respawned'"
+          info "    1. connect a client, then:  pkill -f rubyfunk-encode-worker"
+          info "    2. journalctl --user -u rubyfunk-host -b | grep -E 'died mid-session|respawned'"
           info "  Confirmed on glass 2026-08-10 (home-nobara-1, KDE, RTX 5070 Ti): stream never"
           info "  dropped, 'respawned the encode worker after a mid-session death"
           info "  priority=Granted(Realtime)', 'encoder rebuilt in place, forcing an IDR reset=1'."
@@ -1141,7 +1141,7 @@ leg_v5() {
   if [ -z "$WORKER_BIN" ] || [ ! -x "$WORKER_BIN" ]; then skip V5 "no worker binary"; return 0; fi
   setup_logdir; resolve_source
   local wall=$(( OPT_MINUTES * 60 ))
-  run_spike v5-fd "$wall" "PUNKTFUNK_ENCODE_WORKER=$WORKER_BIN"
+  run_spike v5-fd "$wall" "RUBYFUNK_ENCODE_WORKER=$WORKER_BIN"
   local spike_pid="$SPIKE_PID" log="$SPIKE_LOG"
   if [ -z "$spike_pid" ]; then skip V5 "the spike did not stay up"; return 0; fi
 
@@ -1312,7 +1312,7 @@ leg_selftest() {
   local wl="$d/worker.log" il="$d/inline.log" cl="$d/cpu.log"
   {
     printf '%s\n' "  INFO x: $L_CAPTURE dmabuf-passthrough → pyrowave"
-    printf '%s\n' "  INFO x: priority=Realtime device=NVIDIA worker=/usr/bin/punktfunk-encode-worker pyrowave: $L_GRANTED (…)"
+    printf '%s\n' "  INFO x: priority=Realtime device=NVIDIA worker=/usr/bin/rubyfunk-encode-worker pyrowave: $L_GRANTED (…)"
   } > "$wl"
   printf '%s\n' "  INFO x: $L_OFF — $L_FALLBACK" > "$il"
   # A CPU capture arm: the worker takes the session, then leaves it on the first frame. Every
@@ -1386,21 +1386,21 @@ This is also the fastest way to see whether the worker is installed and capped a
 
 --- Steam Deck (deck@192.168.1.253), DESKTOP mode -- V1 + V2 -------------------------------------
 The Deck is the RADV half of V2 and the KWin×RADV half of V1. /usr is read-only (SteamOS); the
-install is home-scoped under ~/punktfunk, and file capabilities do NOT survive a rebuild (a rebuild
+install is home-scoped under ~/rubyfunk, and file capabilities do NOT survive a rebuild (a rebuild
 is a new inode).
 
   1. PRIVILEGED, run by a human — sudo on the Deck needs the `deck` password, it is NOT passwordless.
-     This also writes ~/.local/share/applications/io.unom.punktfunk.host.desktop, which V1 needs and
+     This also writes ~/.local/share/applications/io.github.gunu3371.rubyfunk.host.desktop, which V1 needs and
      which is NOT currently present on that box:
 
-         cd ~/punktfunk && scripts/steamdeck/install.sh
+         cd ~/rubyfunk && scripts/steamdeck/install.sh
 
      Then LOG OUT AND BACK IN. KWin reads the .desktop when the client first connects and caches the
      grant; an already-running session will not pick up a newly written file.
 
   2. Verify by hand, no root needed:
-         getcap ~/punktfunk/target-steamos/release/punktfunk-host            # MUST print nothing
-         getcap ~/punktfunk/target-steamos/release/punktfunk-encode-worker   # cap_sys_nice=ep
+         getcap ~/rubyfunk/target-steamos/release/rubyfunk-host            # MUST print nothing
+         getcap ~/rubyfunk/target-steamos/release/rubyfunk-encode-worker   # cap_sys_nice=ep
 
   3. Unprivileged, from a Desktop-mode terminal:
          scripts/validate-encode-worker.sh inspect v1 v2 v4
@@ -1425,8 +1425,8 @@ propagate and it exits. `Encoder::reset` is therefore never called, and reset is
 can see (the death is surfaced as an attributable worker-IPC error, host still alive) and leaves the
 respawn to a real session. To close it, with a client connected and streaming:
 
-         pkill -f punktfunk-encode-worker
-         journalctl --user -u punktfunk-host -b | grep -E 'died mid-session|respawned|rebuilt in place'
+         pkill -f rubyfunk-encode-worker
+         journalctl --user -u rubyfunk-host -b | grep -E 'died mid-session|respawned|rebuilt in place'
 
 Expect the stream never to drop, plus "respawned the encode worker after a mid-session death
 priority=Granted(Realtime)" and "encoder submit failed — encoder rebuilt in place, forcing an IDR
@@ -1435,18 +1435,18 @@ reset=1 max=5". Confirmed on home-nobara-1 (KDE, RTX 5070 Ti) 2026-08-10.
 --- the one step this script will never do --------------------------------------------------------
 It never calls setcap. If a leg says the worker is uncapped and you want the lever:
 
-         sudo setcap 'cap_sys_nice=ep' /path/to/punktfunk-encode-worker
+         sudo setcap 'cap_sys_nice=ep' /path/to/rubyfunk-encode-worker
 
-NEVER setcap punktfunk-host. Not "temporarily", not "to test". A capability on the host makes it
+NEVER setcap rubyfunk-host. Not "temporarily", not "to test". A capability on the host makes it
 unidentifiable to KWin and takes out desktop streaming on every KDE box — that is 0.26.0-1, and I2
-above hard-fails on it. To undo one:  sudo setcap -r /path/to/punktfunk-host
+above hard-fails on it. To undo one:  sudo setcap -r /path/to/rubyfunk-host
 
 --- reading the logs afterwards -------------------------------------------------------------------
 Every fallback rung ends with the same clause, so one grep finds them all whichever rung fired:
 
-         journalctl --user -u punktfunk-host -b | grep -F 'encoding in-process at default GPU priority'
+         journalctl --user -u rubyfunk-host -b | grep -F 'encoding in-process at default GPU priority'
 
-⚠ The worker's PUNKTFUNK_PERF p50/p99 summary is written by the WORKER process to inherited stderr.
+⚠ The worker's RUBYFUNK_PERF p50/p99 summary is written by the WORKER process to inherited stderr.
   It reaches journalctl. It does NOT reach the web console's Logs tab — that ring is a tracing layer
   inside the host process and the worker is not in it. Read the journal, not the console.
 EOF
@@ -1468,7 +1468,7 @@ fi
 
 resolve_binaries
 
-printf '%s — punktfunk-encode-worker on-glass validation (%s)\n' "$(hostname 2>/dev/null || echo box)" "$VERSION"
+printf '%s — rubyfunk-encode-worker on-glass validation (%s)\n' "$(hostname 2>/dev/null || echo box)" "$VERSION"
 printf 'kernel %s · compositor %s · uid %s%s\n' \
   "$(uname -r)" "$(compositor_guess)" "$(id -u)" \
   "$([ -n "${WAYLAND_DISPLAY:-}" ] && printf ' · WAYLAND_DISPLAY=%s' "$WAYLAND_DISPLAY")"

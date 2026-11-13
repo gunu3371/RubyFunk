@@ -55,7 +55,7 @@ const ACCENTS = {
 	"libadwaita slate": "#6f8396",
 	"Breeze blue": "#3daee9",
 	// The console's own swatch row (src/lib/appearance.ts).
-	"punktfunk violet": "#6c5bf3",
+	"rubyfunk violet": "#6c5bf3",
 	"swatch blue": "#3584e4",
 	"swatch green": "#2ec27e",
 	"swatch amber": "#c88800",

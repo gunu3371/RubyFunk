@@ -10,8 +10,8 @@ its **Health checks** catch most setup problems and give the command that fixes 
 
 - [The Linux host service won't start](#the-linux-host-service-wont-start)
 - [`nvidia-smi` says it can't communicate with the driver](#nvidia-smi-says-it-cant-communicate-with-the-driver)
-- [`systemctl --user status punktfunk-web`: unit not found](/docs/troubleshooting-startup#systemctl---user-status-punktfunk-web-unit-not-found)
-- [pacman: database already registered](/docs/troubleshooting-startup#pacman-error-could-not-register-punktfunk-database-database-already-registered)
+- [`systemctl --user status rubyfunk-web`: unit not found](/docs/troubleshooting-startup#systemctl---user-status-rubyfunk-web-unit-not-found)
+- [pacman: database already registered](/docs/troubleshooting-startup#pacman-error-could-not-register-rubyfunk-database-database-already-registered)
 - [The desktop won't start, or "GPU … not supported by EGL"](/docs/troubleshooting-startup#the-desktop-wont-start-or-gpu--not-supported-by-egl)
 - [The session fails right after editing host.env](/docs/troubleshooting-startup#the-session-fails-right-after-editing-hostenv)
 - [The game library is empty and the plugin runner has stopped](/docs/plugins#plugins-cant-be-sandboxed-here)
@@ -21,15 +21,15 @@ its **Health checks** catch most setup problems and give the command that fixes 
 ### The Linux host service won't start
 
 Usually an old hand-copied unit in `~/.config/systemd/user/` shadows the packaged one, and
-`systemctl --user status punktfunk-host` shows `status=203/EXEC`. Remove it:
+`systemctl --user status rubyfunk-host` shows `status=203/EXEC`. Remove it:
 
 ```sh
-rm ~/.config/systemd/user/punktfunk-host.service
+rm ~/.config/systemd/user/rubyfunk-host.service
 systemctl --user daemon-reload
-systemctl --user restart punktfunk-host
+systemctl --user restart rubyfunk-host
 ```
 
-Any other failure: `journalctl --user -u punktfunk-host -e` names the reason.
+Any other failure: `journalctl --user -u rubyfunk-host -e` names the reason.
 
 ### `nvidia-smi` says it can't communicate with the driver
 
@@ -69,7 +69,7 @@ profile type**. Running the setup again offers the same switch. On a trusted net
 Public, run this from an elevated PowerShell:
 
 ```powershell
-punktfunk-host service install --allow-public-network=on
+rubyfunk-host service install --allow-public-network=on
 ```
 
 It opens the streaming ports on Public networks; the console's ports keep their scope.

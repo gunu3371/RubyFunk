@@ -1,5 +1,5 @@
 <#
-  Rebuild the punktfunk Windows host (release + NVENC) from the CURRENT source and
+  Rebuild the rubyfunk Windows host (release + NVENC) from the CURRENT source and
   restart the LocalSystem service, with automatic rollback if the build fails or the
   new binary won't start.
 
@@ -11,9 +11,9 @@
 #>
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path (Split-Path $PSScriptRoot)        # scripts\windows -> repo root
-$exe  = Join-Path $repo 'target\release\punktfunk-host.exe'
+$exe  = Join-Path $repo 'target\release\rubyfunk-host.exe'
 $bak  = "$exe.bak"
-$svc  = 'PunktfunkHost'
+$svc  = 'RubyFunkHost'
 
 function Find-VcVars {
   $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -28,7 +28,7 @@ function Find-VcVars {
 
 function Svc-Running { (& sc.exe query $svc 2>$null) -match 'RUNNING' }
 
-Write-Host "== punktfunk host deploy =="
+Write-Host "== rubyfunk host deploy =="
 $vcvars = Find-VcVars
 Write-Host "vcvars : $vcvars"
 Set-Location $repo
@@ -55,8 +55,8 @@ for ($i=0; $i -lt 30 -and (Svc-Running); $i++) { Start-Sleep 1 }
 if (Test-Path $exe) { Copy-Item $exe $bak -Force; Write-Host "backup : $bak" }
 
 # 3. build (release); build env is inherited from Machine scope (setup-build-env.ps1)
-Write-Host "building: cargo build --release -p punktfunk-host --features $features"
-& cmd.exe /c "call `"$vcvars`" >nul && cargo build --release -p punktfunk-host --features $features"
+Write-Host "building: cargo build --release -p rubyfunk-host --features $features"
+& cmd.exe /c "call `"$vcvars`" >nul && cargo build --release -p rubyfunk-host --features $features"
 $built = ($LASTEXITCODE -eq 0)
 
 if (-not $built) {

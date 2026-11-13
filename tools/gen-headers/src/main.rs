@@ -1,5 +1,5 @@
-//! `cargo run -p gen-headers`: regenerate `include/punktfunk_core.h` and
-//! `include/punktfunk_console.h` from each crate's `cbindgen.toml`. A parse failure
+//! `cargo run -p gen-headers`: regenerate `include/rubyfunk_core.h` and
+//! `include/rubyfunk_console.h` from each crate's `cbindgen.toml`. A parse failure
 //! exits non-zero and leaves the checked-in header as it was.
 
 #![forbid(unsafe_code)]
@@ -9,8 +9,8 @@ use std::process::ExitCode;
 
 /// (crate dir, header) pairs, relative to the workspace root.
 const HEADERS: [(&str, &str); 2] = [
-    ("crates/client/punktfunk-ffi", "include/punktfunk_core.h"),
-    ("clients/apple/native", "include/punktfunk_console.h"),
+    ("crates/client/rubyfunk-ffi", "include/rubyfunk_core.h"),
+    ("clients/apple/native", "include/rubyfunk_console.h"),
 ];
 
 /// The workspace root. `cargo run` names this checkout at run time. A target dir shared between
@@ -59,7 +59,7 @@ mod tests {
             // Block comments are single-line here; one that spans lines would enter the hash.
             let line = line.split("//").next().unwrap_or("");
             let line = line.split("/*").next().unwrap_or("").trim();
-            if line.is_empty() || line.starts_with("#define PUNKTFUNK_ABI_VERSION ") {
+            if line.is_empty() || line.starts_with("#define RUBYFUNK_ABI_VERSION ") {
                 continue;
             }
             for b in line.bytes().chain([b'\n']) {
@@ -79,10 +79,10 @@ mod tests {
         let got = code_hash(&String::from_utf8(header).expect("header is utf-8"));
         assert_eq!(
             got,
-            punktfunk_core::ABI_HEADER_HASH,
-            "the C header changed (hash {got:#018x}). In punktfunk-core/src/lib.rs bump \
+            rubyfunk_core::ABI_HEADER_HASH,
+            "the C header changed (hash {got:#018x}). In rubyfunk-core/src/lib.rs bump \
              ABI_VERSION and set ABI_HEADER_HASH to this value, then update abi_version_is_pinned \
-             in punktfunk-ffi: one change"
+             in rubyfunk-ffi: one change"
         );
     }
 }

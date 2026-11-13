@@ -23,7 +23,7 @@ permission file when you log in, so **log out and back in once** after installin
 
 Nothing is required: the host finds KWin on every connect.
 
-Don't set `PUNKTFUNK_COMPOSITOR`, `WAYLAND_DISPLAY` or `XDG_CURRENT_DESKTOP`. A pinned compositor
+Don't set `RUBYFUNK_COMPOSITOR`, `WAYLAND_DISPLAY` or `XDG_CURRENT_DESKTOP`. A pinned compositor
 turns off detection and session following, and stale session values point the host at dead
 sockets. The [headless session](#headless-session) pins them on purpose. Every other option is in
 [Configuration](/docs/configuration).
@@ -33,8 +33,8 @@ sockets. The [headless session](#headless-session) pins them on purpose. Every o
 From inside your Plasma session:
 
 ```sh
-systemctl --user enable --now punktfunk-host
-journalctl --user -u punktfunk-host -f    # watch it start and print its fingerprint
+systemctl --user enable --now rubyfunk-host
+journalctl --user -u rubyfunk-host -f    # watch it start and print its fingerprint
 ```
 
 Then add the drop-in from
@@ -48,14 +48,14 @@ too, see [What the unit starts](/docs/running-as-a-service#what-the-unit-starts)
 
 ## Headless session
 
-A box with no graphical login runs its own headless KWin session, `punktfunk-kde-session`, which
+A box with no graphical login runs its own headless KWin session, `rubyfunk-kde-session`, which
 needs none of the permissions above. It needs KWin 6.5.6 or newer (`kwin_wayland --version`).
 
 ```sh
-mkdir -p ~/.config/punktfunk
-cp /usr/share/punktfunk/host.env.kde ~/.config/punktfunk/host.env  # Ubuntu: punktfunk-host/
+mkdir -p ~/.config/rubyfunk
+cp /usr/share/rubyfunk/host.env.kde ~/.config/rubyfunk/host.env  # Ubuntu: rubyfunk-host/
 systemctl --user daemon-reload
-systemctl --user enable --now punktfunk-kde-session punktfunk-host
+systemctl --user enable --now rubyfunk-kde-session rubyfunk-host
 sudo loginctl enable-linger "$USER"
 ```
 
@@ -70,13 +70,13 @@ Full setup: [Running as a Service](/docs/running-as-a-service).
 
 ## Troubleshooting
 
-`punktfunk-host probe-compositor`, run inside the session, exits 0 when KWin is ready and prints
+`rubyfunk-host probe-compositor`, run inside the session, exits 0 when KWin is ready and prints
 the reason when it isn't.
 
 ### KWin does not expose `zkde_screencast_unstable_v1`
 
 KWin hasn't granted the host its screencast permission. Log out and back in once. If that doesn't
-fix it, `getcap /usr/bin/punktfunk-host` must print nothing: KWin can't identify a binary that
+fix it, `getcap /usr/bin/rubyfunk-host` must print nothing: KWin can't identify a binary that
 carries a capability — see
 [GPU scheduling priority](/docs/running-as-a-service#gpu-scheduling-priority).
 
@@ -86,25 +86,25 @@ KWin refused the display; the message arrives in your session's language. Its ba
 one (a nested KWin, or `kwin_wayland --virtual` below 6.5.6), or KWin 6.6 created it disabled. The
 host enables a disabled one and retries on its own. If it keeps failing:
 
-- `punktfunk-host list-monitors` shows a `Virtual-punktfunk-*` display marked `disabled`.
+- `rubyfunk-host list-monitors` shows a `Virtual-rubyfunk-*` display marked `disabled`.
 - `~/.config/kwinoutputconfig.json` holds a stale entry for it.
 - `journalctl --user -b -t kwin_wayland` says "Applying output configuration failed!": KWin won't
   enable one more display beside your monitors.
 
 Meanwhile, stream a real monitor instead: **Stream this monitor** under **Displays** in the
-console, or `PUNKTFUNK_CAPTURE_MONITOR` — see
+console, or `RUBYFUNK_CAPTURE_MONITOR` — see
 [Virtual displays](/docs/virtual-displays#stream-a-real-monitor-instead).
 
-### "Allow remote control?" appears, or input does nothing, with `PUNKTFUNK_INPUT_BACKEND=libei`
+### "Allow remote control?" appears, or input does nothing, with `RUBYFUNK_INPUT_BACKEND=libei`
 
-The libei input path, and portal capture (`PUNKTFUNK_VIDEO_SOURCE=portal`), go through KDE's
+The libei input path, and portal capture (`RUBYFUNK_VIDEO_SOURCE=portal`), go through KDE's
 RemoteDesktop portal, which needs a one-time grant. Seed it, then log out and back in:
 
 ```sh
-bash /usr/share/punktfunk/bazzite/kde-desktop-setup.sh    # Fedora, Bazzite
+bash /usr/share/rubyfunk/bazzite/kde-desktop-setup.sh    # Fedora, Bazzite
 
 mkdir -p ~/.local/share/flatpak/db                        # Ubuntu, Arch
-cp /usr/share/punktfunk*/headless/kde-authorized ~/.local/share/flatpak/db/kde-authorized
+cp /usr/share/rubyfunk*/headless/kde-authorized ~/.local/share/flatpak/db/kde-authorized
 ```
 
 ### Black screen, no picture

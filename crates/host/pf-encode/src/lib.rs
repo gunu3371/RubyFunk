@@ -1,5 +1,5 @@
 //! Video encode behind one [`Encoder`] trait, opened by [`open_video`]. Pin a backend with
-//! `PUNKTFUNK_ENCODER`. The Windows backends are `pf-encode-win`'s, re-exported here. Capture to
+//! `RUBYFUNK_ENCODER`. The Windows backends are `pf-encode-win`'s, re-exported here. Capture to
 //! encode is one-way: this crate never depends on capture.
 //!
 //! - `open`: `open_video`, `OpenParams`, `TrackedEncoder`.
@@ -12,7 +12,7 @@
 //!   `vk_csc` (CSC and cursor plane), `vk_reframe` (crop and scale), and the vendored
 //!   `vk_av1_encode`, `vk_valve_rgb`, `vk_intra_refresh`.
 //! - `enc/linux/pyrowave` (shell), `pyrowave_open` (open plan), `pyrowave_remote` (host half),
-//!   `worker` (the `punktfunk-encode-worker` half). `enc/linux/vaapi_native`: native VAAPI.
+//!   `worker` (the `rubyfunk-encode-worker` half). `enc/linux/vaapi_native`: native VAAPI.
 //!
 //! Model and shell: enum state, pure `step`, fix-named table rows; a model builds on every target.
 //! Resolve once: `resolve()` per host entry, `open_video(&Resolved, ..)`; ADR 0002 in `docs/adr/`.
@@ -47,37 +47,37 @@ pub use resolve::*;
 /// default). Inverse of [`codec_to_wire`].
 pub fn codec_from_wire(bit: u8) -> Codec {
     match bit {
-        punktfunk_core::quic::CODEC_H264 => Codec::H264,
-        punktfunk_core::quic::CODEC_AV1 => Codec::Av1,
-        punktfunk_core::quic::CODEC_PYROWAVE => Codec::PyroWave,
+        rubyfunk_core::quic::CODEC_H264 => Codec::H264,
+        rubyfunk_core::quic::CODEC_AV1 => Codec::Av1,
+        rubyfunk_core::quic::CODEC_PYROWAVE => Codec::PyroWave,
         _ => Codec::H265,
     }
 }
 
 pub fn codec_to_wire(codec: Codec) -> u8 {
     match codec {
-        Codec::H264 => punktfunk_core::quic::CODEC_H264,
-        Codec::H265 => punktfunk_core::quic::CODEC_HEVC,
-        Codec::Av1 => punktfunk_core::quic::CODEC_AV1,
-        Codec::PyroWave => punktfunk_core::quic::CODEC_PYROWAVE,
+        Codec::H264 => rubyfunk_core::quic::CODEC_H264,
+        Codec::H265 => rubyfunk_core::quic::CODEC_HEVC,
+        Codec::Av1 => rubyfunk_core::quic::CODEC_AV1,
+        Codec::PyroWave => rubyfunk_core::quic::CODEC_PYROWAVE,
     }
 }
 
 /// HEVC `chroma_format_idc`: `1` (4:2:0) or `3` (4:4:4). Same numeric
-/// value as [`punktfunk_core::quic::Welcome::chroma_format`].
+/// value as [`rubyfunk_core::quic::Welcome::chroma_format`].
 pub fn chroma_idc(chroma: ChromaFormat) -> u8 {
     match chroma {
-        ChromaFormat::Yuv420 | ChromaFormat::Packed444(_) => punktfunk_core::quic::CHROMA_IDC_420,
-        ChromaFormat::Yuv444 => punktfunk_core::quic::CHROMA_IDC_444,
+        ChromaFormat::Yuv420 | ChromaFormat::Packed444(_) => rubyfunk_core::quic::CHROMA_IDC_420,
+        ChromaFormat::Yuv444 => rubyfunk_core::quic::CHROMA_IDC_444,
     }
 }
 
-/// Wire volume ([`punktfunk_core::quic::HdrMeta`]) → the encoders'
+/// Wire volume ([`rubyfunk_core::quic::HdrMeta`]) → the encoders'
 /// [`pf_frame::HdrMeta`]. Same seven fields; both types are foreign here, so
 /// a field copy stands in for `From`. A client panel that reports zero primaries,
 /// white point or peak keeps the generic HDR10 value there: a 0-nit mastering
 /// display tone-maps to black.
-pub fn hdr_meta_from_wire(m: punktfunk_core::quic::HdrMeta) -> pf_frame::HdrMeta {
+pub fn hdr_meta_from_wire(m: rubyfunk_core::quic::HdrMeta) -> pf_frame::HdrMeta {
     let g = pf_frame::hdr::generic_hdr10();
     pf_frame::HdrMeta {
         display_primaries: if m.display_primaries == [[0; 2]; 3] {
@@ -101,8 +101,8 @@ pub fn hdr_meta_from_wire(m: punktfunk_core::quic::HdrMeta) -> pf_frame::HdrMeta
 }
 
 /// Inverse of [`hdr_meta_from_wire`], for the `0xCE` datagram.
-pub fn hdr_meta_to_wire(m: pf_frame::HdrMeta) -> punktfunk_core::quic::HdrMeta {
-    punktfunk_core::quic::HdrMeta {
+pub fn hdr_meta_to_wire(m: pf_frame::HdrMeta) -> rubyfunk_core::quic::HdrMeta {
+    rubyfunk_core::quic::HdrMeta {
         display_primaries: m.display_primaries,
         white_point: m.white_point,
         max_display_mastering_luminance: m.max_display_mastering_luminance,
@@ -183,7 +183,7 @@ mod vk_import;
 ))]
 #[path = "enc/linux/vk_csc.rs"]
 mod vk_csc;
-// PyroWave: Vulkan-compute intra wavelet. Explicit `PUNKTFUNK_ENCODER=pyrowave`.
+// PyroWave: Vulkan-compute intra wavelet. Explicit `RUBYFUNK_ENCODER=pyrowave`.
 // See `design/pyrowave-codec-plan.md`.
 #[cfg(all(target_os = "linux", feature = "pyrowave"))]
 #[path = "enc/linux/pyrowave.rs"]
@@ -192,7 +192,7 @@ mod pyrowave;
 #[cfg_attr(not(all(target_os = "linux", feature = "pyrowave")), allow(dead_code))]
 #[path = "enc/linux/pyrowave_open.rs"]
 mod pyrowave_open;
-// `punktfunk-encode-worker` holds `CAP_SYS_NICE`; the host must not (a capped
+// `rubyfunk-encode-worker` holds `CAP_SYS_NICE`; the host must not (a capped
 // host is unidentifiable to KWin). `worker` is `pub` for that binary's `main`.
 // See `design/gpu-priority-capability-worker.md`.
 #[cfg(all(target_os = "linux", feature = "pyrowave"))]
@@ -235,7 +235,7 @@ mod tests {
     /// would silently zero the SEI the encoder emits.
     #[test]
     fn hdr_meta_wire_roundtrip_keeps_every_field() {
-        let wire = punktfunk_core::quic::HdrMeta {
+        let wire = rubyfunk_core::quic::HdrMeta {
             display_primaries: [[1, 2], [3, 4], [5, 6]],
             white_point: [7, 8],
             max_display_mastering_luminance: 9,
@@ -253,7 +253,7 @@ mod tests {
         assert_eq!(hdr_meta_to_wire(frame), wire);
         assert_eq!(
             hdr_meta_to_wire(pf_frame::HdrMeta::default()),
-            punktfunk_core::quic::HdrMeta::default()
+            rubyfunk_core::quic::HdrMeta::default()
         );
     }
 
@@ -261,7 +261,7 @@ mod tests {
     #[test]
     fn hdr_meta_from_wire_fills_an_unreported_volume() {
         let g = pf_frame::hdr::generic_hdr10();
-        let frame = hdr_meta_from_wire(punktfunk_core::quic::HdrMeta {
+        let frame = hdr_meta_from_wire(rubyfunk_core::quic::HdrMeta {
             max_cll: 700,
             ..Default::default()
         });

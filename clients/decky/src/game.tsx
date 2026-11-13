@@ -14,15 +14,15 @@ export interface Game {
 export function streamFrom(host: HostView, game: Game): void {
   // A sleeping host is the one case that takes a while and looks like nothing happened.
   if (!host.online) {
-    toaster.toast({ title: "Punktfunk", body: `Waking ${host.name} to stream ${game.title}` });
+    toaster.toast({ title: "RubyFunk", body: `Waking ${host.name} to stream ${game.title}` });
   }
   void startGameStream(host, game.appId, game.title, game.iconHash);
 }
 
-/** The Punktfunk lens mark: the logo's two overlapping circles in the brand violets, the lighter
+/** The RubyFunk lens mark: the logo's two overlapping circles in the brand violets, the lighter
  *  one behind. A surface that paints itself violet overrides `--pf-back` / `--pf-deep`, because the
  *  deep circle is the same violet as the Play button's focus fill and would vanish on it. */
-export const PunktfunkMark: FC<{ size?: number }> = ({ size = 22 }) => (
+export const RubyFunkMark: FC<{ size?: number }> = ({ size = 22 }) => (
   <svg viewBox="17 13 141 141" width={size} height={size} aria-hidden="true">
     <defs>
       <linearGradient id="pf-lens" x1="0" y1="1" x2="1" y2="0">

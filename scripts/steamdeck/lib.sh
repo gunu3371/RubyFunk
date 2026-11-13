@@ -3,18 +3,18 @@
 # helpers, the system tuning both installers apply, and the host's user unit. The variables it sets
 # are for those scripts.
 
-SRC="${PUNKTFUNK_SRC:-$HOME/punktfunk}"
-BOX="${PUNKTFUNK_BOX:-pf2}"
+SRC="${RUBYFUNK_SRC:-$HOME/rubyfunk}"
+BOX="${RUBYFUNK_BOX:-pf2}"
 UNITS="$HOME/.config/systemd/user"
 
 # pf_set_src <dir>: the source checkout and the build output under it.
 pf_set_src() {
     SRC="$1"
     TARGET_DIR="$SRC/target-steamos"
-    BIN="$TARGET_DIR/release/punktfunk-host"
+    BIN="$TARGET_DIR/release/rubyfunk-host"
     # The PyroWave encode worker, the only binary these scripts setcap. Never a hardlink or a mode
     # of $BIN: a shared inode shares the capability and voids KWin's .desktop grant.
-    WORKER="$TARGET_DIR/release/punktfunk-encode-worker"
+    WORKER="$TARGET_DIR/release/rubyfunk-encode-worker"
 }
 pf_set_src "$SRC"
 
@@ -38,35 +38,35 @@ acquire_sudo() {
     ( while kill -0 "$$" 2>/dev/null && sudo -n -v 2>/dev/null; do sleep 50; done ) >/dev/null 2>&1 </dev/null &
 }
 
-# Create a missing system group from packaging/linux/punktfunk.sysusers (needs sudo). A udev rule
+# Create a missing system group from packaging/linux/rubyfunk.sysusers (needs sudo). A udev rule
 # that chgrp's to a group nobody created fails silently.
 ensure_group() {
     getent group "$1" >/dev/null 2>&1 && return 0
-    sudo systemd-sysusers "$SRC/packaging/linux/punktfunk.sysusers" >/dev/null 2>&1 || true
+    sudo systemd-sysusers "$SRC/packaging/linux/rubyfunk.sysusers" >/dev/null 2>&1 || true
     getent group "$1" >/dev/null 2>&1 || return 1
     ok "created the '$1' system group"
 }
 
 # The repo's system files into /etc, the groups and the capabilities, on every run, so a changed
 # file reaches an installed Deck. Needs sudo. Sets NEED_RELOGIN=1 when it adds a group membership.
-# SteamOS A/B updates keep only the /etc files scripts/punktfunk-atomic-keep.conf lists.
+# SteamOS A/B updates keep only the /etc files scripts/rubyfunk-atomic-keep.conf lists.
 apply_system_tuning() {
-    sudo install -Dm644 "$SRC/scripts/99-punktfunk-net.conf" /etc/sysctl.d/99-punktfunk-net.conf
-    sudo sysctl -q -p /etc/sysctl.d/99-punktfunk-net.conf >/dev/null 2>&1 || true
+    sudo install -Dm644 "$SRC/scripts/99-rubyfunk-net.conf" /etc/sysctl.d/99-rubyfunk-net.conf
+    sudo sysctl -q -p /etc/sysctl.d/99-rubyfunk-net.conf >/dev/null 2>&1 || true
     ok "UDP socket buffers raised to 32 MB (persisted)"
     # Nice-limit headroom for the host's data-plane threads: SteamOS does not guarantee rtkit, and
     # without either the per-thread renice no-ops. /usr is read-only, so the drop-in lands in /etc.
-    sudo install -Dm644 "$SRC/packaging/linux/50-punktfunk-nice.conf" \
-        /etc/systemd/system/user@.service.d/50-punktfunk-nice.conf
+    sudo install -Dm644 "$SRC/packaging/linux/50-rubyfunk-nice.conf" \
+        /etc/systemd/system/user@.service.d/50-rubyfunk-nice.conf
     sudo systemctl daemon-reload || true
     ok "nice-limit drop-in installed (data-plane thread priority; applies after a reboot)"
-    sudo install -Dm644 "$SRC/scripts/60-punktfunk.rules" /etc/udev/rules.d/60-punktfunk.rules
+    sudo install -Dm644 "$SRC/scripts/60-rubyfunk.rules" /etc/udev/rules.d/60-rubyfunk.rules
     sudo udevadm control --reload-rules >/dev/null 2>&1 || true
     sudo udevadm trigger >/dev/null 2>&1 || true
     ok "installed udev rule (virtual gamepads + native Steam Deck controller)"
     # vhci-hcd makes the virtual Steam Deck pad a real USB device, the only kind Steam Input
     # adopts. Loaded now so passthrough works before the next boot.
-    sudo install -Dm644 "$SRC/scripts/punktfunk-modules.conf" /etc/modules-load.d/punktfunk.conf
+    sudo install -Dm644 "$SRC/scripts/rubyfunk-modules.conf" /etc/modules-load.d/rubyfunk.conf
     sudo modprobe vhci-hcd 2>/dev/null || warn "couldn't load vhci-hcd now (loads on next boot) — needed for the native Steam Deck pad"
     ok "vhci-hcd autoload installed (native Steam Deck controller transport)"
     if id -nG "$USER" | grep -qw input; then
@@ -76,27 +76,27 @@ apply_system_tuning() {
         NEED_RELOGIN=1
         warn "added $USER to the 'input' group (applies after a reboot)"
     fi
-    # 'punktfunk' owns the vhci attach/detach nodes; running this script is the opt-in to the
+    # 'rubyfunk' owns the vhci attach/detach nodes; running this script is the opt-in to the
     # native pad, so the user joins it. `if ensure_group`: a usermod against a missing group would
     # end the run under set -e before the services restart.
-    if ensure_group punktfunk; then
-        if id -nG "$USER" | grep -qw punktfunk; then
-            ok "already in the 'punktfunk' group (usbip vhci access)"
+    if ensure_group rubyfunk; then
+        if id -nG "$USER" | grep -qw rubyfunk; then
+            ok "already in the 'rubyfunk' group (usbip vhci access)"
         else
-            sudo usermod -aG punktfunk "$USER"
+            sudo usermod -aG rubyfunk "$USER"
             NEED_RELOGIN=1
-            warn "added $USER to the 'punktfunk' group — the native Steam Deck pad needs it. That group"
-            warn "can emulate arbitrary USB devices; drop it with 'sudo gpasswd -d $USER punktfunk' if"
+            warn "added $USER to the 'rubyfunk' group — the native Steam Deck pad needs it. That group"
+            warn "can emulate arbitrary USB devices; drop it with 'sudo gpasswd -d $USER rubyfunk' if"
             warn "you would rather stream without the native pad."
         fi
     else
-        warn "couldn't create the 'punktfunk' group — the native Steam Deck pad will not attach"
+        warn "couldn't create the 'rubyfunk' group — the native Steam Deck pad will not attach"
         warn "(everything else works; the pad arrives as a generic Xbox 360 controller). By hand:"
-        warn "  sudo groupadd --system punktfunk; sudo usermod -aG punktfunk $USER"
+        warn "  sudo groupadd --system rubyfunk; sudo usermod -aG rubyfunk $USER"
     fi
     # The host carries no capability: KWin cannot identify a capability-carrying client, and every
     # Desktop-mode session dies. The worker carries cap_sys_nice=ep for PyroWave's GPU priority. A
-    # rebuild is a new inode, so both are re-applied. Matrix: packaging/arch/punktfunk-host.install.
+    # rebuild is a new inode, so both are re-applied. Matrix: packaging/arch/rubyfunk-host.install.
     if [ -x "$BIN" ]; then
         sudo setcap -r "$BIN" 2>/dev/null || true
     fi
@@ -107,34 +107,34 @@ apply_system_tuning() {
             warn "couldn't grant CAP_SYS_NICE to $WORKER — PyroWave stays at default GPU priority"
         fi
     fi
-    sudo install -Dm644 "$SRC/scripts/punktfunk-atomic-keep.conf" /etc/atomic-update.conf.d/punktfunk.conf
+    sudo install -Dm644 "$SRC/scripts/rubyfunk-atomic-keep.conf" /etc/atomic-update.conf.d/rubyfunk.conf
     ok "system tuning registered to survive SteamOS updates (atomic-update.conf.d)"
 }
 
 # shellcheck source-path=SCRIPTDIR source=door.sh
 . "$(dirname "${BASH_SOURCE[0]}")/door.sh"
 
-# write_host_unit <ExecStart value>: scripts/punktfunk-host.service with this install's command,
+# write_host_unit <ExecStart value>: scripts/rubyfunk-host.service with this install's command,
 # and the Deck's session environment in a drop-in beside it.
 #
 # The management port is host.env's, where setup moves it: a `--mgmt-bind` on the unit would
 # outrank that line, so it never stays there. An older unit's address other than the default moves
 # into host.env, unless host.env already names one.
 write_host_unit() {
-    local xrd="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" bind env="$HOME/.config/punktfunk/host.env"
-    bind=$(sed -n 's/^ExecStart=.* --mgmt-bind \([^ ]*\).*/\1/p' "$UNITS/punktfunk-host.service" 2>/dev/null || true)
+    local xrd="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" bind env="$HOME/.config/rubyfunk/host.env"
+    bind=$(sed -n 's/^ExecStart=.* --mgmt-bind \([^ ]*\).*/\1/p' "$UNITS/rubyfunk-host.service" 2>/dev/null || true)
     if [ -n "$bind" ] && [ "$bind" != 0.0.0.0:47990 ] \
-        && ! grep -qs '^[[:space:]]*PUNKTFUNK_MGMT_BIND[[:space:]]*=' "$env"; then
-        echo "PUNKTFUNK_MGMT_BIND=$bind" >>"$env"
+        && ! grep -qs '^[[:space:]]*RUBYFUNK_MGMT_BIND[[:space:]]*=' "$env"; then
+        echo "RUBYFUNK_MGMT_BIND=$bind" >>"$env"
         ok "management port $bind moved to host.env"
     fi
-    mkdir -p "$UNITS/punktfunk-host.service.d"
+    mkdir -p "$UNITS/rubyfunk-host.service.d"
     {
-        echo "# Generated by scripts/steamdeck/lib.sh from scripts/punktfunk-host.service; update.sh rewrites it."
+        echo "# Generated by scripts/steamdeck/lib.sh from scripts/rubyfunk-host.service; update.sh rewrites it."
         sed -e "s|^ExecStart=.*|ExecStart=$1|" -e '/^ExecStart=/s/ --mgmt-bind [^ ]*//' \
-            "$SRC/scripts/punktfunk-host.service"
-    } > "$UNITS/punktfunk-host.service"
-    cat > "$UNITS/punktfunk-host.service.d/steamdeck.conf" <<EOF
+            "$SRC/scripts/rubyfunk-host.service"
+    } > "$UNITS/rubyfunk-host.service"
+    cat > "$UNITS/rubyfunk-host.service.d/steamdeck.conf" <<EOF
 # Generated by scripts/steamdeck/lib.sh — the Steam Deck session the host runs in.
 [Service]
 Environment=XDG_RUNTIME_DIR=$xrd

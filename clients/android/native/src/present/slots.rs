@@ -11,7 +11,7 @@
 //! newer. Under `smooth` the buffer bounds the hold. Until a present fence phases the
 //! [`SlotClock`], with pacing off, or on a down-rated panel, every target is as soon as possible.
 
-use punktfunk_core::phase::{pace_slot, SlotClock};
+use rubyfunk_core::phase::{pace_slot, SlotClock};
 
 use super::{Counters, PresentPriority, FALLBACK_PERIOD_NS};
 use crate::apply_margin::ApplyMargin;
@@ -51,12 +51,12 @@ pub(crate) struct Slots {
     /// The last slot assigned or observed; a held frame never shares it.
     last_slot: Option<i64>,
     /// Slots a frame may be held beyond the first reachable one: 0 under latency (1 with
-    /// `debug.punktfunk.asc_hold_chain`, the one-period elastic queue), the buffer under smooth.
+    /// `debug.rubyfunk.asc_hold_chain`, the one-period elastic queue), the buffer under smooth.
     max_ahead: i64,
-    /// `debug.punktfunk.asc_hold_band_us` pins the hold band; `None` follows the fences.
+    /// `debug.rubyfunk.asc_hold_band_us` pins the hold band; `None` follows the fences.
     hold_band_pin: Option<i64>,
     apply_margin: ApplyMargin,
-    /// Off (`debug.punktfunk.asc_pacing` = 0, or a `Skipping` verdict): as-soon-as-possible
+    /// Off (`debug.rubyfunk.asc_pacing` = 0, or a `Skipping` verdict): as-soon-as-possible
     /// targets, two pending.
     pacing: bool,
     /// A present fence has been read at least once this session.

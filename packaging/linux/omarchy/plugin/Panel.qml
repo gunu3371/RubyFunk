@@ -10,9 +10,9 @@ import "Model.js" as Model
 // Service.qml is the only spawn site — ctl, never HTTPS, never the token.
 Panel {
   id: root
-  moduleName: "punktfunk"
+  moduleName: "rubyfunk"
   manageIpc: true
-  ipcTarget: "punktfunk"
+  ipcTarget: "rubyfunk"
 
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
@@ -725,7 +725,7 @@ Panel {
       visible: root.live && service.games.length === 0
       width: parent.width
       wrapMode: Text.Wrap
-      text: "No game was launched through Punktfunk — this is the desktop."
+      text: "No game was launched through RubyFunk — this is the desktop."
       color: root.dim
       font.family: root.fontFamily
       font.pixelSize: Style.font.caption
@@ -1614,7 +1614,7 @@ Panel {
         Text {
           width: parent.width
           text: Model.tail(deviceRow.device ? deviceRow.device.fingerprint : "")
-              + " · " + (deviceRow.isNative ? "punktfunk" : "moonlight")
+              + " · " + (deviceRow.isNative ? "rubyfunk" : "moonlight")
               + (deviceRow.device && deviceRow.device.access_level ? " · " + deviceRow.device.access_level : "")
           color: root.dim
           font.family: "monospace"

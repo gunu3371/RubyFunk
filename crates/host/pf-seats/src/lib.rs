@@ -3,9 +3,9 @@
 //! The portable core owns the validated ledger, the crash-recoverable secret root, the control
 //! protocol and serialized command dispatch. Platform effects cross `PlatformBackend`, so
 //! portable tests use a fake. Windows adds account ownership, DPAPI credentials, NLA session
-//! keepers, WTS selection, job-contained supervision and the named pipe the punktfunk service
+//! keepers, WTS selection, job-contained supervision and the named pipe the rubyfunk service
 //! serves. Linux adds users with their own logind session, one systemd unit per seat and the
-//! Unix socket the `punktfunk-seats` daemon serves.
+//! Unix socket the `rubyfunk-seats` daemon serves.
 
 // Allowed in `linux::pam` (libpam), `linux::login` (the login helper's signals and privilege
 // drop) and `linux::handover`'s `SO_PEERPIDFD` read.

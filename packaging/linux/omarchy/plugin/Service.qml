@@ -5,7 +5,7 @@ import "Model.js" as Model
 
 // The plugin's data half: one `ctl watch`, the snapshots it triggers, and the
 // only spawn site. The QML holds no credential and speaks no HTTPS — every
-// host call is `punktfunk-host ctl`, which pins the certificate before sending
+// host call is `rubyfunk-host ctl`, which pins the certificate before sending
 // the operator token. Reading `run()` answers whether this plugin can leak.
 Item {
   id: root
@@ -92,7 +92,7 @@ Item {
   }
 
   function argvFor(args) {
-    return spawnArgv("punktfunk-host", ["ctl"].concat(args))
+    return spawnArgv("rubyfunk-host", ["ctl"].concat(args))
   }
 
   // run(["approve", "3"], function (data, err) { … })
@@ -125,13 +125,13 @@ Item {
   function setHostEnabled(on) {
     root.haveDesired = true
     root.desiredRunning = !!on
-    detachedBin("systemctl", ["--user", on ? "start" : "stop", "punktfunk-host.service"])
+    detachedBin("systemctl", ["--user", on ? "start" : "stop", "rubyfunk-host.service"])
   }
 
   function setCaptureMode(mode) {
     var selected = Model.captureModeStatus(mode)
     if (!selected) return
-    runArgv("punktfunk-omarchy", ["mode", selected], function (output, err) {
+    runArgv("rubyfunk-omarchy", ["mode", selected], function (output, err) {
       if (!err) root.refreshCaptureMode()
     })
   }
@@ -142,7 +142,7 @@ Item {
   // console-url`, and an EMPTY --app= opens a plain browser window.
   function openConsole() {
     detached(["sh", "-c",
-              "exec omarchy-launch-webapp \"$(punktfunk-host ctl console-url || echo https://127.0.0.1:47992)\""])
+              "exec omarchy-launch-webapp \"$(rubyfunk-host ctl console-url || echo https://127.0.0.1:47992)\""])
   }
 
   Component {
@@ -191,7 +191,7 @@ Item {
           // ctl always prints the envelope, so a parse failure means the binary is missing or the
           // host was never installed. Say that rather than "unknown error".
           var msg = payload ? JSON.stringify(payload)
-                            : "punktfunk-host ctl did not answer (is the host installed?)"
+                            : "rubyfunk-host ctl did not answer (is the host installed?)"
           root.lastError = msg
           proc.cb(null, { code: code, message: msg })
         }
@@ -267,11 +267,11 @@ Item {
   // The helper includes host.env overrides, so neither the display snapshot
   // nor the requested action is authoritative.
   function refreshCaptureMode() {
-    runArgv("punktfunk-omarchy", ["mode", "--status"], function (output, err) {
+    runArgv("rubyfunk-omarchy", ["mode", "--status"], function (output, err) {
       if (err) return
       var mode = Model.captureModeStatus(output)
       if (!mode) {
-        root.lastError = "punktfunk-omarchy mode --status returned an invalid result"
+        root.lastError = "rubyfunk-omarchy mode --status returned an invalid result"
         return
       }
       root.captureMode = mode

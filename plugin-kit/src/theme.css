@@ -1,4 +1,4 @@
-/* punktfunk plugin-UI theme — the console's violet identity, packaged so plugin UIs
+/* rubyfunk plugin-UI theme — the console's violet identity, packaged so plugin UIs
  * render indistinguishably from the console they're embedded in.
  *
  * Extracted from the console's web/src/styles.css + timing-functions.css. Inside the console's
@@ -8,7 +8,7 @@
  *
  *   @import "tailwindcss";
  *   @import "tw-animate-css";
- *   @import "@punktfunk/plugin-kit/theme.css";
+ *   @import "@rubyfunk/plugin-kit/theme.css";
  *   @custom-variant dark (&:is(.dark *));
  *   @source "../node_modules/@unom/ui/dist/**\/*.{js,mjs}";
  *
@@ -40,7 +40,7 @@
 	--ease-in-out-circ: cubic-bezier(0.785, 0.135, 0.15, 0.86);
 }
 
-/* ── punktfunk brand · violet product chrome ────────────────────────────────
+/* ── rubyfunk brand · violet product chrome ────────────────────────────────
    Light (lavender) is the :root default; dark (violet-tinted app-icon chrome) is the
    `.dark` override. The token set feeds BOTH @unom/ui's semantic contract
    (--brand/--main/--neutral…) and the shadcn-style vocabulary (--background/--card/…),
@@ -49,7 +49,7 @@
 :root {
 	--radius: 0.625rem;
 
-	/* Brand — the violet lens mark (from the punktfunk app icon). Theme-independent. */
+	/* Brand — the violet lens mark (from the rubyfunk app icon). Theme-independent. */
 	--pf-brand: #6c5bf3; /* deep violet — primary on light */
 	--pf-brand-light: #a79ff8; /* light violet — primary on dark */
 	--pf-highlight: #d2c9fb; /* lens highlight */

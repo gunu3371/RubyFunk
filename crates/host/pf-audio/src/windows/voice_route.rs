@@ -1,4 +1,4 @@
-//! Voice chat on the host (`PUNKTFUNK_AUDIO_VOICE_CHAT=host`), the Windows half.
+//! Voice chat on the host (`RUBYFUNK_AUDIO_VOICE_CHAT=host`), the Windows half.
 //!
 //! Windows routes per application through the store `mmsys.cpl`'s "App volume and
 //! device preferences" page writes: `AudioPolicyConfig::SetPersistedDefaultAudioEndpoint
@@ -6,7 +6,7 @@
 //! write next door. The store is per user and the host is SYSTEM, so the write has to
 //! come from the signed-in user's context: a worker thread finds voice-app processes
 //! and runs this same binary as the console user, windowless
-//! (`punktfunk-host voice-route set …`, [`cli`]), to pin them. A host that is not
+//! (`rubyfunk-host voice-route set …`, [`cli`]), to pin them. A host that is not
 //! SYSTEM writes in-process.
 //!
 //! A pin is keyed by the app, not the pid, and outlives both the process and a host
@@ -132,7 +132,7 @@ impl VoiceRoute {
         let (tx, rx) = channel();
         self.inflight = Some(rx);
         std::thread::Builder::new()
-            .name("punktfunk-voice-pin".into())
+            .name("rubyfunk-voice-pin".into())
             .spawn(move || {
                 let apps = &pf_host_config::config().audio_voice_apps;
                 let (mut pinned, mut refused) = (Vec::new(), Vec::new());
@@ -366,7 +366,7 @@ fn run_helper(args: &[&str]) -> bool {
     }
 }
 
-/// `punktfunk-host voice-route probe|set <device-id> <pid> <exe>` / `clear <device-id|-> <pid> <exe>`:
+/// `rubyfunk-host voice-route probe|set <device-id> <pid> <exe>` / `clear <device-id|-> <pid> <exe>`:
 /// the process that reads or writes one app's pins, in whichever user context it was started in.
 ///
 /// `probe` only reads: it fails for a process Windows will not pin, one that never played audio.
@@ -374,7 +374,7 @@ fn run_helper(args: &[&str]) -> bool {
 /// `clear` puts a saved pin back on each role still pinned to `device-id`, and leaves a role
 /// the operator moved since. `-` (an older marker) clears every role to "default".
 pub fn cli(args: &[String]) -> Result<()> {
-    const USAGE: &str = "usage: punktfunk-host voice-route probe|set <device-id> <pid> <exe> | \
+    const USAGE: &str = "usage: rubyfunk-host voice-route probe|set <device-id> <pid> <exe> | \
                          clear <device-id|-> <pid> <exe>";
     let arg = |i: usize| args.get(i).map(String::as_str).context(USAGE);
     let (verb, device, pid, exe) = (arg(0)?, arg(1)?, arg(2)?, arg(3)?.to_ascii_lowercase());
@@ -438,7 +438,7 @@ fn restored_pins(
 fn saved_path() -> Result<std::path::PathBuf> {
     let base = std::env::var_os("LOCALAPPDATA").context("LOCALAPPDATA unset")?;
     Ok(std::path::PathBuf::from(base)
-        .join("punktfunk")
+        .join("rubyfunk")
         .join("voice-route.saved"))
 }
 

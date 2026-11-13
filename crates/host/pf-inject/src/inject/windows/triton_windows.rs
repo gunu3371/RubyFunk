@@ -4,7 +4,7 @@
 //!
 //! Unlike the Deck ([`super::steam_deck_windows`]), this is not re-synthesized
 //! from typed state: the client forwards raw input reports
-//! ([`RichInput::HidReport`](punktfunk_core::quic::RichInput)); the host
+//! ([`RichInput::HidReport`](rubyfunk_core::quic::RichInput)); the host
 //! mirrors them into the input slot. The driver trims each to its declared
 //! report-id length before hidclass.
 //!
@@ -24,7 +24,7 @@ use crate::triton_proto::{parse_triton_rumble, triton_serial, Sc2Identity, Trito
 use crate::uhid_manager::{PadFeedback, PadProto, UhidManager};
 use anyhow::Result;
 use pf_driver_proto::gamepad::DEVTYPE_TRITON;
-use punktfunk_core::quic::{HidOutput, RichInput, HID_RAW_FEATURE, HID_RAW_OUTPUT};
+use rubyfunk_core::quic::{HidOutput, RichInput, HID_RAW_FEATURE, HID_RAW_OUTPUT};
 
 /// INF hardware id. A package rename must not touch it.
 pub(super) const TRITON_HWID: &str = "pf_triton";
@@ -63,7 +63,7 @@ impl TritonWinPad {
                 // VID/PID only. If Steam balks, A/B `Some(0)` (Deck needed `Some(2)`).
                 usb_mi: None,
                 bluetooth: false,
-                description: "Punktfunk Virtual Steam Controller",
+                description: "RubyFunk Virtual Steam Controller",
                 // Steam merges a pad's HID views by the VID/PID token in the instance path.
                 enumerator: "VID_28DE&PID_1302",
                 property: Some((
@@ -148,7 +148,7 @@ impl PadProto for TritonWinProto {
     const LABEL: &'static str = "Steam Controller 2/Windows";
     const DEVICE: &'static str = "Steam Controller 2";
     const CREATE_HINT: &'static str =
-        " (install/repair: punktfunk-host.exe driver install --gamepad)";
+        " (install/repair: rubyfunk-host.exe driver install --gamepad)";
 
     fn open(&mut self, idx: u8) -> Result<TritonWinPad> {
         let identity = crate::triton_proto::identity_for(idx);
@@ -166,7 +166,7 @@ impl PadProto for TritonWinProto {
     fn merge_frame(
         &self,
         prev: &TritonState,
-        f: &punktfunk_core::input::GamepadFrame,
+        f: &rubyfunk_core::input::GamepadFrame,
     ) -> TritonState {
         TritonState::merge_frame(prev, f)
     }

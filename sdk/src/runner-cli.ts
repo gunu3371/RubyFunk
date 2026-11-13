@@ -1,15 +1,15 @@
 #!/usr/bin/env bun
-// `punktfunk-scripting` — the plugin/script runner AND the `punktfunk-host plugins …` package ops.
+// `rubyfunk-scripting` — the plugin/script runner AND the `rubyfunk-host plugins …` package ops.
 //
-// With NO subcommand it RUNS the runner: discover the operator's scripts + punktfunk-plugin-*
+// With NO subcommand it RUNS the runner: discover the operator's scripts + rubyfunk-plugin-*
 // packages and supervise them (see ./runner.ts). SIGINT/SIGTERM interrupt the whole tree
 // structurally, so every plugin's finalizers run before exit (the systemd-stop story). This bare
 // form is what the systemd unit / Windows scheduled task launch — do not change its behavior.
 //
-// With a subcommand it manages plugin packages (the host CLI forwards `punktfunk-host plugins …`
+// With a subcommand it manages plugin packages (the host CLI forwards `rubyfunk-host plugins …`
 // here):
 //   add <name…>      install first-party plugins (playnite, rom-manager); anything resolving on
-//                    the PUBLIC npm registry (punktfunk-plugin-*, foreign scopes) additionally
+//                    the PUBLIC npm registry (rubyfunk-plugin-*, foreign scopes) additionally
 //                    needs --allow-public-registry
 //   remove <name…>   uninstall
 //   list             list installed plugin packages
@@ -19,7 +19,7 @@
 //
 // Package-op flags: --exact pins the resolved version instead of a caret range, and
 // --registry @scope=https://… maps a scope to its registry in bunfig.toml. Both exist for the
-// plugin store (crates/host/punktfunk-host/src/plugin_host/store), which installs one reviewed version
+// plugin store (crates/host/rubyfunk-host/src/plugin_host/store), which installs one reviewed version
 // of a package that may live on somebody else's registry — but they are ordinary CLI flags too.
 import { Effect, Fiber } from "effect";
 import { publishedMgmtUrl } from "./config.js";
@@ -116,7 +116,7 @@ const runPkgOp = (
 	const names = positionals();
 	if (names.length === 0) {
 		console.error(
-			`usage: punktfunk-host plugins ${verb} <name…>  (e.g. playnite, rom-manager)`,
+			`usage: rubyfunk-host plugins ${verb} <name…>  (e.g. playnite, rom-manager)`,
 		);
 		process.exit(2);
 	}
@@ -162,11 +162,11 @@ const runUnit = arg("--run-unit");
 if (runUnit) {
 	const unit = { name: arg("--unit-name") ?? runUnit, file: runUnit };
 	// Set only for a plugin without network, whose UI the supervisor forwards.
-	const uiPort = Number(process.env.PUNKTFUNK_UI_PORT);
+	const uiPort = Number(process.env.RUBYFUNK_UI_PORT);
 	if (uiPort > 0) redirectUiServe(uiPort);
 	// Set only for a Windows container, whose page goes over the host's channel on its pipe.
-	const channel = process.env.PUNKTFUNK_UI_CHANNEL;
-	const pipe = process.env.PUNKTFUNK_MGMT_UNIX;
+	const channel = process.env.RUBYFUNK_UI_CHANNEL;
+	const pipe = process.env.RUBYFUNK_MGMT_UNIX;
 	if (channel && pipe) redirectUiServeToChannel(pipe, channel);
 	const unitShipper = installLogShipper();
 	const unitFiber = Effect.runFork(runOneUnit(unit));
@@ -200,17 +200,17 @@ const keepAlive = setInterval(() => {}, 2 ** 31 - 1);
 
 // Follow the host's REAL mgmt port before anything dials it. Plugins run in this process and
 // resolve their connection from `process.env` first, so setting it here reaches every plugin —
-// including one whose vendored `@punktfunk/host` predates `publishedMgmtUrl` (on Windows
+// including one whose vendored `@rubyfunk/host` predates `publishedMgmtUrl` (on Windows
 // `reconcileSharedSdk` cannot refresh a read-only tree, so an old copy can outlive several host
-// upgrades). An explicit PUNKTFUNK_MGMT_URL from the operator still wins.
-if (!process.env.PUNKTFUNK_MGMT_URL) {
+// upgrades). An explicit RUBYFUNK_MGMT_URL from the operator still wins.
+if (!process.env.RUBYFUNK_MGMT_URL) {
 	const published = publishedMgmtUrl();
-	if (published) process.env.PUNKTFUNK_MGMT_URL = published;
+	if (published) process.env.RUBYFUNK_MGMT_URL = published;
 }
 
 // Tee this process's output to the host so the console's Logs page can show it. Installed HERE and
 // not in `runner.ts`, so it covers the supervised run only: a plugin's own CLI builds the same
-// layer graph, and an operator running `punktfunk-plugin-x doctor` in their terminal is not asking
+// layer graph, and an operator running `rubyfunk-plugin-x doctor` in their terminal is not asking
 // to write into the host's log. Must be installed before the runner starts — the lines that explain
 // a plugin failing to load are the first ones out.
 const shipper = installLogShipper();

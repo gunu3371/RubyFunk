@@ -10,10 +10,10 @@
 //! start and fall through to VAAPI/software). Session is `NV_ENC_DEVICE_TYPE_CUDA` on the
 //! shared process-wide `CUcontext`. Input is an encoder-owned ring of registered CUDA
 //! surfaces; each `FramePayload::Cuda` is device→device copied into a slot. Stream-ordered
-//! submit (default; `PUNKTFUNK_NVENC_STREAM_ORDERED=0` reverts) binds IO streams so copy +
+//! submit (default; `RUBYFUNK_NVENC_STREAM_ORDERED=0` reverts) binds IO streams so copy +
 //! blend enqueue without a CPU sync.
 //!
-//! Two-thread retrieve (`PUNKTFUNK_NVENC_ASYNC`: `1` always, `0` never, unset = adaptive via
+//! Two-thread retrieve (`RUBYFUNK_NVENC_ASYNC`: `1` always, `0` never, unset = adaptive via
 //! [`Encoder::set_pipelined`]) keeps the session SYNC — Linux has no completion events — and
 //! moves blocking `nvEncLockBitstream` off the encode thread. Sub-frame chunked poll (default
 //! 4 slices + `SUBFRAME_READBACK`) is mutually exclusive with pipelined retrieve.
@@ -286,7 +286,7 @@ fn retrieve_loop(
     let mut jobs: u64 = 0;
     while let Ok(job) = work_rx.recv() {
         // Host `wait_us` wraps a non-blocking poll here, so the encode wait is sampled on this
-        // thread (same `PUNKTFUNK_PERF` cadence as submit: every 120).
+        // thread (same `RUBYFUNK_PERF` cadence as submit: every 120).
         let sample = pf_host_config::config().perf && jobs % 120 == 0;
         jobs += 1;
         let t0 = std::time::Instant::now();
@@ -454,7 +454,7 @@ fn direct_buffer_format(fmt: pf_frame::PixelFormat) -> Option<nv::NV_ENC_BUFFER_
 /// The NVENC layout a raw dmabuf is copied or converted into when NVENC does not read it in
 /// place. Packed 10-bit stays packed, 4:4:4 included: NVENC converts it to full chroma itself.
 /// Other 4:4:4 frames convert to planar YUV444. A producer's NV12 or P010 is copied as is.
-/// `nv12` is the `PUNKTFUNK_NV12` convert, which only an 8-bit session takes. A 10-bit SDR
+/// `nv12` is the `RUBYFUNK_NV12` convert, which only an 8-bit session takes. A 10-bit SDR
 /// session keeps packed ARGB: NVENC widens only packed RGB to 10 bits.
 fn raw_copy_format(
     fmt: pf_frame::PixelFormat,
@@ -598,7 +598,7 @@ pub struct NvencCudaEncoder {
     /// Lays out the CPU frame `upload` takes; its scratch is reused across frames.
     ingest: CpuIngest,
     ring: Vec<RingSlot>,
-    /// Lifetime submit count (never reset) — `PUNKTFUNK_PERF` sample cadence.
+    /// Lifetime submit count (never reset) — `RUBYFUNK_PERF` sample cadence.
     frames: u64,
     /// Vulkan SPIR-V cursor blend (`vkslot.rs`). Some exactly while `lane`'s slot device is up;
     /// `None` = the ring is plain CUDA, no cursor.
@@ -1506,7 +1506,7 @@ impl NvencCudaEncoder {
                 (other, _) => unreachable!("{other:?} for a frame"),
             }
         }
-        // `PUNKTFUNK_PERF` submit split (~1 line / 2 s at 60 fps). Host `submit_us` folds
+        // `RUBYFUNK_PERF` submit split (~1 line / 2 s at 60 fps). Host `submit_us` folds
         // copy/blend/map/pic; this splits them.
         let sample = pf_host_config::config().perf && self.frames % 120 == 0;
         self.frames += 1;

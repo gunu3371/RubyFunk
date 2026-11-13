@@ -2,7 +2,7 @@
 # runtime set the manifest declares. Content-keyed and rebuilt only when the ci/ tree
 # changes (docker.yml `builders`).
 #
-#   docker build -f ci/flatpak-ci.Dockerfile -t punktfunk-flatpak-ci ci
+#   docker build -f ci/flatpak-ci.Dockerfile -t rubyfunk-flatpak-ci ci
 #
 # MEASURED on run 18855 (2026-08-17), a green 21m23s build, this image removes:
 #   63 s  `dnf -y install nodejs`      (act_runner execs JS actions with the CONTAINER's node)
@@ -48,7 +48,7 @@ RUN dnf -y install \
 # HOME=/root in the job container) — the same path flatpak.yml used to restore from
 # actions/cache, so `flatpak-builder --user` finds these with no further wiring.
 #
-# ⚠ KEEP IN SYNC with packaging/flatpak/io.unom.punktfunk.yml: GNOME_VERSION is the
+# ⚠ KEEP IN SYNC with packaging/flatpak/io.github.gunu3371.rubyfunk.yml: GNOME_VERSION is the
 # manifest's `runtime-version`, FREEDESKTOP_VERSION is what flatpak-builder resolves the
 # two `sdk-extensions` to (it prints them as "Dependency Extension: … 25.08"). A drift
 # here is not fatal — flatpak.yml's prefetch step downloads whatever is missing from

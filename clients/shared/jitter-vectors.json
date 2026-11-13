@@ -1,5 +1,5 @@
 {
-  "$comment": "Written by punktfunk-core's audio::vectors (see its module doc); the Apple client's JitterVectorTests replays it. jitter: each run is `times` callbacks of step(depth, want) then note_read(short), all in interleaved samples, under JitterTuning::COREAUDIO; expect sums the steps and reads the state after. av_sync: `times` identical observations, then one desired_depth(depth). drought: conceal(since_ms, depth_ms) or packet().",
+  "$comment": "Written by rubyfunk-core's audio::vectors (see its module doc); the Apple client's JitterVectorTests replays it. jitter: each run is `times` callbacks of step(depth, want) then note_read(short), all in interleaved samples, under JitterTuning::COREAUDIO; expect sums the steps and reads the state after. av_sync: `times` identical observations, then one desired_depth(depth). drought: conceal(since_ms, depth_ms) or packet().",
   "av_sync": [
     {
       "channels": 2,

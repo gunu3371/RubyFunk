@@ -71,7 +71,7 @@ impl NativeRung {
         }
     }
 
-    /// Log / `PUNKTFUNK_DECODER` name — the same strings as the `stats:` decode-path tag.
+    /// Log / `RUBYFUNK_DECODER` name — the same strings as the `stats:` decode-path tag.
     pub fn name(self) -> &'static str {
         self.names().0
     }
@@ -96,7 +96,7 @@ pub struct RungEvidence {
 /// Evidence table for automatic priority. An unknown pair is `verified: false` —
 /// a new codec leg must not inherit a neighbour's confidence.
 pub fn native_evidence(rung: NativeRung, wire: u8) -> RungEvidence {
-    use punktfunk_core::quic::{CODEC_AV1, CODEC_H264, CODEC_HEVC};
+    use rubyfunk_core::quic::{CODEC_AV1, CODEC_H264, CODEC_HEVC};
     let (verified, note) = match (rung, wire) {
         (NativeRung::Vulkan, CODEC_H264) => (
             true,
@@ -190,10 +190,10 @@ pub(crate) fn is_auto(choice: &str) -> bool {
 /// Human name of a `quic::CODEC_*` bit. `?` for an unknown bit — it must not print as a known codec.
 pub fn wire_codec_name(wire: u8) -> &'static str {
     match wire {
-        punktfunk_core::quic::CODEC_H264 => "H.264",
-        punktfunk_core::quic::CODEC_HEVC => "HEVC",
-        punktfunk_core::quic::CODEC_AV1 => "AV1",
-        punktfunk_core::quic::CODEC_PYROWAVE => "PyroWave",
+        rubyfunk_core::quic::CODEC_H264 => "H.264",
+        rubyfunk_core::quic::CODEC_HEVC => "HEVC",
+        rubyfunk_core::quic::CODEC_AV1 => "AV1",
+        rubyfunk_core::quic::CODEC_PYROWAVE => "PyroWave",
         _ => "?",
     }
 }
@@ -202,7 +202,7 @@ pub fn wire_codec_name(wire: u8) -> &'static str {
 /// the set a session is guaranteed to finish. Shared so the software map and
 /// [`last_rung_verdict`] cannot drift.
 pub fn software_decodable_codecs() -> u8 {
-    punktfunk_core::quic::CODEC_H264 | punktfunk_core::quic::CODEC_AV1
+    rubyfunk_core::quic::CODEC_H264 | rubyfunk_core::quic::CODEC_AV1
 }
 
 /// Reconnect action when the last rung has no decoder for this codec.
@@ -237,9 +237,9 @@ pub fn last_rung_verdict(negotiated: u8, advertised: u8, loss: RungLoss) -> Last
     // A retry the host cannot pick is not a retry: PyroWave is opt-in and
     // stays out of `resolve_codec`. Survivors that are PyroWave alone resolve
     // to nothing. Judge liveness on the pickable set; carry the rest along.
-    const PICKABLE: u8 = punktfunk_core::quic::CODEC_H264
-        | punktfunk_core::quic::CODEC_HEVC
-        | punktfunk_core::quic::CODEC_AV1;
+    const PICKABLE: u8 = rubyfunk_core::quic::CODEC_H264
+        | rubyfunk_core::quic::CODEC_HEVC
+        | rubyfunk_core::quic::CODEC_AV1;
     if caps & PICKABLE == 0 {
         LastRungVerdict::Dead
     } else {
@@ -247,14 +247,14 @@ pub fn last_rung_verdict(negotiated: u8, advertised: u8, loss: RungLoss) -> Last
     }
 }
 
-/// Whether decode is pinned to the CPU rung (`PUNKTFUNK_DECODER` wins over Settings).
+/// Whether decode is pinned to the CPU rung (`RUBYFUNK_DECODER` wins over Settings).
 /// Same precedence as [`Decoder::new`](crate::video::Decoder::new): a second reading of
 /// the same two inputs would drift.
 pub fn decode_pinned_to_software(pref: &str) -> bool {
-    resolve_decoder_pref(std::env::var("PUNKTFUNK_DECODER").ok().as_deref(), pref) == "software"
+    resolve_decoder_pref(std::env::var("RUBYFUNK_DECODER").ok().as_deref(), pref) == "software"
 }
 
-/// `PUNKTFUNK_DECODER` if it carries a value, else the stored setting. Pure
+/// `RUBYFUNK_DECODER` if it carries a value, else the stored setting. Pure
 /// and shared so [`Decoder::new`](crate::video::Decoder::new) and
 /// [`decode_pinned_to_software`] cannot drift.
 ///
@@ -277,9 +277,9 @@ pub(crate) fn resolve_decoder_pref(env: Option<&str>, pref: &str) -> String {
 pub fn decodable_codecs() -> u8 {
     // Native Vulkan's three codecs union the CPU rung's. Written as a union so
     // removing a rung's codec leg drops the advertisement rather than keeping it.
-    punktfunk_core::quic::CODEC_H264
-        | punktfunk_core::quic::CODEC_HEVC
-        | punktfunk_core::quic::CODEC_AV1
+    rubyfunk_core::quic::CODEC_H264
+        | rubyfunk_core::quic::CODEC_HEVC
+        | rubyfunk_core::quic::CODEC_AV1
         | software_decodable_codecs()
 }
 
@@ -340,7 +340,7 @@ pub fn av1_hardware_decodable(vk: Option<&VulkanDecodeDevice>) -> bool {
 /// Does the Hello offer AV1 on this device? [`av1_hardware_decodable`] or a V4L2 node
 /// that takes AV1 — the answer a settings UI must show.
 pub fn av1_advertised(vk: Option<&VulkanDecodeDevice>) -> bool {
-    av1_hardware_decodable(vk) || v4l2_summary(vk).codecs & punktfunk_core::quic::CODEC_AV1 != 0
+    av1_hardware_decodable(vk) || v4l2_summary(vk).codecs & rubyfunk_core::quic::CODEC_AV1 != 0
 }
 
 /// Can this client decode 4:4:4 HEVC — the promise `VIDEO_CAP_444` makes.
@@ -417,13 +417,13 @@ pub fn amd_vulkan_hdr_driver_notice(
     ))
 }
 
-/// `PUNKTFUNK_NATIVE_SCANOUT=1`: the Wayland presenter hands pictures to the compositor as
+/// `RUBYFUNK_NATIVE_SCANOUT=1`: the Wayland presenter hands pictures to the compositor as
 /// the window's buffer, so the Vulkan decoder keeps its pictures copyable. Opt-in: KWin
 /// composites the buffer, where the swapchain's own can be scanned out.
 pub fn native_scanout_wanted() -> bool {
     cfg!(target_os = "linux")
         && matches!(
-            std::env::var("PUNKTFUNK_NATIVE_SCANOUT").as_deref(),
+            std::env::var("RUBYFUNK_NATIVE_SCANOUT").as_deref(),
             Ok("1" | "flip")
         )
 }
@@ -465,7 +465,7 @@ pub(crate) fn ten_bit_decodable_with(
     #[cfg(not(target_os = "linux"))]
     let platform = v.d3d11_import || v.d3d11_present;
     let hardware = v.video_decode || platform || v4l2.ten_bit != 0;
-    let pyrowave = v.pyrowave_decode && preferred_codec == punktfunk_core::quic::CODEC_PYROWAVE;
+    let pyrowave = v.pyrowave_decode && preferred_codec == rubyfunk_core::quic::CODEC_PYROWAVE;
     pyrowave || (hardware && !decode_pinned_to_software(decoder_pref))
 }
 
@@ -482,16 +482,16 @@ pub fn video_caps_for(
 ) -> u8 {
     let mut caps = 0;
     if multi_slice {
-        caps |= punktfunk_core::quic::VIDEO_CAP_MULTI_SLICE;
+        caps |= rubyfunk_core::quic::VIDEO_CAP_MULTI_SLICE;
     }
     if hdr_enabled {
-        caps |= punktfunk_core::quic::VIDEO_CAP_10BIT | punktfunk_core::quic::VIDEO_CAP_HDR;
+        caps |= rubyfunk_core::quic::VIDEO_CAP_10BIT | rubyfunk_core::quic::VIDEO_CAP_HDR;
     }
     if ten_bit_sdr {
-        caps |= punktfunk_core::quic::VIDEO_CAP_10BIT;
+        caps |= rubyfunk_core::quic::VIDEO_CAP_10BIT;
     }
     if want_444 {
-        caps |= punktfunk_core::quic::VIDEO_CAP_444;
+        caps |= rubyfunk_core::quic::VIDEO_CAP_444;
     }
     caps
 }
@@ -527,41 +527,41 @@ pub(crate) fn decodable_codecs_with(
     let mut bits = decodable_codecs();
     // AV1 is hardware-gated. Without this the CPU rung's existence advertises
     // AV1 to a machine that would decode it in software, and negotiation has no fallback.
-    if bits & punktfunk_core::quic::CODEC_AV1 != 0
+    if bits & rubyfunk_core::quic::CODEC_AV1 != 0
         && !av1_hardware_decodable(vk)
-        && v4l2.codecs & punktfunk_core::quic::CODEC_AV1 == 0
+        && v4l2.codecs & rubyfunk_core::quic::CODEC_AV1 == 0
     {
         tracing::info!(
             "AV1 not advertised: no hardware AV1 decode on this device (a software \
              decoder exists, but a 4K AV1 stream is not survivable on it)"
         );
-        bits &= !punktfunk_core::quic::CODEC_AV1;
+        bits &= !rubyfunk_core::quic::CODEC_AV1;
     }
     // Software pin has no HEVC. Guarded on something remaining: a Hello with
     // zero codecs reads as HEVC-only (`resolve_codec`'s pre-negotiation default).
-    if bits & punktfunk_core::quic::CODEC_HEVC != 0
-        && bits & !punktfunk_core::quic::CODEC_HEVC != 0
+    if bits & rubyfunk_core::quic::CODEC_HEVC != 0
+        && bits & !rubyfunk_core::quic::CODEC_HEVC != 0
         && decode_pinned_to_software(decoder_pref)
     {
         tracing::info!(
             "HEVC not advertised: decode is pinned to software and there is no software \
              HEVC decoder in this build"
         );
-        bits &= !punktfunk_core::quic::CODEC_HEVC;
+        bits &= !rubyfunk_core::quic::CODEC_HEVC;
     }
     // HEVC has no software rung, so the promise needs a hardware decoder. Advertised
     // blind, the host builds an HEVC session the client tears down and re-dials
     // without — every launch.
-    if bits & punktfunk_core::quic::CODEC_HEVC != 0
+    if bits & rubyfunk_core::quic::CODEC_HEVC != 0
         && !hevc_hardware_decodable(vk)
-        && v4l2.codecs & punktfunk_core::quic::CODEC_HEVC == 0
+        && v4l2.codecs & rubyfunk_core::quic::CODEC_HEVC == 0
     {
         tracing::info!("HEVC not advertised: no hardware HEVC decoder on this device");
-        bits &= !punktfunk_core::quic::CODEC_HEVC;
+        bits &= !rubyfunk_core::quic::CODEC_HEVC;
     }
     #[cfg(all(any(target_os = "linux", windows), feature = "pyrowave"))]
     if vk.map(|v| v.pyrowave_decode).unwrap_or(false) {
-        return bits | punktfunk_core::quic::CODEC_PYROWAVE;
+        return bits | rubyfunk_core::quic::CODEC_PYROWAVE;
     }
     #[cfg(not(all(any(target_os = "linux", windows), feature = "pyrowave")))]
     let _ = vk;
@@ -588,7 +588,7 @@ pub(crate) mod tests {
     use super::*;
     use crate::video::{migrate_decoder_pref, QueueLock, VIDEO_CODEC_OP_DECODE_H264};
     use crate::video_vk_native::NativeCodec;
-    use punktfunk_core::quic::{CODEC_AV1, CODEC_H264, CODEC_HEVC, CODEC_PYROWAVE};
+    use rubyfunk_core::quic::{CODEC_AV1, CODEC_H264, CODEC_HEVC, CODEC_PYROWAVE};
 
     /// Only an HDR session on the Vulkan rung with a driver below the floor warns.
     #[test]
@@ -621,7 +621,7 @@ pub(crate) mod tests {
     /// no CPU HEVC, and the host grants 4:4:4 on HEVC only.
     #[test]
     fn the_444_bit_needs_the_setting_and_a_device_that_can_decode_it() {
-        const V444: u8 = punktfunk_core::quic::VIDEO_CAP_444;
+        const V444: u8 = rubyfunk_core::quic::VIDEO_CAP_444;
         assert_eq!(
             video_caps_for(true, false, false, true) & V444,
             0,
@@ -633,7 +633,7 @@ pub(crate) mod tests {
 
         // 4:4:4 must not disturb 10-bit/HDR (those are not probe-gated).
         const HDR_BITS: u8 =
-            punktfunk_core::quic::VIDEO_CAP_10BIT | punktfunk_core::quic::VIDEO_CAP_HDR;
+            rubyfunk_core::quic::VIDEO_CAP_10BIT | rubyfunk_core::quic::VIDEO_CAP_HDR;
         for want_444 in [false, true] {
             assert_eq!(
                 video_caps_for(true, false, want_444, true) & HDR_BITS,
@@ -642,12 +642,12 @@ pub(crate) mod tests {
             assert_eq!(video_caps_for(false, false, want_444, true) & HDR_BITS, 0);
             assert_ne!(
                 video_caps_for(false, false, want_444, true)
-                    & punktfunk_core::quic::VIDEO_CAP_MULTI_SLICE,
+                    & rubyfunk_core::quic::VIDEO_CAP_MULTI_SLICE,
                 0
             );
             assert_eq!(
                 video_caps_for(false, false, want_444, false)
-                    & punktfunk_core::quic::VIDEO_CAP_MULTI_SLICE,
+                    & rubyfunk_core::quic::VIDEO_CAP_MULTI_SLICE,
                 0,
                 "a decoder that wedges on slices keeps the bit off"
             );
@@ -666,8 +666,8 @@ pub(crate) mod tests {
     /// 10-bit SDR advertises the depth bit alone — never HDR — and is subsumed by HDR.
     #[test]
     fn ten_bit_sdr_advertises_depth_without_hdr() {
-        const TEN: u8 = punktfunk_core::quic::VIDEO_CAP_10BIT;
-        const HDR: u8 = punktfunk_core::quic::VIDEO_CAP_HDR;
+        const TEN: u8 = rubyfunk_core::quic::VIDEO_CAP_10BIT;
+        const HDR: u8 = rubyfunk_core::quic::VIDEO_CAP_HDR;
         assert_eq!(video_caps_for(false, true, false, true) & (TEN | HDR), TEN);
         assert_eq!(video_caps_for(false, false, false, true) & (TEN | HDR), 0);
         assert_eq!(
@@ -675,11 +675,11 @@ pub(crate) mod tests {
             TEN | HDR
         );
         assert_eq!(
-            video_caps_for(false, true, false, true) & punktfunk_core::quic::VIDEO_CAP_444,
+            video_caps_for(false, true, false, true) & rubyfunk_core::quic::VIDEO_CAP_444,
             0
         );
         assert_ne!(
-            video_caps_for(false, true, false, true) & punktfunk_core::quic::VIDEO_CAP_MULTI_SLICE,
+            video_caps_for(false, true, false, true) & rubyfunk_core::quic::VIDEO_CAP_MULTI_SLICE,
             0
         );
     }
@@ -780,7 +780,7 @@ pub(crate) mod tests {
     #[test]
     fn a_software_pin_takes_hevc_off_the_advertisement() {
         // Same precedence as `Decoder::new` (env first). Skip if the override is set.
-        if std::env::var_os("PUNKTFUNK_DECODER").is_some() {
+        if std::env::var_os("RUBYFUNK_DECODER").is_some() {
             return;
         }
         assert!(decode_pinned_to_software("software"));
@@ -998,7 +998,7 @@ pub(crate) mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn hevc_is_advertised_only_where_hardware_decodes_it() {
-        if std::env::var_os("PUNKTFUNK_DECODER").is_some() {
+        if std::env::var_os("RUBYFUNK_DECODER").is_some() {
             return;
         }
         let none = V4l2Summary::default();
@@ -1055,7 +1055,7 @@ pub(crate) mod tests {
     /// 10-bit is a promise about a hardware rung; the CPU rung refuses it.
     #[test]
     fn ten_bit_is_advertised_only_with_a_hardware_ten_bit_path() {
-        if std::env::var_os("PUNKTFUNK_DECODER").is_some() {
+        if std::env::var_os("RUBYFUNK_DECODER").is_some() {
             return;
         }
         let none = V4l2Summary::default();
@@ -1131,7 +1131,7 @@ pub(crate) mod tests {
         assert!(
             native_vulkan_gate(
                 &resolve_decoder_pref(Some("native-vulkan "), "auto"),
-                punktfunk_core::quic::CODEC_HEVC,
+                rubyfunk_core::quic::CODEC_HEVC,
                 true,
                 VIDEO_CODEC_OP_DECODE_H265,
             ),

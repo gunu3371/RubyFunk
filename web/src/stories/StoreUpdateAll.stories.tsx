@@ -55,8 +55,8 @@ const update = (
 });
 
 const VERIFIED: PendingUpdate[] = [
-	update("ROM Manager", "@punktfunk/plugin-rom-manager", "0.3.1", "0.3.2"),
-	update("Steam Library", "@punktfunk/plugin-steam", "1.0.0", "1.1.0"),
+	update("ROM Manager", "@rubyfunk/plugin-rom-manager", "0.3.1", "0.3.2"),
+	update("Steam Library", "@rubyfunk/plugin-steam", "1.0.0", "1.1.0"),
 ];
 
 /** Everything from the built-in catalog: a plain confirm, no warning to earn. */
@@ -69,7 +69,7 @@ export const WithExternal: Story = {
 			...VERIFIED,
 			update(
 				"Playnite",
-				"@punktfunk/plugin-playnite",
+				"@rubyfunk/plugin-playnite",
 				"0.2.0",
 				"0.2.1",
 				"community catalog",
@@ -93,7 +93,7 @@ export const LongList: Story = {
 		updates: Array.from({ length: 12 }, (_, i) =>
 			update(
 				`Plugin ${i + 1}`,
-				`@punktfunk/plugin-number-${i + 1}`,
+				`@rubyfunk/plugin-number-${i + 1}`,
 				`0.${i}.0`,
 				`0.${i}.1`,
 			),

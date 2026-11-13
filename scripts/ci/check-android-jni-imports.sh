@@ -1,5 +1,5 @@
 #!/bin/sh
-# Post-link floor check for libpunktfunk_android.so: every undefined dynamic symbol must be
+# Post-link floor check for librubyfunk_android.so: every undefined dynamic symbol must be
 # defined in the NDK's minSdk-level stub libraries, for every built ABI.
 #
 # Why this exists: a Rust cdylib links fine with dangling undefined symbols (lld only rejects them
@@ -39,7 +39,7 @@ trap 'rm -rf "$TMP"' EXIT
 
 checked=0
 fail=0
-for so in "$JNILIBS"/*/libpunktfunk_android.so; do
+for so in "$JNILIBS"/*/librubyfunk_android.so; do
     [ -f "$so" ] || continue
     abi=$(basename "$(dirname "$so")")
     triple=$(triple_for_abi "$abi")
@@ -60,7 +60,7 @@ for so in "$JNILIBS"/*/libpunktfunk_android.so; do
 
     missing=$(comm -23 "$TMP/undef" "$TMP/defined")
     if [ -n "$missing" ]; then
-        echo "check-android-jni-imports: $abi libpunktfunk_android.so imports symbols absent from" >&2
+        echo "check-android-jni-imports: $abi librubyfunk_android.so imports symbols absent from" >&2
         echo "the API-$API sysroot — System.loadLibrary would fail on devices at the minSdk floor." >&2
         echo "dlsym-resolve these at runtime instead of hard-linking them:" >&2
         echo "$missing" | sed 's/^/    /' >&2
@@ -69,6 +69,6 @@ for so in "$JNILIBS"/*/libpunktfunk_android.so; do
     checked=$((checked + 1))
 done
 
-[ "$checked" -gt 0 ] || { echo "check-android-jni-imports: no libpunktfunk_android.so under $JNILIBS" >&2; exit 1; }
+[ "$checked" -gt 0 ] || { echo "check-android-jni-imports: no librubyfunk_android.so under $JNILIBS" >&2; exit 1; }
 [ "$fail" -eq 0 ] && echo "check-android-jni-imports: $checked ABI(s) clean at the API-$API floor"
 exit "$fail"

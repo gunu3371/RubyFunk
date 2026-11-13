@@ -1,7 +1,7 @@
 //! Seat users: one system-range Linux account per seat, owned by an exact GECOS marker.
 //!
 //! The account is created with `useradd -r` so a display manager's greeter never lists it, with
-//! its home under the supervisor's state directory. The GECOS field carries `punktfunk-seat=<id>`; a user is
+//! its home under the supervisor's state directory. The GECOS field carries `rubyfunk-seat=<id>`; a user is
 //! touched or deleted only when that field matches exactly, so a name that collides with a
 //! person's account is refused instead of adopted.
 
@@ -13,15 +13,15 @@ use crate::model::{
 use std::path::{Path, PathBuf};
 
 /// `=`, not `:`: the colon separates passwd fields and `useradd` refuses it in a comment.
-const MARKER_PREFIX: &str = "punktfunk-seat=";
+const MARKER_PREFIX: &str = "rubyfunk-seat=";
 
 /// Groups a seat user joins when they exist: the GPU, then the shared games folder. Never
-/// `punktfunk`, which may power the box off and stop its display manager, nor `input`, which
+/// `rubyfunk`, which may power the box off and stop its display manager, nor `input`, which
 /// reads every input device on the box, the owner's keyboard too.
 const GROUPS: [&str; 2] = ["render", GAMES_GROUP];
 
 /// The shared games folder's group: every seat user and the owner.
-pub(super) const GAMES_GROUP: &str = "punktfunk-games";
+pub(super) const GAMES_GROUP: &str = "rubyfunk-games";
 
 /// The GECOS text that marks `id`'s account as ours.
 pub(super) fn marker(id: &SeatId) -> String {
@@ -370,7 +370,7 @@ pub(super) fn require_person(seat: &Seat) -> Result<Passwd, BackendError> {
 }
 
 /// The group whose members may switch the door for their own account.
-const UPDATE_GROUP: &str = "punktfunk-update";
+const UPDATE_GROUP: &str = "rubyfunk-update";
 
 /// An account `door-helper` may switch the door for.
 pub(super) enum Switchable {
@@ -563,7 +563,7 @@ mod tests {
 
     #[test]
     fn a_passwd_row_parses_and_keeps_the_whole_gecos_field() {
-        let row = "pf-seat-1:x:975:972:punktfunk-seat=0123456789abcdef0123456789abcdef:/var/lib/punktfunk/seats/0123456789abcdef0123456789abcdef/home:/bin/bash\n";
+        let row = "pf-seat-1:x:975:972:rubyfunk-seat=0123456789abcdef0123456789abcdef:/var/lib/rubyfunk/seats/0123456789abcdef0123456789abcdef/home:/bin/bash\n";
         let parsed = parse_passwd(row).unwrap();
         assert_eq!(
             (parsed.name.as_str(), parsed.uid, parsed.gid),
@@ -572,7 +572,7 @@ mod tests {
         assert_eq!(parsed.gecos, marker(&id()));
         assert_eq!(
             parsed.home,
-            Path::new("/var/lib/punktfunk/seats/0123456789abcdef0123456789abcdef/home")
+            Path::new("/var/lib/rubyfunk/seats/0123456789abcdef0123456789abcdef/home")
         );
         assert!(parse_passwd("short:x:1").is_none());
         assert!(parse_passwd("n:x:notanumber:1:g:/h:/s").is_none());
@@ -586,9 +586,9 @@ mod tests {
         let row = |gecos: &str| format!("u:x:1000:1000:{gecos}:/home/u:/bin/bash");
         let owned = |gecos: &str| owned_by(&parse_passwd(&row(gecos)).unwrap(), &id());
         assert!(owned(&marker(&id())));
-        assert!(!owned("punktfunk-seat=ffffffffffffffffffffffffffffffff"));
+        assert!(!owned("rubyfunk-seat=ffffffffffffffffffffffffffffffff"));
         assert!(!owned(&format!("{},,,", marker(&id()))));
-        assert!(!owned("punktfunk-seat=0123456789abcdef"));
+        assert!(!owned("rubyfunk-seat=0123456789abcdef"));
         assert!(!owned("Ada Lovelace"));
         assert!(!owned(""));
     }
@@ -628,9 +628,9 @@ mod tests {
         for gecos in [
             "",
             "Ada Lovelace",
-            "punktfunk-seat=",
-            "punktfunk-seat=0123456789abcdef",
-            "punktfunk-seat=0123456789ABCDEF0123456789ABCDEF",
+            "rubyfunk-seat=",
+            "rubyfunk-seat=0123456789abcdef",
+            "rubyfunk-seat=0123456789ABCDEF0123456789ABCDEF",
         ] {
             assert_eq!(marked_id(&row(gecos)), None, "{gecos:?}");
         }
@@ -641,7 +641,7 @@ mod tests {
     #[test]
     fn only_a_seat_account_in_its_seat_home_is_an_orphan() {
         use crate::model::CreateSeat;
-        let state = Path::new("/var/lib/punktfunk-seats");
+        let state = Path::new("/var/lib/rubyfunk-seats");
         let mut ledger = Ledger::new();
         let kept = ledger
             .allocate(CreateSeat {

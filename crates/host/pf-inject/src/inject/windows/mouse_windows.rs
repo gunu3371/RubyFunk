@@ -52,12 +52,12 @@ const GENERIC_WRITE: u32 = 0x4000_0000;
 const DRIVER_STALE: Duration = Duration::from_secs(1);
 /// Between doorbell lookups while hidclass has not published the collection yet.
 const DOORBELL_RETRY: Duration = Duration::from_secs(1);
-/// `PUNKTFUNK_HID_INPUT=0` keeps every event on `SendInput`.
-const HID_INPUT_ENV: &str = "PUNKTFUNK_HID_INPUT";
+/// `RUBYFUNK_HID_INPUT=0` keeps every event on `SendInput`.
+const HID_INPUT_ENV: &str = "RUBYFUNK_HID_INPUT";
 
 /// The reserved display connector a seat host owns; unset on the console.
 /// `docs-site/content/docs/developers/multi-seat-contract.md` is the contract of record.
-const SEAT_SLOT_ENV: &str = "PUNKTFUNK_SEAT_DISPLAY_SLOT";
+const SEAT_SLOT_ENV: &str = "RUBYFUNK_SEAT_DISPLAY_SLOT";
 const FIRST_SEAT_SLOT: u8 = 12;
 const LAST_SEAT_SLOT: u8 = 15;
 
@@ -130,8 +130,8 @@ impl VirtualMouse {
             usb_vid_pid: Some("VID_5046&PID_4D4F"),
             usb_mi: None,
             bluetooth: false,
-            description: "Punktfunk Virtual Mouse",
-            enumerator: "punktfunk",
+            description: "RubyFunk Virtual Mouse",
+            enumerator: "rubyfunk",
             property: None,
         }) {
             Ok((sw, id)) => (Some(sw), id),
@@ -424,20 +424,20 @@ pub(crate) fn with_hid<R>(f: impl FnOnce(&mut VirtualMouse) -> R) -> Option<R> {
 /// [`InjectorService`](crate::InjectorService) start; native + GameStream share it.
 /// The keeper thread owns the devnode for the process lifetime.
 ///
-/// `PUNKTFUNK_NO_VIRTUAL_MOUSE=1` opts out.
+/// `RUBYFUNK_NO_VIRTUAL_MOUSE=1` opts out.
 pub(crate) fn ensure_resident() {
     use std::sync::OnceLock;
     static STARTED: OnceLock<()> = OnceLock::new();
     STARTED.get_or_init(|| {
-        if pf_host_config::env_on("PUNKTFUNK_NO_VIRTUAL_MOUSE") == Some(true) {
+        if pf_host_config::env_on("RUBYFUNK_NO_VIRTUAL_MOUSE") == Some(true) {
             tracing::info!(
-                "virtual HID mouse disabled (PUNKTFUNK_NO_VIRTUAL_MOUSE) — with no physical \
+                "virtual HID mouse disabled (RUBYFUNK_NO_VIRTUAL_MOUSE) — with no physical \
                  pointer attached, Windows will not draw a cursor into the stream"
             );
             return;
         }
         if let Err(e) = std::thread::Builder::new()
-            .name("punktfunk-vmouse".into())
+            .name("rubyfunk-vmouse".into())
             .spawn(keeper_thread)
         {
             tracing::warn!(error = %e, "virtual-mouse keeper thread spawn failed");
@@ -493,7 +493,7 @@ pub fn open_for_spike() -> Result<VirtualMouse> {
     }
     if m.driver_proto() == 0 {
         anyhow::bail!(
-            "the pf_mouse driver never attached. Install it: punktfunk-host.exe driver install \
+            "the pf_mouse driver never attached. Install it: rubyfunk-host.exe driver install \
              --gamepad --dir <stage>"
         );
     }
@@ -570,8 +570,8 @@ pub fn channel_proof_probe() -> Result<()> {
         usb_vid_pid: Some("VID_5046&PID_4D4F"),
         usb_mi: None,
         bluetooth: false,
-        description: "Punktfunk Virtual Mouse (channel-proof probe)",
-        enumerator: "punktfunk",
+        description: "RubyFunk Virtual Mouse (channel-proof probe)",
+        enumerator: "rubyfunk",
         property: None,
     })?;
     let Some(instance_id) = instance_id else {
@@ -608,7 +608,7 @@ pub fn channel_proof_probe() -> Result<()> {
              IOCTL to a UMDF minidriver and the HID pads/mouse need a different transport (the \
              xusb leg is unaffected — it owns its own device interface). If one says \"answered, \
              but not a proof\", an OLD pf_mouse driver is installed: reinstall with\n\
-             \x20  punktfunk-host.exe driver install --gamepad"
+             \x20  rubyfunk-host.exe driver install --gamepad"
         ),
     }
     Ok(())

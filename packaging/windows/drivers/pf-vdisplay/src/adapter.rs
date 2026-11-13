@@ -101,8 +101,8 @@ pub unsafe fn init_adapter(device: WDFDEVICE) -> NTSTATUS {
         Size: core::mem::size_of::<iddcx::IDDCX_ENDPOINT_DIAGNOSTIC_INFO>() as u32,
         GammaSupport: iddcx::IDDCX_FEATURE_IMPLEMENTATION::IDDCX_FEATURE_IMPLEMENTATION_NONE,
         TransmissionType: iddcx::IDDCX_TRANSMISSION_TYPE::IDDCX_TRANSMISSION_TYPE_WIRED_OTHER,
-        pEndPointFriendlyName: w!("Punktfunk Virtual Display Adapter").as_ptr(),
-        pEndPointManufacturerName: w!("Punktfunk").as_ptr(),
+        pEndPointFriendlyName: w!("RubyFunk Virtual Display Adapter").as_ptr(),
+        pEndPointManufacturerName: w!("RubyFunk").as_ptr(),
         pEndPointModelName: w!("Virtual Display").as_ptr(),
         // SAFETY: `version` is a stack local that outlives this `init_adapter` call; IddCxAdapterInitAsync
         // (below) reads through these pointers SYNCHRONOUSLY, before `version` drops — the pointer never escapes.

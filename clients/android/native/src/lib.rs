@@ -1,8 +1,8 @@
-//! punktfunk Android client — the JNI bridge ("nativecore") over `punktfunk-core`.
+//! rubyfunk Android client — the JNI bridge ("nativecore") over `rubyfunk-core`.
 //!
-//! Architecture: the **Rust-heavy** client model (like `punktfunk-client-linux`, *not* the
-//! thin-native-over-C-ABI Apple model). This `cdylib` links `punktfunk-core` directly and drives
-//! the whole `punktfunk/1` protocol through [`punktfunk_core::client::NativeClient`]; Kotlin owns
+//! Architecture: the **Rust-heavy** client model (like `rubyfunk-client-linux`, *not* the
+//! thin-native-over-C-ABI Apple model). This `cdylib` links `rubyfunk-core` directly and drives
+//! the whole `punktfunk/1` protocol through [`rubyfunk_core::client::NativeClient`]; Kotlin owns
 //! only the Android-framework surface (Compose UI, `SurfaceView` lifecycle, input capture, the
 //! Wi-Fi `MulticastLock` + permission UX, Keystore). The JNI seam below is the one place the two
 //! languages meet.
@@ -15,7 +15,7 @@
 //! keeps only the Android-framework surface it must (Compose UI, `SurfaceView`, input capture, the
 //! Wi-Fi `MulticastLock` + permission UX, Keystore identity).
 //!
-//! JNI symbols map to `io.unom.punktfunk.kit.NativeBridge` in the `:kit` Gradle module
+//! JNI symbols map to `io.github.gunu3371.rubyfunk.kit.NativeBridge` in the `:kit` Gradle module
 //! (`clients/android`). The surface: mDNS host discovery ([`discovery`]) and the session lifecycle
 //! in [`session`] — connect/pair + the trust surface, the per-plane pumps (video → AMediaCodec,
 //! audio ↔ AAudio, mic uplink), input, and rumble/HID feedback ([`feedback`]), and mid-session
@@ -83,15 +83,15 @@ mod run_end;
 mod session;
 mod stats;
 mod sys;
-// Ungated: pure `jni` + `punktfunk_core::wol` (no Android framework), so it links
+// Ungated: pure `jni` + `rubyfunk_core::wol` (no Android framework), so it links
 // into the host workspace build too. Kotlin only ever calls it on device.
 mod wol;
-// Ungated like `wol`: pure `jni` + `punktfunk_core::client::mgmt`.
+// Ungated like `wol`: pure `jni` + `rubyfunk_core::client::mgmt`.
 mod mgmt;
-// Ungated like `wol`: pure `jni` + `punktfunk_core::client` (the reachability probe). Kotlin calls
+// Ungated like `wol`: pure `jni` + `rubyfunk_core::client` (the reachability probe). Kotlin calls
 // it off the main thread to light saved-host "online" pips independently of mDNS.
 mod probe;
-// Ungated like `wol`: pure `jni` + `punktfunk_core::pyrowave`, so its test runs on the host.
+// Ungated like `wol`: pure `jni` + `rubyfunk_core::pyrowave`, so its test runs on the host.
 mod pyrowave_quality;
 
 /// Every `log` record, teed: to logcat (via [`android_logger::AndroidLogger`]), into
@@ -127,7 +127,7 @@ impl log::Log for RingTee {
     }
 }
 
-/// Initialize logging once when the JVM loads the library: logcat under the `punktfunk` tag,
+/// Initialize logging once when the JVM loads the library: logcat under the `rubyfunk` tag,
 /// teed into the client log ring (see [`RingTee`]), and a panic hook that logs each panic before
 /// it unwinds. Core `tracing` events (transport warnings:
 /// socket-buffer clamp, QoS failures) arrive here too: tracing's "log" feature — declared
@@ -143,7 +143,7 @@ pub extern "system" fn JNI_OnLoad(
     let logcat = android_logger::AndroidLogger::new(
         android_logger::Config::default()
             .with_max_level(log::LevelFilter::Info)
-            .with_tag("punktfunk"),
+            .with_tag("rubyfunk"),
     );
     // `set_boxed_logger` (unlike `init_once`) does not set the max level itself.
     if log::set_boxed_logger(Box::new(RingTee(logcat))).is_ok() {
@@ -166,8 +166,8 @@ pub extern "system" fn JNI_OnLoad(
         default_panic(info);
     }));
     log::info!(
-        "punktfunk_android loaded (core ABI v{})",
-        punktfunk_core::ABI_VERSION
+        "rubyfunk_android loaded (core ABI v{})",
+        rubyfunk_core::ABI_VERSION
     );
     jni::sys::JNI_VERSION_1_6
 }
@@ -177,7 +177,7 @@ pub extern "system" fn JNI_OnLoad(
 /// build that ever drops the host on some ABI again degrades to the touch UI rather than an
 /// `UnsatisfiedLinkError`. Today: every Android ABI.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_io_unom_punktfunk_kit_NativeBridge_nativeConsoleAvailable(
+pub extern "system" fn Java_io_github_gunu3371_rubyfunk_kit_NativeBridge_nativeConsoleAvailable(
     _env: EnvUnowned,
     _this: JObject,
 ) -> jni::sys::jboolean {

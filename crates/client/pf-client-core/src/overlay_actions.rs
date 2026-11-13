@@ -11,7 +11,7 @@
 //! file. All three replay `clients/shared/overlay-actions-vectors.json`; a new
 //! slot id or parse rule lands there first.
 
-use punktfunk_core::config::GamepadPref;
+use rubyfunk_core::config::GamepadPref;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -114,7 +114,7 @@ pub struct Shortcut {
     pub keys: Vec<String>,
 }
 
-pub use punktfunk_core::input::key_vk;
+pub use rubyfunk_core::input::key_vk;
 
 pub fn chord_chip(keys: &[String]) -> String {
     keys.iter()

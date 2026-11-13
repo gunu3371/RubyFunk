@@ -1,0 +1,6 @@
+# pacman scriptlet for the seat supervisor. Nothing here enables the daemon: the console turns
+# seats on. The host's post-install makes its directories and rubyfunk-restart.hook restarts it.
+pre_remove() {
+  # door-helper enables the door's units, so removal disables them.
+  systemctl disable --now rubyfunk-web-door.service rubyfunk-door.service rubyfunk-seats.service 2>/dev/null || true
+}

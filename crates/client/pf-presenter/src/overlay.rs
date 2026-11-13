@@ -7,11 +7,11 @@
 //! `None` records no quad.
 //!
 //! Pin: `Option<Box<dyn Overlay>>` from the session binary; `None` is the
-//! Skia-free build. Evidence: punktfunk-planning `linux-client-rearchitecture.md`.
+//! Skia-free build. Evidence: rubyfunk-planning `linux-client-rearchitecture.md`.
 
 use ash::vk;
 use pf_client_core::gamepad::{MenuEvent, MenuPulse};
-use punktfunk_core::config::GamepadPref;
+use rubyfunk_core::config::GamepadPref;
 
 /// Presenter's Vulkan handles. Overlay allocations use this device and queue.
 /// Valid for the presenter's lifetime; the run loop drops the overlay first.
@@ -42,14 +42,14 @@ pub struct FrameCtx<'a> {
     pub height: u32,
     /// The swapchain is 10-bit; the overlay draws in 10 too, or its gradients band.
     pub ten_bit: bool,
-    /// Window display scale (`1.0` at 96 dpi / 100 %) × `PUNKTFUNK_OSD_SCALE`.
+    /// Window display scale (`1.0` at 96 dpi / 100 %) × `RUBYFUNK_OSD_SCALE`.
     /// Overlay chrome is physical pixels; multiply every metric by this. The
     /// run loop (`overlay_scale`) clamps it finite and > 0.
     pub scale: f32,
     /// Stats overlay lines, painted by role. `None` = overlay off.
     pub stats: Option<&'a [HudLine]>,
     /// The stats panel's corner, and its size on top of [`Self::scale`].
-    pub stats_corner: punktfunk_core::hud::HudCorner,
+    pub stats_corner: rubyfunk_core::hud::HudCorner,
     pub stats_scale: f32,
     /// Show the exit hint when a stream starts; the overlay owns its timing.
     pub exit_hint: bool,
@@ -59,10 +59,10 @@ pub struct FrameCtx<'a> {
     /// Transient access toast. Occupies the hint slot while up; the run loop owns timing.
     pub notice: Option<&'a str>,
     /// The player just muted the microphone (`true`) or opened it again
-    /// ([`punktfunk_core::client::mic_mute_notice`]); `None` otherwise. Independent of the
+    /// ([`rubyfunk_core::client::mic_mute_notice`]); `None` otherwise. Independent of the
     /// stats tier, so it still shows with chrome off.
     pub mic_notice: Option<bool>,
-    /// The stream's mute sentence ([`punktfunk_core::client::audio_mute_notice`]); `None`
+    /// The stream's mute sentence ([`rubyfunk_core::client::audio_mute_notice`]); `None`
     /// while it is audible, or once a local mute has been read. A host mute stands.
     /// Independent of the stats tier.
     pub audio_mute: Option<&'a str>,
@@ -76,7 +76,7 @@ pub struct FrameCtx<'a> {
     /// Quick-action ring facts (`design/touch-client-overlay.md`). `None` outside a stream.
     pub ring: Option<&'a RingFacts>,
     /// The window's display as a stream request: what a Native connect asks for.
-    pub native: punktfunk_core::Mode,
+    pub native: rubyfunk_core::Mode,
 }
 
 /// Overlay image ready to composite: RGBA, premultiplied, already in
@@ -96,7 +96,7 @@ pub struct OverlayFrame {
 // console keep the `pf_presenter::overlay::…` path.
 pub use pf_client_core::console::{OverlayAction, PointerButton, PointerInput, SessionPhase};
 pub use pf_client_core::ring::{RingCommand, RingFacts, RingInput};
-pub use punktfunk_core::hud::{HudLine, Role};
+pub use rubyfunk_core::hud::{HudLine, Role};
 
 /// Console-UI side. The session binary passes `Option<Box<dyn Overlay>>`;
 /// `None` is the Skia-free build.
