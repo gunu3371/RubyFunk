@@ -68,7 +68,7 @@ test("the rows that ask are the route files that ask for the password", () => {
 				readFileSync(join(routes, file), "utf8"),
 			),
 		)
-		.map((file) => file.replace(/\.ts$/, ""));
+		.map((file) => file.replaceAll("\\", "/").replace(/\.ts$/, ""));
 	expect(asking.map(routeFile).sort()).toEqual(files.sort());
 });
 

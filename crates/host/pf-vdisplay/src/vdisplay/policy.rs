@@ -1551,18 +1551,15 @@ mod tests {
             DisplayPolicy::default().windows_reconnect,
             old.windows_reconnect
         );
-        let policy: DisplayPolicy = serde_json::from_str(
-            r#"{"preset":"gaming-rig","windows_reconnect":"reuse"}"#,
-        )
-        .unwrap();
+        let policy: DisplayPolicy =
+            serde_json::from_str(r#"{"preset":"gaming-rig","windows_reconnect":"reuse"}"#).unwrap();
         assert_eq!(policy.windows_reconnect, WindowsReconnect::Reuse);
         let saved = serde_json::to_vec(&policy).unwrap();
         let restored: DisplayPolicy = serde_json::from_slice(&saved).unwrap();
         assert_eq!(restored.windows_reconnect, WindowsReconnect::Reuse);
-        assert!(serde_json::from_str::<DisplayPolicy>(
-            r#"{"windows_reconnect":"unknown"}"#,
-        )
-        .is_err());
+        assert!(
+            serde_json::from_str::<DisplayPolicy>(r#"{"windows_reconnect":"unknown"}"#,).is_err()
+        );
     }
 
     /// A contract seat reads the box's overlays from its trust copy; the owner's host writes

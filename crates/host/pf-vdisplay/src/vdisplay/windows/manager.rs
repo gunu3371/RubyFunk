@@ -1175,9 +1175,8 @@ impl VirtualDisplayManager {
         Some(anyhow::anyhow!("seat adapter of {key} left the session"))
     }
 
-    /// Runs one acquire transition. Reconnect policy selects reuse or recreation for a kept
-    /// monitor. A departed adapter or rebuilt seat retires the device once; a preempt that
-    /// disconnects the seat leaves the next attempt to wait for its replacement adapter.
+    /// Kept monitors follow the reconnect policy. A departed adapter or rebuilt seat retires
+    /// the device once; a disconnected seat waits for its replacement on the next attempt.
     fn climb(
         &'static self,
         dev: &ControlDevice,
@@ -1194,12 +1193,8 @@ impl VirtualDisplayManager {
         let policy = crate::policy::prefs().get();
         let max = policy.effective().max_displays;
         let live = t.slots.len() as u32;
-        let (mut ladder, mut next) = Ladder::start(
-            found(t, ask, policy.windows_reconnect),
-            live,
-            max,
-            reopened,
-        );
+        let (mut ladder, mut next) =
+            Ladder::start(found(t, ask, policy.windows_reconnect), live, max, reopened);
         let mut r = Rungs::default();
         loop {
             let seen = match next {
@@ -3060,6 +3055,7 @@ mod tests {
 
     #[test]
     fn kept_monitors_follow_the_reconnect_policy() {
+        use super::{found, Ask, Ladder, Next, SlotChange};
         use crate::policy::WindowsReconnect;
         let _turn = GENERATIONS.lock().unwrap_or_else(|e| e.into_inner());
         let mut inner = exclusive_group(&[0]);

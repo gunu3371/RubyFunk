@@ -78,7 +78,10 @@ describe("verifyUiPassword", () => {
 		const body = readFileSync(file, "utf8");
 		expect(body).toContain("PUNKTFUNK_UI_SECRET=keepme"); // other keys survive
 		expect(body).not.toContain("PUNKTFUNK_UI_PASSWORD=");
-		expect(statSync(file).mode & 0o777).toBe(0o600);
+		// Windows uses ACLs; POSIX mode bits do not describe its file access.
+		if (process.platform !== "win32") {
+			expect(statSync(file).mode & 0o777).toBe(0o600);
+		}
 		const hash = body.match(/^PUNKTFUNK_UI_PASSWORD_HASH='(.+)'$/m)?.[1] ?? "";
 		expect(await Bun.password.verify("hunter2", hash)).toBe(true);
 		// A password just set revokes what came before it, so a reset ends old sessions too.
@@ -121,7 +124,9 @@ describe("sessionConfig", () => {
 		expect(readFileSync(join(dir, "web-session-key"), "utf8").trim()).toBe(
 			seal,
 		);
-		expect(statSync(join(dir, "web-session-key")).mode & 0o777).toBe(0o600);
+		if (process.platform !== "win32") {
+			expect(statSync(join(dir, "web-session-key")).mode & 0o777).toBe(0o600);
+		}
 	});
 
 	test("a carried key file wins over this console's own token", () => {

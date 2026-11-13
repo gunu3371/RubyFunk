@@ -743,9 +743,10 @@ mod tests {
     use pf_frame::d3d11_map::MappedSubresource;
     use windows::Win32::Foundation::HMODULE;
     use windows::Win32::Graphics::Direct3D::{D3D_DRIVER_TYPE_HARDWARE, D3D_DRIVER_TYPE_WARP};
+    use windows::Win32::Graphics::Dxgi::IDXGIDevice;
 
-    /// A device for the pixel tests: the real adapter, else WARP, so a runner with no GPU still
-    /// runs them. `None` means neither exists and the caller skips.
+    /// Pixel tests prefer hardware and log its identity. WARP is a software fallback;
+    /// neither device being available returns `None`.
     fn device() -> Option<(d3d::ID3D11Device, d3d::ID3D11DeviceContext)> {
         for kind in [D3D_DRIVER_TYPE_HARDWARE, D3D_DRIVER_TYPE_WARP] {
             let (mut dev, mut ctx) = (None, None);
@@ -764,6 +765,18 @@ mod tests {
                 )
             };
             if let (Ok(()), Some(dev), Some(ctx)) = (hr, dev, ctx) {
+                let dxgi: IDXGIDevice = dev.cast().expect("query test DXGI device");
+                // SAFETY: the device owns the live adapter returned by these COM queries.
+                let desc = unsafe { dxgi.GetAdapter().and_then(|adapter| adapter.GetDesc()) }
+                    .expect("read test adapter description");
+                let end = desc.Description.iter().position(|&c| c == 0).unwrap_or(128);
+                eprintln!(
+                    "D3D11 pixel test: kind={kind:?}, adapter={}, vendor={:#06x}, luid={:08x}:{:08x}",
+                    String::from_utf16_lossy(&desc.Description[..end]),
+                    desc.VendorId,
+                    desc.AdapterLuid.HighPart as u32,
+                    desc.AdapterLuid.LowPart,
+                );
                 return Some((dev, ctx));
             }
         }

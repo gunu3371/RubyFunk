@@ -7,12 +7,10 @@ fn main() -> Result<(), wdk_build::ConfigError> {
     Ok(())
 }
 
-/// Link `IddCxStub.lib`. It ships under `Lib\<sdkver>\um\<arch>\iddcx\<iddcxver>\`, and the iddcx versions
-/// are NOT interchangeable: the stub's `IddFunctions` dispatch table must match the running framework
-/// (linking the `1.0` stub made even IddCxDeviceInitConfig fail; the box framework is 1.10, and upstream
-/// virtual-display-rs pins 1.10). So pick the HIGHEST `iddcx\<X.Y>` dir that has the lib (version-aware,
-/// since "1.10" < "1.2" lexically). `<arch>` follows the cargo target: `x64` or `ARM64`.
+/// The stub's dispatch table must match the IddCx headers. Compare versions numerically:
+/// `1.10` sorts before `1.2` as text. The configured WDK and installed kits supply libraries.
 fn link_iddcx_stub() {
+    println!("cargo:rerun-if-env-changed=WDKContentRoot");
     let target_arch = std::env::var("CARGO_CFG_TARGET_ARCH").expect("CARGO_CFG_TARGET_ARCH");
     let cpu = wdk_build::CpuArchitecture::try_from_cargo_str(&target_arch)
         .unwrap_or_else(|| panic!("no WDK lib dir for target arch {target_arch}"));
@@ -21,8 +19,12 @@ fn link_iddcx_stub() {
         r"C:\Program Files (x86)\Windows Kits\10\Lib",
         r"C:\Program Files\Windows Kits\10\Lib",
     ];
+    let roots = std::env::var_os("WDKContentRoot")
+        .map(|root| std::path::PathBuf::from(root).join("Lib"))
+        .into_iter()
+        .chain(ROOTS.into_iter().map(std::path::PathBuf::from));
     let mut best: Option<((u32, u32), std::path::PathBuf)> = None;
-    for root in ROOTS {
+    for root in roots {
         let Ok(versions) = std::fs::read_dir(root) else {
             continue;
         };

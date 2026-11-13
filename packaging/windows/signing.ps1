@@ -20,16 +20,17 @@ function Remove-SigningPfx {
     }
 }
 
-# The newest copy of a Windows SDK or WDK tool under a versioned kit bin
-# (...\10\bin\10.0.N.N\<Arch>\<Name>).
+# The newest SDK or WDK tool in WDKContentRoot or the installed Windows Kits.
 function Find-SdkTool([string]$Name, [string]$Arch = 'x64') {
-    $root = 'C:\Program Files (x86)\Windows Kits\10\bin'
+    $roots = @()
+    if ($env:WDKContentRoot) { $roots += Join-Path $env:WDKContentRoot 'bin' }
+    $roots += 'C:\Program Files (x86)\Windows Kits\10\bin'
     $pattern = "\\(10\.0\.\d+\.\d+)\\$Arch\\"
-    $hit = Get-ChildItem -Path $root -Recurse -Filter $Name -ErrorAction SilentlyContinue |
+    $hit = Get-ChildItem -Path $roots -Recurse -Filter $Name -ErrorAction SilentlyContinue |
         Where-Object { $_.FullName -match $pattern } |
         Sort-Object { [version]([regex]::Match($_.FullName, $pattern).Groups[1].Value) } |
         Select-Object -Last 1
-    if (-not $hit) { throw "$Name not found under $root - install the Windows 10/11 SDK (and the WDK for driver tools)." }
+    if (-not $hit) { throw "$Name not found under $($roots -join ', ') - install the Windows 10/11 SDK (and the WDK for driver tools)." }
     $hit.FullName
 }
 

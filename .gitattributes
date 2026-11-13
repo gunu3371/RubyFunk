@@ -4,3 +4,5 @@ crates/install/punktfunk-setup/tests/golden/** -text
 # The shared contract vectors are generated and compared byte for byte by tests that also run on
 # Windows, so they keep LF there too.
 clients/shared/*.json -text
+crates/core/punktfunk-core/testdata/*-vectors.json text eol=lf
+scripts/build-packed444-macos.sh text eol=lf

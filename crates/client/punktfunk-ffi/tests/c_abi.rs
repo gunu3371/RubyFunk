@@ -1,12 +1,12 @@
-//! Compiles `tests/c/harness.c`, links it to a freshly built `libpunktfunk_ffi.a`,
+//! Compiles `tests/c/harness.c`, links it to a freshly built native static library,
 //! and asserts a lossy-loopback frame round-trip. Canonical path is `tests/c/run.sh`;
 //! this mirrors it so `cargo test` alone covers the C boundary.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-/// Extra native libs for the staticlib. Omit `-lSystem`/`-lc` — `cc` already
-/// links them and duplicates warn. See `rustc --print native-static-libs`.
+/// System libraries required by the Rust static library. The compiler supplies
+/// the platform C runtime. See `rustc --print native-static-libs`.
 fn native_libs() -> &'static [&'static str] {
     if cfg!(target_os = "macos") {
         // Workspace `quic` pulls rustls's platform verifier (Security/CoreFoundation). libopus
@@ -22,26 +22,56 @@ fn native_libs() -> &'static [&'static str] {
     } else if cfg!(target_os = "linux") {
         // libopus is bundled into the staticlib and needs `-lm`.
         &["-lgcc_s", "-lutil", "-lrt", "-lpthread", "-lm", "-ldl"]
+    } else if cfg!(target_env = "msvc") {
+        &[
+            "-ladvapi32",
+            "-lbcrypt",
+            "-lcrypt32",
+            "-ldbghelp",
+            "-liphlpapi",
+            "-lkernel32",
+            "-lncrypt",
+            "-lntdll",
+            "-lole32",
+            "-lsecur32",
+            "-luserenv",
+            "-lws2_32",
+        ]
     } else {
         &[]
     }
 }
 
 fn ensure_staticlib(profile_dir: &Path) -> PathBuf {
-    // Nested `CARGO_TARGET_DIR`: this `cargo build --features quic` runs mid outer
-    // `cargo test`. Sharing `target/<profile>` rebuilds the graph under different
-    // metadata and the outer `--extern` rlib paths vanish. A leftover featureless
-    // `.a` from a plain `cargo build` would also fail the quic link.
+    // A separate target keeps the nested feature build from invalidating the outer
+    // test's rlibs. The C header and static library both require QUIC.
     let nested = profile_dir
         .parent()
         .expect("target dir")
         .join("c-abi-harness");
     let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".into());
-    let _ = Command::new(cargo)
-        .args(["build", "-p", "punktfunk-ffi", "--features", "quic"])
+    let built = Command::new(cargo)
+        .args([
+            "build",
+            "--locked",
+            "-p",
+            "punktfunk-ffi",
+            "--features",
+            "quic",
+        ])
         .env("CARGO_TARGET_DIR", &nested)
-        .status();
-    nested.join("debug").join("libpunktfunk_ffi.a")
+        .status()
+        .expect("build C harness static library");
+    assert!(
+        built.success(),
+        "C harness static library build did not complete"
+    );
+    let name = if cfg!(target_env = "msvc") {
+        "punktfunk_ffi.lib"
+    } else {
+        "libpunktfunk_ffi.a"
+    };
+    nested.join("debug").join(name)
 }
 
 #[test]
@@ -69,8 +99,18 @@ fn c_abi_harness_round_trips() {
         "generated header missing; run `cargo run -p gen-headers`"
     );
 
-    let cc = std::env::var("CC").unwrap_or_else(|_| "cc".into());
-    let out = profile_dir.join("punktfunk_c_harness");
+    let cc = std::env::var("CC").unwrap_or_else(|_| {
+        if cfg!(target_env = "msvc") {
+            "clang"
+        } else {
+            "cc"
+        }
+        .into()
+    });
+    let out = profile_dir.join(format!(
+        "punktfunk_c_harness{}",
+        std::env::consts::EXE_SUFFIX
+    ));
 
     let mut compile = Command::new(&cc);
     compile
